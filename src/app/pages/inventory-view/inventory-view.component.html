@@ -1,0 +1,108 @@
+<!-- src/app/pages/inventory-view/inventory-view.component.html -->
+<div class="inventory-container">
+  <div class="header">
+    <h2>Inventory Management</h2>
+    <p class="subtitle">Monitor stock levels and inventory value</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading inventory...</div>
+
+  <div *ngIf="!loading">
+    <!-- Summary Cards -->
+    <div class="summary-cards" *ngIf="inventoryValuation">
+      <div class="summary-card">
+        <div class="card-label">Total Finished Goods</div>
+        <div class="card-value">{{ inventoryValuation.total_finished_goods_qty }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">Inventory Value</div>
+        <div class="card-value">₹{{ inventoryValuation.total_finished_goods_value }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">Raw Materials Value</div>
+        <div class="card-value">₹{{ inventoryValuation.total_materials_value }}</div>
+      </div>
+      <div class="summary-card alert-card" *ngIf="lowStockAlerts.length > 0">
+        <div class="card-label">Low Stock Alerts</div>
+        <div class="card-value danger">{{ lowStockAlerts.length }}</div>
+      </div>
+    </div>
+
+    <!-- Low Stock Alerts -->
+    <div class="alerts-section" *ngIf="lowStockAlerts.length > 0">
+      <h3>⚠️ Low Stock Alerts</h3>
+      <div class="alerts-list">
+        <div *ngFor="let alert of lowStockAlerts" class="alert-item">
+          <strong>{{ alert.product_name }}</strong>
+          <span>Stock: {{ alert.current_stock }} (Reorder at: {{ alert.reorder_level }})</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Finished Goods Inventory -->
+    <div class="section">
+      <h3>Finished Goods Inventory</h3>
+      <div class="table-container">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Current Stock</th>
+              <th>Unit Cost</th>
+              <th>Selling Price</th>
+              <th>Stock Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of finishedGoods">
+              <td><strong>{{ item.product_name }}</strong></td>
+              <td>{{ item.current_stock }} units</td>
+              <td>₹{{ item.unit_cost }}</td>
+              <td>₹{{ item.selling_price }}</td>
+              <td>₹{{ item.current_stock * item.unit_cost }}</td>
+              <td>
+                <span [class]="'status-badge ' + getStockClass(item.current_stock, item.reorder_level)">
+                  {{ item.current_stock === 0 ? 'Out of Stock' : item.current_stock <= item.reorder_level ? 'Low Stock' : 'In Stock' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Raw Materials Stock -->
+    <div class="section">
+      <h3>Raw Materials Stock</h3>
+      <div class="table-container">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Material Name</th>
+              <th>Current Stock</th>
+              <th>Unit</th>
+              <th>Unit Cost</th>
+              <th>Stock Value</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let material of rawMaterials">
+              <td><strong>{{ material.material_name }}</strong></td>
+              <td>{{ material.current_stock }}</td>
+              <td>{{ material.unit }}</td>
+              <td>₹{{ material.unit_cost }}</td>
+              <td>₹{{ material.current_stock * material.unit_cost }}</td>
+              <td>
+                <span [class]="'status-badge ' + getStockClass(material.current_stock, material.reorder_level)">
+                  {{ material.current_stock === 0 ? 'Out of Stock' : material.current_stock <= material.reorder_level ? 'Reorder Now' : 'Sufficient' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

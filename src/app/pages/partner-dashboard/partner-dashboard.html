@@ -1,0 +1,179 @@
+<div class="partner-dashboard-container">
+  <div class="top-bar">
+    <div>
+      <h1>🤝 Partner Dashboard</h1>
+      <p>Track partner contributions, profits, and settlements</p>
+    </div>
+    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
+      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
+    </button>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <!-- Month Filter -->
+  <div class="filter-section">
+    <label for="monthSelect">Select Month:</label>
+    <input 
+      type="month" 
+      id="monthSelect" 
+      [(ngModel)]="selectedMonth"
+      (change)="onMonthChange()"
+      class="input-field">
+  </div>
+
+  <!-- Partner Summary Cards -->
+  <div class="partner-cards">
+    <div *ngFor="let partner of partners" class="partner-card">
+      <div class="card-header">
+        <h3>{{ partner.name }}</h3>
+        <span class="percentage">{{ partner.percentage }}%</span>
+      </div>
+
+      <div class="card-stats">
+        <div class="stat-item">
+          <span class="label">Total Earned</span>
+          <span class="value" [ngClass]="{ 'positive': partner.total_earned > 0 }">
+            ₹{{ partner.total_earned | number: '1.2-2' }}
+          </span>
+        </div>
+
+        <div class="stat-item">
+          <span class="label">Labour Paid</span>
+          <span class="value">₹{{ partner.labour_contributed | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="label">Materials Paid</span>
+          <span class="value">₹{{ partner.materials_contributed | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="stat-item">
+          <span class="label">Expenses Paid</span>
+          <span class="value">₹{{ partner.expenses_contributed | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="stat-item total">
+          <span class="label">Total Paid</span>
+          <span class="value">₹{{ partner.total_contributed | number: '1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="card-divider"></div>
+
+      <div class="card-settlement">
+        <div class="settle-item">
+          <span class="label">Cash Given</span>
+          <span class="value positive">+₹{{ partner.cash_given | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="settle-item">
+          <span class="label">Cash Taken</span>
+          <span class="value negative">-₹{{ partner.cash_taken | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="settle-item net">
+          <span class="label">Net Cash</span>
+          <span class="value" [ngClass]="getNetCashClass(partner)">
+            {{ getNetCashDisplay(partner) }}
+          </span>
+        </div>
+
+        <div class="settle-item highlight">
+          <span class="label">Profit Due</span>
+          <span class="value" [ngClass]="{ 'positive': partner.profit_due > 0, 'negative': partner.profit_due < 0 }">
+            ₹{{ partner.profit_due | number: '1.2-2' }}
+          </span>
+        </div>
+      </div>
+
+      <button 
+        *ngIf="partner.settlement_due > 0"
+        (click)="openSettlementForm(partner.id)"
+        class="btn-settle">
+        Record Settlement (₹{{ partner.settlement_due | number: '1.2-2' }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Settlement Form Modal -->
+  <div *ngIf="showSettlementForm" class="modal-overlay" (click)="closeSettlementForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Record Settlement</h2>
+      
+      <div class="form-grid">
+        <div class="input-group">
+          <label>Partner</label>
+          <select [(ngModel)]="settlementForm.partner_id" class="input-field">
+            <option value="">Select Partner</option>
+            <option *ngFor="let partner of partners" [value]="partner.id">
+              {{ partner.name }} (Due: ₹{{ partner.settlement_due | number: '1.2-2' }})
+            </option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label>Amount</label>
+          <input 
+            type="number" 
+            [(ngModel)]="settlementForm.amount" 
+            class="input-field"
+            placeholder="Settlement amount">
+        </div>
+
+        <div class="input-group">
+          <label>Payment Mode</label>
+          <select [(ngModel)]="settlementForm.payment_mode" class="input-field">
+            <option value="cash">Cash</option>
+            <option value="check">Check</option>
+            <option value="transfer">Bank Transfer</option>
+            <option value="adjust">Adjust in Next Month</option>
+          </select>
+        </div>
+
+        <div class="input-group full-width">
+          <label>Notes</label>
+          <textarea 
+            [(ngModel)]="settlementForm.notes" 
+            class="notes-field"
+            placeholder="Settlement notes (optional)"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button (click)="submitSettlement()" class="btn-submit">Record Settlement</button>
+        <button (click)="closeSettlementForm()" class="btn-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Settlements -->
+  <div class="section settlements-section">
+    <h2>Recent Settlements</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Partner</th>
+            <th>Amount</th>
+            <th>Payment Mode</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let settlement of settlements">
+            <td>{{ settlement.settlement_date | date: 'dd/MM/yyyy' }}</td>
+            <td>{{ settlement.partner_name }}</td>
+            <td class="amount">₹{{ settlement.amount | number: '1.2-2' }}</td>
+            <td>{{ settlement.payment_mode }}</td>
+            <td>{{ settlement.notes || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p *ngIf="settlements.length === 0" class="no-data">No settlements recorded yet</p>
+  </div>
+</div>

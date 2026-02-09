@@ -1,0 +1,117 @@
+<!-- src/app/pages/stock-audit/stock-audit.component.html -->
+<div class="audit-container">
+  <div class="header">
+    <h2>Stock Audit</h2>
+    <p class="subtitle">Physical count reconciliation</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <div class="content-layout" *ngIf="!loading">
+    <!-- Create Audit Form -->
+    <div class="form-card">
+      <h3>Create New Audit</h3>
+
+      <div class="form-group">
+        <label>Audit Date <span class="required">*</span></label>
+        <input type="date" [(ngModel)]="auditDate" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Material <span class="required">*</span></label>
+        <select [(ngModel)]="materialName" (change)="onMaterialChange()" class="form-control">
+          <option value="">Select Material</option>
+          <option *ngFor="let material of materials" [value]="material.material_name">
+            {{ material.material_name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="stock-comparison" *ngIf="digitalStock > 0">
+        <div class="comparison-item">
+          <div class="label">Digital Stock</div>
+          <div class="value">{{ digitalStock }}</div>
+        </div>
+        <div class="comparison-item">
+          <div class="label">Physical Count</div>
+          <div class="value">{{ physicalCount }}</div>
+        </div>
+        <div class="comparison-item">
+          <div class="label">Variance</div>
+          <div [class]="'value variance ' + getVarianceClass(variance)">
+            {{ variance > 0 ? '+' : '' }}{{ variance }}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Physical Count <span class="required">*</span></label>
+        <input type="number" [(ngModel)]="physicalCount" (input)="onPhysicalCountChange()" min="0" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea [(ngModel)]="notes" rows="3" class="form-control"></textarea>
+      </div>
+
+      <button (click)="createAudit()" [disabled]="saving" class="btn btn-primary full-width">
+        {{ saving ? 'Creating...' : 'Create Audit' }}
+      </button>
+    </div>
+
+    <!-- Pending Approvals -->
+    <div class="pending-section" *ngIf="pendingAudits.length > 0">
+      <h3>⏳ Pending Approvals</h3>
+      <div class="pending-list">
+        <div *ngFor="let audit of pendingAudits" class="pending-item">
+          <div class="audit-header">
+            <strong>{{ audit.material_name }}</strong>
+            <span class="audit-date">{{ audit.audit_date }}</span>
+          </div>
+          <div class="audit-details">
+            Digital: {{ audit.digital_stock }} | Physical: {{ audit.physical_count }} | 
+            Variance: <span [class]="'variance ' + getVarianceClass(audit.variance)">{{ audit.variance }}</span>
+          </div>
+          <div class="audit-actions">
+            <button (click)="approveAudit(audit)" class="btn-approve">✓ Approve</button>
+            <button (click)="rejectAudit(audit)" class="btn-reject">✗ Reject</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audit History -->
+    <div class="history-section">
+      <h3>Recent Audits</h3>
+      <div class="history-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Material</th>
+              <th>Digital</th>
+              <th>Physical</th>
+              <th>Variance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let audit of auditHistory">
+              <td>{{ audit.audit_date }}</td>
+              <td>{{ audit.material_name }}</td>
+              <td>{{ audit.digital_stock }}</td>
+              <td>{{ audit.physical_count }}</td>
+              <td [class]="'variance ' + getVarianceClass(audit.variance)">{{ audit.variance }}</td>
+              <td>
+                <span [class]="'status-badge ' + audit.approval_status">{{ audit.approval_status }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="auditHistory.length === 0" class="no-data">No audit history</div>
+      </div>
+    </div>
+  </div>
+</div>

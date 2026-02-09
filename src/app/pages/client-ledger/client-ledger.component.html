@@ -1,0 +1,219 @@
+<!-- src/app/pages/client-ledger/client-ledger.component.html -->
+<div class="client-ledger-container">
+  <div class="header">
+    <div class="header-left">
+      <h2>Client Ledger</h2>
+      <p class="subtitle">Manage clients and track outstanding payments</p>
+    </div>
+    <button (click)="openAddModal()" class="btn btn-primary">
+      + Add Client
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading">Loading clients...</div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading">
+    <!-- Summary Cards -->
+    <div class="summary-cards" *ngIf="clientsSummary">
+      <div class="summary-card">
+        <div class="card-label">Total Clients</div>
+        <div class="card-value">{{ clientsSummary.total_clients }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">Total Billed</div>
+        <div class="card-value">₹{{ clientsSummary.total_billed }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">Total Paid</div>
+        <div class="card-value success">₹{{ clientsSummary.total_paid }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="card-label">Outstanding</div>
+        <div class="card-value danger">₹{{ clientsSummary.total_outstanding }}</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="applyFilters()"
+        placeholder="Search by name, phone, or city"
+        class="search-input">
+
+      <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="filter-select">
+        <option value="all">All Clients</option>
+        <option value="outstanding">With Outstanding</option>
+        <option value="exceeding_limit">Exceeding Credit Limit</option>
+      </select>
+    </div>
+
+    <!-- Clients Table -->
+    <div class="table-container">
+      <table class="clients-table">
+        <thead>
+          <tr>
+            <th>Client Name</th>
+            <th>Contact</th>
+            <th>City</th>
+            <th>Total Billed</th>
+            <th>Total Paid</th>
+            <th>Outstanding</th>
+            <th>Credit Limit</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let client of filteredClients">
+            <td>
+              <div class="client-name">{{ client.client_name }}</div>
+            </td>
+            <td>{{ client.phone || '-' }}</td>
+            <td>{{ client.address || '-' }}</td>
+            <td>₹{{ client.total_billed }}</td>
+            <td>₹{{ client.total_paid }}</td>
+            <td>
+              <span [class]="'outstanding-badge ' + getOutstandingClass(client)">
+                ₹{{ client.outstanding }}
+              </span>
+            </td>
+            <td>₹{{ client.credit_limit }}</td>
+            <td>
+              <button (click)="viewStatement(client)" class="btn-action">
+                View Statement
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredClients.length === 0" class="no-data">
+        No clients found
+      </div>
+    </div>
+
+    <!-- Top Debtors -->
+    <div class="top-debtors-section" *ngIf="topDebtors.length > 0">
+      <h3>Top 10 Debtors</h3>
+      <div class="debtors-list">
+        <div *ngFor="let debtor of topDebtors" class="debtor-item">
+          <div class="debtor-name">{{ debtor.client_name }}</div>
+          <div class="debtor-amount">₹{{ debtor.outstanding }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Client Modal -->
+  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Client</h3>
+        <button (click)="closeAddModal()" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Client Name <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="formData.client_name" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Contact Number</label>
+          <input type="tel" [(ngModel)]="formData.contact_number" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" [(ngModel)]="formData.address" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" [(ngModel)]="formData.city" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Credit Limit (₹)</label>
+          <input type="number" [(ngModel)]="formData.credit_limit" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select [(ngModel)]="formData.status" class="form-control">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeAddModal()" class="btn btn-secondary">Cancel</button>
+        <button (click)="saveClient()" [disabled]="saving" class="btn btn-primary">
+          {{ saving ? 'Saving...' : 'Save Client' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statement Modal -->
+  <div class="modal-overlay" *ngIf="showStatementModal" (click)="closeStatementModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Client Statement</h3>
+          <p class="statement-client" *ngIf="selectedClient">{{ selectedClient.client_name }}</p>
+        </div>
+        <button (click)="closeStatementModal()" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Date Range Filter -->
+        <div class="date-range-filter">
+          <input type="date" [(ngModel)]="statementStartDate" class="form-control">
+          <span>to</span>
+          <input type="date" [(ngModel)]="statementEndDate" class="form-control">
+          <button (click)="loadStatement()" class="btn btn-primary">Apply</button>
+        </div>
+
+        <!-- Statement Table -->
+        <div class="statement-table-container">
+          <table class="statement-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let entry of clientStatement">
+                <td>{{ entry.date }}</td>
+                <td>
+                  <span [class]="'type-badge ' + entry.type">{{ entry.type }}</span>
+                </td>
+                <td>{{ entry.description }}</td>
+                <td class="debit">{{ entry.debit > 0 ? '₹' + entry.debit : '-' }}</td>
+                <td class="credit">{{ entry.credit > 0 ? '₹' + entry.credit : '-' }}</td>
+                <td class="balance">₹{{ entry.balance }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div *ngIf="clientStatement.length === 0" class="no-data">
+            No transactions found for selected date range
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

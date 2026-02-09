@@ -1,0 +1,708 @@
+<!-- src/app/pages/library-grid/library-grid.component.html -->
+<div class="library-grid-container">
+  <div class="header">
+    <div>
+      <h2>📚 Suraksha Library - Seat Management</h2>
+      <p class="subtitle" *ngIf="authService.canEdit()">36-Seat Grid | Click empty seats to register | Click occupied to view profile</p>
+      <p class="subtitle" *ngIf="!authService.canEdit()">36-Seat Grid | View-Only Mode</p>
+    </div>
+    <div class="header-actions">
+      <button (click)="openMyAttendanceModal()" class="btn btn-primary">
+        📝 Mark My Attendance
+      </button>
+      <button (click)="loadSeats()" class="btn-refresh">🔄 Refresh</button>
+      <button *ngIf="isAdmin()" (click)="toggleBulkOperations()" class="btn-bulk">
+        📋 Bulk Operations
+      </button>
+    </div>
+  </div>
+
+  <!-- Bulk Operations Panel (Admin Only) -->
+  <div *ngIf="showBulkOperations && isAdmin()" class="bulk-operations-panel">
+    <div class="bulk-header">
+      <h3>📋 Bulk Operations</h3>
+      <button (click)="toggleBulkMode()" [class.active]="bulkMode" class="btn btn-secondary">
+        {{ bulkMode ? '✓ Selection Mode Active' : 'Enable Selection Mode' }}
+      </button>
+    </div>
+
+    <div *ngIf="bulkMode" class="bulk-controls">
+      <div class="selection-info">
+        <strong>{{ selectedSeats.length }} seats selected</strong>
+      </div>
+
+      <div class="bulk-actions">
+        <button (click)="selectAllOccupiedSeats()" class="btn btn-info btn-sm">
+          Select All Occupied
+        </button>
+        <button (click)="selectAllEmptySeats()" class="btn btn-info btn-sm">
+          Select All Empty
+        </button>
+        <button (click)="clearSelection()" class="btn btn-secondary btn-sm">
+          Clear Selection
+        </button>
+      </div>
+
+      <div class="bulk-execute" *ngIf="selectedSeats.length > 0">
+        <button (click)="executeBulkRelease()" [disabled]="saving" class="btn btn-danger">
+          🚪 Release {{ selectedSeats.length }} Seats
+        </button>
+        <button (click)="sendBulkWhatsAppMessages()" class="btn btn-success">
+          📱 Send WhatsApp to All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <div *ngIf="loading" class="loading">Loading seats...</div>
+
+  <!-- 6x6 Seat Grid -->
+  <div *ngIf="!loading" class="seat-grid">
+    <div *ngFor="let seat of seats" 
+         class="seat-box" 
+         [ngClass]="[
+           getSeatClass(seat), 
+           !authService.canEdit() ? 'no-click' : '',
+           bulkMode && isSeatSelected(seat.seat_no) ? 'selected' : ''
+         ]"
+         [title]="getSeatTooltip(seat)"
+         (click)="bulkMode ? toggleSeatSelection(seat.seat_no) : onSeatClick(seat)">
+      
+      <!-- Bulk Selection Checkbox -->
+      <div *ngIf="bulkMode" class="bulk-checkbox" (click)="$event.stopPropagation(); toggleSeatSelection(seat.seat_no)">
+        <input type="checkbox" [checked]="isSeatSelected(seat.seat_no)" (click)="$event.stopPropagation()">
+      </div>
+
+      <div class="seat-number">{{ seat.seat_no }}</div>
+      <div class="seat-info" *ngIf="seat.full_time_student_id || seat.first_half_student_id || seat.second_half_student_id">
+        <!-- Full Time Student -->
+        <div class="student-name" *ngIf="seat.full_time_student_id">
+          {{ seat.full_time_student?.name }}
+          <span *ngIf="getAttendanceIndicator(seat.full_time_student_id)" 
+                [ngClass]="getAttendanceIndicatorClass(seat.full_time_student_id)"
+                class="attendance-indicator">
+            {{ getAttendanceIndicator(seat.full_time_student_id) }}
+          </span>
+        </div>
+        <!-- Both Shifts Occupied -->
+        <div class="dual-students" *ngIf="seat.first_half_student_id && seat.second_half_student_id">
+          <div class="student-name small">
+            🌅 {{ seat.first_half_student?.name }}
+            <span *ngIf="getAttendanceIndicator(seat.first_half_student_id)" 
+                  [ngClass]="getAttendanceIndicatorClass(seat.first_half_student_id)"
+                  class="attendance-indicator">
+              {{ getAttendanceIndicator(seat.first_half_student_id) }}
+            </span>
+          </div>
+          <div class="student-name small">
+            🌃 {{ seat.second_half_student?.name }}
+            <span *ngIf="getAttendanceIndicator(seat.second_half_student_id)" 
+                  [ngClass]="getAttendanceIndicatorClass(seat.second_half_student_id)"
+                  class="attendance-indicator">
+              {{ getAttendanceIndicator(seat.second_half_student_id) }}
+            </span>
+          </div>
+        </div>
+        <!-- Single Half Shift -->
+        <div class="student-name" *ngIf="(seat.first_half_student_id && !seat.second_half_student_id) || (seat.second_half_student_id && !seat.first_half_student_id)">
+          {{ seat.first_half_student?.name || seat.second_half_student?.name }}
+          <span *ngIf="getAttendanceIndicator(seat.first_half_student_id || seat.second_half_student_id)" 
+                [ngClass]="getAttendanceIndicatorClass(seat.first_half_student_id || seat.second_half_student_id)"
+                class="attendance-indicator">
+            {{ getAttendanceIndicator(seat.first_half_student_id || seat.second_half_student_id) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><span class="legend-box empty"></span> Available</div>
+    <div class="legend-item"><span class="legend-box occupied"></span> Paid (Active)</div>
+    <div class="legend-item"><span class="legend-box expiring"></span> Expiring Soon (1-2 days)</div>
+    <div class="legend-item"><span class="legend-box expired"></span> Expired (Overdue)</div>
+    <div class="legend-item"><span class="legend-box half-occupied"></span> Half Shift Available</div>
+    <div class="legend-item"><span class="attendance-indicator status-in">🟢 08:30</span> Checked In</div>
+    <div class="legend-item"><span class="attendance-indicator">🟢 08:30 🔴 17:45</span> In & Out Times</div>
+  </div>
+
+  <!-- Registration Modal -->
+  <div class="modal-overlay" *ngIf="showRegistrationModal" (click)="closeModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📝 Register Student - Seat {{ selectedSeat?.seat_no }}</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newStudent.name" class="form-control" placeholder="Enter full name">
+          </div>
+          
+          <!-- Personal Details - Only for Admin and Library Manager -->
+          <div *ngIf="canViewPersonalDetails()" class="form-group">
+            <label>Mobile Number <span class="required">*</span></label>
+            <input type="tel" [(ngModel)]="newStudent.mobile" class="form-control" placeholder="+91 9876543210" (blur)="checkExistingStudent()">
+            <small *ngIf="checkingMobile" class="text-info">Checking mobile number...</small>
+            <small *ngIf="existingStudent && !checkingMobile" class="text-success">✓ Student data loaded from existing record</small>
+          </div>
+          
+          <div *ngIf="canViewPersonalDetails()" class="form-group">
+            <label>Emergency Contact <span class="required">*</span></label>
+            <input type="tel" [(ngModel)]="newStudent.emergency_contact" class="form-control" placeholder="+91 9876543210">
+          </div>
+          
+          <div *ngIf="canViewPersonalDetails()" class="form-group">
+            <label>Emergency Contact Name</label>
+            <input type="text" [(ngModel)]="newStudent.emergency_contact_name" class="form-control" placeholder="Parent/Guardian name">
+          </div>
+          
+          <div *ngIf="canViewPersonalDetails()" class="form-group full-width">
+            <label>Address <span class="required">*</span></label>
+            <textarea [(ngModel)]="newStudent.address" class="form-control" rows="2" placeholder="Full address"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" [(ngModel)]="newStudent.dob" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Gender</label>
+            <select [(ngModel)]="newStudent.gender" class="form-control">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Upload Photo <span class="text-warning">(Temporarily Disabled)</span></label>
+            <input type="file" accept="image/*" (change)="onPhotoSelect($event)" class="form-control" disabled>
+            <small class="text-warning">⚠️ Photo upload temporarily disabled. Configure storage bucket RLS policies first.</small>
+          </div>
+          
+          <div class="form-group">
+            <label>Registration Fee</label>
+            <input type="number" [(ngModel)]="newStudent.registration_fee_paid" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Shift Type</label>
+            <select [(ngModel)]="selectedShift" (change)="onShiftChange()" class="form-control">
+              <option value="full_time">Full Time (₹400/month)</option>
+              <option value="first_half">First Half - 8AM-2PM (₹250/month)</option>
+              <option value="second_half">Second Half - 2PM-8PM (₹250/month)</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Fee Amount</label>
+            <input type="number" [(ngModel)]="feePayment.amount_paid" class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>Payment Mode</label>
+            <select [(ngModel)]="feePayment.payment_mode" class="form-control">
+              <option value="cash">Cash</option>
+              <option value="upi">UPI</option>
+              <option value="card">Card</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Validity (Days)</label>
+            <input type="number" [(ngModel)]="feePayment.days" class="form-control" value="30">
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Notes</label>
+            <textarea [(ngModel)]="newStudent.notes" class="form-control" rows="2" placeholder="Any additional notes"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+        <button (click)="submitRegistration()" [disabled]="saving || uploadingPhoto" class="btn btn-primary">
+          {{ saving ? 'Saving...' : uploadingPhoto ? 'Uploading Photo...' : '💾 Register Student' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Profile Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeModal()">
+    <div class="modal-content" [class.wide-modal]="showBothStudents" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>👨‍🎓 Student Profile{{ showBothStudents ? 's' : '' }}</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      
+      <!-- Single Student View -->
+      <div class="modal-body" *ngIf="selectedStudent && !showBothStudents">
+        <div class="profile-section">
+          <div class="profile-photo">
+            <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo">
+            <div *ngIf="!selectedStudent.photo_url" class="no-photo">📷</div>
+          </div>
+          <div class="profile-info">
+            <h4>{{ selectedStudent.name }}</h4>
+            
+            <!-- Personal Details - Only for Admin and Library Manager -->
+            <div *ngIf="canViewPersonalDetails()">
+              <p><strong>Mobile:</strong> {{ selectedStudent.mobile }}</p>
+              <p><strong>Address:</strong> {{ selectedStudent.address }}</p>
+              <p><strong>Emergency Contact:</strong> {{ selectedStudent.emergency_contact_name || 'N/A' }} - {{ selectedStudent.emergency_contact }}</p>
+            </div>
+            
+            <!-- Limited info for viewers -->
+            <div *ngIf="!canViewPersonalDetails()">
+              <p class="text-muted"><em>Personal details hidden</em></p>
+            </div>
+            
+            <p><strong>Seat:</strong> {{ selectedSeat?.seat_no }}</p>
+            <p><strong>Joined:</strong> {{ selectedStudent.joining_date }}</p>
+            <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedStudent.status">{{ selectedStudent.status }}</span></p>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button *ngIf="todayAttendance && todayAttendance.check_in_time && !todayAttendance.check_out_time" 
+                  class="info-badge">
+            ⏰ Checked in at {{ todayAttendance.check_in_time }}
+          </button>
+          <button (click)="toggleAttendance(selectedStudent)" 
+                  [class]="'btn ' + getAttendanceButtonClass()"
+                  [disabled]="isAttendanceButtonDisabled()">
+            {{ getAttendanceButtonText() }}
+          </button>
+          <button *ngIf="authService.canEdit()" 
+                  (click)="openFeePaymentModal(selectedStudent)" 
+                  class="btn btn-success">
+            💳 Pay Fee
+          </button>
+          <button *ngIf="isOtherShiftAvailable() && authService.canEdit()" 
+                  (click)="addStudentForOtherShift()" 
+                  class="btn btn-primary">
+            ➕ Add Student ({{ getAvailableShiftName() }})
+          </button>
+          <button *ngIf="authService.canEdit() && selectedStudent"
+                  (click)="openChangeSeatModal(selectedStudent, getCurrentShiftType())"
+                  class="btn btn-info">
+            🔄 Change Seat
+          </button>
+          <button (click)="sendWhatsAppReminder()" class="btn btn-success">
+            💬 Send Fee Reminder
+          </button>
+          <button (click)="sendEmergencySOS()" class="btn btn-warning">
+            🚨 Emergency SOS
+          </button>
+          <button (click)="releaseSeatConfirm()" class="btn btn-danger">
+            🚪 Release Seat
+          </button>
+        </div>
+      </div>
+
+      <!-- Both Students View (Side by Side) -->
+      <div class="modal-body dual-students" *ngIf="showBothStudents">
+        <!-- First Half Student -->
+        <div class="student-card" *ngIf="selectedStudent">
+          <div class="shift-badge morning">🌅 Morning Shift</div>
+          <div class="profile-section">
+            <div class="profile-photo">
+              <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo">
+              <div *ngIf="!selectedStudent.photo_url" class="no-photo">📷</div>
+            </div>
+            <div class="profile-info">
+              <h4>{{ selectedStudent.name }}</h4>
+              
+              <!-- Personal Details - Only for Admin and Library Manager -->
+              <div *ngIf="canViewPersonalDetails()">
+                <p><strong>Mobile:</strong> {{ selectedStudent.mobile }}</p>
+                <p><strong>Address:</strong> {{ selectedStudent.address }}</p>
+                <p><strong>Emergency:</strong> {{ selectedStudent.emergency_contact_name || 'N/A' }} - {{ selectedStudent.emergency_contact }}</p>
+              </div>
+              
+              <!-- Limited info for viewers -->
+              <div *ngIf="!canViewPersonalDetails()">
+                <p class="text-muted"><em>Personal details hidden</em></p>
+              </div>
+              
+              <p><strong>Seat:</strong> {{ selectedSeat?.seat_no }}</p>
+              <p><strong>Joined:</strong> {{ selectedStudent.joining_date }}</p>
+              <p><strong>Expiry:</strong> {{ selectedSeat?.first_half_expiry }}</p>
+              <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedStudent.status">{{ selectedStudent.status }}</span></p>
+            </div>
+          </div>
+          
+          <div class="action-buttons">
+            <button *ngIf="getStudentAttendanceStatus(selectedStudent.id)?.check_in_time && !getStudentAttendanceStatus(selectedStudent.id)?.check_out_time" 
+                    class="info-badge">
+              ⏰ In at {{ getStudentAttendanceStatus(selectedStudent.id)?.check_in_time }}
+            </button>
+            <button (click)="toggleAttendance(selectedStudent)" 
+                    [class]="'btn btn-sm ' + getAttendanceButtonClassForStudent(selectedStudent.id)"
+                    [disabled]="isAttendanceButtonDisabledForStudent(selectedStudent.id)">
+              {{ getAttendanceButtonTextForStudent(selectedStudent.id) }}
+            </button>
+            <button *ngIf="authService.canEdit()" 
+                    (click)="openFeePaymentModal(selectedStudent)" 
+                    class="btn btn-success btn-sm">
+              💳 Fee
+            </button>
+            <button (click)="sendWhatsAppReminder(selectedStudent)" class="btn btn-success btn-sm">
+              💬 Reminder
+            </button>
+            <button (click)="sendEmergencySOS(selectedStudent)" class="btn btn-warning btn-sm">
+              🚨 SOS
+            </button>
+            <button *ngIf="authService.canEdit()"
+                    (click)="openChangeSeatModal(selectedStudent, 'first_half')" 
+                    class="btn btn-info btn-sm">
+              🔄 Change
+            </button>
+            <button (click)="releaseSeatConfirm(selectedStudent, 'first_half')" class="btn btn-danger btn-sm">
+              🚪 Release
+            </button>
+          </div>
+        </div>
+
+        <!-- Second Half Student -->
+        <div class="student-card" *ngIf="selectedSecondStudent">
+          <div class="shift-badge evening">🌃 Evening Shift</div>
+          <div class="profile-section">
+            <div class="profile-photo">
+              <img *ngIf="selectedSecondStudent.photo_url" [src]="selectedSecondStudent.photo_url" alt="Student Photo">
+              <div *ngIf="!selectedSecondStudent.photo_url" class="no-photo">📷</div>
+            </div>
+            <div class="profile-info">
+              <h4>{{ selectedSecondStudent.name }}</h4>
+              
+              <!-- Personal Details - Only for Admin and Library Manager -->
+              <div *ngIf="canViewPersonalDetails()">
+                <p><strong>Mobile:</strong> {{ selectedSecondStudent.mobile }}</p>
+                <p><strong>Address:</strong> {{ selectedSecondStudent.address }}</p>
+                <p><strong>Emergency:</strong> {{ selectedSecondStudent.emergency_contact_name || 'N/A' }} - {{ selectedSecondStudent.emergency_contact }}</p>
+              </div>
+              
+              <!-- Limited info for viewers -->
+              <div *ngIf="!canViewPersonalDetails()">
+                <p class="text-muted"><em>Personal details hidden</em></p>
+              </div>
+              
+              <p><strong>Seat:</strong> {{ selectedSeat?.seat_no }}</p>
+              <p><strong>Joined:</strong> {{ selectedSecondStudent.joining_date }}</p>
+              <p><strong>Expiry:</strong> {{ selectedSeat?.second_half_expiry }}</p>
+              <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedSecondStudent.status">{{ selectedSecondStudent.status }}</span></p>
+            </div>
+          </div>
+          
+          <div class="action-buttons">
+            <button *ngIf="getStudentAttendanceStatus(selectedSecondStudent.id)?.check_in_time && !getStudentAttendanceStatus(selectedSecondStudent.id)?.check_out_time" 
+                    class="info-badge">
+              ⏰ In at {{ getStudentAttendanceStatus(selectedSecondStudent.id)?.check_in_time }}
+            </button>
+            <button (click)="toggleAttendance(selectedSecondStudent)" 
+                    [class]="'btn btn-sm ' + getAttendanceButtonClassForStudent(selectedSecondStudent.id)"
+                    [disabled]="isAttendanceButtonDisabledForStudent(selectedSecondStudent.id)">
+              {{ getAttendanceButtonTextForStudent(selectedSecondStudent.id) }}
+            </button>
+            <button *ngIf="authService.canEdit()" 
+                    (click)="openFeePaymentModal(selectedSecondStudent)" 
+                    class="btn btn-success btn-sm">
+              💳 Fee
+            </button>
+            <button (click)="sendWhatsAppReminder(selectedSecondStudent)" class="btn btn-success btn-sm">
+              💬 Reminder
+            </button>
+            <button (click)="sendEmergencySOS(selectedSecondStudent)" class="btn btn-warning btn-sm">
+              🚨 SOS
+            </button>
+            <button *ngIf="authService.canEdit()"
+                    (click)="openChangeSeatModal(selectedSecondStudent, 'second_half')" 
+                    class="btn btn-info btn-sm">
+              🔄 Change
+            </button>
+            <button (click)="releaseSeatConfirm(selectedSecondStudent, 'second_half')" class="btn btn-danger btn-sm">
+              🚪 Release
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Seat Modal -->
+  <div class="modal-overlay" *ngIf="showChangeSeatModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>🔄 Change Seat</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="changingSeatStudent">
+        <div class="change-seat-info">
+          <h4>{{ changingSeatStudent.name }}</h4>
+          <p><strong>Current Seat:</strong> {{ selectedSeat?.seat_no }}</p>
+          <p><strong>Shift Type:</strong> 
+            <span *ngIf="changingSeatShiftType === 'full_time'">Full Time</span>
+            <span *ngIf="changingSeatShiftType === 'first_half'">🌅 Morning Shift</span>
+            <span *ngIf="changingSeatShiftType === 'second_half'">🌃 Evening Shift</span>
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label>Select New Seat *</label>
+          <div class="available-seats-grid">
+            <div *ngFor="let seat of availableSeatsForTransfer"
+                 class="seat-option"
+                 [class.selected]="newSeatNumber === seat.seat_no"
+                 (click)="newSeatNumber = seat.seat_no">
+              <div class="seat-option-number">{{ seat.seat_no }}</div>
+              <div class="seat-option-status">Available</div>
+            </div>
+          </div>
+          <p class="text-muted" *ngIf="availableSeatsForTransfer.length === 0">
+            No available seats for this shift type
+          </p>
+        </div>
+
+        <div class="modal-actions">
+          <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+          <button (click)="confirmChangeSeat()" 
+                  class="btn btn-primary"
+                  [disabled]="!newSeatNumber || saving">
+            {{ saving ? 'Changing...' : 'Confirm Change' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fee Payment Modal -->
+  <div class="modal-overlay" *ngIf="showFeePaymentModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>💳 Pay Fee - {{ selectedStudent?.name }}</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Amount (₹) <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="additionalFeePayment.amount_paid" class="form-control" min="1">
+        </div>
+
+        <div class="form-group">
+          <label>Days <span class="required">*</span></label>
+          <select [(ngModel)]="additionalFeePayment.days" class="form-control">
+            <option [value]="7">1 Week</option>
+            <option [value]="15">15 Days</option>
+            <option [value]="30" selected>1 Month (30 days)</option>
+            <option [value]="60">2 Months (60 days)</option>
+            <option [value]="90">3 Months (90 days)</option>
+            <option [value]="180">6 Months (180 days)</option>
+          </select>
+          <small class="text-muted">Subscription will be extended by {{ additionalFeePayment.days }} days</small>
+        </div>
+
+        <div class="form-group">
+          <label>Payment Mode <span class="required">*</span></label>
+          <select [(ngModel)]="additionalFeePayment.payment_mode" class="form-control">
+            <option value="cash">💵 Cash</option>
+            <option value="upi">📱 UPI</option>
+            <option value="card">💳 Card</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="additionalFeePayment.payment_mode !== 'cash'">
+          <label>Transaction Reference</label>
+          <input type="text" [(ngModel)]="additionalFeePayment.transaction_reference" class="form-control" placeholder="Transaction ID / Reference Number">
+        </div>
+
+        <div class="alert alert-info">
+          <strong>Note:</strong> This will extend the current subscription by {{ additionalFeePayment.days }} days.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+        <button (click)="submitFeePayment()" [disabled]="saving" class="btn btn-success">
+          {{ saving ? 'Processing...' : '💳 Pay ₹' + additionalFeePayment.amount_paid }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" *ngIf="showReceiptModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>🧾 Payment Receipt</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="receiptData">
+        <div class="receipt-container">
+          <div class="receipt-header">
+            <h2>📚 Suraksha Library</h2>
+            <p>Fee Payment Receipt</p>
+            <p class="receipt-number">Receipt No: {{ receiptData.receipt_no }}</p>
+          </div>
+
+          <div class="receipt-details">
+            <div class="receipt-row">
+              <span class="label">Date:</span>
+              <span class="value">{{ receiptData.date }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Student Name:</span>
+              <span class="value">{{ receiptData.student_name }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Mobile:</span>
+              <span class="value">{{ receiptData.mobile }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Seat Number:</span>
+              <span class="value">{{ receiptData.seat_no }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Shift Type:</span>
+              <span class="value">{{ receiptData.shift_type.replace('_', ' ') | titlecase }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Payment Mode:</span>
+              <span class="value">{{ receiptData.payment_mode | uppercase }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Transaction Ref:</span>
+              <span class="value">{{ receiptData.transaction_ref }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Valid From:</span>
+              <span class="value">{{ receiptData.valid_from }}</span>
+            </div>
+            <div class="receipt-row">
+              <span class="label">Valid Until:</span>
+              <span class="value">{{ receiptData.valid_until }}</span>
+            </div>
+          </div>
+
+          <div class="receipt-amount">
+            <div class="amount-label">Amount Paid</div>
+            <div class="amount-value">₹{{ receiptData.amount_paid }}</div>
+          </div>
+
+          <div class="receipt-footer">
+            <p>Thank you for your payment!</p>
+            <p class="text-muted">Suraksha Library Management System</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="printReceipt()" class="btn btn-primary">
+          🖨️ Print Receipt
+        </button>
+        <button (click)="shareReceiptOnWhatsApp()" class="btn btn-success">
+          📱 Share on WhatsApp
+        </button>
+        <button (click)="closeModal()" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- My Attendance Modal (Self-Marking) -->
+  <div *ngIf="showMyAttendanceModal" class="modal-overlay" (click)="closeMyAttendanceModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📝 Mark My Attendance</h3>
+        <button (click)="closeMyAttendanceModal()" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+        <!-- Search by Mobile -->
+        <div *ngIf="!myAttendanceStudent" class="form-section">
+          <h4>Enter Your Mobile Number</h4>
+          <p class="help-text">Enter the mobile number registered with your library account</p>
+          
+          <div class="form-group">
+            <label>Mobile Number <span class="required">*</span></label>
+            <input 
+              type="tel" 
+              [(ngModel)]="myAttendanceMobile"
+              maxlength="10"
+              placeholder="10-digit mobile number"
+              class="form-control"
+              [disabled]="searchingStudent">
+          </div>
+
+          <div class="time-info">
+            ⏰ Attendance can be marked between <strong>7:00 AM - 7:00 PM</strong>
+          </div>
+
+          <button 
+            (click)="searchMyStudent()" 
+            [disabled]="searchingStudent || myAttendanceMobile.length !== 10"
+            class="btn btn-primary btn-full">
+            {{ searchingStudent ? 'Searching...' : '🔍 Find My Profile' }}
+          </button>
+        </div>
+
+        <!-- Student Found - Mark Attendance -->
+        <div *ngIf="myAttendanceStudent" class="attendance-section">
+          <div class="student-card">
+            <h4>Welcome, {{ myAttendanceStudent.name }}! 👋</h4>
+            <div class="student-details">
+              <div class="detail-item">
+                <strong>Mobile:</strong> {{ myAttendanceStudent.mobile }}
+              </div>
+              <div class="detail-item">
+                <strong>Status:</strong> 
+                <span class="badge badge-success">{{ myAttendanceStudent.status }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Attendance Status -->
+          <div *ngIf="myAttendanceStatus" class="attendance-status">
+            <h5>Today's Status:</h5>
+            <div class="status-row">
+              <span class="status-label">Check-in:</span>
+              <span class="status-value">{{ myAttendanceStatus.check_in_time }}</span>
+              <span *ngIf="myAttendanceStatus.status === 'late'" class="badge badge-warning">⏰ Late</span>
+              <span *ngIf="myAttendanceStatus.status === 'present'" class="badge badge-success">✅ On Time</span>
+            </div>
+            <div *ngIf="myAttendanceStatus.check_out_time" class="status-row">
+              <span class="status-label">Check-out:</span>
+              <span class="status-value">{{ myAttendanceStatus.check_out_time }}</span>
+            </div>
+          </div>
+
+          <div class="time-info">
+            ⏰ Attendance hours: <strong>7:00 AM - 7:00 PM</strong>
+          </div>
+
+          <!-- Mark Attendance Button -->
+          <button 
+            (click)="markMyAttendance()"
+            [disabled]="isMyAttendanceButtonDisabled()"
+            [ngClass]="getMyAttendanceButtonClass()"
+            class="btn btn-full btn-lg">
+            {{ getMyAttendanceButtonText() }}
+          </button>
+
+          <button 
+            (click)="myAttendanceStudent = null; myAttendanceStatus = null; myAttendanceMobile = ''"
+            class="btn btn-secondary btn-full">
+            🔄 Search Different Number
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

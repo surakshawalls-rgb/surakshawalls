@@ -1,0 +1,144 @@
+<div class="sales-order-container">
+  <div class="top-bar">
+    <div>
+      <h1>🛒 Sales Orders</h1>
+      <p>Create and manage client orders</p>
+    </div>
+    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
+      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
+    </button>
+  </div>
+
+  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <!-- Order Form -->
+  <div class="form-section">
+    <h2>New Order</h2>
+    <div class="form-grid">
+      <div class="input-group">
+        <label>Date:</label>
+        <input type="date" [(ngModel)]="orderDate" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Client Name:</label>
+        <input type="text" [(ngModel)]="clientName" placeholder="Enter client name" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Phone:</label>
+        <input type="text" [(ngModel)]="clientPhone" placeholder="Optional" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Product Total (₹):</label>
+        <input type="number" [(ngModel)]="productTotal" placeholder="0" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Transport Charge (₹):</label>
+        <input type="number" [(ngModel)]="transportCharge" placeholder="0" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Other Charges (₹):</label>
+        <input type="number" [(ngModel)]="otherCharges" placeholder="0" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Amount Paid (₹):</label>
+        <input type="number" [(ngModel)]="paidAmount" placeholder="0" class="input-field">
+      </div>
+      <div class="input-group">
+        <label>Payment Mode:</label>
+        <select [(ngModel)]="paymentMode" class="input-field">
+          <option value="cash">Cash</option>
+          <option value="check">Check</option>
+          <option value="transfer">Transfer</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="billing-summary">
+      <div class="summary-row">
+        <span>Product:</span>
+        <strong>₹{{ productTotal | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Transport:</span>
+        <strong>₹{{ transportCharge | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Other Charges:</span>
+        <strong>₹{{ otherCharges | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row grand-total">
+        <span>Total Bill:</span>
+        <strong>₹{{ getTotalBill() | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Paid Amount:</span>
+        <strong class="paid">₹{{ paidAmount | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>Due Amount:</span>
+        <strong class="due">₹{{ getDueAmount() | number:'1.0-2' }}</strong>
+      </div>
+    </div>
+
+    <div class="input-group full-width">
+      <label>Notes:</label>
+      <textarea [(ngModel)]="notes" placeholder="Add order notes..." class="notes-field"></textarea>
+    </div>
+
+    <button (click)="submitOrder()" [disabled]="loading" class="btn-submit">
+      {{ loading ? 'Saving...' : 'Create Order' }}
+    </button>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="table-section">
+    <h2>Orders List</h2>
+    <div class="summary-stats">
+      <div class="stat">
+        <strong>₹{{ getTotalBilled() | number:'1.0-2' }}</strong>
+        <p>Total Billed</p>
+      </div>
+      <div class="stat">
+        <strong>₹{{ getTotalCollected() | number:'1.0-2' }}</strong>
+        <p>Total Collected</p>
+      </div>
+      <div class="stat">
+        <strong>₹{{ getTotalDue() | number:'1.0-2' }}</strong>
+        <p>Total Due</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Client</th>
+            <th>Product</th>
+            <th>Transport</th>
+            <th>Total Bill</th>
+            <th>Paid</th>
+            <th>Due</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let order of orders" [class.overdue]="order.due_amount > 0">
+            <td>{{ order.date }}</td>
+            <td>{{ order.client_name }}</td>
+            <td class="amount">₹{{ order.product_total | number:'1.0-2' }}</td>
+            <td class="amount">₹0</td>
+            <td class="amount">₹{{ order.total_bill | number:'1.0-2' }}</td>
+            <td class="amount paid">₹{{ order.paid_amount | number:'1.0-2' }}</td>
+            <td class="amount" [class.due]="order.due_amount > 0">₹{{ order.due_amount | number:'1.0-2' }}</td>
+            <td>
+              <span *ngIf="order.due_amount === 0" class="status-paid">✅ Paid</span>
+              <span *ngIf="order.due_amount > 0" class="status-pending">⏳ Pending</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

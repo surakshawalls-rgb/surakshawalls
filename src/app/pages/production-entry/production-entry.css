@@ -1,0 +1,395 @@
+.production-entry-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 24px;
+  color: #1a1a1a;
+}
+
+.date-input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: #333;
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  font-size: 14px;
+  color: #555;
+}
+
+.form-control,
+.form-control-sm {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-control-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.form-control:focus,
+.form-control-sm:focus {
+  outline: none;
+  border-color: #4CAF50;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Material Preview */
+.material-preview {
+  background: #f8f9fa;
+  border-left: 4px solid #4CAF50;
+}
+
+.material-item {
+  display: grid;
+  grid-template-columns: 150px 120px 100px 120px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.material-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.material-qty {
+  color: #666;
+}
+
+.material-cost {
+  color: #888;
+  font-size: 12px;
+}
+
+.material-total {
+  font-weight: 600;
+  color: #2196F3;
+}
+
+.stock-status {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stock-status.success {
+  color: #4CAF50;
+}
+
+.stock-status.danger {
+  color: #f44336;
+}
+
+.material-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px;
+  background: #e8f5e9;
+  border-radius: 4px;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.material-total-row .value {
+  color: #2e7d32;
+}
+
+/* Worker Selection */
+.worker-selector {
+  margin-bottom: 20px;
+}
+
+.worker-list {
+  border-top: 2px solid #f0f0f0;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.worker-entry {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.worker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.worker-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: #333;
+}
+
+.btn-remove {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.btn-remove:hover {
+  background: #d32f2f;
+}
+
+.worker-details {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.balance-field {
+  background: #fff3cd;
+  font-weight: 600;
+  color: #856404;
+}
+
+.labor-summary {
+  border-top: 2px solid #e0e0e0;
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.summary-row.highlight {
+  background: #fff3cd;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.summary-row .label {
+  color: #666;
+}
+
+.summary-row .value {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Production Summary */
+.summary-card {
+  background: #e3f2fd;
+  border-left: 4px solid #2196F3;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.summary-item {
+  background: white;
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-item .label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.summary-item .value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.summary-item.highlight {
+  background: #fff3cd;
+}
+
+.summary-item.highlight .value {
+  color: #2e7d32;
+}
+
+/* Alerts */
+.alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.alert-danger {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef5350;
+}
+
+.alert-info {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #64b5f6;
+}
+
+/* Checkbox */
+.checkbox-group {
+  margin-bottom: 16px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.checkbox-group input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+  background: #9e9e9e;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #757575;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .production-entry-container {
+    padding: 12px;
+  }
+
+  .form-row,
+  .worker-details,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .material-item {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .stock-status {
+    text-align: left;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

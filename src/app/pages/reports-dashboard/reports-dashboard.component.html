@@ -1,0 +1,293 @@
+<!-- src/app/pages/reports-dashboard/reports-dashboard.component.html -->
+<div class="reports-container">
+  <div class="header">
+    <h2>Reports Dashboard</h2>
+    <p class="subtitle">Comprehensive business reports and analytics</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <!-- Report Type Tabs -->
+  <div class="report-tabs">
+    <button [class.active]="activeView === 'daily'" (click)="loadDailySummary()" class="tab-btn">
+      Daily Summary
+    </button>
+    <button [class.active]="activeView === 'monthly'" (click)="loadMonthlyPL()" class="tab-btn">
+      Monthly P&L
+    </button>
+    <button [class.active]="activeView === 'partner'" (click)="loadPartnerSettlement()" class="tab-btn">
+      Partner Settlement
+    </button>
+    <button [class.active]="activeView === 'worker'" (click)="loadWorkerReport()" class="tab-btn">
+      Worker Ledger
+    </button>
+    <button [class.active]="activeView === 'material'" (click)="loadMaterialStock()" class="tab-btn">
+      Material Stock
+    </button>
+    <button [class.active]="activeView === 'client'" (click)="loadClientOutstanding()" class="tab-btn">
+      Client Outstanding
+    </button>
+    <button [class.active]="activeView === 'inventory'" (click)="loadInventoryValuation()" class="tab-btn">
+      Inventory Value
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading report...</div>
+
+  <!-- Daily Summary Report -->
+  <div *ngIf="!loading && activeView === 'daily' && dailySummary" class="report-content">
+    <div class="report-header">
+      <h3>Daily Summary</h3>
+      <input type="date" [(ngModel)]="selectedDate" (change)="loadDailySummary()" class="date-input">
+    </div>
+
+    <div class="summary-grid">
+      <div class="metric-card production">
+        <div class="metric-icon">🏭</div>
+        <div class="metric-label">Production</div>
+        <div class="metric-value">{{ dailySummary.production_quantity }} units</div>
+        <div class="metric-sub">Cost: ₹{{ dailySummary.production_cost }}</div>
+      </div>
+
+      <div class="metric-card sales">
+        <div class="metric-icon">💰</div>
+        <div class="metric-label">Sales</div>
+        <div class="metric-value">{{ dailySummary.sales_quantity }} units</div>
+        <div class="metric-sub">Revenue: ₹{{ dailySummary.sales_revenue }}</div>
+      </div>
+
+      <div class="metric-card collection">
+        <div class="metric-icon">💵</div>
+        <div class="metric-label">Collection</div>
+        <div class="metric-value">₹{{ dailySummary.sales_collected }}</div>
+      </div>
+
+      <div class="metric-card purchase">
+        <div class="metric-icon">📦</div>
+        <div class="metric-label">Material Purchase</div>
+        <div class="metric-value">₹{{ dailySummary.material_purchase }}</div>
+      </div>
+
+      <div class="metric-card wages">
+        <div class="metric-icon">👷</div>
+        <div class="metric-label">Labor Wages</div>
+        <div class="metric-value">₹{{ dailySummary.labor_wages }}</div>
+      </div>
+
+      <div class="metric-card cash">
+        <div class="metric-icon">💼</div>
+        <div class="metric-label">Firm Cash</div>
+        <div class="metric-value">₹{{ dailySummary.firm_cash_balance }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly P&L Report -->
+  <div *ngIf="!loading && activeView === 'monthly' && monthlyPL" class="report-content">
+    <div class="report-header">
+      <h3>Monthly Profit & Loss</h3>
+      <input type="month" [(ngModel)]="selectedMonth" (change)="loadMonthlyPL()" class="date-input">
+    </div>
+
+    <div class="pl-report">
+      <div class="pl-row revenue">
+        <span>Revenue</span>
+        <strong>₹{{ monthlyPL.revenue }}</strong>
+      </div>
+      <div class="pl-row">
+        <span>Cost of Goods Sold</span>
+        <span>₹{{ monthlyPL.cogs }}</span>
+      </div>
+      <div class="pl-row highlight">
+        <span>Gross Profit</span>
+        <strong>₹{{ monthlyPL.gross_profit }}</strong>
+      </div>
+      <div class="pl-row">
+        <span>Labor Cost</span>
+        <span>₹{{ monthlyPL.labor_cost }}</span>
+      </div>
+      <div class="pl-row">
+        <span>Operational Expenses</span>
+        <span>₹{{ monthlyPL.operational_expenses }}</span>
+      </div>
+      <div class="pl-row net-profit">
+        <span>Net Profit</span>
+        <strong [class]="monthlyPL.net_profit >= 0 ? 'profit' : 'loss'">
+          ₹{{ monthlyPL.net_profit }}
+        </strong>
+      </div>
+      <div class="pl-row">
+        <span>Profit Margin</span>
+        <strong>{{ monthlyPL.profit_margin.toFixed(2) }}%</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Partner Settlement Report -->
+  <div *ngIf="!loading && activeView === 'partner'" class="report-content">
+    <div class="report-header">
+      <h3>Partner Settlement</h3>
+      <div class="date-range-filter">
+        <input type="date" [(ngModel)]="dateRange.start" class="date-input">
+        <span>to</span>
+        <input type="date" [(ngModel)]="dateRange.end" class="date-input">
+        <button (click)="loadPartnerSettlement()" class="btn-apply">Apply</button>
+      </div>
+    </div>
+
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Partner</th>
+          <th>Investment %</th>
+          <th>Purchases (Pocket)</th>
+          <th>Collections</th>
+          <th>Withdrawals</th>
+          <th>Net Position</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let partner of partnerSettlement">
+          <td><strong>{{ partner.partner_name }}</strong></td>
+          <td>{{ partner.investment_share }}%</td>
+          <td>₹{{ partner.purchases_from_pocket }}</td>
+          <td>₹{{ partner.collections_made }}</td>
+          <td>₹{{ partner.withdrawals }}</td>
+          <td [class]="partner.net_position >= 0 ? 'positive' : 'negative'">
+            ₹{{ partner.net_position }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Worker Ledger Report -->
+  <div *ngIf="!loading && activeView === 'worker'" class="report-content">
+    <div class="report-header">
+      <h3>Worker Ledger</h3>
+      <div class="date-range-filter">
+        <input type="date" [(ngModel)]="dateRange.start" class="date-input">
+        <span>to</span>
+        <input type="date" [(ngModel)]="dateRange.end" class="date-input">
+        <button (click)="loadWorkerReport()" class="btn-apply">Apply</button>
+      </div>
+    </div>
+
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Worker Name</th>
+          <th>Total Earned</th>
+          <th>Total Paid</th>
+          <th>Current Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let worker of workerReport">
+          <td><strong>{{ worker.worker_name }}</strong></td>
+          <td>₹{{ worker.total_earned }}</td>
+          <td>₹{{ worker.total_paid }}</td>
+          <td class="balance">₹{{ worker.current_balance }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Material Stock Report -->
+  <div *ngIf="!loading && activeView === 'material'" class="report-content">
+    <div class="report-header">
+      <h3>Material Stock Report</h3>
+    </div>
+
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Stock</th>
+          <th>Unit Cost</th>
+          <th>Stock Value</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let material of materialStock">
+          <td><strong>{{ material.material_name }}</strong></td>
+          <td>{{ material.current_stock }} {{ material.unit }}</td>
+          <td>₹{{ material.unit_cost }}</td>
+          <td>₹{{ material.stock_value }}</td>
+          <td>
+            <span [class]="material.needs_reorder ? 'badge-warning' : 'badge-success'">
+              {{ material.needs_reorder ? 'Reorder' : 'OK' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Client Outstanding Report -->
+  <div *ngIf="!loading && activeView === 'client'" class="report-content">
+    <div class="report-header">
+      <h3>Client Outstanding Report</h3>
+    </div>
+
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Total Billed</th>
+          <th>Total Paid</th>
+          <th>Outstanding</th>
+          <th>Credit Limit</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let client of clientOutstanding">
+          <td><strong>{{ client.client_name }}</strong></td>
+          <td>₹{{ client.total_billed }}</td>
+          <td>₹{{ client.total_paid }}</td>
+          <td class="outstanding">₹{{ client.outstanding_balance }}</td>
+          <td>₹{{ client.credit_limit }}</td>
+          <td>
+            <span [class]="client.exceeding_limit ? 'badge-danger' : 'badge-warning'">
+              {{ client.exceeding_limit ? 'Limit Exceeded' : 'Outstanding' }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Inventory Valuation Report -->
+  <div *ngIf="!loading && activeView === 'inventory'" class="report-content">
+    <div class="report-header">
+      <h3>Inventory Valuation Report</h3>
+    </div>
+
+    <table class="report-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Stock</th>
+          <th>Unit Cost</th>
+          <th>Selling Price</th>
+          <th>Stock Value</th>
+          <th>Potential Revenue</th>
+          <th>Potential Profit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inventoryValuation">
+          <td><strong>{{ item.product_name }}</strong></td>
+          <td>{{ item.current_stock }}</td>
+          <td>₹{{ item.unit_cost }}</td>
+          <td>₹{{ item.selling_price }}</td>
+          <td>₹{{ item.stock_value }}</td>
+          <td>₹{{ item.potential_revenue }}</td>
+          <td class="profit">₹{{ item.potential_profit }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,143 @@
+<!-- src/app/pages/worker-management/worker-management.component.html -->
+<div class="worker-container">
+  <div class="header">
+    <div>
+      <h2>Worker Management</h2>
+      <p class="subtitle">Manage workers and track wages</p>
+    </div>
+    <button (click)="showAddModal = true" class="btn btn-primary">+ Add Worker</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <div *ngIf="!loading">
+    <div class="summary-card">
+      <div class="summary-label">Total Labor Liability</div>
+      <div class="summary-value">₹{{ totalLiability }}</div>
+    </div>
+
+    <div class="table-container">
+      <table class="workers-table">
+        <thead>
+          <tr>
+            <th>Worker Name</th>
+            <th>Contact</th>
+            <th>Balance Owed</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let worker of workers">
+            <td><strong>{{ worker.name }}</strong></td>
+            <td>{{ worker.phone || '-' }}</td>
+            <td>
+              <span [class]="'balance-badge ' + (worker.cumulative_balance > 0 ? 'pending' : 'clear')">
+                ₹{{ worker.cumulative_balance }}
+              </span>
+            </td>
+            <td>
+              <button (click)="viewStatement(worker)" class="btn-action">Statement</button>
+              <button (click)="payWorker(worker)" class="btn-action pay">Pay</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Worker Modal -->
+  <div class="modal-overlay" *ngIf="showAddModal" (click)="showAddModal = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Worker</h3>
+        <button (click)="showAddModal = false" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Worker Name <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="newWorker.name" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Contact Number</label>
+          <input type="tel" [(ngModel)]="newWorker.phone" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" [(ngModel)]="newWorker.notes" class="form-control">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="showAddModal = false" class="btn btn-secondary">Cancel</button>
+        <button (click)="addWorker()" [disabled]="saving" class="btn btn-primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" *ngIf="showPaymentModal" (click)="showPaymentModal = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Pay Worker</h3>
+        <button (click)="showPaymentModal = false" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedWorker">
+        <div class="worker-info">
+          <strong>{{ selectedWorker.worker_name }}</strong>
+          <span>Balance: ₹{{ selectedWorker.cumulative_balance }}</span>
+        </div>
+        <div class="form-group">
+          <label>Payment Amount <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="payment.amount" min="0" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="payment.notes" rows="2" class="form-control"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="showPaymentModal = false" class="btn btn-secondary">Cancel</button>
+        <button (click)="submitPayment()" [disabled]="saving" class="btn btn-primary">Pay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statement Modal -->
+  <div class="modal-overlay" *ngIf="showStatementModal" (click)="showStatementModal = false">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Worker Statement</h3>
+        <button (click)="showStatementModal = false" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedWorker">
+        <div class="date-filter">
+          <input type="date" [(ngModel)]="statementDates.start" class="form-control">
+          <span>to</span>
+          <input type="date" [(ngModel)]="statementDates.end" class="form-control">
+          <button (click)="viewStatement(selectedWorker)" class="btn btn-primary">Apply</button>
+        </div>
+        <table class="statement-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Earned</th>
+              <th>Paid</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of workerStatement">
+              <td>{{ entry.entry_date }}</td>
+              <td>{{ entry.attendance_type }}</td>
+              <td class="earned">{{ entry.wage_earned > 0 ? '₹' + entry.wage_earned : '-' }}</td>
+              <td class="paid">{{ entry.paid_today > 0 ? '₹' + entry.paid_today : '-' }}</td>
+              <td class="balance">₹{{ entry.running_balance }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

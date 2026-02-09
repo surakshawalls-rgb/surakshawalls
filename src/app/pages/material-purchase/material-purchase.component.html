@@ -1,0 +1,115 @@
+<!-- src/app/pages/material-purchase/material-purchase.component.html -->
+<div class="purchase-container">
+  <div class="header">
+    <h2>Material Purchase</h2>
+    <p class="subtitle">Record raw material purchases</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <div class="content-grid" *ngIf="!loading">
+    <!-- Purchase Form -->
+    <div class="form-card">
+      <h3>New Purchase</h3>
+
+      <div class="form-group">
+        <label>Date <span class="required">*</span></label>
+        <input type="date" [(ngModel)]="date" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Material <span class="required">*</span></label>
+        <select [(ngModel)]="materialName" (change)="onMaterialChange()" class="form-control">
+          <option value="">Select Material</option>
+          <option *ngFor="let material of materials" [value]="material.material_name">
+            {{ material.material_name }} (Current: {{ material.current_stock }} {{ material.unit }})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="quantity" (input)="onQuantityChange()" min="0" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Unit Cost (₹) <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="unitCost" (input)="onUnitCostChange()" min="0" class="form-control">
+        </div>
+      </div>
+
+      <div class="total-section">
+        <span>Total Amount</span>
+        <strong>₹{{ totalAmount }}</strong>
+      </div>
+
+      <div class="form-group">
+        <label>Vendor Name</label>
+        <input type="text" [(ngModel)]="vendorName" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Paid From <span class="required">*</span></label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" [(ngModel)]="paidFrom" value="office_cash">
+            <span>Office Cash</span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" [(ngModel)]="paidFrom" value="partner_pocket">
+            <span>Partner Pocket</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="paidFrom === 'partner_pocket'">
+        <label>Partner</label>
+        <select [(ngModel)]="partnerId" class="form-control">
+          <option value="">Select Partner</option>
+          <option *ngFor="let partner of partners" [value]="partner.id">
+            {{ partner.partner_name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Invoice Number</label>
+        <input type="text" [(ngModel)]="invoiceNumber" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea [(ngModel)]="notes" rows="2" class="form-control"></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <button (click)="savePurchase()" [disabled]="!isFormValid() || saving" class="btn btn-primary">
+          {{ saving ? 'Saving...' : 'Save Purchase' }}
+        </button>
+        <button (click)="resetForm()" class="btn btn-secondary">Reset</button>
+      </div>
+    </div>
+
+    <!-- Recent Purchases -->
+    <div class="history-card">
+      <h3>Recent Purchases</h3>
+      <div class="history-list">
+        <div *ngFor="let purchase of purchaseHistory" class="history-item">
+          <div class="history-header">
+            <strong>{{ purchase.material_name }}</strong>
+            <span class="history-amount">₹{{ purchase.total_amount }}</span>
+          </div>
+          <div class="history-details">
+            {{ purchase.date }} • {{ purchase.quantity }} units @ ₹{{ purchase.unit_cost }}
+          </div>
+          <div class="history-meta">
+            {{ purchase.paid_from === 'office_cash' ? 'Office Cash' : 'Partner Pocket' }}
+          </div>
+        </div>
+        <div *ngIf="purchaseHistory.length === 0" class="no-data">No recent purchases</div>
+      </div>
+    </div>
+  </div>
+</div>

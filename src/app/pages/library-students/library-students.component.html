@@ -1,0 +1,250 @@
+<!-- src/app/pages/library-students/library-students.component.html -->
+<div class="students-container">
+  <div class="header">
+    <h2>👨‍🎓 Library Students</h2>
+    <button (click)="openAddModal()" class="btn btn-primary">➕ Add Student</button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input 
+      type="text" 
+      [(ngModel)]="searchTerm" 
+      (input)="onSearch()" 
+      placeholder="🔍 Search by name or mobile..." 
+      class="search-input">
+    
+    <select [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+      <option value="suspended">Suspended</option>
+    </select>
+
+    <button (click)="loadStudents()" class="btn btn-secondary">🔄 Refresh</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading students...</div>
+
+  <!-- Students Table -->
+  <div *ngIf="!loading && filteredStudents.length > 0" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Mobile</th>
+          <th>Emergency Contact</th>
+          <th>Address</th>
+          <th>Joining Date</th>
+          <th>Reg. Fee</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of filteredStudents">
+          <td>
+            <div class="student-photo-small">
+              <img *ngIf="student.photo_url" [src]="student.photo_url" alt="Photo">
+              <div *ngIf="!student.photo_url" class="no-photo-small">📷</div>
+            </div>
+          </td>
+          <td><strong>{{ student.name }}</strong></td>
+          <td>{{ student.mobile }}</td>
+          <td>
+            <div class="emergency-info">
+              <div>{{ student.emergency_contact }}</div>
+              <small *ngIf="student.emergency_contact_name">{{ student.emergency_contact_name }}</small>
+            </div>
+          </td>
+          <td class="address-cell">{{ student.address }}</td>
+          <td>{{ formatDate(student.joining_date || '') }}</td>
+          <td>{{ formatCurrency(student.registration_fee_paid || 0) }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusBadgeClass(student.status || 'active')">
+              {{ student.status }}
+            </span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button (click)="openPaymentHistory(student)" class="btn-icon" title="Payment History">💳</button>
+              <button (click)="sendWhatsApp(student)" class="btn-icon" title="WhatsApp">💬</button>
+              <button (click)="openEditModal(student)" class="btn-icon" title="Edit">✏️</button>
+              <button (click)="deleteStudent(student)" class="btn-icon danger" title="Delete">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && filteredStudents.length === 0" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>No students found</p>
+    <button (click)="openAddModal()" class="btn btn-primary">Add First Student</button>
+  </div>
+
+  <!-- Add Student Modal -->
+  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>➕ Add New Student</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newStudent.name" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Mobile <span class="required">*</span></label>
+            <input type="tel" [(ngModel)]="newStudent.mobile" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Emergency Contact <span class="required">*</span></label>
+            <input type="tel" [(ngModel)]="newStudent.emergency_contact" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Emergency Contact Name</label>
+            <input type="text" [(ngModel)]="newStudent.emergency_contact_name" class="form-control">
+          </div>
+          <div class="form-group full-width">
+            <label>Address <span class="required">*</span></label>
+            <textarea [(ngModel)]="newStudent.address" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" [(ngModel)]="newStudent.dob" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select [(ngModel)]="newStudent.gender" class="form-control">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Upload Photo</label>
+            <input type="file" accept="image/*" (change)="onPhotoSelect($event)" class="form-control">
+            <small class="text-muted">Max 2MB (JPG, PNG)</small>
+          </div>
+          <div class="form-group">
+            <label>Registration Fee</label>
+            <input type="number" [(ngModel)]="newStudent.registration_fee_paid" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="newStudent.status" class="form-control">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Notes</label>
+            <textarea [(ngModel)]="newStudent.notes" class="form-control" rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+        <button (click)="submitAddStudent()" [disabled]="uploadingPhoto" class="btn btn-primary">
+          {{ uploadingPhoto ? 'Uploading...' : '💾 Save Student' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Student Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>✏️ Edit Student</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedStudent">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="selectedStudent.name" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Mobile</label>
+          <input type="tel" [(ngModel)]="selectedStudent.mobile" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Emergency Contact</label>
+          <input type="tel" [(ngModel)]="selectedStudent.emergency_contact" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Emergency Contact Name</label>
+          <input type="text" [(ngModel)]="selectedStudent.emergency_contact_name" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <textarea [(ngModel)]="selectedStudent.address" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select [(ngModel)]="selectedStudent.status" class="form-control">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="selectedStudent.notes" class="form-control" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+        <button (click)="submitEditStudent()" class="btn btn-primary">💾 Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment History Modal -->
+  <div class="modal-overlay" *ngIf="showPaymentHistoryModal" (click)="closeModal()">
+    <div class="modal-content large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>💳 Payment History - {{ selectedStudent?.name }}</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="paymentHistory.length === 0" class="empty-state">
+          <p>No payment history</p>
+        </div>
+        <table *ngIf="paymentHistory.length > 0" class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Seat</th>
+              <th>Shift</th>
+              <th>Amount</th>
+              <th>Valid From</th>
+              <th>Valid Until</th>
+              <th>Mode</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let payment of paymentHistory">
+              <td>{{ formatDate(payment.payment_date) }}</td>
+              <td>{{ payment.seat_no || '-' }}</td>
+              <td><span class="badge">{{ payment.shift_type }}</span></td>
+              <td class="text-success"><strong>{{ formatCurrency(payment.amount_paid) }}</strong></td>
+              <td>{{ formatDate(payment.valid_from) }}</td>
+              <td>{{ formatDate(payment.valid_until) }}</td>
+              <td>{{ payment.payment_mode }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

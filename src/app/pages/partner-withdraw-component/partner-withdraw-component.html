@@ -1,0 +1,66 @@
+<div class="withdraw-container">
+
+  <!-- Header -->
+  <div class="top-bar">
+    <h2>{{language==='EN'?'💸 Partner Withdrawal':'💸 पार्टनर निकासी'}}</h2>
+    <button class="lang-btn" (click)="toggleLang()">🌐 {{language}}</button>
+  </div>
+
+  <!-- Date -->
+  <label>{{language==='EN'?'Date':'तारीख'}}</label>
+  <input type="date" [(ngModel)]="date">
+
+  <!-- Add Withdrawal -->
+  <div class="card">
+    <h3>{{language==='EN'?'Add Withdrawal':'निकासी जोड़ें'}}</h3>
+
+    <select [(ngModel)]="partnerId" (change)="onPartnerChange()">
+      <option *ngFor="let p of partners" [value]="p.id">{{p.partner_name}}</option>
+    </select>
+
+    <input type="number" placeholder="Amount" [(ngModel)]="amount">
+    <input placeholder="Remarks (optional)" [(ngModel)]="remarks">
+
+    <button class="save-btn" (click)="saveWithdraw()">💾 Save</button>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <h3>📒 Withdrawal History</h3>
+
+    <div class="table-wrapper">
+      <table class="withdraw-table">
+        <tr>
+          <th>Date</th>
+          <th>Partner</th>
+          <th>Amount</th>
+          <th>Remarks</th>
+        </tr>
+
+        @for(r of records; track $index){
+          <tr>
+            <td>{{formatDateToDDMMYYYY(r.date)}}</td>
+            <td>{{r.partner_id}}</td>
+            <td>₹{{r.amount}}</td>
+            <td>{{r.description}}</td>
+          </tr>
+        }
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button (click)="prevPage()">⬅ Prev</button>
+      <span>Page {{page+1}}</span>
+      <button (click)="nextPage()">Next ➡</button>
+      <button class="refresh-btn" (click)="refreshTable()">🔄 Refresh</button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">⏳ Loading...</div>
+</div>

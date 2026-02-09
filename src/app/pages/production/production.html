@@ -1,0 +1,209 @@
+<div class="prod-container">
+
+  <div class="top-bar">
+    <h2>{{ language==='EN' ? '🏭 Production & Selling' : '🏭 उत्पादन और विक्रय' }}</h2>
+    <button class="lang-btn" (click)="toggleLang()">🌐 {{language}}</button>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      [class.active]="activeTab === 'production'"
+      (click)="activeTab = 'production'"
+      class="tab-btn">
+      🏭 {{language==='EN'?'Production':'उत्पादन'}}
+    </button>
+    <button 
+      [class.active]="activeTab === 'selling'"
+      (click)="activeTab = 'selling'"
+      class="tab-btn">
+      💰 {{language==='EN'?'Selling':'विक्रय'}}
+    </button>
+    <button 
+      [class.active]="activeTab === 'damage'"
+      (click)="activeTab = 'damage'"
+      class="tab-btn">
+      ⚠️ {{language==='EN'?'Damage':'क्षति'}}
+    </button>
+  </div>
+
+  <!-- PRODUCTION TAB -->
+  @if(activeTab === 'production') {
+    <div class="tab-content">
+
+      <label>{{language==='EN'?'Date':'तारीख'}}</label>
+      <input type="date" [(ngModel)]="date">
+
+      <!-- Counters -->
+      <div class="card" *ngFor="let item of items">
+        <span>{{ language==='EN'?item.labelEN:item.labelHI }}</span>
+
+        <div class="counter">
+          <button (click)="dec(item.key)">➖</button>
+          <span>{{production[item.key]}}</span>
+          <button (click)="inc(item.key)">➕</button>
+        </div>
+      </div>
+
+      <button class="save-btn" (click)="saveProduction()">💾 Save Production</button>
+
+      <!-- Filters -->
+      <div class="filters">
+        <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()">
+        <button (click)="refreshTable()">🔄 Reload</button>
+      </div>
+
+      <!-- Table -->
+      <table class="prod-table">
+        <tr>
+          <th>Date</th>
+          <th>Fencing</th>
+          <th>Plain</th>
+          <th>Jumbo</th>
+          <th>Round</th>
+          <th>Biscuit</th>
+          <th>Action</th>
+        </tr>
+
+        @for(r of filtered; track $index){
+          <tr>
+            <td>{{formatDateToDDMMYYYY(r.date)}}</td>
+            <td>{{r.fencing_pole}}</td>
+            <td>{{r.plain_plate}}</td>
+            <td>{{r.jumbo_pillar}}</td>
+            <td>{{r.round_plate}}</td>
+            <td>{{r.biscuit_plate}}</td>
+            <td>
+              <button class="delete-btn" (click)="deleteProduction(r.id)" title="Delete">🗑️</button>
+            </td>
+          </tr>
+        }
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <button (click)="prevPage()">⬅ Prev</button>
+        <span>Page {{page+1}}</span>
+        <button (click)="nextPage()">Next ➡</button>
+      </div>
+
+    </div>
+  }
+
+  <!-- SELLING TAB -->
+  @if(activeTab === 'selling') {
+    <div class="tab-content">
+
+      <h3>{{language==='EN'?'Record Sale':'विक्रय रिकॉर्ड'}}</h3>
+
+      <label>{{language==='EN'?'Date':'तारीख'}}</label>
+      <input type="date" [(ngModel)]="sellingDate">
+
+      <label>{{language==='EN'?'Client Name':'क्लाइंट का नाम'}}</label>
+      <input type="text" [(ngModel)]="sellingClient" [placeholder]="language==='EN'?'Client name':'क्लाइंट का नाम'">
+
+      <label>{{language==='EN'?'Item Type':'आइटम प्रकार'}}</label>
+      <select [(ngModel)]="sellingItem">
+        <option value="fencingPole">Fencing Pole</option>
+        <option value="plainPlate">Plain Plate</option>
+        <option value="jumboPillar">Jumbo Pillar</option>
+        <option value="roundPlate">Round Plate</option>
+        <option value="biscuitPlate">Biscuit Plate</option>
+      </select>
+
+      <label>{{language==='EN'?'Quantity':'मात्रा'}}</label>
+      <input type="number" [(ngModel)]="sellingQuantity" [placeholder]="language==='EN'?'Quantity':'मात्रा'">
+
+      <label>{{language==='EN'?'Price (per unit)':'कीमत (प्रति इकाई)'}}</label>
+      <input type="number" [(ngModel)]="sellingPrice" [placeholder]="language==='EN'?'Price':'कीमत'">
+
+      <button class="save-btn" (click)="saveSelling()">💾 {{language==='EN'?'Save Sale':'बिक्रय सहेजें'}}</button>
+
+      <!-- Selling Records Table -->
+      <h3>{{language==='EN'?'Sales Records':'विक्रय रिकॉर्ड'}}</h3>
+      <table class="prod-table">
+        <tr>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+        @for(s of sellingRecords; track $index){
+          <tr>
+            <td>{{formatDateToDDMMYYYY(s.date)}}</td>
+            <td>{{s.client}}</td>
+            <td>{{s.item}}</td>
+            <td>{{s.quantity}}</td>
+            <td>₹{{s.price}}</td>
+            <td>₹{{s.quantity * s.price}}</td>
+            <td>
+              <button class="delete-btn" (click)="deleteSelling(s.id)" title="Delete">🗑️</button>
+            </td>
+          </tr>
+        }
+      </table>
+
+    </div>
+  }
+
+  <!-- DAMAGE TAB -->
+  @if(activeTab === 'damage') {
+    <div class="tab-content">
+
+      <h3>{{language==='EN'?'Record Damage':'क्षति रिकॉर्ड'}}</h3>
+
+      <label>{{language==='EN'?'Date':'तारीख'}}</label>
+      <input type="date" [(ngModel)]="damageDate">
+
+      <label>{{language==='EN'?'Item Type':'आइटम प्रकार'}}</label>
+      <select [(ngModel)]="damageItem">
+        <option value="fencingPole">Fencing Pole</option>
+        <option value="plainPlate">Plain Plate</option>
+        <option value="jumboPillar">Jumbo Pillar</option>
+        <option value="roundPlate">Round Plate</option>
+        <option value="biscuitPlate">Biscuit Plate</option>
+      </select>
+
+      <label>{{language==='EN'?'Quantity Damaged':'क्षतिग्रस्त मात्रा'}}</label>
+      <input type="number" [(ngModel)]="damageQuantity" [placeholder]="language==='EN'?'Quantity':'मात्रा'">
+
+      <label>{{language==='EN'?'Reason':'कारण'}}</label>
+      <input type="text" [(ngModel)]="damageReason" [placeholder]="language==='EN'?'Reason for damage':'क्षति का कारण'">
+
+      <button class="save-btn" (click)="saveDamage()">⚠️ {{language==='EN'?'Record Damage':'क्षति दर्ज करें'}}</button>
+
+      <!-- Damage Records Table -->
+      <h3>{{language==='EN'?'Damage Records':'क्षति रिकॉर्ड'}}</h3>
+      <table class="prod-table">
+        <tr>
+          <th>Date</th>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Reason</th>
+          <th>Action</th>
+        </tr>
+        @for(d of damageRecords; track $index){
+          <tr>
+            <td>{{formatDateToDDMMYYYY(d.date)}}</td>
+            <td>{{d.item}}</td>
+            <td>{{d.quantity}}</td>
+            <td>{{d.reason}}</td>
+            <td>
+              <button class="delete-btn" (click)="deleteDamage(d.id)" title="Delete">🗑️</button>
+            </td>
+          </tr>
+        }
+      </table>
+
+    </div>
+  }
+
+</div>
+
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">⏳ Loading...</div>
+</div>
+

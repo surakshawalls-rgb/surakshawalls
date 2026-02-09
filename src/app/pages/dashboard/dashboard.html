@@ -1,0 +1,86 @@
+<div class="dashboard-container">
+
+  <div class="top-bar">
+    <h2>📊 Business Dashboard</h2>
+    <button (click)="loadDashboard()">🔄 Refresh</button>
+  </div>
+
+  <!-- Revenue Summary -->
+  <div class="card">
+    <h3>💰 Revenue Summary</h3>
+    <p>Total Revenue: ₹{{revenueTotal}}</p>
+    <p>Total Received: ₹{{paymentTotal}}</p>
+    <p><b>Total Due: ₹{{revenueTotal - paymentTotal}}</b></p>
+  </div>
+
+  <!-- Partner Wallet -->
+  <div class="card">
+    <h3>🤝 Partner Wallet Holding</h3>
+    <div *ngIf="partnerWallets && partnerWallets.length > 0; else noPartners">
+      <table class="simple-table">
+        <tr>
+          <th>Partner Name</th>
+          <th>Balance (₹)</th>
+          <th>Status</th>
+        </tr>
+        <tr *ngFor="let p of partnerWallets">
+          <td>{{p.partnerName}}</td>
+          <td>{{p.balance}}</td>
+          <td>{{p.status}}</td>
+        </tr>
+      </table>
+    </div>
+    <ng-template #noPartners>
+      <p>No partner data available</p>
+    </ng-template>
+  </div>
+
+  <!-- Client Due Ledger -->
+  <div class="card">
+    <h3>📒 Client Due Ledger</h3>
+    <div *ngIf="dueLedger && dueLedger.length > 0; else noDue">
+      <table class="simple-table">
+        <tr>
+          <th>Client Name</th>
+          <th>Total Billed</th>
+          <th>Total Paid</th>
+          <th>Due Amount</th>
+        </tr>
+        <tr *ngFor="let c of dueLedger">
+          <td>{{c.clientName}}</td>
+          <td>₹{{c.totalBilled}}</td>
+          <td>₹{{c.totalPaid}}</td>
+          <td><b>₹{{c.due}}</b></td>
+        </tr>
+      </table>
+    </div>
+    <ng-template #noDue>
+      <p>No client data available</p>
+    </ng-template>
+  </div>
+
+  <!-- Production Stock -->
+  <div class="card">
+    <h3>🏭 Total Production Stock</h3>
+    <p>Fencing Pole: {{production.fencing_pole}}</p>
+    <p>Plain Plate: {{production.plain_plate}}</p>
+    <p>Jumbo Pillar: {{production.jumbo_pillar}}</p>
+    <p>Round Plate: {{production.round_plate}}</p>
+    <p>Biscuit Plate: {{production.biscuit_plate}}</p>
+  </div>
+
+  <!-- Profit / Loss -->
+  <div class="card profit-box">
+    <h3>📈 Profit & Loss</h3>
+    <p>Total Labour Expense: ₹{{labourTotal}}</p>
+    <p>Total Partner Expense: ₹{{partnerExpenseTotal}}</p>
+    <h2 [class.profit]="profitLoss>0" [class.loss]="profitLoss<0">
+      Net: ₹{{profitLoss}}
+    </h2>
+  </div>
+
+</div>
+
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">⏳ Loading Dashboard...</div>
+</div>

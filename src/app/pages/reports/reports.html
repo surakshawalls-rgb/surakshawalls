@@ -1,0 +1,252 @@
+<div class="reports-container">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-left">
+      <h1>📊 Reports & Analytics</h1>
+    </div>
+    <div class="top-right">
+      <button class="lang-toggle" (click)="toggleLanguage()">
+        {{ language === 'en' ? 'हिंदी' : 'English' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <div class="filter-section">
+    <div class="filter-group">
+      <label>Report Type:</label>
+      <select [(ngModel)]="reportType" (change)="onReportTypeChange()" class="filter-select">
+        <option value="daily">📅 Daily Report</option>
+        <option value="weekly">📆 Weekly Report</option>
+        <option value="monthly">📊 Monthly Report</option>
+      </select>
+    </div>
+
+    <!-- Daily Filters -->
+    <div *ngIf="reportType === 'daily'" class="filter-group">
+      <label>From Date:</label>
+      <input type="date" [(ngModel)]="startDate" (change)="onDateChange()" class="filter-input">
+      <label>To Date:</label>
+      <input type="date" [(ngModel)]="endDate" (change)="onDateChange()" class="filter-input">
+    </div>
+
+    <!-- Monthly Filters -->
+    <div *ngIf="reportType === 'monthly'" class="filter-group">
+      <label>Month:</label>
+      <input type="month" [(ngModel)]="selectedMonth" (change)="onMonthChange()" class="filter-input">
+    </div>
+
+    <button (click)="exportToCSV()" class="export-btn">📥 Export to CSV</button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-spinner">
+    <p>Loading report...</p>
+  </div>
+
+  <!-- Daily Report -->
+  <div *ngIf="reportType === 'daily' && !loading" class="report-section">
+    <div class="section-title">📅 Daily Report Summary</div>
+    
+    <!-- Summary Table -->
+    <div class="table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr class="header-row">
+            <th>Date</th>
+            <th>Labour Cost</th>
+            <th>Material Cost</th>
+            <th>Daily Expense</th>
+            <th>Total Expense</th>
+            <th>Sales Revenue</th>
+            <th>Cash Received</th>
+            <th>Pending Due</th>
+            <th>Profit/Loss</th>
+            <th>Orders</th>
+            <th>Paid By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dailySummary" class="data-row">
+            <td>{{ row.date }}</td>
+            <td class="amount">₹{{ row.labour_cost | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.material_cost | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.daily_expense | number:'1.0-2' }}</td>
+            <td class="amount expense">₹{{ row.total_expense | number:'1.0-2' }}</td>
+            <td class="amount revenue">₹{{ row.sales_revenue | number:'1.0-2' }}</td>
+            <td class="amount success">₹{{ row.cash_received | number:'1.0-2' }}</td>
+            <td class="amount warning">₹{{ row.pending_due | number:'1.0-2' }}</td>
+            <td [class.profit]="row.profit_loss >= 0" [class.loss]="row.profit_loss < 0" class="amount">
+              ₹{{ row.profit_loss | number:'1.0-2' }}
+            </td>
+            <td class="amount">{{ row.orders_count }}</td>
+            <td class="partner-info">
+              <small>L: {{ row.labour_paid_by }}</small><br>
+              <small>M: {{ row.material_paid_by }}</small><br>
+              <small>E: {{ row.expense_paid_by }}</small>
+            </td>
+          </tr>
+          <!-- Totals Row -->
+          <tr class="total-row">
+            <td><strong>TOTAL</strong></td>
+            <td class="amount"><strong>₹{{ getDailyTotals().labour | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getDailyTotals().material | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getDailyTotals().expense | number:'1.0-2' }}</strong></td>
+            <td class="amount expense"><strong>₹{{ getDailyTotals().totalExpense | number:'1.0-2' }}</strong></td>
+            <td class="amount revenue"><strong>₹{{ getDailyTotals().sales | number:'1.0-2' }}</strong></td>
+            <td class="amount success"><strong>₹{{ getDailyTotals().collected | number:'1.0-2' }}</strong></td>
+            <td class="amount warning"><strong>₹{{ getDailyTotals().pending | number:'1.0-2' }}</strong></td>
+            <td [class.profit]="getDailyTotals().profit >= 0" [class.loss]="getDailyTotals().profit < 0" class="amount">
+              <strong>₹{{ getDailyTotals().profit | number:'1.0-2' }}</strong>
+            </td>
+            <td class="amount"><strong>{{ getDailyTotals().orders }}</strong></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Weekly Report -->
+  <div *ngIf="reportType === 'weekly' && !loading" class="report-section">
+    <div class="section-title">📆 Weekly Report Summary</div>
+    
+    <div class="table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr class="header-row">
+            <th>Week</th>
+            <th>Labour</th>
+            <th>Material</th>
+            <th>Daily Expense</th>
+            <th>Total Cost</th>
+            <th>Sales</th>
+            <th>Working Days</th>
+            <th>Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of weeklySummary" class="data-row">
+            <td>{{ row.week_number }}</td>
+            <td class="amount">₹{{ row.total_labour | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.total_material | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.total_daily_expense | number:'1.0-2' }}</td>
+            <td class="amount expense">₹{{ row.total_cost | number:'1.0-2' }}</td>
+            <td class="amount revenue">₹{{ row.total_sales | number:'1.0-2' }}</td>
+            <td class="amount">{{ row.working_days }}</td>
+            <td class="amount">{{ row.orders }}</td>
+          </tr>
+          <!-- Totals Row -->
+          <tr class="total-row">
+            <td><strong>TOTAL</strong></td>
+            <td class="amount"><strong>₹{{ getWeeklyTotals().labour | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getWeeklyTotals().material | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getWeeklyTotals().expense | number:'1.0-2' }}</strong></td>
+            <td class="amount expense"><strong>₹{{ getWeeklyTotals().totalExpense | number:'1.0-2' }}</strong></td>
+            <td class="amount revenue"><strong>₹{{ getWeeklyTotals().sales | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>{{ getWeeklyTotals().days }}</strong></td>
+            <td class="amount"><strong>{{ getWeeklyTotals().orders }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Monthly Report -->
+  <div *ngIf="reportType === 'monthly' && !loading" class="report-section">
+    <div class="section-title">📊 Monthly Report Summary</div>
+    
+    <div class="table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr class="header-row">
+            <th>Month</th>
+            <th>Labour</th>
+            <th>Material</th>
+            <th>Daily Expense</th>
+            <th>Total Cost</th>
+            <th>Sales</th>
+            <th>Collected</th>
+            <th>Pending</th>
+            <th>Working Days</th>
+            <th>Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of monthlySummary" class="data-row">
+            <td>{{ row.month_number }}</td>
+            <td class="amount">₹{{ row.total_labour | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.total_material | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.total_daily_expense | number:'1.0-2' }}</td>
+            <td class="amount expense">₹{{ row.total_cost | number:'1.0-2' }}</td>
+            <td class="amount revenue">₹{{ row.total_sales | number:'1.0-2' }}</td>
+            <td class="amount success">₹{{ row.total_collected | number:'1.0-2' }}</td>
+            <td class="amount warning">₹{{ row.total_pending | number:'1.0-2' }}</td>
+            <td class="amount">{{ row.working_days }}</td>
+            <td class="amount">{{ row.orders }}</td>
+          </tr>
+          <!-- Totals Row -->
+          <tr class="total-row">
+            <td><strong>TOTAL</strong></td>
+            <td class="amount"><strong>₹{{ getMonthlyTotals().labour | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getMonthlyTotals().material | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getMonthlyTotals().expense | number:'1.0-2' }}</strong></td>
+            <td class="amount expense"><strong>₹{{ getMonthlyTotals().totalExpense | number:'1.0-2' }}</strong></td>
+            <td class="amount revenue"><strong>₹{{ getMonthlyTotals().sales | number:'1.0-2' }}</strong></td>
+            <td class="amount success"><strong>₹{{ getMonthlyTotals().collected | number:'1.0-2' }}</strong></td>
+            <td class="amount warning"><strong>₹{{ getMonthlyTotals().pending | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>{{ getMonthlyTotals().days }}</strong></td>
+            <td class="amount"><strong>{{ getMonthlyTotals().orders }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Partner Settlement Section -->
+  <div *ngIf="!loading && partnerSettlement.length > 0" class="report-section">
+    <div class="section-title">🤝 Partner Settlement Summary</div>
+    
+    <div class="table-wrapper">
+      <table class="summary-table">
+        <thead>
+          <tr class="header-row">
+            <th>Partner</th>
+            <th>Share %</th>
+            <th>Labour Paid</th>
+            <th>Material Paid</th>
+            <th>Expense Paid</th>
+            <th>Total Paid</th>
+            <th>Profit Earned</th>
+            <th>Profit Shared</th>
+            <th>Profit Due</th>
+            <th>Cash Gave</th>
+            <th>Cash Took</th>
+            <th>Cash Due</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of partnerSettlement" class="data-row">
+            <td><strong>{{ row.name }}</strong></td>
+            <td class="amount">{{ row.profit_share }}%</td>
+            <td class="amount">₹{{ row.labour_paid | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.material_paid | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.expense_paid | number:'1.0-2' }}</td>
+            <td class="amount expense">₹{{ row.total_paid | number:'1.0-2' }}</td>
+            <td class="amount revenue">₹{{ row.profit_earned | number:'1.0-2' }}</td>
+            <td class="amount success">₹{{ row.profit_shared | number:'1.0-2' }}</td>
+            <td [class.warning]="row.profit_due > 0" class="amount">₹{{ row.profit_due | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.cash_gave | number:'1.0-2' }}</td>
+            <td class="amount">₹{{ row.cash_took | number:'1.0-2' }}</td>
+            <td [class.warning]="row.cash_due > 0" class="amount">₹{{ row.cash_due | number:'1.0-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- No Data Message -->
+  <div *ngIf="!loading && dailySummary.length === 0 && reportType === 'daily'" class="no-data">
+    <p>No data available for the selected date range</p>
+  </div>
+</div>

@@ -1,0 +1,154 @@
+<!-- src/app/pages/library-expenses/library-expenses.component.html -->
+<div class="expenses-container">
+  <div class="header">
+    <h2>💸 Library Expenses</h2>
+    <button (click)="openAddModal()" class="btn btn-primary">➕ Add Expense</button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <div class="summary-card blue">
+      <div class="card-icon">💰</div>
+      <div class="card-content">
+        <div class="card-value">{{ formatCurrency(cashBalance) }}</div>
+        <div class="card-label">Cash Balance</div>
+      </div>
+    </div>
+    <div class="summary-card orange">
+      <div class="card-icon">💸</div>
+      <div class="card-content">
+        <div class="card-value">{{ formatCurrency(monthlyTotal) }}</div>
+        <div class="card-label">Filtered Total</div>
+      </div>
+    </div>
+    <div class="summary-card green">
+      <div class="card-icon">📊</div>
+      <div class="card-content">
+        <div class="card-value">{{ filteredExpenses.length }}</div>
+        <div class="card-label">Total Entries</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <select [(ngModel)]="filterCategory" (change)="onFilterChange()" class="filter-select">
+      <option value="all">All Categories</option>
+      <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+    </select>
+
+    <input 
+      type="month" 
+      [(ngModel)]="filterMonth" 
+      (change)="onFilterChange()" 
+      class="filter-input">
+
+    <button (click)="loadExpenses()" class="btn btn-secondary">🔄 Refresh</button>
+    <button (click)="exportToCSV()" class="btn btn-success">📥 Export CSV</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading expenses...</div>
+
+  <!-- Expenses Table -->
+  <div *ngIf="!loading && filteredExpenses.length > 0" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Description</th>
+          <th>Vendor</th>
+          <th>Amount</th>
+          <th>Payment Mode</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let expense of filteredExpenses">
+          <td>{{ formatDate(expense.date!) }}</td>
+          <td>
+            <span class="category-badge">{{ getCategoryIcon(expense.category!) }}</span>
+          </td>
+          <td>{{ expense.description || '-' }}</td>
+          <td>{{ expense.vendor_name || '-' }}</td>
+          <td class="amount-cell">{{ formatCurrency(expense.amount!) }}</td>
+          <td>
+            <span class="badge badge-secondary">{{ expense.payment_mode }}</span>
+          </td>
+          <td>
+            <button (click)="deleteExpense(expense)" class="btn-icon danger" title="Delete">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="4"><strong>Total</strong></td>
+          <td class="amount-cell"><strong>{{ formatCurrency(monthlyTotal) }}</strong></td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && filteredExpenses.length === 0" class="empty-state">
+    <div class="empty-icon">📭</div>
+    <p>No expenses found</p>
+    <button (click)="openAddModal()" class="btn btn-primary">Add First Expense</button>
+  </div>
+
+  <!-- Add Expense Modal -->
+  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>➕ Add New Expense</h3>
+        <button (click)="closeModal()" class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Date <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="newExpense.date" class="form-control">
+        </div>
+        
+        <div class="form-group">
+          <label>Category <span class="required">*</span></label>
+          <select [(ngModel)]="newExpense.category" class="form-control">
+            <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Amount <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="newExpense.amount" class="form-control" placeholder="Enter amount">
+        </div>
+        
+        <div class="form-group">
+          <label>Vendor Name</label>
+          <input type="text" [(ngModel)]="newExpense.vendor_name" class="form-control" placeholder="Vendor/Shop name">
+        </div>
+        
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="newExpense.description" class="form-control" rows="3" placeholder="Brief description"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Payment Mode</label>
+          <select [(ngModel)]="newExpense.payment_mode" class="form-control">
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="card">Card</option>
+            <option value="bank_transfer">Bank Transfer</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+        <button (click)="submitExpense()" class="btn btn-primary">💾 Save Expense</button>
+      </div>
+    </div>
+  </div>
+</div>

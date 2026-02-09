@@ -1,0 +1,60 @@
+<div class="client-container">
+
+  <div class="top-bar">
+    <h2>💰 Client Payment & Due</h2>
+    <button class="refresh-btn" (click)="loadDueLedger()">🔄 Refresh</button>
+  </div>
+
+  <!-- Entry Form -->
+  <div class="card">
+    <h3>Add Client Revenue / Payment</h3>
+
+    <label>Date</label>
+    <input type="date" [(ngModel)]="date">
+
+    <select [(ngModel)]="selectedClientId">
+      <option [ngValue]="null">Select Client</option>
+      <option *ngFor="let c of clients" [value]="c.id">
+        {{c.client_name}} - {{c.site_name}}
+      </option>
+    </select>
+
+    <input placeholder="Site Name" [(ngModel)]="siteName">
+    <input type="number" placeholder="Total Bill ₹" [(ngModel)]="totalBill">
+    <input type="number" placeholder="Paid Now ₹" [(ngModel)]="paidAmount">
+
+    <select [(ngModel)]="paymentMode">
+      <option>Cash</option>
+      <option>UPI</option>
+      <option>Bank</option>
+    </select>
+
+    <input placeholder="Collected By" [(ngModel)]="receivedBy">
+    <input placeholder="Remarks" [(ngModel)]="remarks">
+
+    <button class="save-btn" (click)="saveRevenue()">💾 Save</button>
+  </div>
+
+  <!-- Due Ledger -->
+  <div class="card">
+    <h3>📒 Client Due Ledger</h3>
+
+    <table class="client-table">
+      <tr>
+        <th>Client</th>
+        <th>Due Amount</th>
+      </tr>
+
+      <tr *ngFor="let c of clients">
+        <td>{{c.client_name}}</td>
+        <td class="due">₹{{dueLedger[c.id] || 0}}</td>
+      </tr>
+    </table>
+  </div>
+
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">⏳ Saving...</div>
+</div>

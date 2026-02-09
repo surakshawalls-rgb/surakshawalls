@@ -1,0 +1,122 @@
+<div class="partner-container">
+
+  <!-- Header with Tabs -->
+  <div class="top-bar">
+    <h2>🤝 {{language==='EN'?'Partner Management':'पार्टनर प्रबंधन'}}</h2>
+    <button class="lang-btn" (click)="toggleLang()">🌐 {{language}}</button>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-navigation">
+    <button 
+      [class.active]="activeTab === 'ledger'"
+      (click)="activeTab = 'ledger'"
+      class="tab-btn">
+      📋 {{language==='EN'?'Ledger':'लेजर'}}
+    </button>
+    <button 
+      [class.active]="activeTab === 'withdraw'"
+      (click)="activeTab = 'withdraw'"
+      class="tab-btn">
+      💸 {{language==='EN'?'Withdraw':'निकासी'}}
+    </button>
+  </div>
+
+  <!-- LEDGER TAB -->
+  @if(activeTab === 'ledger') {
+  <div class="tab-content">
+
+  <!-- Date -->
+  <label>{{language==='EN'?'Date':'तारीख'}}</label>
+  <input type="date" [(ngModel)]="date">
+
+  <!-- Add Expense -->
+  <div class="card">
+    <h3>{{language==='EN'?'Add Partner Expense':'पार्टनर खर्च जोड़ें'}}</h3>
+
+    <select [(ngModel)]="partnerId" (change)="onPartnerChange()">
+      <option *ngFor="let p of partners" [value]="p.id">{{p.partner_name}}</option>
+    </select>
+
+    <select [(ngModel)]="category">
+      <option>Sariya</option>
+      <option>Cement</option>
+      <option>Sand</option>
+      <option>Gitti</option>
+      <option>Diesel</option>
+      <option>Snacks</option>
+      <option>Mobile</option>
+      <option>Maintenance</option>
+      <option>Other</option>
+    </select>
+
+    @if(category==='Other'){
+      <input placeholder="Description" [(ngModel)]="otherDescription">
+    }
+
+    <input placeholder="{{language==='EN'?'Reason':'कारण'}}" [(ngModel)]="title">
+    <input type="number" placeholder="{{language==='EN'?'Amount':'राशि'}}" [(ngModel)]="amount">
+
+    <button class="save-btn" (click)="saveExpense()">💾 Save</button>
+  </div>
+
+  <!-- Profit -->
+  <div class="card">
+    <h3>📊 {{language==='EN'?'Profit Share':'लाभ वितरण'}}</h3>
+    <p>Pradeep: ₹{{profitPradeep}}</p>
+    <p>Praveen: ₹{{profitPraveen}}</p>
+    <p>Pappu: ₹{{profitPappu}}</p>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <h3>📒 {{language==='EN'?'Partner Expenses':'पार्टनर खर्च सूची'}}</h3>
+
+    <div class="table-wrapper">
+      <table class="partner-table">
+        <tr>
+          <th>Date</th>
+          <th>Partner</th>
+          <th>Category</th>
+          <th>Title</th>
+          <th>Amount</th>
+        </tr>
+
+        @for(r of records; track $index){
+          <tr>
+            <td>{{formatDateToDDMMYYYY(r.date)}}</td>
+            <td>{{r.partner_id}}</td>
+            <td>-</td>
+            <td>{{r.description}}</td>
+            <td>₹{{r.amount}}</td>
+          </tr>
+        }
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <button (click)="prevPage()">⬅ Prev</button>
+      <span>Page {{page+1}}</span>
+      <button (click)="nextPage()">Next ➡</button>
+      <button class="refresh-btn" (click)="refreshTable()">🔄 Refresh</button>
+    </div>
+
+  </div>
+
+  </div>
+  }
+
+  <!-- WITHDRAW TAB -->
+  @if(activeTab === 'withdraw') {
+  <div class="tab-content">
+    <app-partner-withdraw></app-partner-withdraw>
+  </div>
+  }
+
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">⏳ Loading...</div>
+</div>

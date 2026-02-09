@@ -1,0 +1,126 @@
+<div class="cash-container">
+  <div class="top-bar">
+    <h2>💰 Company Cash Management</h2>
+    <button (click)="loadCashBalance()" [disabled]="loading">🔄 Refresh</button>
+  </div>
+
+  <!-- Current Balance Card -->
+  <div class="card balance-card">
+    <h3>💵 Current Cash Balance</h3>
+    <div class="balance-display">
+      <p class="big-number">₹{{currentBalance.balance | number:'0.2-2'}}</p>
+    </div>
+
+    <div class="balance-breakdown">
+      <div class="item">
+        <span>Income (Client Payments):</span>
+        <span class="positive">₹{{currentBalance.income | number:'0.2-2'}}</span>
+      </div>
+      <div class="item">
+        <span>Total Expenses:</span>
+        <span class="negative">₹{{currentBalance.expenses | number:'0.2-2'}}</span>
+      </div>
+      <div class="item">
+        <span>└─ Labour Cost:</span>
+        <span>₹{{currentBalance.labourCost | number:'0.2-2'}}</span>
+      </div>
+      <div class="item">
+        <span>└─ Partner Expenses:</span>
+        <span>₹{{currentBalance.partnerExpenseCost | number:'0.2-2'}}</span>
+      </div>
+      <div class="item">
+        <span>└─ Partner Withdrawals:</span>
+        <span>₹{{currentBalance.partnerWithdrawalAmount | number:'0.2-2'}}</span>
+      </div>
+      <div class="item" *ngIf="currentBalance.manualAdjustment !== 0">
+        <span>Manual Adjustments:</span>
+        <span [ngClass]="currentBalance.manualAdjustment > 0 ? 'positive' : 'negative'">
+          ₹{{currentBalance.manualAdjustment | number:'0.2-2'}}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Cash Entry Form -->
+  <div class="card form-card">
+    <h3>➕ Add Cash Entry</h3>
+    <div class="form-group">
+      <div>
+        <label>Date:</label>
+        <input type="date" [(ngModel)]="entryDate" />
+      </div>
+
+      <div>
+        <label>Type:</label>
+        <select [(ngModel)]="entryType">
+          <option value="INCOME">Income</option>
+          <option value="EXPENSE">Expense</option>
+          <option value="ADJUSTMENT">Adjustment</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Description:</label>
+        <input type="text" [(ngModel)]="entryDescription" placeholder="e.g., Bank deposit, Manual adjustment" />
+      </div>
+
+      <div>
+        <label>Amount (₹):</label>
+        <input type="number" [(ngModel)]="entryAmount" placeholder="0.00" step="0.01" min="0" />
+      </div>
+
+      <button (click)="addCashEntry()" [disabled]="loading" class="submit-btn">
+        {{loading ? 'Saving...' : 'Add Entry'}}
+      </button>
+    </div>
+  </div>
+
+  <!-- Cash Ledger Section -->
+  <div class="card ledger-card">
+    <h3>📋 Cash Ledger</h3>
+
+    <!-- Date Filter -->
+    <div class="filter-section">
+      <div>
+        <label>From Date:</label>
+        <input type="date" [(ngModel)]="fromDate" />
+      </div>
+      <div>
+        <label>To Date:</label>
+        <input type="date" [(ngModel)]="toDate" />
+      </div>
+      <button (click)="filterByDateRange()" [disabled]="loading">Filter</button>
+    </div>
+
+    <!-- Ledger Table -->
+    <div *ngIf="cashLedger && cashLedger.length > 0; else noLedger">
+      <table class="ledger-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of cashLedger" [ngClass]="'type-' + entry.entry_type.toLowerCase()">
+            <td>{{formatDateToDDMMYYYY(entry.date)}}</td>
+            <td>{{entry.description}}</td>
+            <td>
+              <span class="badge" [ngClass]="'badge-' + entry.entry_type.toLowerCase()">
+                {{entry.entry_type}}
+              </span>
+            </td>
+            <td [ngClass]="entry.entry_type === 'EXPENSE' ? 'negative' : 'positive'">
+              {{entry.entry_type === 'EXPENSE' ? '-' : '+'}}₹{{entry.amount | number:'0.2-2'}}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noLedger>
+      <p>No cash entries found for the selected date range</p>
+    </ng-template>
+  </div>
+</div>

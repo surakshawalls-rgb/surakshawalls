@@ -1,0 +1,282 @@
+<div class="production-entry-container">
+  <div class="header">
+    <h2>🏭 Production Entry</h2>
+    <input type="date" [(ngModel)]="date" class="date-input" />
+  </div>
+
+  <!-- Product Selection -->
+  <div class="card">
+    <h3>1. Product Selection</h3>
+    
+    <div class="form-group">
+      <label>Product</label>
+      <select [(ngModel)]="productName" (ngModelChange)="onProductChange()" class="form-control">
+        <option *ngFor="let product of products" [value]="product.product_name">
+          {{product.product_name}}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="selectedProductVariants.length > 0">
+      <label>Variant</label>
+      <select [(ngModel)]="productVariant" (ngModelChange)="onVariantChange()" class="form-control">
+        <option *ngFor="let variant of selectedProductVariants" [value]="variant">
+          {{variant}}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Success Quantity *</label>
+        <input 
+          type="number" 
+          [(ngModel)]="successQuantity" 
+          (ngModelChange)="onQuantityChange()"
+          min="0" 
+          class="form-control" 
+          placeholder="0" />
+      </div>
+
+      <div class="form-group">
+        <label>Rejected Quantity</label>
+        <input 
+          type="number" 
+          [(ngModel)]="rejectedQuantity" 
+          (ngModelChange)="onQuantityChange()"
+          min="0" 
+          class="form-control" 
+          placeholder="0" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Material Preview -->
+  <div class="card material-preview" *ngIf="materialCalc">
+    <h3>2. Material Requirements</h3>
+
+    <div *ngIf="isCalculating" class="loading">Calculating...</div>
+
+    <div *ngIf="!isCalculating && materialCalc">
+      <div class="material-item">
+        <span class="material-name">📦 Cement</span>
+        <span class="material-qty">{{formatNumber(materialCalc.materials.cement)}} bags</span>
+        <span class="material-cost">@ ₹{{materialCalc.costs.cement_cost / materialCalc.materials.cement | number:'1.0-0'}}</span>
+        <span class="material-total">= {{formatCurrency(materialCalc.costs.cement_cost)}}</span>
+        <span 
+          class="stock-status" 
+          [class.success]="materialCalc.stock_check.cement_available"
+          [class.danger]="!materialCalc.stock_check.cement_available">
+          {{materialCalc.stock_check.cement_available ? '✅' : '❌'}} 
+          Stock: {{formatNumber(materialCalc.current_stock.cement)}}
+        </span>
+      </div>
+
+      <div class="material-item">
+        <span class="material-name">🏗️ Aggregates</span>
+        <span class="material-qty">{{formatNumber(materialCalc.materials.aggregates)}} cft</span>
+        <span class="material-cost">@ ₹{{materialCalc.costs.aggregates_cost / materialCalc.materials.aggregates | number:'1.0-0'}}</span>
+        <span class="material-total">= {{formatCurrency(materialCalc.costs.aggregates_cost)}}</span>
+        <span 
+          class="stock-status" 
+          [class.success]="materialCalc.stock_check.aggregates_available"
+          [class.danger]="!materialCalc.stock_check.aggregates_available">
+          {{materialCalc.stock_check.aggregates_available ? '✅' : '❌'}} 
+          Stock: {{formatNumber(materialCalc.current_stock.aggregates)}}
+        </span>
+      </div>
+
+      <div class="material-item">
+        <span class="material-name">🔩 Sariya (4mm)</span>
+        <span class="material-qty">{{formatNumber(materialCalc.materials.sariya)}} kg</span>
+        <span class="material-cost">@ ₹{{materialCalc.costs.sariya_cost / materialCalc.materials.sariya | number:'1.0-0'}}</span>
+        <span class="material-total">= {{formatCurrency(materialCalc.costs.sariya_cost)}}</span>
+        <span 
+          class="stock-status" 
+          [class.success]="materialCalc.stock_check.sariya_available"
+          [class.danger]="!materialCalc.stock_check.sariya_available">
+          {{materialCalc.stock_check.sariya_available ? '✅' : '❌'}} 
+          Stock: {{formatNumber(materialCalc.current_stock.sariya)}}
+        </span>
+      </div>
+
+      <div class="material-total-row">
+        <span class="label">Total Material Cost</span>
+        <span class="value">{{formatCurrency(materialCalc.costs.total_cost)}}</span>
+      </div>
+
+      <div *ngIf="!materialCalc.stock_check.all_available" class="alert alert-danger">
+        ⚠️ Insufficient stock! Cannot proceed with production.
+      </div>
+    </div>
+  </div>
+
+  <!-- Worker Selection -->
+  <div class="card">
+    <h3>3. Worker Selection</h3>
+
+    <div class="worker-selector">
+      <label>Add Worker</label>
+      <select #workerSelect class="form-control" (change)="addWorker(availableWorkers[workerSelect.selectedIndex]); workerSelect.selectedIndex = 0">
+        <option value="" selected disabled>Select worker...</option>
+        <option *ngFor="let worker of availableWorkers" [value]="worker.id">
+          {{getWorkerDisplayName(worker)}}
+        </option>
+      </select>
+    </div>
+
+    <div *ngIf="selectedWorkers.length === 0" class="alert alert-info">
+      No workers selected. Please add at least one worker.
+    </div>
+
+    <div class="worker-list" *ngIf="selectedWorkers.length > 0">
+      <div class="worker-entry" *ngFor="let workerEntry of selectedWorkers; let i = index">
+        <div class="worker-header">
+          <span class="worker-name">👷 {{workerEntry.worker.name}}</span>
+          <button type="button" (click)="removeWorker(i)" class="btn-remove">✕</button>
+        </div>
+
+        <div class="worker-details">
+          <div class="form-group">
+            <label>Attendance</label>
+            <select 
+              [(ngModel)]="workerEntry.attendanceType" 
+              (ngModelChange)="onAttendanceChange(workerEntry)"
+              class="form-control-sm">
+              <option value="Full Day">Full Day (₹400)</option>
+              <option value="Half Day">Half Day (₹200)</option>
+              <option value="Outdoor">Outdoor (₹450)</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Wage Earned</label>
+            <input 
+              type="number" 
+              [(ngModel)]="workerEntry.wageEarned" 
+              [readonly]="workerEntry.attendanceType !== 'Custom'"
+              class="form-control-sm" />
+          </div>
+
+          <div class="form-group">
+            <label>Paid Today</label>
+            <input 
+              type="number" 
+              [(ngModel)]="workerEntry.paidToday" 
+              min="0" 
+              [max]="workerEntry.wageEarned"
+              class="form-control-sm" 
+              placeholder="₹0" />
+          </div>
+
+          <div class="form-group">
+            <label>Balance (to cumulative)</label>
+            <input 
+              type="text" 
+              [value]="formatCurrency(workerEntry.wageEarned - workerEntry.paidToday)" 
+              readonly 
+              class="form-control-sm balance-field" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="labor-summary" *ngIf="selectedWorkers.length > 0">
+      <div class="summary-row">
+        <span class="label">Total Labor Cost</span>
+        <span class="value">{{formatCurrency(getTotalLaborCost())}}</span>
+      </div>
+      <div class="summary-row">
+        <span class="label">Total Paid Today</span>
+        <span class="value">{{formatCurrency(getTotalPaidToday())}}</span>
+      </div>
+      <div class="summary-row highlight">
+        <span class="label">Labor Liability</span>
+        <span class="value">{{formatCurrency(getLaborLiability())}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Production Summary -->
+  <div class="card summary-card">
+    <h3>4. Production Summary</h3>
+
+    <div class="summary-grid">
+      <div class="summary-item">
+        <span class="label">Success Quantity</span>
+        <span class="value">{{successQuantity}} units</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Rejected Quantity</span>
+        <span class="value">{{rejectedQuantity}} units</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Material Cost</span>
+        <span class="value">{{formatCurrency((materialCalc?.costs?.total_cost) || 0)}}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Labor Cost</span>
+        <span class="value">{{formatCurrency(getTotalLaborCost())}}</span>
+      </div>
+      <div class="summary-item highlight">
+        <span class="label">Total Cost</span>
+        <span class="value">{{formatCurrency(getTotalCost())}}</span>
+      </div>
+      <div class="summary-item highlight">
+        <span class="label">Cost Per Unit</span>
+        <span class="value">{{formatCurrency(getCostPerUnit())}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Work Section -->
+  <div class="card">
+    <div class="checkbox-group">
+      <label>
+        <input type="checkbox" [(ngModel)]="isJobWork" />
+        <span>This is job work (external client production)</span>
+      </label>
+    </div>
+
+    <div class="form-group" *ngIf="isJobWork">
+      <label>Client Name</label>
+      <input 
+        type="text" 
+        [(ngModel)]="jobWorkClient" 
+        class="form-control" 
+        placeholder="Enter client name" />
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card">
+    <div class="form-group">
+      <label>Notes (optional)</label>
+      <textarea 
+        [(ngModel)]="notes" 
+        class="form-control" 
+        rows="3" 
+        placeholder="Additional notes..."></textarea>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button 
+      type="button" 
+      (click)="saveProduction()" 
+      [disabled]="!isFormValid() || saving"
+      class="btn btn-primary">
+      {{saving ? 'Saving...' : '🟢 Save Production'}}
+    </button>
+
+    <button 
+      type="button" 
+      (click)="resetForm()" 
+      [disabled]="saving"
+      class="btn btn-secondary">
+      Reset Form
+    </button>
+  </div>
+</div>

@@ -1,0 +1,262 @@
+<div class="daily-entry-container">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-left">
+      <h1>🏭 Daily Entry</h1>
+      <p>Record daily operations, labour, materials, and expenses</p>
+    </div>
+    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
+      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
+    </button>
+  </div>
+
+  <!-- Date Selector -->
+  <div class="date-section">
+    <label>📅 Date:</label>
+    <input type="date" [(ngModel)]="entryDate" class="date-input">
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <!-- Info Box -->
+  <div class="info-box">
+    <p><strong>💡 How it works:</strong> Record labour work here (types and amounts). Partners pay later through the Labour Ledger. Payment due = total earned - total paid.</p>
+  </div>
+
+  <!-- Main Form -->
+  <div class="form-section">
+
+    <!-- ===== LABOUR SECTION ===== -->
+    <div class="section">
+      <h2>👷 Labour</h2>
+      
+      <div class="input-group">
+        <label>Worker Name:</label>
+        <input type="text" [(ngModel)]="newLabourName" placeholder="Enter worker name" class="input-field">
+      </div>
+
+      <div class="input-group">
+        <label>Labour Type:</label>
+        <select [(ngModel)]="newLabourType" (change)="onLabourTypeChange()" class="input-field">
+          <option *ngFor="let type of labourTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Amount (₹):</label>
+        <input type="number" [(ngModel)]="newLabourAmount" placeholder="0" class="input-field">
+      </div>
+
+      <button (click)="addLabourEntry()" class="add-btn">➕ Add Labour</button>
+
+      <!-- Labour Entries Table -->
+      <div *ngIf="labourEntries.length > 0" class="entries-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Worker</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of labourEntries; let i = index">
+              <td>{{ entry.name }}</td>
+              <td>{{ entry.type }}</td>
+              <td>₹{{ entry.amount | number:'1.0-2' }}</td>
+              <td><button (click)="removeLabourEntry(i)" class="remove-btn">❌</button></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="2"><strong>Total Labour:</strong></td>
+              <td colspan="2"><strong>₹{{ getTotalLabourCost() | number:'1.0-2' }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== PRODUCTION SECTION ===== -->
+    <div class="section">
+      <h2>🏗️ Production Today</h2>
+      
+      <div class="production-grid">
+        <div class="input-group">
+          <label>Fencing Poles:</label>
+          <input type="number" [(ngModel)]="poles" placeholder="0" class="input-field">
+        </div>
+        <div class="input-group">
+          <label>Round Plates:</label>
+          <input type="number" [(ngModel)]="roundPlates" placeholder="0" class="input-field">
+        </div>
+        <div class="input-group">
+          <label>Plain Plates:</label>
+          <input type="number" [(ngModel)]="plainPlates" placeholder="0" class="input-field">
+        </div>
+        <div class="input-group">
+          <label>Jumbo Pillars:</label>
+          <input type="number" [(ngModel)]="jumpoPillars" placeholder="0" class="input-field">
+        </div>
+        <div class="input-group">
+          <label>Biscuit Plates:</label>
+          <input type="number" [(ngModel)]="biscuitPlates" placeholder="0" class="input-field">
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MATERIALS SECTION ===== -->
+    <div class="section">
+      <h2>🏭 Materials Used</h2>
+      
+      <div class="input-group">
+        <label>Material:</label>
+        <select [(ngModel)]="selectedMaterial" (change)="onMaterialSelected(selectedMaterial)" class="input-field">
+          <option *ngFor="let mat of materials" [value]="mat">{{ mat }}</option>
+        </select>
+      </div>
+
+      <div *ngIf="showCustomMaterialInput" class="input-group">
+        <label>Custom Material Name:</label>
+        <input type="text" [(ngModel)]="customMaterialName" placeholder="Enter material name" class="input-field">
+      </div>
+
+      <div class="input-group">
+        <label>Quantity ({{ materialUnits[selectedMaterial] }}):</label>
+        <input type="number" [(ngModel)]="materialQuantity" placeholder="0" class="input-field">
+      </div>
+
+      <div class="input-group">
+        <label>Unit Cost (₹):</label>
+        <input type="number" [(ngModel)]="materialUnitCost" placeholder="0" class="input-field">
+      </div>
+
+      <div class="input-group">
+        <label>Paid By:</label>
+        <select [(ngModel)]="materialPaidByPartnerId" class="input-field">
+          <option *ngFor="let partner of partners" [value]="partner.partner_id">
+            {{ partner.name }}
+          </option>
+        </select>
+      </div>
+
+      <button (click)="addMaterialEntry()" class="add-btn">➕ Add Material</button>
+
+      <!-- Materials Entries Table -->
+      <div *ngIf="materialEntries.length > 0" class="entries-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Quantity</th>
+              <th>Unit Cost</th>
+              <th>Total</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of materialEntries; let i = index">
+              <td>{{ entry.material_name }}</td>
+              <td>{{ entry.quantity }} {{ materialUnits[entry.material_name] }}</td>
+              <td>₹{{ entry.unit_cost | number:'1.0-2' }}</td>
+              <td>₹{{ entry.total_cost | number:'1.0-2' }}</td>
+              <td><button (click)="removeMaterialEntry(i)" class="remove-btn">❌</button></td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="3"><strong>Total Material:</strong></td>
+              <td colspan="2"><strong>₹{{ getTotalMaterialCost() | number:'1.0-2' }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== EXPENSES SECTION ===== -->
+    <div class="section">
+      <h2>💰 Daily Expenses</h2>
+      
+      <div class="input-group">
+        <label>Category:</label>
+        <select [(ngModel)]="expenseCategory" class="input-field">
+          <option value="">-- Select Category --</option>
+          <option *ngFor="let cat of expenseCategories" [value]="cat">{{ cat }}</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Amount (₹):</label>
+        <input type="number" [(ngModel)]="expenseAmount" placeholder="0" class="input-field">
+      </div>
+
+      <div class="input-group">
+        <label>Paid By:</label>
+        <select [(ngModel)]="expensesPaidByPartnerId" class="input-field">
+          <option *ngFor="let partner of partners" [value]="partner.partner_id">
+            {{ partner.name }}
+          </option>
+        </select>
+      </div>
+
+      <button (click)="addExpenseEntry()" class="add-btn">➕ Add Expense</button>
+
+      <!-- Expenses Entries Table -->
+      <div *ngIf="expenseEntries.length > 0" class="entries-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of expenseEntries; let i = index">
+              <td>{{ entry.category }}</td>
+              <td>₹{{ entry.amount | number:'1.0-2' }}</td>
+              <td><button (click)="removeExpenseEntry(i)" class="remove-btn">❌</button></td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>Total Expenses:</strong></td>
+              <td colspan="2"><strong>₹{{ getTotalExpenses() | number:'1.0-2' }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== NOTES SECTION ===== -->
+    <div class="section">
+      <h2>📝 Notes</h2>
+      <textarea [(ngModel)]="notes" placeholder="Add any additional notes..." class="notes-field"></textarea>
+    </div>
+
+    <!-- ===== SUMMARY & SUBMIT ===== -->
+    <div class="summary-section">
+      <div class="summary-row">
+        <span>👷 Total Labour Cost:</span>
+        <strong>₹{{ getTotalLabourCost() | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>🏭 Total Material Cost:</span>
+        <strong>₹{{ getTotalMaterialCost() | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row">
+        <span>💰 Total Expenses:</span>
+        <strong>₹{{ getTotalExpenses() | number:'1.0-2' }}</strong>
+      </div>
+      <div class="summary-row grand-total">
+        <span>📊 GRAND TOTAL:</span>
+        <strong>₹{{ getGrandTotal() | number:'1.0-2' }}</strong>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button 
+      (click)="submitDailyEntry()" 
+      [disabled]="loading"
+      class="submit-btn">
+      {{ loading ? '💾 Saving...' : '✅ Save Daily Entry' }}
+    </button>
+  </div>
+</div>

@@ -1,0 +1,122 @@
+<div class="labour-ledger-container">
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div>
+      <h1>👷 Labour Ledger</h1>
+      <p>Manage worker payments and dues</p>
+    </div>
+    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
+      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <button (click)="showAddForm = !showAddForm" class="btn-primary">
+      {{ showAddForm ? '❌ Cancel' : '➕ Add Labour' }}
+    </button>
+
+    <select [(ngModel)]="statusFilter" class="filter-select">
+      <option value="all">All Labours</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+  </div>
+
+  <!-- Add Labour Form -->
+  <div *ngIf="showAddForm" class="form-section">
+    <h2>Add New Labour</h2>
+    <div class="input-group">
+      <label>Name:</label>
+      <input type="text" [(ngModel)]="newLabourName" placeholder="Enter labour name" class="input-field">
+    </div>
+    <div class="input-group">
+      <label>Phone:</label>
+      <input type="text" [(ngModel)]="newLabourPhone" placeholder="Optional" class="input-field">
+    </div>
+    <button (click)="addNewLabour()" [disabled]="loading" class="btn-success">
+      {{ loading ? 'Saving...' : 'Save Labour' }}
+    </button>
+  </div>
+
+  <!-- Payment Form -->
+  <div *ngIf="showPaymentForm" class="form-section">
+    <h2>Record Payment for {{ selectedLabourName }}</h2>
+    <div class="input-group">
+      <label>Amount (₹):</label>
+      <input type="number" [(ngModel)]="paymentAmount" class="input-field">
+    </div>
+    <div class="input-group">
+      <label>Date:</label>
+      <input type="date" [(ngModel)]="paymentDate" class="input-field">
+    </div>
+    <div class="input-group">
+      <label>Paid By:</label>
+      <select [(ngModel)]="paidByPartnerId" class="input-field">
+        <option *ngFor="let partner of partners" [value]="partner.partner_id">
+          {{ partner.name }}
+        </option>
+      </select>
+    </div>
+    <button (click)="recordPayment()" [disabled]="loading" class="btn-success">
+      {{ loading ? 'Recording...' : 'Record Payment' }}
+    </button>
+    <button (click)="showPaymentForm = false" class="btn-cancel">Cancel</button>
+  </div>
+
+  <!-- Labours Table -->
+  <div class="table-section">
+    <h2>Labour List</h2>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Total Earned</th>
+            <th>Total Paid</th>
+            <th>Due Amount</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let labour of getFilteredLabours()" [class.overdue]="labour.due_amount > 0">
+            <td>{{ labour.name }}</td>
+            <td>{{ labour.phone || '-' }}</td>
+            <td class="amount">₹{{ labour.total_earned | number:'1.0-2' }}</td>
+            <td class="amount paid">₹{{ labour.total_paid | number:'1.0-2' }}</td>
+            <td class="amount" [class.due]="labour.due_amount > 0">₹{{ labour.due_amount | number:'1.0-2' }}</td>
+            <td>
+              <span [class.status-active]="labour.status === 'active'" 
+                    [class.status-inactive]="labour.status === 'inactive'"
+                    class="status-badge">
+                {{ labour.status }}
+              </span>
+            </td>
+            <td>
+              <button (click)="openPaymentForm(labour)" 
+                      [disabled]="labour.due_amount === 0"
+                      class="btn-pay">
+                💳 Pay
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="2"><strong>TOTALS</strong></td>
+            <td class="amount"><strong>₹{{ getTotalEarned() | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getTotalPaid() | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>₹{{ getTotalDue() | number:'1.0-2' }}</strong></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

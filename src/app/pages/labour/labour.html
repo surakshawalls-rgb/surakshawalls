@@ -1,0 +1,101 @@
+<div class="labour-container">
+
+  <div class="top-bar">
+    <h2>{{ language === 'EN' ? '👷 Labour Attendance' : '👷 मजदूर उपस्थिति' }}</h2>
+    <button class="lang-btn" (click)="toggleLang()">🌐 {{language}}</button>
+  </div>
+
+  <label>{{ language === 'EN' ? 'Date' : 'तारीख' }}</label>
+  <input type="date" [(ngModel)]="date">
+
+  <!-- Add Labour -->
+  <div class="card">
+    <h3>{{ language === 'EN' ? 'Add Labour' : 'मजदूर जोड़ें' }}</h3>
+
+    <input [placeholder]="language==='EN' ? 'Name' : 'नाम'" [(ngModel)]="newWorker">
+
+    <select [(ngModel)]="workerType">
+      <option value="HALF">{{ language==='EN' ? 'Half Day ₹200' : 'आधा दिन ₹200' }}</option>
+      <option value="FULL">{{ language==='EN' ? 'Full Day ₹400' : 'पूरा दिन ₹400' }}</option>
+      <option value="OUTDOOR">{{ language==='EN' ? 'Outdoor ₹450' : 'बाहर काम ₹450' }}</option>
+      <option value="CUSTOM">{{ language==='EN' ? 'Custom Amount' : 'कस्टम राशि' }}</option>
+    </select>
+
+    @if(workerType==='CUSTOM'){
+      <input type="number" [placeholder]="language==='EN' ? 'Enter Amount' : 'राशि डालें'" [(ngModel)]="customWorkerAmount">
+    }
+
+    <button (click)="addWorker()">➕ {{ language==='EN' ? 'Add' : 'जोड़ें' }}</button>
+  </div>
+
+  <!-- Draft Labour Table -->
+  <div class="card" *ngIf="workers.length">
+    <h3>{{ language==='EN' ? 'Draft Labour (Not Saved)' : 'अस्थायी मजदूर सूची' }}</h3>
+
+    <table class="labour-table">
+      <tr>
+        <th>{{language==='EN'?'Name':'नाम'}}</th>
+        <th>{{language==='EN'?'Type':'प्रकार'}}</th>
+        <th>{{language==='EN'?'Amount':'राशि'}}</th>
+        <th></th>
+      </tr>
+
+      @for(w of workers; track $index){
+        <tr>
+          <td>{{w.name}}</td>
+          <td>{{w.type}}</td>
+          <td>₹{{w.amount}}</td>
+          <td><button (click)="removeWorker($index)">❌</button></td>
+        </tr>
+      }
+    </table>
+  </div>
+
+  <button class="save-btn" (click)="saveToDatabase()">
+    💾 {{ language==='EN' ? 'Save to Database' : 'डेटाबेस में सेव करें' }}
+  </button>
+
+  <!-- Filters -->
+  <div class="filters">
+    <input [placeholder]="language==='EN' ? 'Search Name' : 'नाम खोजें'" [(ngModel)]="searchName" (input)="applyFilter()">
+    <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()">
+    <button (click)="refreshTable()">🔄 {{language==='EN'?'Refresh':'रिफ्रेश'}}</button>
+    <button (click)="exportCSV()">📥 CSV</button>
+  </div>
+
+  <h3>
+    📅 {{ language==='EN' ? 'Monthly Total Expense' : 'मासिक कुल खर्च' }}: ₹{{monthlyTotal}}
+  </h3>
+
+  <!-- DB Table -->
+  <table class="labour-table">
+    <tr>
+      <th>{{language==='EN'?'Date':'तारीख'}}</th>
+      <th>{{language==='EN'?'Name':'नाम'}}</th>
+      <th>{{language==='EN'?'Type':'प्रकार'}}</th>
+      <th>{{language==='EN'?'Amount':'राशि'}}</th>
+    </tr>
+
+    @for(r of filteredRecords; track $index){
+      <tr>
+        <td>{{formatDateToDDMMYYYY(r.date)}}</td>
+        <td>{{r.name}}</td>
+        <td>{{r.type}}</td>
+        <td>₹{{r.amount}}</td>
+      </tr>
+    }
+  </table>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <button (click)="prevPage()">⬅ {{language==='EN'?'Prev':'पिछला'}}</button>
+    <span>Page {{page+1}}</span>
+    <button (click)="nextPage()">{{language==='EN'?'Next':'अगला'}} ➡</button>
+  </div>
+
+</div>
+
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">⏳ Loading...</div>
+</div>
+
