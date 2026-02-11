@@ -10,6 +10,9 @@
       <button (click)="openMyAttendanceModal()" class="btn btn-primary">
         📝 Mark My Attendance
       </button>
+      <button routerLink="/resources" class="btn btn-info">
+        📚 Library Resources
+      </button>
       <button (click)="loadSeats()" class="btn-refresh">🔄 Refresh</button>
       <button *ngIf="isAdmin()" (click)="toggleBulkOperations()" class="btn-bulk">
         📋 Bulk Operations

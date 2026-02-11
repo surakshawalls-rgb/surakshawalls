@@ -1,0 +1,673 @@
+<!-- Suraksha Library Resources Page -->
+<div class="digital-library-page">
+  <!-- Success/Error Message Toast -->
+  <div *ngIf="message" class="toast-message" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
+    <span class="toast-icon">{{ messageType === 'success' ? '✓' : '⚠️' }}</span>
+    <span>{{ message }}</span>
+  </div>
+
+  <!-- Member Badge -->
+  <div class="member-badge">
+    <span class="badge-icon">✓</span>
+    <span class="badge-text">Library Member Access</span>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">
+          <span class="icon">📚</span>
+          Suraksha Library Resources
+        </h1>
+        <p class="hero-subtitle">
+          📚 SURAKSHA LIBRARY • An Initiative of Suraksha Group<br>
+          <small style="font-size: 0.9em; opacity: 0.95;">Peace • Safety • Success — All in One Place</small>
+        </p>
+        <p class="hero-description">
+          Complete learning hub: NCERT, Competitive Exams (UPSC/SSC/Banking), Programming (C/C++/Java/Python), Coding Practice (HackerRank/LeetCode), AI Tools (ChatGPT/Copilot/Image Generation/Video Editing), Commerce & Banking Education, Degree Programs (BA/BSc/BCom), ITI/Polytechnic, Job Portals, Junior Students (Class 1-8), Free Courses (NPTEL/Coursera) - All in one place!
+        </p>
+        <div class="how-it-works-banner">
+          <span class="info-icon">ℹ️</span>
+          <strong>How it works:</strong> Click on any resource card below → Official website opens in new tab → Download books/PDFs for free
+        </div>
+        <div class="test-link-container">
+          <button (click)="openLink('https://ncert.nic.in/textbook.php')" class="test-link-button">
+            🎯 Test Link: Open NCERT Website
+          </button>
+          <p class="test-note">Click this button to verify links are working ↑</p>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="searchResources()"
+            placeholder="Search books, subjects, or resources..."
+            class="search-input"
+          >
+          <button class="search-button" (click)="searchResources()">Search</button>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-icon">📚</span>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalBooks }}+</div>
+            <div class="stat-label">Free Books</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🔗</span>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalResources }}+</div>
+            <div class="stat-label">Official Sources</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">👥</span>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.activeUsers }}+</div>
+            <div class="stat-label">Active Students</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">⬇️</span>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalDownloads }}+</div>
+            <div class="stat-label">Downloads</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="categories-section">
+    <div class="section-header">
+      <h2 class="section-title">Browse by Category</h2>
+      <p class="section-subtitle">Choose your exam or class to find relevant resources</p>
+    </div>
+
+    <div class="categories-grid">
+      <div 
+        *ngFor="let category of categories" 
+        class="category-card"
+        [style.border-left]="'4px solid ' + category.color"
+      >
+        <span class="category-icon">{{ category.icon }}</span>
+        <div class="category-content">
+          <h3 class="category-name">{{ category.name }}</h3>
+          <p class="category-description">{{ category.description }}</p>
+          <div class="category-footer">
+            <span class="category-count">Coming Soon</span>
+            <button class="category-button" [disabled]="true">Browse →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter Tabs -->
+  <section class="resources-section">
+    <div class="section-header">
+      <h2 class="section-title">Official Resource Links</h2>
+      <p class="section-subtitle">Direct links to government portals - Click any card to visit official website</p>
+    </div>
+
+    <!-- Popular Quick Access -->
+    <div class="quick-access-section">
+      <h3 class="quick-access-title">🔥 Most Popular Resources (Try These First)</h3>
+      <div class="quick-access-grid">
+        <a href="https://ncert.nic.in/textbook.php" target="_blank" class="quick-link">
+          <span class="quick-icon">📚</span>
+          <span class="quick-text">NCERT Books</span>
+        </a>
+        <a href="https://ndl.iitkgp.ac.in/" target="_blank" class="quick-link">
+          <span class="quick-icon">🎓</span>
+          <span class="quick-text">NDLI (7.8 Cr Resources)</span>
+        </a>
+        <a href="https://www.drishtiias.com/current-affairs-news-analysis-editorials" target="_blank" class="quick-link">
+          <span class="quick-icon">📰</span>
+          <span class="quick-text">Drishti IAS (Free)</span>
+        </a>
+        <a href="https://www.adda247.com/school/" target="_blank" class="quick-link">
+          <span class="quick-icon">📕</span>
+          <span class="quick-text">Adda247 (Free PDFs)</span>
+        </a>
+        <a href="https://www.clearias.com/" target="_blank" class="quick-link">
+          <span class="quick-icon">🎯</span>
+          <span class="quick-text">ClearIAS (UPSC Free)</span>
+        </a>
+        <a href="https://upmsp.edu.in/Ebook.aspx" target="_blank" class="quick-link">
+          <span class="quick-icon">📖</span>
+          <span class="quick-text">UP Board Books</span>
+        </a>
+        <a href="https://egyankosh.ac.in/" target="_blank" class="quick-link">
+          <span class="quick-icon">📗</span>
+          <span class="quick-text">IGNOU (4000+ Books)</span>
+        </a>
+        <a href="https://www.khanacademy.org/i/in" target="_blank" class="quick-link">
+          <span class="quick-icon">🎓</span>
+          <span class="quick-text">Khan Academy India</span>
+        </a>
+        <a href="https://www.geeksforgeeks.org/" target="_blank" class="quick-link">
+          <span class="quick-icon">�</span>
+          <span class="quick-text">GeeksforGeeks (Programming)</span>
+        </a>
+        <a href="https://www.hackerrank.com/" target="_blank" class="quick-link">
+          <span class="quick-icon">⚡</span>
+          <span class="quick-text">HackerRank (Coding)</span>
+        </a>
+        <a href="https://chat.openai.com/" target="_blank" class="quick-link">
+          <span class="quick-icon">🤖</span>
+          <span class="quick-text">ChatGPT (AI Assistant)</span>
+        </a>
+        <a href="https://leonardo.ai/" target="_blank" class="quick-link">
+          <span class="quick-icon">🎨</span>
+          <span class="quick-text">Leonardo.ai (AI Images)</span>
+        </a>
+        <a href="https://www.naukri.com/" target="_blank" class="quick-link">
+          <span class="quick-icon">💼</span>
+          <span class="quick-text">Naukri.com (Jobs)</span>
+        </a>
+        <a href="https://byjus.com/" target="_blank" class="quick-link">
+          <span class="quick-icon">🎈</span>
+          <span class="quick-text">BYJU'S (Kids Learning)</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Category Filters -->
+    <div class="filter-tabs">
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'all'"
+        (click)="filterResources('all')"
+      >
+        🌟 All
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'School'"
+        (click)="filterResources('School')"
+      >
+        📚 School
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'UPSC'"
+        (click)="filterResources('UPSC')"
+      >
+        🎓 UPSC
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'SSC'"
+        (click)="filterResources('SSC')"
+      >
+        📝 SSC
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Banking'"
+        (click)="filterResources('Banking')"
+      >
+        🏦 Banking
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Railway'"
+        (click)="filterResources('Railway')"
+      >
+        🚂 Railway
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'General'"
+        (click)="filterResources('General')"
+      >
+        👮 Police & Others
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Programming'"
+        (click)="filterResources('Programming')"
+      >
+        💻 Programming
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Technical'"
+        (click)="filterResources('Technical')"
+      >
+        🔧 ITI/Polytechnic
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Jobs'"
+        (click)="filterResources('Jobs')"
+      >
+        💼 Job Portals
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Skills'"
+        (click)="filterResources('Skills')"
+      >
+        🎯 Skills & Courses
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Coding'"
+        (click)="filterResources('Coding')"
+      >
+        ⚡ Coding Practice
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Commerce'"
+        (click)="filterResources('Commerce')"
+      >
+        💰 Commerce & Banking
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Degree'"
+        (click)="filterResources('Degree')"
+      >
+        🎓 Degree Programs
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'Junior'"
+        (click)="filterResources('Junior')"
+      >
+        🧒 Junior Students
+      </button>
+      <button 
+        class="filter-tab" 
+        [class.active]="selectedCategory === 'AI Tools'"
+        (click)="filterResources('AI Tools')"
+      >
+        🤖 AI Tools
+      </button>
+    </div>
+
+    <!-- Resource Cards -->
+    <div class="resources-grid">
+      <div 
+        *ngFor="let resource of getFilteredResources()" 
+        class="resource-card"
+        (click)="openLink(resource.url)"
+      >
+        <div class="resource-header">
+          <span class="resource-icon">{{ resource.icon }}</span>
+          <span 
+            class="resource-badge"
+            [style.background-color]="getCategoryColor(resource.category)"
+          >
+            {{ resource.category }}
+          </span>
+        </div>
+        <h3 class="resource-title">{{ resource.title }}</h3>
+        <p class="resource-description">{{ resource.description }}</p>
+        <div class="resource-url">
+          <span class="url-icon">🔗</span>
+          <span class="url-text">{{ resource.url }}</span>
+        </div>
+        <div class="resource-footer">
+          <span class="official-badge" *ngIf="resource.isOfficial">
+            ✓ Official Government Website
+          </span>
+          <button class="visit-button">
+            <span>Visit Website</span>
+            <span class="external-icon">🔗</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="section-header">
+      <h2 class="section-title">How to Download Books (Step by Step)</h2>
+      <p class="section-subtitle">Follow these simple steps to download any book</p>
+    </div>
+
+    <div class="steps-container">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3 class="step-title">Click on Resource Card</h3>
+          <p class="step-description">Choose any resource from above (e.g., "NCERT Official Textbooks")</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3 class="step-title">Official Website Opens</h3>
+          <p class="step-description">Government website opens in new tab (e.g., ncert.nic.in)</p>
+        </div>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3 class="step-title">Browse & Download</h3>
+          <p class="step-description">Select your class/subject and download PDF for free</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top: 60px;">
+      <h2 class="section-title">Why Use Suraksha Library?</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">✅</span>
+        <h3 class="feature-title">100% Legal</h3>
+        <p class="feature-description">All resources from official government sources</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💰</span>
+        <h3 class="feature-title">Completely Free</h3>
+        <p class="feature-description">No hidden costs or subscriptions required</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📱</span>
+        <h3 class="feature-title">Mobile Friendly</h3>
+        <p class="feature-description">Access from any device, anywhere, anytime</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⬇️</span>
+        <h3 class="feature-title">Offline Access</h3>
+        <p class="feature-description">Download PDFs for offline reading</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔄</span>
+        <h3 class="feature-title">Always Updated</h3>
+        <p class="feature-description">Latest editions and new content regularly</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <h3 class="feature-title">All In One Place</h3>
+        <p class="feature-description">Education, Competitive Exams, Programming, Jobs, Skills</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💻</span>
+        <h3 class="feature-title">Learn Programming</h3>
+        <p class="feature-description">C, C++, Java, Python, Web Development tutorials</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💼</span>
+        <h3 class="feature-title">Find Jobs</h3>
+        <p class="feature-description">Access top job portals - Naukri, LinkedIn, Indeed</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⚡</span>
+        <h3 class="feature-title">Practice Coding</h3>
+        <p class="feature-description">HackerRank, LeetCode - Prepare for tech interviews</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💰</span>
+        <h3 class="feature-title">Commerce & Banking</h3>
+        <p class="feature-description">Accounting, Economics, Business - Complete resources</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎓</span>
+        <h3 class="feature-title">Degree Programs</h3>
+        <p class="feature-description">BA, BSc, BCom - Study material & exam guides</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🧒</span>
+        <h3 class="feature-title">Junior Learning</h3>
+        <p class="feature-description">Class 1-8 interactive apps - BYJU'S, Khan Academy</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <h3 class="feature-title">AI Tools</h3>
+        <p class="feature-description">ChatGPT, Image Gen, Video AI - Latest AI technology</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- What You'll Find Section -->
+  <section class="what-youll-find-section">
+    <div class="section-header">
+      <h2 class="section-title">📚 What Books Are Available?</h2>
+      <p class="section-subtitle">Here's what you can download from each source</p>
+    </div>
+
+    <div class="books-available-grid">
+      <div class="books-card">
+        <h3 class="books-source">📚 NCERT (ncert.nic.in)</h3>
+        <ul class="books-list">
+          <li>✅ All Classes: 1st to 12th</li>
+          <li>✅ All Subjects: Math, Science, Social Science, English, Hindi</li>
+          <li>✅ Format: PDF (High Quality)</li>
+          <li>✅ Languages: Hindi, English, Urdu</li>
+          <li>✅ Total: 500+ books</li>
+        </ul>
+      </div>
+
+      <div class="books-card">        <h3 class="books-source">🎓 Khan Academy India</h3>
+        <ul class="books-list">
+          <li>✅ Free video lessons for all classes</li>
+          <li>✅ Math, Science complete courses</li>
+          <li>✅ NCERT-aligned curriculum</li>
+          <li>✅ Hindi & English both languages</li>
+          <li>✅ Practice exercises & quizzes</li>
+        </ul>
+      </div>
+
+      <div class="books-card">        <h3 class="books-source">� Drishti IAS (Free)</h3>
+        <ul class="books-list">
+          <li>✅ Daily current affairs in Hindi/English</li>
+          <li>✅ Monthly PDF magazines</li>
+          <li>✅ UPSC preparation material</li>
+          <li>✅ Editorials & news analysis</li>
+          <li>✅ 100% Free resources</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🎓 Adda247 (Free Section)</h3>
+        <ul class="books-list">
+          <li>✅ SSC, Banking free PDFs</li>
+          <li>✅ Daily current affairs capsules</li>
+          <li>✅ Free mock tests & quizzes</li>
+          <li>✅ Railway & police exam prep</li>
+          <li>✅ Video lectures available</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🎯 ClearIAS (UPSC Free)</h3>
+        <ul class="books-list">
+          <li>✅ Complete UPSC study notes</li>
+          <li>✅ Subject-wise free PDFs</li>
+          <li>✅ Online mock tests (free)</li>
+          <li>✅ Strategy & tips</li>
+          <li>✅ Active community forum</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">📖 UP Board (upmsp.edu.in)</h3>
+        <ul class="books-list">
+          <li>✅ Classes: 9th to 12th</li>
+          <li>✅ All UP Board subjects</li>
+          <li>✅ Format: PDF</li>
+          <li>✅ Languages: Hindi, English</li>
+          <li>✅ Total: 100+ books</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🎓 NDLI (ndl.iitkgp.ac.in)</h3>
+        <ul class="books-list">
+          <li>✅ 7.8 Crore+ Digital Resources</li>
+          <li>✅ UPSC, SSC, Banking preparation</li>
+          <li>✅ Research papers & journals</li>
+          <li>✅ Classic literature</li>
+          <li>✅ Free registration required</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">📕 IGNOU (egyankosh.ac.in)</h3>
+        <ul class="books-list">
+          <li>✅ 4000+ E-books</li>
+          <li>✅ Competitive exam material</li>
+          <li>✅ BA, MA, B.Com, M.Com books</li>
+          <li>✅ Certificate courses</li>
+          <li>✅ Format: PDF & ePub</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">📰 AffairsCloud (Free)</h3>
+        <ul class="books-list">
+          <li>✅ Daily/Monthly current affairs PDF</li>
+          <li>✅ Banking awareness capsules</li>
+          <li>✅ GK updates for all exams</li>
+          <li>✅ Free quiz section</li>
+          <li>✅ Static GK downloads</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">💻 Programming Resources</h3>
+        <ul class="books-list">
+          <li>✅ C, C++, Java, Python tutorials</li>
+          <li>✅ HTML, CSS, JavaScript complete</li>
+          <li>✅ Data Structures & Algorithms</li>
+          <li>✅ W3Schools, GeeksforGeeks, Programiz</li>
+          <li>✅ Free interactive practice</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🔧 ITI & Polytechnic</h3>
+        <ul class="books-list">
+          <li>✅ NCVT ITI official resources</li>
+          <li>✅ Diploma engineering material</li>
+          <li>✅ All trades syllabus & books</li>
+          <li>✅ Spoken Tutorial videos (IIT)</li>
+          <li>✅ Technical skill development</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">💼 Job Portals</h3>
+        <ul class="books-list">
+          <li>✅ Naukri.com - Top job portal</li>
+          <li>✅ LinkedIn Jobs - Professional network</li>
+          <li>✅ Indeed India - All industries</li>
+          <li>✅ Internshala - Internships & fresher jobs</li>
+          <li>✅ Sarkari Result - Govt jobs</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🎯 Skill Development</h3>
+        <ul class="books-list">
+          <li>✅ NPTEL (IIT/IISc) - Free courses</li>
+          <li>✅ Coursera, edX - University courses</li>
+          <li>✅ Google Digital Garage - Certifications</li>
+          <li>✅ Microsoft Learn - Cloud & Office</li>
+          <li>✅ Skill India - Govt certifications</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">⚡ Coding Practice</h3>
+        <ul class="books-list">
+          <li>✅ HackerRank - Coding challenges & certificates</li>
+          <li>✅ LeetCode - Interview preparation DSA</li>
+          <li>✅ CodeChef - Competitive programming</li>
+          <li>✅ Codeforces - Global contests</li>
+          <li>✅ HackerEarth - Hackathons & jobs</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">💰 Commerce & Banking</h3>
+        <ul class="books-list">
+          <li>✅ AccountingCoach - Free accounting lessons</li>
+          <li>✅ Khan Academy Economics & Finance</li>
+          <li>✅ Tally Tutorial - ERP accounting</li>
+          <li>✅ NIOS Commerce study material</li>
+          <li>✅ Investopedia - Finance concepts</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🎓 Degree Programs</h3>
+        <ul class="books-list">
+          <li>✅ IGNOU - BA, BSc, BCom study material</li>
+          <li>✅ SWAYAM - University video lectures</li>
+          <li>✅ NPTEL - Science degree courses</li>
+          <li>✅ Previous year university papers</li>
+          <li>✅ Exam guides & syllabus for all degrees</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🧒 Junior Students (Class 1-8)</h3>
+        <ul class="books-list">
+          <li>✅ BYJU'S - Interactive video lessons</li>
+          <li>✅ Khan Academy Kids - Fun learning</li>
+          <li>✅ Toppr - Practice & doubt solving</li>
+          <li>✅ National Geographic Kids - Science fun</li>
+          <li>✅ DIKSHA Platform - State board books</li>
+        </ul>
+      </div>
+
+      <div class="books-card">
+        <h3 class="books-source">🤖 AI Tools (30 Tools)</h3>
+        <ul class="books-list">
+          <li>✅ Chat: ChatGPT, Copilot, Gemini, Claude</li>
+          <li>✅ Images: DALL-E, Leonardo.ai, Canva AI</li>
+          <li>✅ Video: Runway ML, Pictory, CapCut</li>
+          <li>✅ Writing: Grammarly, QuillBot, Jasper</li>
+          <li>✅ Voice: ElevenLabs, Murf.ai, Speechify</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2 class="cta-title">Need Help Finding Resources?</h2>
+      <p class="cta-description">
+        Contact library admin or visit the library desk for assistance
+      </p>
+      <div class="cta-buttons">
+        <button class="cta-button primary" routerLink="/library-grid">
+          Back to Library Grid
+        </button>
+        <button class="cta-button secondary" (click)="scrollToTop()">
+          ⬆️ Back to Top
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Loading resources...</p>
+  </div>
+</div>

@@ -31,6 +31,7 @@ import { LibraryGridComponent } from './pages/library-grid/library-grid.componen
 import { LibraryDashboardComponent } from './pages/library-dashboard/library-dashboard.component';
 import { LibraryStudentsComponent } from './pages/library-students/library-students.component';
 import { LibraryExpensesComponent } from './pages/library-expenses/library-expenses.component';
+import { DigitalLibraryComponent } from './pages/digital-library/digital-library.component';
 
 // 🔐 AUTHENTICATION
 import { LoginComponent } from './pages/login/login.component';
@@ -59,6 +60,7 @@ export const routes: Routes = [
   { path: 'library-dashboard', component: LibraryDashboardComponent, canActivate: [authGuard, libraryGuard] },
   { path: 'library-students', component: LibraryStudentsComponent, canActivate: [authGuard, libraryGuard] },
   { path: 'library-expenses', component: LibraryExpensesComponent, canActivate: [authGuard, libraryGuard] },
+  { path: 'resources', component: DigitalLibraryComponent, canActivate: [authGuard, libraryGuard] }, // 📚 Digital Resources - Library Members Only
 
   // Legacy routes - redirect to new system or keep for backward compatibility (Protected - Manufacturing)
   { path: 'dashboard', redirectTo: 'reports-dashboard', pathMatch: 'full' },

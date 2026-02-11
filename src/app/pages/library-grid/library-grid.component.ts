@@ -2,13 +2,14 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-library-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './library-grid.component.html',
   styleUrls: ['./library-grid.component.css']
 })
