@@ -3,11 +3,32 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
+import { MatDividerModule } from '@angular/material/divider';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink],
+  imports: [
+    CommonModule, 
+    RouterOutlet, 
+    RouterLink, 
+    MatMenuModule, 
+    MatButtonModule,
+    MatToolbarModule,
+    MatIconModule,
+    MatSidenavModule,
+    MatListModule,
+    MatDividerModule
+  ],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -15,6 +36,13 @@ export class AppComponent {
 
   public router = inject(Router);
   public authService = inject(AuthService);
+  private breakpointObserver = inject(BreakpointObserver);
+
+  isHandset$: Observable<boolean> = this.breakpointObserver.observe([Breakpoints.Handset])
+    .pipe(
+      map(result => result.matches),
+      shareReplay()
+    );
 
   get currentUser() {
     return this.authService.currentUserValue;
@@ -29,8 +57,6 @@ export class AppComponent {
   }
 
   public hasFullLibraryAccess(): boolean {
-    // Only admin, editor, and library_manager can see full library menu
-    // library_viewer and viewer can only see the grid
     return this.authService.isAdmin() || 
            this.authService.isEditor() || 
            this.authService.isLibraryManager();
@@ -38,24 +64,18 @@ export class AppComponent {
 
   public async logout(): Promise<void> {
     await this.authService.logout();
-    // Use window.location for hard redirect after logout to avoid guard issues
     window.location.href = '/login';
+  }
+
+  public closeDrawerOnMobile(drawer: any): void {
+    if (this.breakpointObserver.isMatched(Breakpoints.Handset)) {
+      drawer.close();
+    }
   }
 
   debug(msg: string) {
   console.log("🧭 MENU CLICK:", msg);
 }
-
-  closeMenu() {
-    // Find all open details elements in the menu and close them
-    const menuBar = document.querySelector('.menu-bar');
-    if (menuBar) {
-      const openDetails = menuBar.querySelectorAll('details[open]');
-      openDetails.forEach((detail: Element) => {
-        (detail as HTMLDetailsElement).open = false;
-      });
-    }
-  }
 
   constructor() {
     console.log("✅ AppComponent Loaded");
@@ -64,8 +84,10 @@ export class AppComponent {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
         console.log("➡ Route Changed:", event);
-        // Auto-close all menus after navigation
-        this.closeMenu();
+        // Auto-close mobile drawer on navigation
+        if (this.breakpointObserver.isMatched(Breakpoints.Handset)) {
+          // Drawer will close automatically via template binding
+        }
       });
   }
 }

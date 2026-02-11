@@ -32,6 +32,8 @@ export class LibraryStudentsComponent implements OnInit {
     emergency_contact: '',
     emergency_contact_name: '',
     address: '',
+    gender: 'Male',
+    joining_date: new Date().toISOString().split('T')[0],
     registration_fee_paid: 0,
     status: 'active'
   };
@@ -39,10 +41,45 @@ export class LibraryStudentsComponent implements OnInit {
   selectedPhoto: File | null = null;
   uploadingPhoto = false;
 
+  // Date dropdown arrays
+  days: number[] = Array.from({length: 31}, (_, i) => i + 1);
+  months = [
+    {value: '01', label: 'January'}, {value: '02', label: 'February'}, {value: '03', label: 'March'},
+    {value: '04', label: 'April'}, {value: '05', label: 'May'}, {value: '06', label: 'June'},
+    {value: '07', label: 'July'}, {value: '08', label: 'August'}, {value: '09', label: 'September'},
+    {value: '10', label: 'October'}, {value: '11', label: 'November'}, {value: '12', label: 'December'}
+  ];
+  dobYears: number[] = [];
+  joiningYears: number[] = [];
+
+  // Separate date fields
+  dobDay = '';
+  dobMonth = '';
+  dobYear = '';
+  joiningDay = '';
+  joiningMonth = '';
+  joiningYear = '';
+
   constructor(
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    // Generate year ranges
+    const currentYear = new Date().getFullYear();
+    // DOB: 1990 to current year
+    for (let year = currentYear; year >= 1990; year--) {
+      this.dobYears.push(year);
+    }
+    // Joining: 2025 to current year
+    for (let year = currentYear; year >= 2025; year--) {
+      this.joiningYears.push(year);
+    }
+    // Set default joining date to today
+    const today = new Date();
+    this.joiningDay = String(today.getDate()).padStart(2, '0');
+    this.joiningMonth = String(today.getMonth() + 1).padStart(2, '0');
+    this.joiningYear = String(today.getFullYear());
+  }
 
   async ngOnInit() {
     await this.loadStudents();
@@ -90,6 +127,8 @@ export class LibraryStudentsComponent implements OnInit {
       emergency_contact: '',
       emergency_contact_name: '',
       address: '',
+      gender: 'Male',
+      joining_date: new Date().toISOString().split('T')[0],
       registration_fee_paid: 0,
       status: 'active'
     };
@@ -134,7 +173,15 @@ export class LibraryStudentsComponent implements OnInit {
 
   async submitAddStudent() {
     try {
-      if (!this.newStudent.name || !this.newStudent.mobile || !this.newStudent.emergency_contact || !this.newStudent.address) {
+      // Combine date fields
+      if (this.dobDay && this.dobMonth && this.dobYear) {
+        this.newStudent.dob = `${this.dobYear}-${this.dobMonth}-${String(this.dobDay).padStart(2, '0')}`;
+      }
+      if (this.joiningDay && this.joiningMonth && this.joiningYear) {
+        this.newStudent.joining_date = `${this.joiningYear}-${this.joiningMonth}-${String(this.joiningDay).padStart(2, '0')}`;
+      }
+
+      if (!this.newStudent.name || !this.newStudent.mobile || !this.newStudent.address || !this.newStudent.joining_date) {
         this.errorMessage = 'Please fill all required fields';
         return;
       }

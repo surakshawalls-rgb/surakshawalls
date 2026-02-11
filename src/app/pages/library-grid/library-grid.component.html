@@ -1,10 +1,17 @@
 <!-- src/app/pages/library-grid/library-grid.component.html -->
+<style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+
 <div class="library-grid-container">
   <div class="header">
     <div>
       <h2>📚 Suraksha Library - Seat Management</h2>
-      <p class="subtitle" *ngIf="authService.canEdit()">36-Seat Grid | Click empty seats to register | Click occupied to view profile</p>
-      <p class="subtitle" *ngIf="!authService.canEdit()">36-Seat Grid | View-Only Mode</p>
+      <p class="subtitle" *ngIf="authService.canEdit()">Click empty seats to register new students | Click occupied seats to view profiles</p>
+      <p class="subtitle" *ngIf="!authService.canEdit()">Viewing library seat occupancy and student attendance</p>
     </div>
     <div class="header-actions">
       <button (click)="openMyAttendanceModal()" class="btn btn-primary">
@@ -79,159 +86,373 @@
         <input type="checkbox" [checked]="isSeatSelected(seat.seat_no)" (click)="$event.stopPropagation()">
       </div>
 
-      <div class="seat-number">{{ seat.seat_no }}</div>
-      <div class="seat-info" *ngIf="seat.full_time_student_id || seat.first_half_student_id || seat.second_half_student_id">
-        <!-- Full Time Student -->
-        <div class="student-name" *ngIf="seat.full_time_student_id">
-          {{ seat.full_time_student?.name }}
-          <span *ngIf="getAttendanceIndicator(seat.full_time_student_id)" 
-                [ngClass]="getAttendanceIndicatorClass(seat.full_time_student_id)"
-                class="attendance-indicator">
-            {{ getAttendanceIndicator(seat.full_time_student_id) }}
+      <!-- FREE SEAT -->
+      <ng-container *ngIf="!seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id">
+        <div class="seat-status-top">Free</div>
+        <div class="seat-number">{{ seat.seat_no }}</div>
+      </ng-container>
+      
+      <!-- FULL TIME STUDENT -->
+      <ng-container *ngIf="seat.full_time_student_id">
+        <div class="time-status-top">
+          <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.full_time_student_id)?.check_in_time">
+            🟢 {{ getStudentAttendanceStatus(seat.full_time_student_id).check_in_time.substring(0, 5) }}
+          </span>
+          <span class="seat-status-inline">Full Time</span>
+          <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.full_time_student_id)?.check_out_time">
+            🔴 {{ getStudentAttendanceStatus(seat.full_time_student_id).check_out_time.substring(0, 5) }}
           </span>
         </div>
-        <!-- Both Shifts Occupied -->
-        <div class="dual-students" *ngIf="seat.first_half_student_id && seat.second_half_student_id">
-          <div class="student-name small">
-            🌅 {{ seat.first_half_student?.name }}
-            <span *ngIf="getAttendanceIndicator(seat.first_half_student_id)" 
-                  [ngClass]="getAttendanceIndicatorClass(seat.first_half_student_id)"
-                  class="attendance-indicator">
-              {{ getAttendanceIndicator(seat.first_half_student_id) }}
-            </span>
+        <div class="seat-number">{{ seat.seat_no }}</div>
+        <div class="student-name">{{ seat.full_time_student?.name }}</div>
+        <div class="seat-expiry" *ngIf="seat.full_time_expiry">
+          {{ getDaysRemaining(seat.full_time_expiry) }}
+        </div>
+      </ng-container>
+      
+      <!-- BOTH SHIFTS OCCUPIED -->
+      <ng-container *ngIf="seat.first_half_student_id && seat.second_half_student_id">
+        <div class="seat-status-top">Full Day</div>
+        <div class="seat-number">{{ seat.seat_no }}</div>
+        <div class="dual-students">
+          <div class="half-shift">
+            <div class="time-status-compact">
+              <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_in_time">
+                🟢 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_in_time.substring(0, 5) }}
+              </span>
+              <span class="shift-label">🌅 1st</span>
+              <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_out_time">
+                🔴 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_out_time.substring(0, 5) }}
+              </span>
+            </div>
+            <div class="student-name">{{ seat.first_half_student?.name }}</div>
+            <div class="seat-expiry" *ngIf="seat.first_half_expiry">
+              {{ getDaysRemaining(seat.first_half_expiry) }}
+            </div>
           </div>
-          <div class="student-name small">
-            🌃 {{ seat.second_half_student?.name }}
-            <span *ngIf="getAttendanceIndicator(seat.second_half_student_id)" 
-                  [ngClass]="getAttendanceIndicatorClass(seat.second_half_student_id)"
-                  class="attendance-indicator">
-              {{ getAttendanceIndicator(seat.second_half_student_id) }}
-            </span>
+          <div class="half-shift">
+            <div class="time-status-compact">
+              <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_in_time">
+                🟢 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_in_time.substring(0, 5) }}
+              </span>
+              <span class="shift-label">🌃 2nd</span>
+              <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_out_time">
+                🔴 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_out_time.substring(0, 5) }}
+              </span>
+            </div>
+            <div class="student-name">{{ seat.second_half_student?.name }}</div>
+            <div class="seat-expiry" *ngIf="seat.second_half_expiry">
+              {{ getDaysRemaining(seat.second_half_expiry) }}
+            </div>
           </div>
         </div>
-        <!-- Single Half Shift -->
-        <div class="student-name" *ngIf="(seat.first_half_student_id && !seat.second_half_student_id) || (seat.second_half_student_id && !seat.first_half_student_id)">
-          {{ seat.first_half_student?.name || seat.second_half_student?.name }}
-          <span *ngIf="getAttendanceIndicator(seat.first_half_student_id || seat.second_half_student_id)" 
-                [ngClass]="getAttendanceIndicatorClass(seat.first_half_student_id || seat.second_half_student_id)"
-                class="attendance-indicator">
-            {{ getAttendanceIndicator(seat.first_half_student_id || seat.second_half_student_id) }}
+      </ng-container>
+      
+      <!-- FIRST HALF ONLY -->
+      <ng-container *ngIf="seat.first_half_student_id && !seat.second_half_student_id">
+        <div class="time-status-top">
+          <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_in_time">
+            🟢 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_in_time.substring(0, 5) }}
+          </span>
+          <span class="seat-status-inline">First Half</span>
+          <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_out_time">
+            🔴 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_out_time.substring(0, 5) }}
           </span>
         </div>
-      </div>
+        <div class="seat-number">{{ seat.seat_no }}</div>
+        <div class="student-name">{{ seat.first_half_student?.name }}</div>
+        <div class="seat-expiry" *ngIf="seat.first_half_expiry">
+          {{ getDaysRemaining(seat.first_half_expiry) }}
+        </div>
+      </ng-container>
+      
+      <!-- SECOND HALF ONLY -->
+      <ng-container *ngIf="seat.second_half_student_id && !seat.first_half_student_id">
+        <div class="time-status-top">
+          <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_in_time">
+            🟢 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_in_time.substring(0, 5) }}
+          </span>
+          <span class="seat-status-inline">Second Half</span>
+          <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_out_time">
+            🔴 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_out_time.substring(0, 5) }}
+          </span>
+        </div>
+        <div class="seat-number">{{ seat.seat_no }}</div>
+        <div class="student-name">{{ seat.second_half_student?.name }}</div>
+        <div class="seat-expiry" *ngIf="seat.second_half_expiry">
+          {{ getDaysRemaining(seat.second_half_expiry) }}
+        </div>
+      </ng-container>
     </div>
   </div>
 
-  <!-- Legend -->
-  <div class="legend">
-    <div class="legend-item"><span class="legend-box empty"></span> Available</div>
-    <div class="legend-item"><span class="legend-box occupied"></span> Paid (Active)</div>
-    <div class="legend-item"><span class="legend-box expiring"></span> Expiring Soon (1-2 days)</div>
-    <div class="legend-item"><span class="legend-box expired"></span> Expired (Overdue)</div>
-    <div class="legend-item"><span class="legend-box half-occupied"></span> Half Shift Available</div>
-    <div class="legend-item"><span class="attendance-indicator status-in">🟢 08:30</span> Checked In</div>
-    <div class="legend-item"><span class="attendance-indicator">🟢 08:30 🔴 17:45</span> In & Out Times</div>
-  </div>
+
 
   <!-- Registration Modal -->
-  <div class="modal-overlay" *ngIf="showRegistrationModal" (click)="closeModal()">
-    <div class="modal-content large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>📝 Register Student - Seat {{ selectedSeat?.seat_no }}</h3>
-        <button (click)="closeModal()" class="close-btn">&times;</button>
+  <div class="modal-overlay" *ngIf="showRegistrationModal" (click)="closeModal()" 
+       style="backdrop-filter: blur(12px); background: rgba(0,0,0,0.7);">
+    <div class="modal-content large" (click)="$event.stopPropagation()" 
+         style="background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4);">
+      <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 24px 24px 0 0; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; z-index: 1; position: relative; display: flex; align-items: center; gap: 12px;">
+          <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">👨‍🎓</span>
+          Register Student - Seat {{ selectedSeat?.seat_no }}
+        </h3>
+        <button (click)="closeModal()" style="position: absolute; top: 20px; right: 24px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; font-weight: bold; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; z-index: 2;"
+                onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.1)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">&times;</button>
       </div>
-      <div class="modal-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Full Name <span class="required">*</span></label>
-            <input type="text" [(ngModel)]="newStudent.name" class="form-control" placeholder="Enter full name">
+      <div class="modal-body" style="padding: 32px; max-height: 70vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.2) transparent;">
+        <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">👤</span> Full Name <span style="color: #e53e3e;">*</span>
+            </label>
+            <input type="text" [(ngModel)]="newStudent.name" 
+                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="Enter full name"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
           </div>
           
           <!-- Personal Details - Only for Admin and Library Manager -->
-          <div *ngIf="canViewPersonalDetails()" class="form-group">
-            <label>Mobile Number <span class="required">*</span></label>
-            <input type="tel" [(ngModel)]="newStudent.mobile" class="form-control" placeholder="+91 9876543210" (blur)="checkExistingStudent()">
-            <small *ngIf="checkingMobile" class="text-info">Checking mobile number...</small>
-            <small *ngIf="existingStudent && !checkingMobile" class="text-success">✓ Student data loaded from existing record</small>
+          <div *ngIf="canViewPersonalDetails()" class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">📱</span> Mobile Number <span style="color: #e53e3e;">*</span>
+            </label>
+            <input type="tel" [(ngModel)]="newStudent.mobile" (blur)="checkExistingStudent()"
+                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="+91 9876543210"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+            <small *ngIf="checkingMobile" style="color: #3182ce; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <span class="loading-spinner" style="width: 12px; height: 12px; border: 2px solid #3182ce; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span>
+              Checking mobile number...
+            </small>
+            <small *ngIf="existingStudent && !checkingMobile" style="color: #38a169; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #38a169;">✓</span> Student data loaded from existing record
+            </small>
           </div>
           
-          <div *ngIf="canViewPersonalDetails()" class="form-group">
-            <label>Emergency Contact <span class="required">*</span></label>
-            <input type="tel" [(ngModel)]="newStudent.emergency_contact" class="form-control" placeholder="+91 9876543210">
+          <div *ngIf="canViewPersonalDetails()" class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">🆘</span> Emergency Contact
+            </label>
+            <input type="tel" [(ngModel)]="newStudent.emergency_contact"
+                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="+91 9876543210"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
           </div>
           
-          <div *ngIf="canViewPersonalDetails()" class="form-group">
-            <label>Emergency Contact Name</label>
-            <input type="text" [(ngModel)]="newStudent.emergency_contact_name" class="form-control" placeholder="Parent/Guardian name">
+          <div *ngIf="canViewPersonalDetails()" class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">👨‍👩‍👧‍👦</span> Emergency Contact Name
+            </label>
+            <input type="text" [(ngModel)]="newStudent.emergency_contact_name"
+                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="Parent/Guardian name"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
           </div>
           
-          <div *ngIf="canViewPersonalDetails()" class="form-group full-width">
-            <label>Address <span class="required">*</span></label>
-            <textarea [(ngModel)]="newStudent.address" class="form-control" rows="2" placeholder="Full address"></textarea>
+          <div *ngIf="canViewPersonalDetails()" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">🏠</span> Address <span style="color: #e53e3e;">*</span>
+            </label>
+            <textarea [(ngModel)]="newStudent.address" rows="2"
+                      style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px); resize: vertical; min-height: 80px;"
+                      placeholder="Full address"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'"></textarea>
           </div>
           
-          <div class="form-group">
-            <label>Date of Birth</label>
-            <input type="date" [(ngModel)]="newStudent.dob" class="form-control">
+          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">🎂</span> Date of Birth
+            </label>
+            <div style="display: flex; gap: 12px;">
+              <select [(ngModel)]="dobDay" 
+                      style="flex: 1; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                <option value="">Day</option>
+                <option *ngFor="let day of days" [value]="day">{{day}}</option>
+              </select>
+              <select [(ngModel)]="dobMonth" 
+                      style="flex: 2; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                <option value="">Month</option>
+                <option *ngFor="let month of months" [value]="month.value">{{month.label}}</option>
+              </select>
+              <select [(ngModel)]="dobYear" 
+                      style="flex: 1.5; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                <option value="">Year</option>
+                <option *ngFor="let year of dobYears" [value]="year">{{year}}</option>
+              </select>
+            </div>
           </div>
           
-          <div class="form-group">
-            <label>Gender</label>
-            <select [(ngModel)]="newStudent.gender" class="form-control">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">📅</span> Joining Date <span style="color: #e53e3e;">*</span>
+            </label>
+            <div style="display: flex; gap: 12px;">
+              <select [(ngModel)]="joiningDay" 
+                      style="flex: 1; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                <option value="">Day</option>
+                <option *ngFor="let day of days" [value]="day">{{day}}</option>
+              </select>
+              <select [(ngModel)]="joiningMonth" 
+                      style="flex: 2; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                <option value="">Month</option>
+                <option *ngFor="let month of months" [value]="month.value">{{month.label}}</option>
+              </select>
+              <select [(ngModel)]="joiningYear" 
+                      style="flex: 1.5; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
+                <option value="">Year</option>
+                <option *ngFor="let year of joiningYears" [value]="year">{{year}}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #667eea;">♀️♂️</span> Gender
+            </label>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; background: rgba(255,255,255,0.7); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 50px; transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                     onmouseover="this.style.borderColor='#667eea'; this.style.background='rgba(102, 126, 234, 0.1)'"
+                     onmouseout="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.background='rgba(255,255,255,0.7)'">
+                <input type="radio" [(ngModel)]="newStudent.gender" value="Male" name="gender-register"
+                       style="margin: 0; accent-color: #667eea;">
+                <span style="font-weight: 500; color: #2d3748;">👨 Male</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; background: rgba(255,255,255,0.7); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 50px; transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                     onmouseover="this.style.borderColor='#667eea'; this.style.background='rgba(102, 126, 234, 0.1)'"
+                     onmouseout="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.background='rgba(255,255,255,0.7)'">
+                <input type="radio" [(ngModel)]="newStudent.gender" value="Female" name="gender-register"
+                       style="margin: 0; accent-color: #667eea;">
+                <span style="font-weight: 500; color: #2d3748;">👩 Female</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; background: rgba(255,255,255,0.7); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 50px; transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                     onmouseover="this.style.borderColor='#667eea'; this.style.background='rgba(102, 126, 234, 0.1)'"
+                     onmouseout="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.background='rgba(255,255,255,0.7)'">
+                <input type="radio" [(ngModel)]="newStudent.gender" value="Other" name="gender-register"
+                       style="margin: 0; accent-color: #667eea;">
+                <span style="font-weight: 500; color: #2d3748;">🏳️‍⚧️ Other</span>
+              </label>
+            </div>
+          </div>
+          
+          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #f59e0b;">⚠️</span> Upload Photo <span style="color: #f59e0b; font-size: 0.85rem;">(Temporarily Disabled)</span>
+            </label>
+            <input type="file" accept="image/*" (change)="onPhotoSelect($event)" disabled
+                   style="padding: 16px 20px; border: 2px dashed rgba(245, 158, 11, 0.3); border-radius: 16px; font-size: 1rem; background: rgba(245, 158, 11, 0.05); color: #92400e; cursor: not-allowed;">
+            <small style="color: #f59e0b; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
+              <span>⚠️</span> Photo upload temporarily disabled. Configure storage bucket RLS policies first.
+            </small>
+          </div>
+          
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #10b981;">💳</span> Registration Fee
+            </label>
+            <input type="number" [(ngModel)]="newStudent.registration_fee_paid"
+                   style="padding: 16px 20px; border: 2px solid rgba(16, 185, 129, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="Enter amount"
+                   onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 3px rgba(16, 185, 129, 0.1)'"
+                   onblur="this.style.borderColor='rgba(16, 185, 129, 0.2)'; this.style.boxShadow='none'">
+          </div>
+          
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #8b5cf6;">⏰</span> Shift Type
+            </label>
+            <select [(ngModel)]="selectedShift" (change)="onShiftChange()"
+                    style="padding: 16px 20px; border: 2px solid rgba(139, 92, 246, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                    onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'"
+                    onblur="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'">
+              <option value="full_time">🌅 Full Time (₹400/month)</option>
+              <option value="first_half">🌅 First Half - 8AM-2PM (₹250/month)</option>
+              <option value="second_half">🌆 Second Half - 2PM-8PM (₹250/month)</option>
             </select>
           </div>
           
-          <div class="form-group full-width">
-            <label>Upload Photo <span class="text-warning">(Temporarily Disabled)</span></label>
-            <input type="file" accept="image/*" (change)="onPhotoSelect($event)" class="form-control" disabled>
-            <small class="text-warning">⚠️ Photo upload temporarily disabled. Configure storage bucket RLS policies first.</small>
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #10b981;">💰</span> Fee Amount
+            </label>
+            <input type="number" [(ngModel)]="feePayment.amount_paid"
+                   style="padding: 16px 20px; border: 2px solid rgba(16, 185, 129, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="Enter amount"
+                   onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 3px rgba(16, 185, 129, 0.1)'"
+                   onblur="this.style.borderColor='rgba(16, 185, 129, 0.2)'; this.style.boxShadow='none'">
           </div>
           
-          <div class="form-group">
-            <label>Registration Fee</label>
-            <input type="number" [(ngModel)]="newStudent.registration_fee_paid" class="form-control">
-          </div>
-          
-          <div class="form-group">
-            <label>Shift Type</label>
-            <select [(ngModel)]="selectedShift" (change)="onShiftChange()" class="form-control">
-              <option value="full_time">Full Time (₹400/month)</option>
-              <option value="first_half">First Half - 8AM-2PM (₹250/month)</option>
-              <option value="second_half">Second Half - 2PM-8PM (₹250/month)</option>
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #3b82f6;">💳</span> Payment Mode
+            </label>
+            <select [(ngModel)]="feePayment.payment_mode"
+                    style="padding: 16px 20px; border: 2px solid rgba(59, 130, 246, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'"
+                    onblur="this.style.borderColor='rgba(59, 130, 246, 0.2)'; this.style.boxShadow='none'">
+              <option value="cash">💵 Cash</option>
+              <option value="upi">📱 UPI</option>
+              <option value="card">💳 Card</option>
             </select>
           </div>
           
-          <div class="form-group">
-            <label>Fee Amount</label>
-            <input type="number" [(ngModel)]="feePayment.amount_paid" class="form-control">
+          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #f59e0b;">📅</span> Validity (Days)
+            </label>
+            <input type="number" [(ngModel)]="feePayment.days" value="30"
+                   style="padding: 16px 20px; border: 2px solid rgba(245, 158, 11, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                   placeholder="30"
+                   onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)'"
+                   onblur="this.style.borderColor='rgba(245, 158, 11, 0.2)'; this.style.boxShadow='none'">
           </div>
           
-          <div class="form-group">
-            <label>Payment Mode</label>
-            <select [(ngModel)]="feePayment.payment_mode" class="form-control">
-              <option value="cash">Cash</option>
-              <option value="upi">UPI</option>
-              <option value="card">Card</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>Validity (Days)</label>
-            <input type="number" [(ngModel)]="feePayment.days" class="form-control" value="30">
-          </div>
-          
-          <div class="form-group full-width">
-            <label>Notes</label>
-            <textarea [(ngModel)]="newStudent.notes" class="form-control" rows="2" placeholder="Any additional notes"></textarea>
+          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+              <span style="color: #8b5cf6;">📝</span> Notes
+            </label>
+            <textarea [(ngModel)]="newStudent.notes" rows="2"
+                      style="padding: 16px 20px; border: 2px solid rgba(139, 92, 246, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px); resize: vertical; min-height: 80px;"
+                      placeholder="Any additional notes"
+                      onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'"
+                      onblur="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'"></textarea>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
-        <button (click)="submitRegistration()" [disabled]="saving || uploadingPhoto" class="btn btn-primary">
+      <div style="padding: 24px; border-top: 1px solid rgba(0,0,0,0.1); display: flex; gap: 16px; justify-content: flex-end; align-items: center; background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); border-radius: 0 0 24px 24px;">
+        <button (click)="closeModal()" 
+                style="padding: 14px 28px; background: rgba(108, 117, 125, 0.1); color: #495057; border: 2px solid rgba(108, 117, 125, 0.2); border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
+                onmouseover="this.style.background='rgba(108, 117, 125, 0.2)'; this.style.transform='translateY(-2px)'" 
+                onmouseout="this.style.background='rgba(108, 117, 125, 0.1)'; this.style.transform='translateY(0)'">
+          Cancel
+        </button>
+        <button (click)="submitRegistration()" [disabled]="saving || uploadingPhoto"
+                style="padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); display: flex; align-items: center; gap: 8px;"
+                [style.opacity]="saving || uploadingPhoto ? '0.7' : '1'"
+                [style.cursor]="saving || uploadingPhoto ? 'not-allowed' : 'pointer'"
+                onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)'; }"
+                onmouseout="if(!this.disabled) { this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'; }">
+          <span *ngIf="saving || uploadingPhoto" style="width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span>
           {{ saving ? 'Saving...' : uploadingPhoto ? 'Uploading Photo...' : '💾 Register Student' }}
         </button>
       </div>
@@ -248,19 +469,19 @@
       
       <!-- Single Student View -->
       <div class="modal-body" *ngIf="selectedStudent && !showBothStudents">
-        <div class="profile-section">
-          <div class="profile-photo">
+        <div class="profile-layout-3col">
+          <div class="profile-photo-col">
             <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo">
             <div *ngIf="!selectedStudent.photo_url" class="no-photo">📷</div>
           </div>
-          <div class="profile-info">
+          <div class="profile-info-col">
             <h4>{{ selectedStudent.name }}</h4>
             
             <!-- Personal Details - Only for Admin and Library Manager -->
             <div *ngIf="canViewPersonalDetails()">
               <p><strong>Mobile:</strong> {{ selectedStudent.mobile }}</p>
               <p><strong>Address:</strong> {{ selectedStudent.address }}</p>
-              <p><strong>Emergency Contact:</strong> {{ selectedStudent.emergency_contact_name || 'N/A' }} - {{ selectedStudent.emergency_contact }}</p>
+              <p><strong>Emergency:</strong> {{ selectedStudent.emergency_contact_name || 'N/A' }} - {{ selectedStudent.emergency_contact }}</p>
             </div>
             
             <!-- Limited info for viewers -->
@@ -272,42 +493,37 @@
             <p><strong>Joined:</strong> {{ selectedStudent.joining_date }}</p>
             <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedStudent.status">{{ selectedStudent.status }}</span></p>
           </div>
-        </div>
-        
-        <div class="action-buttons">
-          <button *ngIf="todayAttendance && todayAttendance.check_in_time && !todayAttendance.check_out_time" 
-                  class="info-badge">
-            ⏰ Checked in at {{ todayAttendance.check_in_time }}
-          </button>
-          <button (click)="toggleAttendance(selectedStudent)" 
-                  [class]="'btn ' + getAttendanceButtonClass()"
-                  [disabled]="isAttendanceButtonDisabled()">
-            {{ getAttendanceButtonText() }}
-          </button>
-          <button *ngIf="authService.canEdit()" 
-                  (click)="openFeePaymentModal(selectedStudent)" 
-                  class="btn btn-success">
-            💳 Pay Fee
-          </button>
-          <button *ngIf="isOtherShiftAvailable() && authService.canEdit()" 
-                  (click)="addStudentForOtherShift()" 
-                  class="btn btn-primary">
-            ➕ Add Student ({{ getAvailableShiftName() }})
-          </button>
-          <button *ngIf="authService.canEdit() && selectedStudent"
-                  (click)="openChangeSeatModal(selectedStudent, getCurrentShiftType())"
-                  class="btn btn-info">
-            🔄 Change Seat
-          </button>
-          <button (click)="sendWhatsAppReminder()" class="btn btn-success">
-            💬 Send Fee Reminder
-          </button>
-          <button (click)="sendEmergencySOS()" class="btn btn-warning">
-            🚨 Emergency SOS
-          </button>
-          <button (click)="releaseSeatConfirm()" class="btn btn-danger">
-            🚪 Release Seat
-          </button>
+          <div class="profile-actions-col">
+            <button (click)="toggleAttendance(selectedStudent)" 
+                    [class]="'btn btn-compact ' + getAttendanceButtonClass()"
+                    [disabled]="isAttendanceButtonDisabled()">
+              {{ getAttendanceButtonText() }}
+            </button>
+            <button *ngIf="authService.canEdit()" 
+                    (click)="openFeePaymentModal(selectedStudent)" 
+                    class="btn btn-compact btn-success">
+              💳 Pay Fee
+            </button>
+            <button *ngIf="authService.canEdit() && selectedStudent"
+                    (click)="openChangeSeatModal(selectedStudent, getCurrentShiftType())"
+                    class="btn btn-compact btn-info">
+              🔄 Change Seat
+            </button>
+            <button (click)="sendWhatsAppReminder()" class="btn btn-compact btn-success">
+              💬 Reminder
+            </button>
+            <button (click)="sendEmergencySOS()" class="btn btn-compact btn-warning">
+              🚨 SOS
+            </button>
+            <button (click)="releaseSeatConfirm()" class="btn btn-compact btn-danger">
+              🚪 Release
+            </button>
+            <button *ngIf="isOtherShiftAvailable() && authService.canEdit()" 
+                    (click)="addStudentForOtherShift()" 
+                    class="btn btn-compact btn-primary">
+              ➕ Add {{ getAvailableShiftName() }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -315,13 +531,13 @@
       <div class="modal-body dual-students" *ngIf="showBothStudents">
         <!-- First Half Student -->
         <div class="student-card" *ngIf="selectedStudent">
-          <div class="shift-badge morning">🌅 Morning Shift</div>
-          <div class="profile-section">
-            <div class="profile-photo">
+          <div class="shift-badge morning">🌅 Morning</div>
+          <div class="profile-layout-3col">
+            <div class="profile-photo-col">
               <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo">
               <div *ngIf="!selectedStudent.photo_url" class="no-photo">📷</div>
             </div>
-            <div class="profile-info">
+            <div class="profile-info-col">
               <h4>{{ selectedStudent.name }}</h4>
               
               <!-- Personal Details - Only for Admin and Library Manager -->
@@ -333,7 +549,7 @@
               
               <!-- Limited info for viewers -->
               <div *ngIf="!canViewPersonalDetails()">
-                <p class="text-muted"><em>Personal details hidden</em></p>
+                <p class="text-muted"><em>Hidden</em></p>
               </div>
               
               <p><strong>Seat:</strong> {{ selectedSeat?.seat_no }}</p>
@@ -341,49 +557,44 @@
               <p><strong>Expiry:</strong> {{ selectedSeat?.first_half_expiry }}</p>
               <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedStudent.status">{{ selectedStudent.status }}</span></p>
             </div>
-          </div>
-          
-          <div class="action-buttons">
-            <button *ngIf="getStudentAttendanceStatus(selectedStudent.id)?.check_in_time && !getStudentAttendanceStatus(selectedStudent.id)?.check_out_time" 
-                    class="info-badge">
-              ⏰ In at {{ getStudentAttendanceStatus(selectedStudent.id)?.check_in_time }}
-            </button>
-            <button (click)="toggleAttendance(selectedStudent)" 
-                    [class]="'btn btn-sm ' + getAttendanceButtonClassForStudent(selectedStudent.id)"
-                    [disabled]="isAttendanceButtonDisabledForStudent(selectedStudent.id)">
-              {{ getAttendanceButtonTextForStudent(selectedStudent.id) }}
-            </button>
-            <button *ngIf="authService.canEdit()" 
-                    (click)="openFeePaymentModal(selectedStudent)" 
-                    class="btn btn-success btn-sm">
-              💳 Fee
-            </button>
-            <button (click)="sendWhatsAppReminder(selectedStudent)" class="btn btn-success btn-sm">
-              💬 Reminder
-            </button>
-            <button (click)="sendEmergencySOS(selectedStudent)" class="btn btn-warning btn-sm">
-              🚨 SOS
-            </button>
-            <button *ngIf="authService.canEdit()"
-                    (click)="openChangeSeatModal(selectedStudent, 'first_half')" 
-                    class="btn btn-info btn-sm">
-              🔄 Change
-            </button>
-            <button (click)="releaseSeatConfirm(selectedStudent, 'first_half')" class="btn btn-danger btn-sm">
-              🚪 Release
-            </button>
+            <div class="profile-actions-col">
+              <button (click)="toggleAttendance(selectedStudent)" 
+                      [class]="'btn btn-compact ' + getAttendanceButtonClassForStudent(selectedStudent.id)"
+                      [disabled]="isAttendanceButtonDisabledForStudent(selectedStudent.id)">
+                {{ getAttendanceButtonTextForStudent(selectedStudent.id) }}
+              </button>
+              <button *ngIf="authService.canEdit()" 
+                      (click)="openFeePaymentModal(selectedStudent)" 
+                      class="btn btn-compact btn-success">
+                💳 Fee
+              </button>
+              <button *ngIf="authService.canEdit()"
+                      (click)="openChangeSeatModal(selectedStudent, 'first_half')" 
+                      class="btn btn-compact btn-info">
+                🔄 Change
+              </button>
+              <button (click)="sendWhatsAppReminder(selectedStudent)" class="btn btn-compact btn-success">
+                💬 Reminder
+              </button>
+              <button (click)="sendEmergencySOS(selectedStudent)" class="btn btn-compact btn-warning">
+                🚨 SOS
+              </button>
+              <button (click)="releaseSeatConfirm(selectedStudent, 'first_half')" class="btn btn-compact btn-danger">
+                🚪 Release
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- Second Half Student -->
         <div class="student-card" *ngIf="selectedSecondStudent">
-          <div class="shift-badge evening">🌃 Evening Shift</div>
-          <div class="profile-section">
-            <div class="profile-photo">
+          <div class="shift-badge evening">🌃 Evening</div>
+          <div class="profile-layout-3col">
+            <div class="profile-photo-col">
               <img *ngIf="selectedSecondStudent.photo_url" [src]="selectedSecondStudent.photo_url" alt="Student Photo">
               <div *ngIf="!selectedSecondStudent.photo_url" class="no-photo">📷</div>
             </div>
-            <div class="profile-info">
+            <div class="profile-info-col">
               <h4>{{ selectedSecondStudent.name }}</h4>
               
               <!-- Personal Details - Only for Admin and Library Manager -->
@@ -395,7 +606,7 @@
               
               <!-- Limited info for viewers -->
               <div *ngIf="!canViewPersonalDetails()">
-                <p class="text-muted"><em>Personal details hidden</em></p>
+                <p class="text-muted"><em>Hidden</em></p>
               </div>
               
               <p><strong>Seat:</strong> {{ selectedSeat?.seat_no }}</p>
@@ -403,37 +614,32 @@
               <p><strong>Expiry:</strong> {{ selectedSeat?.second_half_expiry }}</p>
               <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedSecondStudent.status">{{ selectedSecondStudent.status }}</span></p>
             </div>
-          </div>
-          
-          <div class="action-buttons">
-            <button *ngIf="getStudentAttendanceStatus(selectedSecondStudent.id)?.check_in_time && !getStudentAttendanceStatus(selectedSecondStudent.id)?.check_out_time" 
-                    class="info-badge">
-              ⏰ In at {{ getStudentAttendanceStatus(selectedSecondStudent.id)?.check_in_time }}
-            </button>
-            <button (click)="toggleAttendance(selectedSecondStudent)" 
-                    [class]="'btn btn-sm ' + getAttendanceButtonClassForStudent(selectedSecondStudent.id)"
-                    [disabled]="isAttendanceButtonDisabledForStudent(selectedSecondStudent.id)">
-              {{ getAttendanceButtonTextForStudent(selectedSecondStudent.id) }}
-            </button>
-            <button *ngIf="authService.canEdit()" 
-                    (click)="openFeePaymentModal(selectedSecondStudent)" 
-                    class="btn btn-success btn-sm">
-              💳 Fee
-            </button>
-            <button (click)="sendWhatsAppReminder(selectedSecondStudent)" class="btn btn-success btn-sm">
-              💬 Reminder
-            </button>
-            <button (click)="sendEmergencySOS(selectedSecondStudent)" class="btn btn-warning btn-sm">
-              🚨 SOS
-            </button>
-            <button *ngIf="authService.canEdit()"
-                    (click)="openChangeSeatModal(selectedSecondStudent, 'second_half')" 
-                    class="btn btn-info btn-sm">
-              🔄 Change
-            </button>
-            <button (click)="releaseSeatConfirm(selectedSecondStudent, 'second_half')" class="btn btn-danger btn-sm">
-              🚪 Release
-            </button>
+            <div class="profile-actions-col">
+              <button (click)="toggleAttendance(selectedSecondStudent)" 
+                      [class]="'btn btn-compact ' + getAttendanceButtonClassForStudent(selectedSecondStudent.id)"
+                      [disabled]="isAttendanceButtonDisabledForStudent(selectedSecondStudent.id)">
+                {{ getAttendanceButtonTextForStudent(selectedSecondStudent.id) }}
+              </button>
+              <button *ngIf="authService.canEdit()" 
+                      (click)="openFeePaymentModal(selectedSecondStudent)" 
+                      class="btn btn-compact btn-success">
+                💳 Fee
+              </button>
+              <button *ngIf="authService.canEdit()"
+                      (click)="openChangeSeatModal(selectedSecondStudent, 'second_half')" 
+                      class="btn btn-compact btn-info">
+                🔄 Change
+              </button>
+              <button (click)="sendWhatsAppReminder(selectedSecondStudent)" class="btn btn-compact btn-success">
+                💬 Reminder
+              </button>
+              <button (click)="sendEmergencySOS(selectedSecondStudent)" class="btn btn-compact btn-warning">
+                🚨 SOS
+              </button>
+              <button (click)="releaseSeatConfirm(selectedSecondStudent, 'second_half')" class="btn btn-compact btn-danger">
+                🚪 Release
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -616,94 +822,130 @@
     </div>
   </div>
 
-  <!-- My Attendance Modal (Self-Marking) -->
-  <div *ngIf="showMyAttendanceModal" class="modal-overlay" (click)="closeMyAttendanceModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>📝 Mark My Attendance</h3>
-        <button (click)="closeMyAttendanceModal()" class="close-btn">&times;</button>
+  <!-- Enhanced My Attendance Modal (Self-Marking) -->
+  <div *ngIf="showMyAttendanceModal" class="modal-overlay" style="backdrop-filter: blur(10px);" (click)="closeMyAttendanceModal()">
+    <div class="modal-content" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 24px; max-width: 500px; box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4); border: 1px solid rgba(255,255,255,0.2);" (click)="$event.stopPropagation()">
+      <div class="modal-header" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 24px 24px 0 0; padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+            <span style="font-size: 2rem;">📝</span>
+            <h3 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Mark My Attendance</h3>
+          </div>
+          <button (click)="closeMyAttendanceModal()" style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">&times;</button>
+        </div>
       </div>
 
-      <div class="modal-body">
-        <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-        <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+      <div class="modal-body" style="padding: 32px 24px;">
+        <div *ngIf="successMessage" class="alert alert-success" style="background: rgba(72, 187, 120, 0.2); border: 1px solid rgba(72, 187, 120, 0.3); color: #48bb78; margin-bottom: 20px;">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert alert-error" style="background: rgba(245, 101, 101, 0.2); border: 1px solid rgba(245, 101, 101, 0.3); color: #f56565; margin-bottom: 20px;">{{ errorMessage }}</div>
 
-        <!-- Search by Mobile -->
+        <!-- Enhanced Search by Mobile -->
         <div *ngIf="!myAttendanceStudent" class="form-section">
-          <h4>Enter Your Mobile Number</h4>
-          <p class="help-text">Enter the mobile number registered with your library account</p>
-          
-          <div class="form-group">
-            <label>Mobile Number <span class="required">*</span></label>
-            <input 
-              type="tel" 
-              [(ngModel)]="myAttendanceMobile"
-              maxlength="10"
-              placeholder="10-digit mobile number"
-              class="form-control"
-              [disabled]="searchingStudent">
-          </div>
-
-          <div class="time-info">
-            ⏰ Attendance can be marked between <strong>7:00 AM - 7:00 PM</strong>
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+              <span style="font-size: 1.5rem;">📱</span>
+              <div style="flex: 1;">
+                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 600;">Enter registered mobile number • Available 7:00 AM - 7:00 PM</h4>
+              </div>
+            </div>
+            
+            <div style="position: relative;">
+              <input 
+                type="tel" 
+                [(ngModel)]="myAttendanceMobile"
+                maxlength="10"
+                placeholder="Enter your 10-digit mobile number"
+                style="width: 100%; padding: 16px 20px 16px 50px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50px; background: rgba(255,255,255,0.9); color: #2d3748; font-size: 1rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s ease;"
+                [disabled]="searchingStudent"
+                (input)="errorMessage = ''; successMessage = ''"
+                onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2), inset 0 2px 8px rgba(0,0,0,0.1)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='inset 0 2px 8px rgba(0,0,0,0.1)'">
+              <span style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-size: 1.2rem; color: #4a5568;">📞</span>
+            </div>
           </div>
 
           <button 
             (click)="searchMyStudent()" 
             [disabled]="searchingStudent || myAttendanceMobile.length !== 10"
-            class="btn btn-primary btn-full">
-            {{ searchingStudent ? 'Searching...' : '🔍 Find My Profile' }}
+            style="width: 100%; padding: 16px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;"
+            [style.opacity]="searchingStudent || myAttendanceMobile.length !== 10 ? '0.6' : '1'"
+            [style.cursor]="searchingStudent || myAttendanceMobile.length !== 10 ? 'not-allowed' : 'pointer'"
+            onmouseover="if(!this.disabled) this.style.transform='translateY(-2px)'; if(!this.disabled) this.style.boxShadow='0 6px 20px rgba(240, 147, 251, 0.5)'"
+            onmouseout="if(!this.disabled) this.style.transform='translateY(0)'; if(!this.disabled) this.style.boxShadow='0 4px 15px rgba(240, 147, 251, 0.4)'">
+            <span style="font-size: 1.2rem;">{{ searchingStudent ? '⏳' : '🔍' }}</span>
+            {{ searchingStudent ? 'Searching...' : 'Find My Profile' }}
+          </button>
+
+          <!-- Emergency Reset Button (shows after 5 seconds of searching) -->
+          <button 
+            *ngIf="searchingStudent"
+            (click)="forceResetAttendanceSearch()"
+            style="width: 100%; margin-top: 12px; padding: 12px; background: rgba(245, 101, 101, 0.2); color: #f56565; border: 1px solid rgba(245, 101, 101, 0.3); border-radius: 50px; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease;"
+            onmouseover="this.style.background='rgba(245, 101, 101, 0.3)'"
+            onmouseout="this.style.background='rgba(245, 101, 101, 0.2)'">
+            ⚠️ Reset Search (if stuck)
           </button>
         </div>
 
-        <!-- Student Found - Mark Attendance -->
+        <!-- Enhanced Student Found - Mark Attendance -->
         <div *ngIf="myAttendanceStudent" class="attendance-section">
-          <div class="student-card">
-            <h4>Welcome, {{ myAttendanceStudent.name }}! 👋</h4>
-            <div class="student-details">
-              <div class="detail-item">
-                <strong>Mobile:</strong> {{ myAttendanceStudent.mobile }}
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+              <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👋</div>
+              <div style="flex: 1;">
+                <h4 style="margin: 0; font-size: 1.3rem; font-weight: 700;">Welcome, {{ myAttendanceStudent.name }}!</h4>
+                <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px; font-size: 0.9rem; opacity: 0.9;">
+                  <span>📱 {{ myAttendanceStudent.mobile }}</span>
+                  <span class="badge badge-success" style="background: rgba(72, 187, 120, 0.2); color: #48bb78; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">{{ myAttendanceStudent.status }}</span>
+                </div>
               </div>
-              <div class="detail-item">
-                <strong>Status:</strong> 
-                <span class="badge badge-success">{{ myAttendanceStudent.status }}</span>
+            </div>
+          </div>
+
+          <!-- Enhanced Current Attendance Status -->
+          <div *ngIf="myAttendanceStatus" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.2);">
+            <h5 style="margin: 0 0 12px 0; font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">📊</span>
+              Today's Status
+            </h5>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="opacity: 0.8;">Check-in:</span>
+                <span style="font-weight: 600;">{{ myAttendanceStatus.check_in_time }}</span>
+                <span *ngIf="myAttendanceStatus.status === 'late'" style="background: rgba(237, 137, 54, 0.2); color: #ed8936; padding: 2px 6px; border-radius: 8px; font-size: 0.8rem;">⏰ Late</span>
+                <span *ngIf="myAttendanceStatus.status === 'present'" style="background: rgba(72, 187, 120, 0.2); color: #48bb78; padding: 2px 6px; border-radius: 8px; font-size: 0.8rem;">✅ On Time</span>
+              </div>
+              <div *ngIf="myAttendanceStatus.check_out_time" style="display: flex; align-items: center; gap: 8px;">
+                <span style="opacity: 0.8;">Check-out:</span>
+                <span style="font-weight: 600;">{{ myAttendanceStatus.check_out_time }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Current Attendance Status -->
-          <div *ngIf="myAttendanceStatus" class="attendance-status">
-            <h5>Today's Status:</h5>
-            <div class="status-row">
-              <span class="status-label">Check-in:</span>
-              <span class="status-value">{{ myAttendanceStatus.check_in_time }}</span>
-              <span *ngIf="myAttendanceStatus.status === 'late'" class="badge badge-warning">⏰ Late</span>
-              <span *ngIf="myAttendanceStatus.status === 'present'" class="badge badge-success">✅ On Time</span>
-            </div>
-            <div *ngIf="myAttendanceStatus.check_out_time" class="status-row">
-              <span class="status-label">Check-out:</span>
-              <span class="status-value">{{ myAttendanceStatus.check_out_time }}</span>
-            </div>
+          <!-- Enhanced Action Buttons -->
+          <div style="display: flex; gap: 12px;">
+            <button 
+              (click)="markMyAttendance()"
+              [disabled]="isMyAttendanceButtonDisabled()"
+              [ngClass]="getMyAttendanceButtonClass()"
+              style="flex: 1; padding: 16px; background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);"
+              onmouseover="if(!this.disabled) this.style.transform='translateY(-2px)'; if(!this.disabled) this.style.boxShadow='0 6px 20px rgba(72, 187, 120, 0.5)'"
+              onmouseout="if(!this.disabled) this.style.transform='translateY(0)'; if(!this.disabled) this.style.boxShadow='0 4px 15px rgba(72, 187, 120, 0.4)'">
+              {{ getMyAttendanceButtonText() }}
+            </button>
+
+            <button 
+              (click)="myAttendanceStudent = null; myAttendanceStatus = null; myAttendanceMobile = ''"
+              style="background: rgba(255,255,255,0.2); color: white; border: none; border-radius: 50px; padding: 16px 20px; cursor: pointer; transition: all 0.3s ease;"
+              onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+              onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+              🔄
+            </button>
           </div>
-
-          <div class="time-info">
-            ⏰ Attendance hours: <strong>7:00 AM - 7:00 PM</strong>
+          
+          <div style="text-align: center; margin-top: 16px; font-size: 0.9rem; opacity: 0.8;">
+            ⏰ Available hours: 7:00 AM - 7:00 PM
           </div>
-
-          <!-- Mark Attendance Button -->
-          <button 
-            (click)="markMyAttendance()"
-            [disabled]="isMyAttendanceButtonDisabled()"
-            [ngClass]="getMyAttendanceButtonClass()"
-            class="btn btn-full btn-lg">
-            {{ getMyAttendanceButtonText() }}
-          </button>
-
-          <button 
-            (click)="myAttendanceStudent = null; myAttendanceStatus = null; myAttendanceMobile = ''"
-            class="btn btn-secondary btn-full">
-            🔄 Search Different Number
-          </button>
         </div>
       </div>
     </div>

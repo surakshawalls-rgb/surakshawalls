@@ -1,293 +1,506 @@
 <!-- src/app/pages/reports-dashboard/reports-dashboard.component.html -->
-<div class="reports-container">
-  <div class="header">
-    <h2>Reports Dashboard</h2>
-    <p class="subtitle">Comprehensive business reports and analytics</p>
+<style>
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes gradientFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-size: 400% 400%; animation: gradientFlow 15s ease infinite; padding: 24px;">
+
+  <!-- Modern Header -->
+  <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <h2 style="margin: 0; font-size: 2.2rem; font-weight: 700; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 16px;">
+      <span style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px; animation: float 3s ease-in-out infinite;">📊</span>
+      Reports Dashboard
+    </h2>
+    <p style="margin: 12px 0 0 0; color: rgba(255,255,255,0.8); font-size: 1.1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Comprehensive business reports and analytics</p>
   </div>
 
-  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+  <div *ngIf="errorMessage" style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 16px 24px; border-radius: 16px; margin-bottom: 24px; backdrop-filter: blur(10px); box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);">{{ errorMessage }}</div>
 
-  <!-- Report Type Tabs -->
-  <div class="report-tabs">
-    <button [class.active]="activeView === 'daily'" (click)="loadDailySummary()" class="tab-btn">
-      Daily Summary
+  <!-- Modern Report Tabs -->
+  <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); padding: 8px; margin-bottom: 32px; display: flex; gap: 8px; flex-wrap: wrap;">
+    <button [style.background]="activeView === 'daily' ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'daily' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadDailySummary()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      📈 Daily Summary
     </button>
-    <button [class.active]="activeView === 'monthly'" (click)="loadMonthlyPL()" class="tab-btn">
-      Monthly P&L
+    <button [style.background]="activeView === 'monthly' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'monthly' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadMonthlyPL()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      💼 Monthly P&L
     </button>
-    <button [class.active]="activeView === 'partner'" (click)="loadPartnerSettlement()" class="tab-btn">
-      Partner Settlement
+    <button [style.background]="activeView === 'partner' ? 'linear-gradient(135deg, #8b5cf6, #7c3aed)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'partner' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadPartnerSettlement()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      🤝 Partner Settlement
     </button>
-    <button [class.active]="activeView === 'worker'" (click)="loadWorkerReport()" class="tab-btn">
-      Worker Ledger
+    <button [style.background]="activeView === 'worker' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'worker' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadWorkerReport()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      👷 Worker Ledger
     </button>
-    <button [class.active]="activeView === 'material'" (click)="loadMaterialStock()" class="tab-btn">
-      Material Stock
+    <button [style.background]="activeView === 'material' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'material' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadMaterialStock()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      📦 Material Stock
     </button>
-    <button [class.active]="activeView === 'client'" (click)="loadClientOutstanding()" class="tab-btn">
-      Client Outstanding
+    <button [style.background]="activeView === 'client' ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'client' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadClientOutstanding()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      👥 Client Outstanding
     </button>
-    <button [class.active]="activeView === 'inventory'" (click)="loadInventoryValuation()" class="tab-btn">
-      Inventory Value
+    <button [style.background]="activeView === 'inventory' ? 'linear-gradient(135deg, #ec4899, #db2777)' : 'rgba(255,255,255,0.1)'"
+            [style.color]="activeView === 'inventory' ? 'white' : 'rgba(255,255,255,0.8)'"
+            (click)="loadInventoryValuation()"
+            style="flex: 1; min-width: 150px; padding: 12px 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); font-size: 0.9rem;"
+            onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+            onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
+      💎 Inventory Value
     </button>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading report...</div>
+  <div *ngIf="loading" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 40px; border-radius: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3);">
+      <div style="width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+      <div style="font-size: 1.2rem; font-weight: 600; color: #374151;">Loading report...</div>
+    </div>
+  </div>
 
   <!-- Daily Summary Report -->
-  <div *ngIf="!loading && activeView === 'daily' && dailySummary" class="report-content">
-    <div class="report-header">
-      <h3>Daily Summary</h3>
-      <input type="date" [(ngModel)]="selectedDate" (change)="loadDailySummary()" class="date-input">
+  <div *ngIf="!loading && activeView === 'daily' && dailySummary" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+      <h3 style="margin: 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">📈</span>
+        Daily Summary
+      </h3>
+      <input type="date" [(ngModel)]="selectedDate" (change)="loadDailySummary()" 
+             style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+             onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+             onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
     </div>
 
-    <div class="summary-grid">
-      <div class="metric-card production">
-        <div class="metric-icon">🏭</div>
-        <div class="metric-label">Production</div>
-        <div class="metric-value">{{ dailySummary.production_quantity }} units</div>
-        <div class="metric-sub">Cost: ₹{{ dailySummary.production_cost }}</div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+      <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(16, 185, 129, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 2rem; margin-bottom: 12px; animation: pulse 2s ease-in-out infinite;">🏭</div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Production</div>
+          <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;">{{ dailySummary.production_quantity }} units</div>
+          <div style="font-size: 0.85rem; opacity: 0.8;">Cost: ₹{{ dailySummary.production_cost | number }}</div>
+        </div>
       </div>
 
-      <div class="metric-card sales">
-        <div class="metric-icon">💰</div>
-        <div class="metric-label">Sales</div>
-        <div class="metric-value">{{ dailySummary.sales_quantity }} units</div>
-        <div class="metric-sub">Revenue: ₹{{ dailySummary.sales_revenue }}</div>
+      <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(29, 78, 216, 0.9)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(59, 130, 246, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 2rem; margin-bottom: 12px; animation: pulse 2s ease-in-out infinite;">💰</div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Sales</div>
+          <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 8px;">{{ dailySummary.sales_quantity }} units</div>
+          <div style="font-size: 0.85rem; opacity: 0.8;">Revenue: ₹{{ dailySummary.sales_revenue | number }}</div>
+        </div>
       </div>
 
-      <div class="metric-card collection">
-        <div class="metric-icon">💵</div>
-        <div class="metric-label">Collection</div>
-        <div class="metric-value">₹{{ dailySummary.sales_collected }}</div>
+      <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(245, 158, 11, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 2rem; margin-bottom: 12px; animation: pulse 2s ease-in-out infinite;">💵</div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Collection</div>
+          <div style="font-size: 1.8rem; font-weight: 700;">₹{{ dailySummary.sales_collected | number }}</div>
+        </div>
       </div>
 
-      <div class="metric-card purchase">
-        <div class="metric-icon">📦</div>
-        <div class="metric-label">Material Purchase</div>
-        <div class="metric-value">₹{{ dailySummary.material_purchase }}</div>
+      <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(239, 68, 68, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 2rem; margin-bottom: 12px; animation: pulse 2s ease-in-out infinite;">📦</div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Material Purchase</div>
+          <div style="font-size: 1.8rem; font-weight: 700;">₹{{ dailySummary.material_purchase | number }}</div>
+        </div>
       </div>
 
-      <div class="metric-card wages">
-        <div class="metric-icon">👷</div>
-        <div class="metric-label">Labor Wages</div>
-        <div class="metric-value">₹{{ dailySummary.labor_wages }}</div>
+      <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.9), rgba(124, 58, 237, 0.9)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(139, 92, 246, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 2rem; margin-bottom: 12px; animation: pulse 2s ease-in-out infinite;">👷</div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Labor Wages</div>
+          <div style="font-size: 1.8rem; font-weight: 700;">₹{{ dailySummary.labor_wages | number }}</div>
+        </div>
       </div>
 
-      <div class="metric-card cash">
-        <div class="metric-icon">💼</div>
-        <div class="metric-label">Firm Cash</div>
-        <div class="metric-value">₹{{ dailySummary.firm_cash_balance }}</div>
+      <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.9), rgba(8, 145, 178, 0.9)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden;"
+           onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(6, 182, 212, 0.4)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="font-size: 2rem; margin-bottom: 12px; animation: pulse 2s ease-in-out infinite;">💼</div>
+          <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Firm Cash</div>
+          <div style="font-size: 1.8rem; font-weight: 700;">₹{{ dailySummary.firm_cash_balance | number }}</div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Monthly P&L Report -->
-  <div *ngIf="!loading && activeView === 'monthly' && monthlyPL" class="report-content">
-    <div class="report-header">
-      <h3>Monthly Profit & Loss</h3>
-      <input type="month" [(ngModel)]="selectedMonth" (change)="loadMonthlyPL()" class="date-input">
+  <div *ngIf="!loading && activeView === 'monthly' && monthlyPL" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+      <h3 style="margin: 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">📊</span>
+        Monthly Profit & Loss
+      </h3>
+      <input type="month" [(ngModel)]="selectedMonth" (change)="loadMonthlyPL()" 
+             style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+             onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+             onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
     </div>
 
-    <div class="pl-report">
-      <div class="pl-row revenue">
-        <span>Revenue</span>
-        <strong>₹{{ monthlyPL.revenue }}</strong>
+    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); padding: 24px; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+      <div style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8)); border-radius: 16px; color: white; animation: float 3s ease-in-out infinite; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; right: 0; font-size: 3rem; opacity: 0.2;">💰</div>
+        <span style="font-size: 1.1rem; font-weight: 600; display: block; position: relative; z-index: 1;">Revenue</span>
+        <div style="font-size: 2.2rem; font-weight: 800; margin-top: 8px; position: relative; z-index: 1;">₹{{ monthlyPL.revenue | number }}</div>
       </div>
-      <div class="pl-row">
-        <span>Cost of Goods Sold</span>
-        <span>₹{{ monthlyPL.cogs }}</span>
+      
+      <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; color: white;">
+        <span style="font-size: 1rem; opacity: 0.9;">Cost of Goods Sold</span>
+        <span style="font-size: 1.3rem; font-weight: 600; color: rgba(239, 68, 68, 0.9);">₹{{ monthlyPL.cogs | number }}</span>
       </div>
-      <div class="pl-row highlight">
-        <span>Gross Profit</span>
-        <strong>₹{{ monthlyPL.gross_profit }}</strong>
+        
+      <div style="margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(29, 78, 216, 0.8)); border-radius: 16px; color: white; animation: float 3s ease-in-out infinite 0.5s; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; right: 0; font-size: 3rem; opacity: 0.2;">📈</div>
+        <span style="font-size: 1.1rem; font-weight: 600; display: block; position: relative; z-index: 1;">Gross Profit</span>
+        <div style="font-size: 2rem; font-weight: 800; margin-top: 8px; position: relative; z-index: 1;">₹{{ monthlyPL.gross_profit | number }}</div>
       </div>
-      <div class="pl-row">
-        <span>Labor Cost</span>
-        <span>₹{{ monthlyPL.labor_cost }}</span>
+      
+      <div style="margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; color: white;">
+        <span style="font-size: 1rem; opacity: 0.9;">Labor Cost</span>
+        <span style="font-size: 1.3rem; font-weight: 600; color: rgba(245, 158, 11, 0.9);">₹{{ monthlyPL.labor_cost | number }}</span>
       </div>
-      <div class="pl-row">
-        <span>Operational Expenses</span>
-        <span>₹{{ monthlyPL.operational_expenses }}</span>
+      
+      <div style="margin-bottom: 24px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; color: white;">
+        <span style="font-size: 1rem; opacity: 0.9;">Operational Expenses</span>
+        <span style="font-size: 1.3rem; font-weight: 600; color: rgba(239, 68, 68, 0.9);">₹{{ monthlyPL.operational_expenses | number }}</span>
       </div>
-      <div class="pl-row net-profit">
-        <span>Net Profit</span>
-        <strong [class]="monthlyPL.net_profit >= 0 ? 'profit' : 'loss'">
-          ₹{{ monthlyPL.net_profit }}
-        </strong>
+      
+      <div style="margin-bottom: 20px; padding: 24px; border-radius: 16px; color: white; animation: float 3s ease-in-out infinite 1s; position: relative; overflow: hidden;" 
+           [style.background]="monthlyPL.net_profit >= 0 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9))' : 'linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9))'">
+        <div style="position: absolute; top: 0; right: 0; font-size: 4rem; opacity: 0.2;">{{ monthlyPL.net_profit >= 0 ? '🎯' : '⚠️' }}</div>
+        <span style="font-size: 1.2rem; font-weight: 600; display: block; position: relative; z-index: 1;">Net Profit</span>
+        <div style="font-size: 2.5rem; font-weight: 800; margin-top: 8px; position: relative; z-index: 1;">
+          ₹{{ monthlyPL.net_profit | number }}
+        </div>
       </div>
-      <div class="pl-row">
-        <span>Profit Margin</span>
-        <strong>{{ monthlyPL.profit_margin.toFixed(2) }}%</strong>
+      
+      <div style="padding: 16px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.7), rgba(124, 58, 237, 0.7)); border-radius: 12px; color: white; text-align: center;">
+        <span style="font-size: 1rem; font-weight: 600;">Profit Margin</span>
+        <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ monthlyPL.profit_margin.toFixed(2) }}%</div>
       </div>
     </div>
   </div>
 
   <!-- Partner Settlement Report -->
-  <div *ngIf="!loading && activeView === 'partner'" class="report-content">
-    <div class="report-header">
-      <h3>Partner Settlement</h3>
-      <div class="date-range-filter">
-        <input type="date" [(ngModel)]="dateRange.start" class="date-input">
-        <span>to</span>
-        <input type="date" [(ngModel)]="dateRange.end" class="date-input">
-        <button (click)="loadPartnerSettlement()" class="btn-apply">Apply</button>
+  <div *ngIf="!loading && activeView === 'partner'" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+      <h3 style="margin: 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">🤝</span>
+        Partner Settlement
+      </h3>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <input type="date" [(ngModel)]="dateRange.start" 
+               style="padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; background: rgba(255,255,255,0.9); font-size: 0.9rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <span style="color: white; font-weight: 600;">to</span>
+        <input type="date" [(ngModel)]="dateRange.end" 
+               style="padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; background: rgba(255,255,255,0.9); font-size: 0.9rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <button (click)="loadPartnerSettlement()" 
+                style="padding: 10px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(102, 126, 234, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          Apply
+        </button>
       </div>
     </div>
 
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Partner</th>
-          <th>Investment %</th>
-          <th>Purchases (Pocket)</th>
-          <th>Collections</th>
-          <th>Withdrawals</th>
-          <th>Net Position</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let partner of partnerSettlement">
-          <td><strong>{{ partner.partner_name }}</strong></td>
-          <td>{{ partner.investment_share }}%</td>
-          <td>₹{{ partner.purchases_from_pocket }}</td>
-          <td>₹{{ partner.collections_made }}</td>
-          <td>₹{{ partner.withdrawals }}</td>
-          <td [class]="partner.net_position >= 0 ? 'positive' : 'negative'">
-            ₹{{ partner.net_position }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+      <div style="display: grid; grid-template-columns: 1fr 120px 150px 150px 150px 150px; gap: 2px; background: rgba(255,255,255,0.1); padding: 20px; font-weight: 700; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">👤</span>
+          Partner
+        </div>
+        <div style="text-align: center;">Investment %</div>
+        <div style="text-align: center;">Purchases</div>
+        <div style="text-align: center;">Collections</div>
+        <div style="text-align: center;">Withdrawals</div>
+        <div style="text-align: center;">Net Position</div>
+      </div>
+      
+      <div *ngFor="let partner of partnerSettlement; let i = index" 
+           style="display: grid; grid-template-columns: 1fr 120px 150px 150px 150px 150px; gap: 2px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; color: white;"
+           onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='transparent'; this.style.transform='translateX(0)'">
+        <div style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 8px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">{{ partner.partner_name.charAt(0) }}</span>
+          {{ partner.partner_name }}
+        </div>
+        <div style="text-align: center; font-weight: 600; background: rgba(59, 130, 246, 0.2); padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+          {{ partner.investment_share }}%
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(245, 158, 11, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ partner.purchases_from_pocket | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(16, 185, 129, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ partner.collections_made | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(239, 68, 68, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ partner.withdrawals | number }}
+        </div>
+        <div style="text-align: center; font-weight: 700; font-size: 1.1rem; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" 
+             [style.background]="partner.net_position >= 0 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.3))' : 'linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3))'"
+             [style.color]="partner.net_position >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(239, 68, 68, 1)'">
+          ₹{{ partner.net_position | number }}
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Worker Ledger Report -->
-  <div *ngIf="!loading && activeView === 'worker'" class="report-content">
-    <div class="report-header">
-      <h3>Worker Ledger</h3>
-      <div class="date-range-filter">
-        <input type="date" [(ngModel)]="dateRange.start" class="date-input">
-        <span>to</span>
-        <input type="date" [(ngModel)]="dateRange.end" class="date-input">
-        <button (click)="loadWorkerReport()" class="btn-apply">Apply</button>
+  <div *ngIf="!loading && activeView === 'worker'" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+      <h3 style="margin: 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">👷</span>
+        Worker Ledger
+      </h3>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <input type="date" [(ngModel)]="dateRange.start" 
+               style="padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; background: rgba(255,255,255,0.9); font-size: 0.9rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <span style="color: white; font-weight: 600;">to</span>
+        <input type="date" [(ngModel)]="dateRange.end" 
+               style="padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; background: rgba(255,255,255,0.9); font-size: 0.9rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <button (click)="loadWorkerReport()" 
+                style="padding: 10px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(102, 126, 234, 0.4)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          Apply
+        </button>
       </div>
     </div>
 
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Worker Name</th>
-          <th>Total Earned</th>
-          <th>Total Paid</th>
-          <th>Current Balance</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let worker of workerReport">
-          <td><strong>{{ worker.worker_name }}</strong></td>
-          <td>₹{{ worker.total_earned }}</td>
-          <td>₹{{ worker.total_paid }}</td>
-          <td class="balance">₹{{ worker.current_balance }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+      <div style="display: grid; grid-template-columns: 1fr 150px 150px 150px; gap: 2px; background: rgba(255,255,255,0.1); padding: 20px; font-weight: 700; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+        <div>Worker Name</div>
+        <div style="text-align: center;">Total Earned</div>
+        <div style="text-align: center;">Total Paid</div>
+        <div style="text-align: center;">Current Balance</div>
+      </div>
+      
+      <div *ngFor="let worker of workerReport; let i = index" 
+           style="display: grid; grid-template-columns: 1fr 150px 150px 150px; gap: 2px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; color: white;"
+           onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='transparent'; this.style.transform='translateX(0)'">
+        <div style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 8px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">{{ worker.worker_name.charAt(0) }}</span>
+          {{ worker.worker_name }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(16, 185, 129, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ worker.total_earned | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(245, 158, 11, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ worker.total_paid | number }}
+        </div>
+        <div style="text-align: center; font-weight: 700; font-size: 1.1rem; padding: 8px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" 
+             [style.background]="worker.current_balance >= 0 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.3))' : 'linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3))'"
+             [style.color]="worker.current_balance >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(239, 68, 68, 1)'">
+          ₹{{ worker.current_balance | number }}
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Material Stock Report -->
-  <div *ngIf="!loading && activeView === 'material'" class="report-content">
-    <div class="report-header">
-      <h3>Material Stock Report</h3>
-    </div>
+  <div *ngIf="!loading && activeView === 'material'" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+      <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">📦</span>
+      Material Stock Report
+    </h3>
 
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Material</th>
-          <th>Stock</th>
-          <th>Unit Cost</th>
-          <th>Stock Value</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let material of materialStock">
-          <td><strong>{{ material.material_name }}</strong></td>
-          <td>{{ material.current_stock }} {{ material.unit }}</td>
-          <td>₹{{ material.unit_cost }}</td>
-          <td>₹{{ material.stock_value }}</td>
-          <td>
-            <span [class]="material.needs_reorder ? 'badge-warning' : 'badge-success'">
-              {{ material.needs_reorder ? 'Reorder' : 'OK' }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+      <div style="display: grid; grid-template-columns: 1fr 120px 120px 140px 100px; gap: 2px; background: rgba(255,255,255,0.1); padding: 20px; font-weight: 700; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+        <div>Material</div>
+        <div style="text-align: center;">Stock</div>
+        <div style="text-align: center;">Unit Cost</div>
+        <div style="text-align: center;">Stock Value</div>
+        <div style="text-align: center;">Status</div>
+      </div>
+      
+      <div *ngFor="let material of materialStock; let i = index" 
+           style="display: grid; grid-template-columns: 1fr 120px 120px 140px 100px; gap: 2px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; color: white;"
+           onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='transparent'; this.style.transform='translateX(0)'">
+        <div style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.8)); padding: 8px; border-radius: 8px; font-size: 0.8rem;">🏢</span>
+          {{ material.material_name }}
+        </div>
+        <div style="text-align: center; font-weight: 600; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.2); padding: 8px; border-radius: 8px;">
+          {{ material.current_stock }} {{ material.unit }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(245, 158, 11, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ material.unit_cost | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(16, 185, 129, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ material.stock_value | number }}
+        </div>
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+          <span style="padding: 6px 12px; border-radius: 16px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;" 
+                [style.background]="material.needs_reorder ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9))' : 'linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9))'"
+                [style.color]="'white'">
+            {{ material.needs_reorder ? 'Reorder' : 'OK' }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Client Outstanding Report -->
-  <div *ngIf="!loading && activeView === 'client'" class="report-content">
-    <div class="report-header">
-      <h3>Client Outstanding Report</h3>
-    </div>
+  <div *ngIf="!loading && activeView === 'client'" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+      <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">💼</span>
+      Client Outstanding Report
+    </h3>
 
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Client Name</th>
-          <th>Total Billed</th>
-          <th>Total Paid</th>
-          <th>Outstanding</th>
-          <th>Credit Limit</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let client of clientOutstanding">
-          <td><strong>{{ client.client_name }}</strong></td>
-          <td>₹{{ client.total_billed }}</td>
-          <td>₹{{ client.total_paid }}</td>
-          <td class="outstanding">₹{{ client.outstanding_balance }}</td>
-          <td>₹{{ client.credit_limit }}</td>
-          <td>
-            <span [class]="client.exceeding_limit ? 'badge-danger' : 'badge-warning'">
-              {{ client.exceeding_limit ? 'Limit Exceeded' : 'Outstanding' }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+      <div style="display: grid; grid-template-columns: 1fr 140px 140px 140px 140px 120px; gap: 2px; background: rgba(255,255,255,0.1); padding: 20px; font-weight: 700; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+        <div>Client Name</div>
+        <div style="text-align: center;">Total Billed</div>
+        <div style="text-align: center;">Total Paid</div>
+        <div style="text-align: center;">Outstanding</div>
+        <div style="text-align: center;">Credit Limit</div>
+        <div style="text-align: center;">Status</div>
+      </div>
+      
+      <div *ngFor="let client of clientOutstanding; let i = index" 
+           style="display: grid; grid-template-columns: 1fr 140px 140px 140px 140px 120px; gap: 2px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; color: white;"
+           onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='transparent'; this.style.transform='translateX(0)'">
+        <div style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 8px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem;">{{ client.client_name.charAt(0) }}</span>
+          {{ client.client_name }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(59, 130, 246, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ client.total_billed | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(16, 185, 129, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ client.total_paid | number }}
+        </div>
+        <div style="text-align: center; font-weight: 700; font-size: 1.1rem; color: rgba(239, 68, 68, 1); display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 8px;">
+          ₹{{ client.outstanding_balance | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(245, 158, 11, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ client.credit_limit | number }}
+        </div>
+        <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+          <span style="padding: 6px 12px; border-radius: 16px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;" 
+                [style.background]="client.exceeding_limit ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9))' : 'linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9))'"
+                [style.color]="'white'">
+            {{ client.exceeding_limit ? 'Limit Exceeded' : 'Outstanding' }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Inventory Valuation Report -->
-  <div *ngIf="!loading && activeView === 'inventory'" class="report-content">
-    <div class="report-header">
-      <h3>Inventory Valuation Report</h3>
-    </div>
+  <div *ngIf="!loading && activeView === 'inventory'" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
+      <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">💰</span>
+      Inventory Valuation Report
+    </h3>
 
-    <table class="report-table">
-      <thead>
-        <tr>
-          <th>Product</th>
-          <th>Stock</th>
-          <th>Unit Cost</th>
-          <th>Selling Price</th>
-          <th>Stock Value</th>
-          <th>Potential Revenue</th>
-          <th>Potential Profit</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of inventoryValuation">
-          <td><strong>{{ item.product_name }}</strong></td>
-          <td>{{ item.current_stock }}</td>
-          <td>₹{{ item.unit_cost }}</td>
-          <td>₹{{ item.selling_price }}</td>
-          <td>₹{{ item.stock_value }}</td>
-          <td>₹{{ item.potential_revenue }}</td>
-          <td class="profit">₹{{ item.potential_profit }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+      <div style="display: grid; grid-template-columns: 1fr 100px 120px 120px 140px 140px 140px; gap: 2px; background: rgba(255,255,255,0.1); padding: 20px; font-weight: 700; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+        <div>Product</div>
+        <div style="text-align: center;">Stock</div>
+        <div style="text-align: center;">Unit Cost</div>
+        <div style="text-align: center;">Selling Price</div>
+        <div style="text-align: center;">Stock Value</div>
+        <div style="text-align: center;">Potential Revenue</div>
+        <div style="text-align: center;">Potential Profit</div>
+      </div>
+      
+      <div *ngFor="let item of inventoryValuation; let i = index" 
+           style="display: grid; grid-template-columns: 1fr 100px 120px 120px 140px 140px 140px; gap: 2px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; color: white;"
+           onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='transparent'; this.style.transform='translateX(0)'">
+        <div style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(124, 58, 237, 0.8)); padding: 8px; border-radius: 8px; font-size: 0.8rem;">🏢</span>
+          {{ item.product_name }}
+        </div>
+        <div style="text-align: center; font-weight: 600; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.2); padding: 8px; border-radius: 8px;">
+          {{ item.current_stock }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(245, 158, 11, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ item.unit_cost | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(59, 130, 246, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ item.selling_price | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(16, 185, 129, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ item.stock_value | number }}
+        </div>
+        <div style="text-align: center; font-weight: 600; color: rgba(6, 182, 212, 1); display: flex; align-items: center; justify-content: center;">
+          ₹{{ item.potential_revenue | number }}
+        </div>
+        <div style="text-align: center; font-weight: 700; font-size: 1.1rem; color: rgba(16, 185, 129, 1); display: flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, 0.2); padding: 8px; border-radius: 8px;">
+          ₹{{ item.potential_profit | number }}
+        </div>
+      </div>
+    </div>
   </div>
 </div>

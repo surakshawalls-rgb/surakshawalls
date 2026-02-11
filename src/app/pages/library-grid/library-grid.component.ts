@@ -45,7 +45,8 @@ export class LibraryGridComponent implements OnInit {
     address: '',
     dob: null as any, // Use null for date field to avoid DB errors
     gender: 'Male' as 'Male' | 'Female' | 'Other',
-    registration_fee_paid: 100,
+    joining_date: new Date().toISOString().split('T')[0],
+    registration_fee_paid: 0,
     notes: ''
   };
   
@@ -100,11 +101,46 @@ export class LibraryGridComponent implements OnInit {
   errorMessage = '';
   saving = false;
 
+  // Date dropdown arrays
+  days: number[] = Array.from({length: 31}, (_, i) => i + 1);
+  months = [
+    {value: '01', label: 'January'}, {value: '02', label: 'February'}, {value: '03', label: 'March'},
+    {value: '04', label: 'April'}, {value: '05', label: 'May'}, {value: '06', label: 'June'},
+    {value: '07', label: 'July'}, {value: '08', label: 'August'}, {value: '09', label: 'September'},
+    {value: '10', label: 'October'}, {value: '11', label: 'November'}, {value: '12', label: 'December'}
+  ];
+  dobYears: number[] = [];
+  joiningYears: number[] = [];
+
+  // Separate date fields
+  dobDay = '';
+  dobMonth = '';
+  dobYear = '';
+  joiningDay = '';
+  joiningMonth = '';
+  joiningYear = '';
+
   constructor(
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef,
     public authService: AuthService
-  ) {}
+  ) {
+    // Generate year ranges
+    const currentYear = new Date().getFullYear();
+    // DOB: 1990 to current year
+    for (let year = currentYear; year >= 1990; year--) {
+      this.dobYears.push(year);
+    }
+    // Joining: 2025 to current year
+    for (let year = currentYear; year >= 2025; year--) {
+      this.joiningYears.push(year);
+    }
+    // Set default joining date to today
+    const today = new Date();
+    this.joiningDay = String(today.getDate()).padStart(2, '0');
+    this.joiningMonth = String(today.getMonth() + 1).padStart(2, '0');
+    this.joiningYear = String(today.getFullYear());
+  }
 
   async ngOnInit() {
     await this.loadSeats();
@@ -269,21 +305,24 @@ export class LibraryGridComponent implements OnInit {
   }
 
   getSeatClass(seat: LibrarySeat): string {
+    // Full day occupied
     if (seat.full_time_student_id) {
-      return this.getExpiryClass(seat.full_time_expiry!);
-    } else if (seat.first_half_student_id && seat.second_half_student_id) {
-      // Both occupied
-      const firstExpiry = this.getExpiryClass(seat.first_half_expiry!);
-      const secondExpiry = this.getExpiryClass(seat.second_half_expiry!);
-      // Return most urgent status
-      if (firstExpiry === 'expired' || secondExpiry === 'expired') return 'expired';
-      if (firstExpiry === 'expiring' || secondExpiry === 'expiring') return 'expiring';
-      return 'occupied';
-    } else if (seat.first_half_student_id || seat.second_half_student_id) {
-      const expiry = seat.first_half_student_id ? seat.first_half_expiry! : seat.second_half_expiry!;
-      return this.getExpiryClass(expiry) + ' half-occupied';
+      return 'full-day-occupied';
+    } 
+    // Both shifts occupied (different students)
+    else if (seat.first_half_student_id && seat.second_half_student_id) {
+      return 'both-halves-occupied';
+    } 
+    // Only first half occupied
+    else if (seat.first_half_student_id) {
+      return 'first-half-occupied';
+    } 
+    // Only second half occupied
+    else if (seat.second_half_student_id) {
+      return 'second-half-occupied';
     }
-    return 'empty';
+    // Empty/Available
+    return 'available';
   }
 
   getExpiryClass(expiryDate: string): string {
@@ -294,6 +333,34 @@ export class LibraryGridComponent implements OnInit {
     if (daysRemaining < 0) return 'expired';
     if (daysRemaining <= 2) return 'expiring';
     return 'occupied';
+  }
+
+  getDaysRemaining(expiryDate: string | undefined): string {
+    if (!expiryDate) return '';
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+    
+    const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysRemaining < 0) {
+      return `Expired ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) === 1 ? '' : 's'} ago`;
+    } else if (daysRemaining === 0) {
+      return 'Expires today';
+    } else if (daysRemaining === 1) {
+      return 'Expires tomorrow';
+    } else if (daysRemaining <= 7) {
+      return `${daysRemaining} days left`;
+    } else {
+      // Format as dd-mm-yyyy
+      const day = String(expiry.getDate()).padStart(2, '0');
+      const month = String(expiry.getMonth() + 1).padStart(2, '0');
+      const year = expiry.getFullYear();
+      return `Expires: ${day}-${month}-${year}`;
+    }
   }
 
   getSeatTooltip(seat: LibrarySeat): string {
@@ -381,9 +448,25 @@ export class LibraryGridComponent implements OnInit {
           address: student.address,
           dob: student.dob || '',
           gender: student.gender || 'Male',
-          registration_fee_paid: 100,
+          joining_date: student.joining_date || new Date().toISOString().split('T')[0],
+          registration_fee_paid: 0,
           notes: student.notes || ''
         };
+        
+        // Parse dates into dropdowns
+        if (student.dob) {
+          const [year, month, day] = student.dob.split('-');
+          this.dobYear = year;
+          this.dobMonth = month;
+          this.dobDay = String(parseInt(day));
+        }
+        if (student.joining_date) {
+          const [year, month, day] = student.joining_date.split('-');
+          this.joiningYear = year;
+          this.joiningMonth = month;
+          this.joiningDay = String(parseInt(day));
+        }
+        
         this.successMessage = `ℹ️ Student already registered: ${student.name}. Using existing details.`;
       }
     } catch (error: any) {
@@ -395,7 +478,15 @@ export class LibraryGridComponent implements OnInit {
   }
 
   async submitRegistration() {
-    if (!this.newStudent.name || !this.newStudent.mobile || !this.newStudent.emergency_contact || !this.newStudent.address) {
+    // Combine date fields
+    if (this.dobDay && this.dobMonth && this.dobYear) {
+      this.newStudent.dob = `${this.dobYear}-${this.dobMonth}-${String(this.dobDay).padStart(2, '0')}`;
+    }
+    if (this.joiningDay && this.joiningMonth && this.joiningYear) {
+      this.newStudent.joining_date = `${this.joiningYear}-${this.joiningMonth}-${String(this.joiningDay).padStart(2, '0')}`;
+    }
+
+    if (!this.newStudent.name || !this.newStudent.mobile || !this.newStudent.address || !this.newStudent.joining_date) {
       this.errorMessage = 'Please fill all required fields';
       this.cdr.detectChanges();
       return;
@@ -493,14 +584,24 @@ export class LibraryGridComponent implements OnInit {
       emergency_contact: '',
       emergency_contact_name: '',
       address: '',
-      dob: null as any, // Use null instead of empty string for date field
+      dob: null as any,
       gender: 'Male',
-      registration_fee_paid: 100,
+      joining_date: new Date().toISOString().split('T')[0],
+      registration_fee_paid: 0,
       notes: ''
     };
     this.photoFile = null;
     this.existingStudent = null;
     this.checkingMobile = false;
+    
+    // Reset date dropdowns
+    this.dobDay = '';
+    this.dobMonth = '';
+    this.dobYear = '';
+    const today = new Date();
+    this.joiningDay = String(today.getDate()).padStart(2, '0');
+    this.joiningMonth = String(today.getMonth() + 1).padStart(2, '0');
+    this.joiningYear = String(today.getFullYear());
   }
 
   // ==============================
@@ -962,34 +1063,92 @@ export class LibraryGridComponent implements OnInit {
   async searchMyStudent() {
     if (!this.myAttendanceMobile || this.myAttendanceMobile.length !== 10) {
       this.errorMessage = 'Please enter a valid 10-digit mobile number';
+      this.cdr.detectChanges();
       return;
     }
 
+    // Add timeout to prevent infinite loading
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Search timeout - please try again')), 10000)
+    );
+
     try {
+      console.log('Starting search for mobile:', this.myAttendanceMobile);
       this.searchingStudent = true;
       this.errorMessage = '';
+      this.successMessage = '';
       this.cdr.detectChanges();
 
-      const student = await this.libraryService.findStudentByMobile(this.myAttendanceMobile);
+      console.log('Calling findStudentByMobile service...');
+      
+      // Race between service call and timeout
+      const student = await Promise.race([
+        this.libraryService.findStudentByMobile(this.myAttendanceMobile),
+        timeoutPromise
+      ]) as LibraryStudent | null;
+      
+      console.log('Service response:', student);
       
       if (!student) {
-        this.errorMessage = 'No student found with this mobile number';
+        console.log('No student found');
+        this.errorMessage = 'No student found with this mobile number. Please check your number or contact admin.';
         this.myAttendanceStudent = null;
         this.myAttendanceStatus = null;
       } else {
-        this.myAttendanceStudent = student;
-        // Load today's attendance status
-        this.myAttendanceStatus = await this.libraryService.getTodayAttendanceStatus(student.id);
+        console.log('Student found:', (student as LibraryStudent).name);
+        this.myAttendanceStudent = student as LibraryStudent;
+        
+        // Load today's attendance status with timeout
+        console.log('Loading attendance status...');
+        try {
+          this.myAttendanceStatus = await Promise.race([
+            this.libraryService.getTodayAttendanceStatus((student as LibraryStudent).id),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Attendance status timeout')), 5000)
+            )
+          ]);
+          console.log('Attendance status:', this.myAttendanceStatus);
+        } catch (attendanceError) {
+          console.log('Failed to load attendance status, continuing without it:', attendanceError);
+          this.myAttendanceStatus = null;
+        }
+        
+        this.successMessage = `Welcome ${(student as LibraryStudent).name}! You can now mark your attendance.`;
       }
 
       this.cdr.detectChanges();
     } catch (error: any) {
-      this.errorMessage = error.message;
+      console.error('Error in searchMyStudent:', error);
+      this.errorMessage = error.message || 'An error occurred while searching. Please check your connection and try again.';
+      this.myAttendanceStudent = null;
+      this.myAttendanceStatus = null;
       this.cdr.detectChanges();
     } finally {
+      console.log('Finishing search, setting searchingStudent to false');
       this.searchingStudent = false;
       this.cdr.detectChanges();
+      
+      // Additional safety check to ensure UI updates
+      setTimeout(() => {
+        if (this.searchingStudent) {
+          console.warn('searchingStudent still true after timeout, force setting to false');
+          this.searchingStudent = false;
+          this.cdr.detectChanges();
+        }
+      }, 100);
     }
+  }
+
+  // Manual reset function for debugging/emergency use
+  forceResetAttendanceSearch() {
+    console.log('Force resetting attendance search state');
+    this.searchingStudent = false;
+    this.myAttendanceStudent = null;
+    this.myAttendanceStatus = null;
+    this.myAttendanceMobile = '';
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.cdr.detectChanges();
   }
 
   async markMyAttendance() {

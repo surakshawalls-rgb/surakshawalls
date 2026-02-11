@@ -1,0 +1,78 @@
+<div class="app-safe-container" *ngIf="authService.isLoggedIn">
+
+  <div class="top-header">
+    <div class="header-spacer"></div>
+    <div class="header-center">
+      🛡️ SURAKSHA GROUP
+    </div>
+    <div class="header-right">
+      <span class="user-info">👤 {{ currentUser?.full_name || currentUser?.email }}</span>
+      <button class="btn-logout" (click)="logout()">🚪 Logout</button>
+    </div>
+  </div>
+
+  <div class="menu-bar">
+    <button routerLink="/reports-dashboard" *ngIf="hasManufacturingAccess()">📊 Dashboard</button>
+    
+    <!-- 🏭 PRODUCTION MODULE -->
+    <button *ngIf="hasManufacturingAccess()" [matMenuTriggerFor]="productionMenu">🏭 Production</button>
+    <mat-menu #productionMenu="matMenu" yPosition="below">
+      <button mat-menu-item routerLink="/production-entry">➕ Production Entry</button>
+      <button mat-menu-item routerLink="/worker-management">👷 Worker Management</button>
+      <button mat-menu-item routerLink="/inventory">📦 Inventory</button>
+    </mat-menu>
+
+    <!-- 💰 SALES MODULE -->
+    <button *ngIf="hasManufacturingAccess()" [matMenuTriggerFor]="salesMenu">💰 Sales</button>
+    <mat-menu #salesMenu="matMenu" yPosition="below">
+      <button mat-menu-item routerLink="/sales-entry">💳 Sales Entry</button>
+      <button mat-menu-item routerLink="/client-ledger">👥 Client Ledger</button>
+    </mat-menu>
+
+    <!-- 📦 MATERIALS MODULE -->
+    <button *ngIf="hasManufacturingAccess()" [matMenuTriggerFor]="materialsMenu">📦 Materials</button>
+    <mat-menu #materialsMenu="matMenu" yPosition="below">
+      <button mat-menu-item routerLink="/material-purchase">🛒 Material Purchase</button>
+      <button mat-menu-item routerLink="/yard-loss">⚠️ Yard Loss</button>
+      <button mat-menu-item routerLink="/stock-audit">✅ Stock Audit</button>
+    </mat-menu>
+
+    <!-- 📈 REPORTS MODULE -->
+    <button *ngIf="hasManufacturingAccess()" [matMenuTriggerFor]="reportsMenu">📈 Reports</button>
+    <mat-menu #reportsMenu="matMenu" yPosition="below">
+      <button mat-menu-item routerLink="/reports-dashboard">📊 Reports Dashboard</button>
+    </mat-menu>
+
+    <!-- 🤝 PARTNER MODULE -->
+    <button *ngIf="authService.isAdmin()" [matMenuTriggerFor]="partnerMenu">🤝 Partner</button>
+    <mat-menu #partnerMenu="matMenu" yPosition="below">
+      <button mat-menu-item routerLink="/partner-dashboard">📊 Dashboard</button>
+      <button mat-menu-item routerLink="/partner">⚙️ Settings</button>
+    </mat-menu>
+
+    <!-- 📚 LIBRARY MODULE (Separate Business) -->
+    <!-- Full Library Menu for Admin, Editor, Library Manager -->
+    <button *ngIf="hasLibraryAccess() && hasFullLibraryAccess()" [matMenuTriggerFor]="libraryMenu">📚 Library</button>
+    <mat-menu #libraryMenu="matMenu" yPosition="below">
+      <button mat-menu-item routerLink="/library-grid">🎯 Seat Grid</button>
+      <button mat-menu-item routerLink="/library-dashboard">📊 Dashboard</button>
+      <button mat-menu-item routerLink="/library-students">👨‍🎓 Students</button>
+      <button mat-menu-item routerLink="/library-expenses">💸 Expenses</button>
+    </mat-menu>
+
+    <!-- Direct Link to Seat Grid for Library Viewers -->
+    <button *ngIf="hasLibraryAccess() && !hasFullLibraryAccess()" 
+            routerLink="/library-grid"
+            class="primary-btn">
+      📚 Library - Seat Grid
+    </button>
+  </div>
+
+  <div class="content-area">
+    <router-outlet></router-outlet>
+  </div>
+
+</div>
+
+<!-- Show login page if not authenticated -->
+<router-outlet *ngIf="!authService.isLoggedIn"></router-outlet>

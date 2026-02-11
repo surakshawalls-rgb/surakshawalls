@@ -1,216 +1,347 @@
 <!-- src/app/pages/client-ledger/client-ledger.component.html -->
-<div class="client-ledger-container">
-  <div class="header">
-    <div class="header-left">
-      <h2>Client Ledger</h2>
-      <p class="subtitle">Manage clients and track outstanding payments</p>
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-attachment: fixed; padding: 20px; position: relative; overflow-x: auto;">
+  <!-- Animated Background Pattern -->
+  <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: 
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 70%);
+    animation: gradientFlow 15s ease-in-out infinite; z-index: 0;"></div>
+
+  <div style="position: relative; z-index: 1; max-width: 1400px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 style="margin: 0; color: white; font-size: 2rem; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 16px;">
+          <span style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px; font-size: 1.5rem; animation: pulse 2s ease-in-out infinite;">👥</span>
+          Client Ledger
+        </h2>
+        <p style="margin: 8px 0 0 60px; color: rgba(255,255,255,0.8); font-size: 1.1rem; font-weight: 500;">Manage clients and track outstanding payments</p>
+      </div>
+      <button (click)="openAddModal()" 
+              style="padding: 16px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <span style="font-size: 1.2rem;">➕</span>
+        Add Client
+      </button>
     </div>
-    <button (click)="openAddModal()" class="btn btn-primary">
-      + Add Client
-    </button>
-  </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading">Loading clients...</div>
-
-  <!-- Messages -->
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-
-  <div *ngIf="!loading">
-    <!-- Summary Cards -->
-    <div class="summary-cards" *ngIf="clientsSummary">
-      <div class="summary-card">
-        <div class="card-label">Total Clients</div>
-        <div class="card-value">{{ clientsSummary.total_clients }}</div>
-      </div>
-      <div class="summary-card">
-        <div class="card-label">Total Billed</div>
-        <div class="card-value">₹{{ clientsSummary.total_billed }}</div>
-      </div>
-      <div class="summary-card">
-        <div class="card-label">Total Paid</div>
-        <div class="card-value success">₹{{ clientsSummary.total_paid }}</div>
-      </div>
-      <div class="summary-card">
-        <div class="card-label">Outstanding</div>
-        <div class="card-value danger">₹{{ clientsSummary.total_outstanding }}</div>
+    <!-- Loading State -->
+    <div *ngIf="loading" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+      <div style="background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 40px; border-radius: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3);">
+        <div style="width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <div style="font-size: 1.2rem; font-weight: 600; color: #374151;">Loading clients...</div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters-section">
-      <input 
-        type="text" 
-        [(ngModel)]="searchTerm" 
-        (input)="applyFilters()"
-        placeholder="Search by name, phone, or city"
-        class="search-input">
-
-      <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="filter-select">
-        <option value="all">All Clients</option>
-        <option value="outstanding">With Outstanding</option>
-        <option value="exceeding_limit">Exceeding Credit Limit</option>
-      </select>
+    <!-- Alerts -->
+    <div *ngIf="successMessage" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9)); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 12px; animation: slideInDown 0.5s ease-out;">
+      <span style="font-size: 1.5rem;">✅</span>
+      <span style="font-weight: 600;">{{ successMessage }}</span>
+    </div>
+    
+    <div *ngIf="errorMessage" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9)); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 12px; animation: slideInDown 0.5s ease-out;">
+      <span style="font-size: 1.5rem;">❌</span>
+      <span style="font-weight: 600;">{{ errorMessage }}</span>
     </div>
 
-    <!-- Clients Table -->
-    <div class="table-container">
-      <table class="clients-table">
-        <thead>
-          <tr>
-            <th>Client Name</th>
-            <th>Contact</th>
-            <th>City</th>
-            <th>Total Billed</th>
-            <th>Total Paid</th>
-            <th>Outstanding</th>
-            <th>Credit Limit</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let client of filteredClients">
-            <td>
-              <div class="client-name">{{ client.client_name }}</div>
-            </td>
-            <td>{{ client.phone || '-' }}</td>
-            <td>{{ client.address || '-' }}</td>
-            <td>₹{{ client.total_billed }}</td>
-            <td>₹{{ client.total_paid }}</td>
-            <td>
-              <span [class]="'outstanding-badge ' + getOutstandingClass(client)">
-                ₹{{ client.outstanding }}
+    <div *ngIf="!loading">
+      <!-- Summary Cards -->
+      <div *ngIf="clientsSummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(29, 78, 216, 0.8)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(20px);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(59, 130, 246, 0.4)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position: absolute; top: 0; right: 0; font-size: 3rem; opacity: 0.2;">👥</div>
+          <div style="position: relative; z-index: 1;">
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Total Clients</div>
+            <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 8px;">{{ clientsSummary.total_clients }}</div>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(20px);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(16, 185, 129, 0.4)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position: absolute; top: 0; right: 0; font-size: 3rem; opacity: 0.2;">📊</div>
+          <div style="position: relative; z-index: 1;">
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Total Billed</div>
+            <div style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">₹{{ clientsSummary.total_billed | number }}</div>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.8)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(20px);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(245, 158, 11, 0.4)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position: absolute; top: 0; right: 0; font-size: 3rem; opacity: 0.2;">✅</div>
+          <div style="position: relative; z-index: 1;">
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Total Paid</div>
+            <div style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">₹{{ clientsSummary.total_paid | number }}</div>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8)); color: white; padding: 24px; border-radius: 20px; transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(20px);"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(239, 68, 68, 0.4)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <div style="position: absolute; top: 0; right: 0; font-size: 3rem; opacity: 0.2;">⚠️</div>
+          <div style="position: relative; z-index: 1;">
+            <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px; font-weight: 600;">Outstanding</div>
+            <div style="font-size: 2rem; font-weight: 800; margin-bottom: 8px;">₹{{ clientsSummary.total_outstanding | number }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 32px; display: flex; gap: 20px; align-items: center;">
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by name, phone, or city"
+               style="flex: 1; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+
+        <select [(ngModel)]="filterStatus" (change)="applyFilters()"
+                style="padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease; min-width: 200px;"
+                onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+          <option value="all">All Clients</option>
+          <option value="outstanding">With Outstanding</option>
+          <option value="exceeding_limit">Exceeding Credit Limit</option>
+        </select>
+      </div>
+
+      <!-- Clients Table -->
+      <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+        <h3 style="margin: 0 0 24px 0; color: white; font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+          <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.1rem;">📋</span>
+          Clients Directory
+          <span style="background: rgba(59, 130, 246, 0.8); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">{{ filteredClients.length }}</span>
+        </h3>
+
+        <div *ngIf="filteredClients.length > 0" style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 12px 25px rgba(0,0,0,0.1);">
+          <div style="display: grid; grid-template-columns: 1fr 150px 120px 120px 120px 120px 120px 150px; gap: 2px; background: rgba(255,255,255,0.1); padding: 20px; font-weight: 700; color: white; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+            <div>Client Name</div>
+            <div style="text-align: center;">Contact</div>
+            <div style="text-align: center;">City</div>
+            <div style="text-align: center;">Billed</div>
+            <div style="text-align: center;">Paid</div>
+            <div style="text-align: center;">Outstanding</div>
+            <div style="text-align: center;">Credit Limit</div>
+            <div style="text-align: center;">Actions</div>
+          </div>
+          
+          <div *ngFor="let client of filteredClients; let i = index" 
+               style="display: grid; grid-template-columns: 1fr 150px 120px 120px 120px 120px 120px 150px; gap: 2px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; color: white;"
+               onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateX(4px)'"
+               onmouseout="this.style.background='transparent'; this.style.transform='translateX(0)'">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 10px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700;">{{ client.client_name.charAt(0) }}</span>
+              <div>
+                <div style="font-weight: 700; font-size: 1.1rem;">{{ client.client_name }}</div>
+              </div>
+            </div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">{{ client.phone || '-' }}</div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">{{ client.address || '-' }}</div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 600; color: rgba(59, 130, 246, 1);">₹{{ client.total_billed | number }}</div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 600; color: rgba(16, 185, 129, 1);">₹{{ client.total_paid | number }}</div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+              <span style="padding: 6px 12px; border-radius: 16px; font-size: 0.85rem; font-weight: 700;" 
+                    [style.background]="getOutstandingClass(client) === 'high' ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9))' : 
+                                       getOutstandingClass(client) === 'medium' ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9))' :
+                                       'linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9))'"
+                    [style.color]="'white'">
+                ₹{{ client.outstanding | number }}
               </span>
-            </td>
-            <td>₹{{ client.credit_limit }}</td>
-            <td>
-              <button (click)="viewStatement(client)" class="btn-action">
-                View Statement
+            </div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 600; color: rgba(245, 158, 11, 1);">₹{{ client.credit_limit | number }}</div>
+            <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+              <button (click)="viewStatement(client)" 
+                      style="padding: 8px 16px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(29, 78, 216, 0.8)); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 0.85rem;"
+                      onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.4)'"
+                      onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                📊 Statement
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+          </div>
+        </div>
 
-      <div *ngIf="filteredClients.length === 0" class="no-data">
-        No clients found
+        <div *ngIf="filteredClients.length === 0" style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.6);">
+          <div style="font-size: 3rem; margin-bottom: 16px;">👤</div>
+          <div style="font-size: 1.1rem; font-weight: 600;">No clients found</div>
+          <div style="font-size: 0.9rem; margin-top: 8px;">Try adjusting your search or filter criteria</div>
+        </div>
+      </div>
+
+      <!-- Top Debtors -->
+      <div *ngIf="topDebtors.length > 0" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px;">
+        <h3 style="margin: 0 0 24px 0; color: white; font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+          <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.1rem;">🏆</span>
+          Top 10 Debtors
+        </h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+          <div *ngFor="let debtor of topDebtors; let i = index" 
+               style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center;"
+               onmouseover="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(0)'">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8)); color: white; padding: 8px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;">{{ i + 1 }}</span>
+              <div style="color: white; font-weight: 600; font-size: 1rem;">{{ debtor.client_name }}</div>
+            </div>
+            <div style="color: rgba(239, 68, 68, 1); font-weight: 700; font-size: 1.1rem;">₹{{ debtor.outstanding | number }}</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Top Debtors -->
-    <div class="top-debtors-section" *ngIf="topDebtors.length > 0">
-      <h3>Top 10 Debtors</h3>
-      <div class="debtors-list">
-        <div *ngFor="let debtor of topDebtors" class="debtor-item">
-          <div class="debtor-name">{{ debtor.client_name }}</div>
-          <div class="debtor-amount">₹{{ debtor.outstanding }}</div>
+    <!-- Add Client Modal -->
+    <div *ngIf="showAddModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 10000;" (click)="closeAddModal()">
+      <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
+        <div style="padding: 24px 32px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; color: #374151; font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+            <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 8px; border-radius: 12px; font-size: 1.1rem;">👤</span>
+            Add New Client
+          </h3>
+          <button (click)="closeAddModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; transition: all 0.3s ease; padding: 4px; border-radius: 50%;"
+                  onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'"
+                  onmouseout="this.style.background='none'; this.style.color='#6b7280'">✕</button>
+        </div>
+        <div style="padding: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">
+              Client Name <span style="color: #ef4444;">*</span>
+            </label>
+            <input type="text" [(ngModel)]="formData.client_name" 
+                   style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Contact Number</label>
+            <input type="tel" [(ngModel)]="formData.contact_number" 
+                   style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Address</label>
+            <input type="text" [(ngModel)]="formData.address" 
+                   style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">City</label>
+            <input type="text" [(ngModel)]="formData.city" 
+                   style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Credit Limit (₹)</label>
+            <input type="number" [(ngModel)]="formData.credit_limit" 
+                   style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+          </div>
+          <div style="margin-bottom: 32px;">
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Status</label>
+            <select [(ngModel)]="formData.status" 
+                    style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                    onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div style="padding: 24px 32px; border-top: 1px solid rgba(0,0,0,0.1); display: flex; gap: 16px; justify-content: flex-end;">
+          <button (click)="closeAddModal()" 
+                  style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='#e5e7eb'"
+                  onmouseout="this.style.background='#f3f4f6'">Cancel</button>
+          <button (click)="saveClient()" [disabled]="saving"
+                  style="padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; opacity: 1;"
+                  [style.opacity]="saving ? '0.6' : '1'"
+                  [style.cursor]="saving ? 'not-allowed' : 'pointer'"
+                  onmouseover="if(!this.disabled) { this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'; }"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            <span *ngIf="!saving">💾 Save Client</span>
+            <span *ngIf="saving">⏳ Saving...</span>
+          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Add Client Modal -->
-  <div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Add New Client</h3>
-        <button (click)="closeAddModal()" class="close-btn">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Client Name <span class="required">*</span></label>
-          <input type="text" [(ngModel)]="formData.client_name" class="form-control">
+    <!-- Statement Modal -->
+    <div *ngIf="showStatementModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 10000;" (click)="closeStatementModal()">
+      <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); width: 95%; max-width: 1000px; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
+        <div style="padding: 24px 32px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h3 style="margin: 0; color: #374151; font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+              <span style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(29, 78, 216, 0.9)); color: white; padding: 8px; border-radius: 12px; font-size: 1.1rem;">📊</span>
+              Client Statement
+            </h3>
+            <p *ngIf="selectedClient" style="margin: 8px 0 0 0; color: #6b7280; font-size: 1.1rem; font-weight: 600;">{{ selectedClient.client_name }}</p>
+          </div>
+          <button (click)="closeStatementModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6b7280; transition: all 0.3s ease; padding: 4px; border-radius: 50%;"
+                  onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'"
+                  onmouseout="this.style.background='none'; this.style.color='#6b7280'">✕</button>
         </div>
+        <div style="padding: 32px;">
+          <!-- Date Range Filter -->
+          <div style="display: flex; gap: 16px; margin-bottom: 24px; align-items: center;">
+            <input type="date" [(ngModel)]="statementStartDate" 
+                   style="padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+            <span style="color: #6b7280; font-weight: 600;">to</span>
+            <input type="date" [(ngModel)]="statementEndDate" 
+                   style="padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
+                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+            <button (click)="loadStatement()" 
+                    style="padding: 12px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Apply</button>
+          </div>
 
-        <div class="form-group">
-          <label>Contact Number</label>
-          <input type="tel" [(ngModel)]="formData.contact_number" class="form-control">
-        </div>
+          <!-- Statement Table -->
+          <div *ngIf="clientStatement.length > 0" style="background: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0;">
+            <div style="display: grid; grid-template-columns: 120px 100px 1fr 120px 120px 120px; gap: 2px; background: #e2e8f0; padding: 16px; font-weight: 700; color: #374151; font-size: 0.85rem; text-transform: uppercase;">
+              <div>Date</div>
+              <div style="text-align: center;">Type</div>
+              <div>Description</div>
+              <div style="text-align: center;">Debit</div>
+              <div style="text-align: center;">Credit</div>
+              <div style="text-align: center;">Balance</div>
+            </div>
+            
+            <div *ngFor="let entry of clientStatement; let i = index" 
+                 style="display: grid; grid-template-columns: 120px 100px 1fr 120px 120px 120px; gap: 2px; padding: 16px; border-bottom: 1px solid #e2e8f0; transition: all 0.3s ease; background: white;"
+                 onmouseover="this.style.background='#f1f5f9'"
+                 onmouseout="this.style.background='white'">
+              <div style="display: flex; align-items: center; font-size: 0.85rem; color: #6b7280;">{{ entry.date }}</div>
+              <div style="text-align: center; display: flex; align-items: center; justify-content: center;">
+                <span style="padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;" 
+                      [style.background]="entry.type === 'sale' ? 'rgba(16, 185, 129, 0.1)' : entry.type === 'payment' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(245, 158, 11, 0.1)'"
+                      [style.color]="entry.type === 'sale' ? '#10b981' : entry.type === 'payment' ? '#3b82f6' : '#f59e0b'">
+                  {{ entry.type }}
+                </span>
+              </div>
+              <div style="display: flex; align-items: center; color: #374151; font-weight: 500;">{{ entry.description }}</div>
+              <div style="text-align: center; font-weight: 600; color: #dc2626; display: flex; align-items: center; justify-content: center;">
+                {{ entry.debit > 0 ? '₹' + (entry.debit | number) : '-' }}
+              </div>
+              <div style="text-align: center; font-weight: 600; color: #16a34a; display: flex; align-items: center; justify-content: center;">
+                {{ entry.credit > 0 ? '₹' + (entry.credit | number) : '-' }}
+              </div>
+              <div style="text-align: center; font-weight: 700; color: #374151; display: flex; align-items: center; justify-content: center;">
+                ₹{{ entry.balance | number }}
+              </div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label>Address</label>
-          <input type="text" [(ngModel)]="formData.address" class="form-control">
-        </div>
-
-        <div class="form-group">
-          <label>City</label>
-          <input type="text" [(ngModel)]="formData.city" class="form-control">
-        </div>
-
-        <div class="form-group">
-          <label>Credit Limit (₹)</label>
-          <input type="number" [(ngModel)]="formData.credit_limit" class="form-control">
-        </div>
-
-        <div class="form-group">
-          <label>Status</label>
-          <select [(ngModel)]="formData.status" class="form-control">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button (click)="closeAddModal()" class="btn btn-secondary">Cancel</button>
-        <button (click)="saveClient()" [disabled]="saving" class="btn btn-primary">
-          {{ saving ? 'Saving...' : 'Save Client' }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Statement Modal -->
-  <div class="modal-overlay" *ngIf="showStatementModal" (click)="closeStatementModal()">
-    <div class="modal-content large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div>
-          <h3>Client Statement</h3>
-          <p class="statement-client" *ngIf="selectedClient">{{ selectedClient.client_name }}</p>
-        </div>
-        <button (click)="closeStatementModal()" class="close-btn">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Date Range Filter -->
-        <div class="date-range-filter">
-          <input type="date" [(ngModel)]="statementStartDate" class="form-control">
-          <span>to</span>
-          <input type="date" [(ngModel)]="statementEndDate" class="form-control">
-          <button (click)="loadStatement()" class="btn btn-primary">Apply</button>
-        </div>
-
-        <!-- Statement Table -->
-        <div class="statement-table-container">
-          <table class="statement-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Description</th>
-                <th>Debit</th>
-                <th>Credit</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let entry of clientStatement">
-                <td>{{ entry.date }}</td>
-                <td>
-                  <span [class]="'type-badge ' + entry.type">{{ entry.type }}</span>
-                </td>
-                <td>{{ entry.description }}</td>
-                <td class="debit">{{ entry.debit > 0 ? '₹' + entry.debit : '-' }}</td>
-                <td class="credit">{{ entry.credit > 0 ? '₹' + entry.credit : '-' }}</td>
-                <td class="balance">₹{{ entry.balance }}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div *ngIf="clientStatement.length === 0" class="no-data">
-            No transactions found for selected date range
+          <div *ngIf="clientStatement.length === 0" style="text-align: center; padding: 40px 20px; color: #6b7280;">
+            <div style="font-size: 3rem; margin-bottom: 16px;">📊</div>
+            <div style="font-size: 1.1rem; font-weight: 600;">No transactions found</div>
+            <div style="font-size: 0.9rem; margin-top: 8px;">Try adjusting the date range</div>
           </div>
         </div>
       </div>

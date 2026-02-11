@@ -1,90 +1,196 @@
-<div class="prod-container">
+<style>
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes gradientFlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
 
-  <div class="top-bar">
-    <h2>{{ language==='EN' ? '🏭 Production & Selling' : '🏭 उत्पादन और विक्रय' }}</h2>
-    <button class="lang-btn" (click)="toggleLang()">🌐 {{language}}</button>
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-size: 400% 400%; animation: gradientFlow 15s ease infinite; padding: 24px;">
+
+  <!-- Modern Header -->
+  <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="margin: 0; font-size: 2.2rem; font-weight: 700; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 16px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px; animation: float 3s ease-in-out infinite;">🏭</span>
+        {{ language==='EN' ? 'Production & Selling' : 'उत्पादन और विक्रय' }}
+      </h2>
+      <button (click)="toggleLang()" 
+              style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); backdrop-filter: blur(10px); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 16px 24px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
+              onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(255,255,255,0.2)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        🌐 {{language}}
+      </button>
+    </div>
   </div>
 
-  <!-- Tab Navigation -->
-  <div class="tab-navigation">
+  <!-- Modern Tab Navigation -->
+  <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); padding: 8px; margin-bottom: 32px; display: flex; gap: 8px;">
     <button 
-      [class.active]="activeTab === 'production'"
+      [style.background]="activeTab === 'production' ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(255,255,255,0.1)'"
+      [style.color]="activeTab === 'production' ? 'white' : 'rgba(255,255,255,0.8)'"
       (click)="activeTab = 'production'"
-      class="tab-btn">
+      style="flex: 1; padding: 16px 24px; border: none; border-radius: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; gap: 8px;"
+      onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+      onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
       🏭 {{language==='EN'?'Production':'उत्पादन'}}
     </button>
     <button 
-      [class.active]="activeTab === 'selling'"
+      [style.background]="activeTab === 'selling' ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'rgba(255,255,255,0.1)'"
+      [style.color]="activeTab === 'selling' ? 'white' : 'rgba(255,255,255,0.8)'"
       (click)="activeTab = 'selling'"
-      class="tab-btn">
+      style="flex: 1; padding: 16px 24px; border: none; border-radius: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; gap: 8px;"
+      onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+      onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
       💰 {{language==='EN'?'Selling':'विक्रय'}}
     </button>
     <button 
-      [class.active]="activeTab === 'damage'"
+      [style.background]="activeTab === 'damage' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'rgba(255,255,255,0.1)'"
+      [style.color]="activeTab === 'damage' ? 'white' : 'rgba(255,255,255,0.8)'"
       (click)="activeTab = 'damage'"
-      class="tab-btn">
+      style="flex: 1; padding: 16px 24px; border: none; border-radius: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; gap: 8px;"
+      onmouseover="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.2)'; }"
+      onmouseout="if(this.style.background.includes('rgba')) { this.style.background='rgba(255,255,255,0.1)'; }">
       ⚠️ {{language==='EN'?'Damage':'क्षति'}}
     </button>
   </div>
 
   <!-- PRODUCTION TAB -->
   @if(activeTab === 'production') {
-    <div class="tab-content">
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
 
-      <label>{{language==='EN'?'Date':'तारीख'}}</label>
-      <input type="date" [(ngModel)]="date">
+      <!-- Date Input -->
+      <div style="margin-bottom: 32px;">
+        <label style="display: block; color: white; font-weight: 600; font-size: 1.1rem; margin-bottom: 12px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+          {{language==='EN'?'Date':'तारीख'}}
+        </label>
+        <input type="date" [(ngModel)]="date" 
+               style="width: 100%; max-width: 300px; padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+      </div>
 
-      <!-- Counters -->
-      <div class="card" *ngFor="let item of items">
-        <span>{{ language==='EN'?item.labelEN:item.labelHI }}</span>
+      <!-- Production Counters -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div *ngFor="let item of items" 
+             style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 24px; backdrop-filter: blur(15px); transition: all 0.3s ease;"
+             onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(255,255,255,0.15)'"
+             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          
+          <div style="text-align: center; color: white; font-weight: 600; font-size: 1.1rem; margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+            {{ language==='EN'?item.labelEN:item.labelHI }}
+          </div>
 
-        <div class="counter">
-          <button (click)="dec(item.key)">➖</button>
-          <span>{{production[item.key]}}</span>
-          <button (click)="inc(item.key)">➕</button>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+            <button (click)="dec(item.key)" 
+                    style="width: 48px; height: 48px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 50%; font-size: 1.4rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 15px rgba(239, 68, 68, 0.4)'"
+                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+              ➖
+            </button>
+            
+            <div style="background: rgba(255,255,255,0.9); color: #1f2937; font-size: 1.8rem; font-weight: 700; padding: 12px 24px; border-radius: 16px; min-width: 80px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+              {{production[item.key]}}
+            </div>
+            
+            <button (click)="inc(item.key)" 
+                    style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 50%; font-size: 1.4rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;"
+                    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 15px rgba(16, 185, 129, 0.4)'"
+                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+              ➕
+            </button>
+          </div>
         </div>
       </div>
 
-      <button class="save-btn" (click)="saveProduction()">💾 Save Production</button>
+      <!-- Save Button -->
+      <button (click)="saveProduction()" 
+              style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; padding: 18px 36px; border-radius: 50px; font-size: 1.2rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); margin-bottom: 32px; display: flex; align-items: center; gap: 12px;"
+              onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 35px rgba(139, 92, 246, 0.5)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(139, 92, 246, 0.4)'">
+        💾 Save Production
+      </button>
 
       <!-- Filters -->
-      <div class="filters">
-        <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()">
-        <button (click)="refreshTable()">🔄 Reload</button>
+      <div style="background: rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-bottom: 24px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="color: white; font-weight: 600; font-size: 0.95rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">Filter by Date</label>
+          <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()" 
+                 style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        </div>
+        <button (click)="refreshTable()" 
+                style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 20px;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(255,255,255,0.3)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.background='linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))'">
+          🔄 Reload
+        </button>
       </div>
 
-      <!-- Table -->
-      <table class="prod-table">
-        <tr>
-          <th>Date</th>
-          <th>Fencing</th>
-          <th>Plain</th>
-          <th>Jumbo</th>
-          <th>Round</th>
-          <th>Biscuit</th>
-          <th>Action</th>
-        </tr>
-
+      <!-- Modern Production Table -->
+      <div style="background: rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 24px;">
+        <div style="background: rgba(255,255,255,0.2); padding: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 100px; gap: 16px; font-weight: 700; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+          <div>Date</div>
+          <div>Fencing</div>
+          <div>Plain</div>
+          <div>Jumbo</div>
+          <div>Round</div>
+          <div>Biscuit</div>
+          <div style="text-align: center;">Action</div>
+        </div>
+        
         @for(r of filtered; track $index){
-          <tr>
-            <td>{{formatDateToDDMMYYYY(r.date)}}</td>
-            <td>{{r.fencing_pole}}</td>
-            <td>{{r.plain_plate}}</td>
-            <td>{{r.jumbo_pillar}}</td>
-            <td>{{r.round_plate}}</td>
-            <td>{{r.biscuit_plate}}</td>
-            <td>
-              <button class="delete-btn" (click)="deleteProduction(r.id)" title="Delete">🗑️</button>
-            </td>
-          </tr>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 100px; gap: 16px; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;"
+               [style.background]="$index % 2 === 0 ? 'rgba(255,255,255,0.05)' : 'transparent'"
+               onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+               onmouseout="this.style.background=''">             
+            <div>{{formatDateToDDMMYYYY(r.date)}}</div>
+            <div style="font-weight: 600;">{{r.fencing_pole}}</div>
+            <div style="font-weight: 600;">{{r.plain_plate}}</div>
+            <div style="font-weight: 600;">{{r.jumbo_pillar}}</div>
+            <div style="font-weight: 600;">{{r.round_plate}}</div>
+            <div style="font-weight: 600;">{{r.biscuit_plate}}</div>
+            <div style="text-align: center;">
+              <button (click)="deleteProduction(r.id)" title="Delete" 
+                      style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;"
+                      onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 15px rgba(239, 68, 68, 0.4)'"
+                      onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+                🗑️
+              </button>
+            </div>
+          </div>
         }
-      </table>
+      </div>
 
-      <!-- Pagination -->
-      <div class="pagination">
-        <button (click)="prevPage()">⬅ Prev</button>
-        <span>Page {{page+1}}</span>
-        <button (click)="nextPage()">Next ➡</button>
+      <!-- Modern Pagination -->
+      <div style="display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 24px;">
+        <button (click)="prevPage()" 
+                style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(255,255,255,0.3)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.background='linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))'">
+          ⬅ Prev
+        </button>
+        <div style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; border-radius: 12px; font-weight: 600; backdrop-filter: blur(10px);">
+          Page {{page+1}}
+        </div>
+        <button (click)="nextPage()" 
+                style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(255,255,255,0.3)'"
+                onmouseout="this.style.transform='translateY(0)'; this.style.background='linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1))'">
+          Next ➡
+        </button>
       </div>
 
     </div>

@@ -1,395 +1,520 @@
-.production-entry-container {
-  max-width: 1200px;
+/* ===== BOOKMYSHOW INSPIRED DESIGN - UNIVERSAL STYLES ===== */
+
+/* Color Variables */
+:root {
+  --primary-color: #f84464;
+  --primary-dark: #dc143c;
+  --primary-light: #ff6b88;
+  --success-color: #4CAF50;
+  --success-dark: #388E3C;
+  --danger-color: #eb4b4b;
+  --warning-color: #ff9800;
+  --text-color: #333333;
+  --text-light: #666666;
+  --border-color: #dce0e4;
+  --background: #f5f5f5;
+  --white: #ffffff;
+  --gray-light: #e0e0e0;
+  --gray-medium: #bdbdbd;
+}
+
+.page-container {
+  padding: 16px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
+  background: var(--background);
+  min-height: 100vh;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.header h2 {
-  margin: 0;
-  font-size: 24px;
-  color: #1a1a1a;
-}
-
-.date-input {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.card {
-  background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.card h3 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  color: #333;
-  border-bottom: 2px solid #f0f0f0;
-  padding-bottom: 8px;
-}
-
-.form-group {
+/* Page Header - BookMyShow Style */
+.page-header {
+  background: var(--white);
+  padding: 20px 24px;
+  border-radius: 12px;
   margin-bottom: 16px;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-  font-size: 14px;
-  color: #555;
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.form-control,
-.form-control-sm {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.2s;
+.page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-light);
+  margin: 0;
 }
 
-.form-control-sm {
-  padding: 6px 10px;
-  font-size: 13px;
+/* Form Container - BookMyShow Style */
+.form-container {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
 
-.form-control:focus,
-.form-control-sm:focus {
-  outline: none;
-  border-color: #4CAF50;
+.form-section {
+  margin-bottom: 28px;
 }
 
-.form-row {
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Form Grid - BookMyShow Style */
+.form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.form-label.required::after {
+  content: " *";
+  color: var(--danger-color);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: var(--white);
+  font-family: inherit;
+  color: var(--text-color);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.1);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: var(--background);
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-error {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Form Actions - BookMyShow Style */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Buttons - BookMyShow Style */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--background);
+}
+
+.btn-success {
+  background: var(--success-color);
+  color: var(--white);
+}
+
+.btn-success:hover {
+  background: var(--success-dark);
+  transform: scale(1.02);
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+  transform: scale(1.02);
+}
+
+.btn:disabled {
+  background: var(--gray-light);
+  color: var(--text-light);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Data Table - BookMyShow Style */
+.table-container {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
-/* Material Preview */
-.material-preview {
-  background: #f8f9fa;
-  border-left: 4px solid #4CAF50;
+.table-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
 }
 
-.material-item {
-  display: grid;
-  grid-template-columns: 150px 120px 100px 120px 1fr;
+.table-actions {
+  display: flex;
   gap: 12px;
-  align-items: center;
-  padding: 12px;
-  background: white;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  font-size: 14px;
+  flex-wrap: wrap;
 }
 
-.material-name {
-  font-weight: 500;
-  color: #333;
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.material-qty {
-  color: #666;
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.material-cost {
-  color: #888;
-  font-size: 12px;
+.data-table thead {
+  background: var(--background);
 }
 
-.material-total {
-  font-weight: 600;
-  color: #2196F3;
+.data-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
 }
 
-.stock-status {
-  text-align: right;
-  font-size: 12px;
-  font-weight: 500;
+.data-table td {
+  padding: 16px 20px;
+  font-size: 1rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.stock-status.success {
-  color: #4CAF50;
-}
-
-.stock-status.danger {
-  color: #f44336;
-}
-
-.material-total-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 12px;
-  background: #e8f5e9;
-  border-radius: 4px;
-  margin-top: 12px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.material-total-row .value {
-  color: #2e7d32;
-}
-
-/* Worker Selection */
-.worker-selector {
-  margin-bottom: 20px;
-}
-
-.worker-list {
-  border-top: 2px solid #f0f0f0;
-  padding-top: 16px;
-  margin-top: 16px;
-}
-
-.worker-entry {
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.worker-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.worker-name {
-  font-weight: 600;
-  font-size: 15px;
-  color: #333;
-}
-
-.btn-remove {
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
+.data-table tbody tr {
   transition: background 0.2s;
 }
 
-.btn-remove:hover {
-  background: #d32f2f;
+.data-table tbody tr:hover {
+  background: var(--background);
 }
 
-.worker-details {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+.data-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.balance-field {
-  background: #fff3cd;
+/* Status Badges - BookMyShow Style */
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #856404;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-.labor-summary {
-  border-top: 2px solid #e0e0e0;
-  padding-top: 16px;
-  margin-top: 16px;
+.badge.success {
+  background: #e8f5e9;
+  color: var(--success-dark);
 }
 
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 12px;
-  margin-bottom: 4px;
-  font-size: 14px;
+.badge.warning {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
-.summary-row.highlight {
-  background: #fff3cd;
-  border-radius: 4px;
-  font-weight: 600;
-  margin-top: 8px;
+.badge.danger {
+  background: #ffebee;
+  color: #c62828;
 }
 
-.summary-row .label {
-  color: #666;
-}
-
-.summary-row .value {
-  color: #333;
-  font-weight: 600;
-}
-
-/* Production Summary */
-.summary-card {
+.badge.info {
   background: #e3f2fd;
-  border-left: 4px solid #2196F3;
+  color: #1565c0;
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+/* Empty State - BookMyShow Style */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-light);
 }
 
-.summary-item {
-  background: white;
-  padding: 12px;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
+.empty-icon {
+  font-size: 4rem;
+  color: var(--gray-light);
+  margin-bottom: 16px;
 }
 
-.summary-item .label {
-  font-size: 12px;
-  color: #666;
-  margin-bottom: 4px;
-}
-
-.summary-item .value {
-  font-size: 18px;
+.empty-text {
+  font-size: 1.125rem;
   font-weight: 600;
-  color: #333;
+  margin-bottom: 8px;
+  color: var(--text-color);
 }
 
-.summary-item.highlight {
-  background: #fff3cd;
+.empty-subtext {
+  font-size: 1rem;
+  color: var(--text-light);
 }
 
-.summary-item.highlight .value {
-  color: #2e7d32;
+/* Loading State - BookMyShow Style */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
 }
 
-/* Alerts */
-.alert {
-  padding: 12px 16px;
-  border-radius: 4px;
-  margin-top: 16px;
-  font-size: 14px;
+.spinner {
+  border: 4px solid var(--background);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Stats Cards - BookMyShow Style */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: var(--text-light);
   font-weight: 500;
 }
 
-.alert-danger {
+/* Alerts - BookMyShow Style */
+.alert {
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: #e8f5e9;
+  color: var(--success-dark);
+}
+
+.alert-error {
   background: #ffebee;
   color: #c62828;
-  border: 1px solid #ef5350;
+}
+
+.alert-warning {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
 .alert-info {
   background: #e3f2fd;
   color: #1565c0;
-  border: 1px solid #64b5f6;
 }
 
-/* Checkbox */
-.checkbox-group {
-  margin-bottom: 16px;
-}
-
-.checkbox-group label {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.checkbox-group input[type="checkbox"] {
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: #4CAF50;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-}
-
-.btn-secondary {
-  background: #9e9e9e;
-  color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #757575;
-}
-
-.loading {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-  font-style: italic;
-}
-
-/* Responsive */
+/* ===== RESPONSIVE - BOOKMYSHOW STYLE ===== */
 @media (max-width: 768px) {
-  .production-entry-container {
+  .page-container {
     padding: 12px;
   }
 
-  .form-row,
-  .worker-details,
-  .summary-grid {
+  .page-header,
+  .form-container,
+  .table-container {
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .material-item {
-    grid-template-columns: 1fr;
-    gap: 6px;
-  }
-
-  .stock-status {
-    text-align: left;
-  }
-
-  .action-buttons {
+  .form-actions {
     flex-direction: column;
   }
 
   .btn {
     width: 100%;
+    justify-content: center;
+    padding: 14px 24px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-actions {
+    width: 100%;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 8px;
+  }
+
+  .page-header,
+  .form-container {
+    padding: 16px;
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    padding: 14px 20px;
+  }
+
+  .page-title {
+    font-size: 1.125rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
   }
 }

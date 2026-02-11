@@ -1,179 +1,296 @@
-<div class="partner-dashboard-container">
-  <div class="top-bar">
-    <div>
-      <h1>🤝 Partner Dashboard</h1>
-      <p>Track partner contributions, profits, and settlements</p>
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-attachment: fixed; padding: 20px; position: relative; overflow-x: auto;">
+  <!-- Animated Background Pattern -->
+  <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: 
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 70%);
+    animation: gradientFlow 15s ease-in-out infinite; z-index: 0;"></div>
+
+  <div style="position: relative; z-index: 1; max-width: 1600px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="margin: 0; color: white; font-size: 2rem; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 16px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px; font-size: 1.5rem; animation: pulse 2s ease-in-out infinite;">🤝</span>
+            Partner Dashboard
+          </h2>
+          <p style="margin: 8px 0 0 60px; color: rgba(255,255,255,0.8); font-size: 1.1rem; font-weight: 500;">Track partner contributions, profits, and settlements</p>
+        </div>
+        <button (click)="refreshData()" [disabled]="loading"
+                style="padding: 14px 28px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8)); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; opacity: 1;"
+                [style.opacity]="loading ? '0.6' : '1'"
+                [style.cursor]="loading ? 'not-allowed' : 'pointer'"
+                onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.4)'; }"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <span *ngIf="!loading">🔄 Refresh</span>
+          <span *ngIf="loading">⏳ Loading...</span>
+        </button>
+      </div>
     </div>
-    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
-      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
-    </button>
-  </div>
 
-  <!-- Success/Error Messages -->
-  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-
-  <!-- Month Filter -->
-  <div class="filter-section">
-    <label for="monthSelect">Select Month:</label>
-    <input 
-      type="month" 
-      id="monthSelect" 
-      [(ngModel)]="selectedMonth"
-      (change)="onMonthChange()"
-      class="input-field">
-  </div>
-
-  <!-- Partner Summary Cards -->
-  <div class="partner-cards">
-    <div *ngFor="let partner of partners" class="partner-card">
-      <div class="card-header">
-        <h3>{{ partner.name }}</h3>
-        <span class="percentage">{{ partner.percentage }}%</span>
-      </div>
-
-      <div class="card-stats">
-        <div class="stat-item">
-          <span class="label">Total Earned</span>
-          <span class="value" [ngClass]="{ 'positive': partner.total_earned > 0 }">
-            ₹{{ partner.total_earned | number: '1.2-2' }}
-          </span>
-        </div>
-
-        <div class="stat-item">
-          <span class="label">Labour Paid</span>
-          <span class="value">₹{{ partner.labour_contributed | number: '1.2-2' }}</span>
-        </div>
-
-        <div class="stat-item">
-          <span class="label">Materials Paid</span>
-          <span class="value">₹{{ partner.materials_contributed | number: '1.2-2' }}</span>
-        </div>
-
-        <div class="stat-item">
-          <span class="label">Expenses Paid</span>
-          <span class="value">₹{{ partner.expenses_contributed | number: '1.2-2' }}</span>
-        </div>
-
-        <div class="stat-item total">
-          <span class="label">Total Paid</span>
-          <span class="value">₹{{ partner.total_contributed | number: '1.2-2' }}</span>
-        </div>
-      </div>
-
-      <div class="card-divider"></div>
-
-      <div class="card-settlement">
-        <div class="settle-item">
-          <span class="label">Cash Given</span>
-          <span class="value positive">+₹{{ partner.cash_given | number: '1.2-2' }}</span>
-        </div>
-
-        <div class="settle-item">
-          <span class="label">Cash Taken</span>
-          <span class="value negative">-₹{{ partner.cash_taken | number: '1.2-2' }}</span>
-        </div>
-
-        <div class="settle-item net">
-          <span class="label">Net Cash</span>
-          <span class="value" [ngClass]="getNetCashClass(partner)">
-            {{ getNetCashDisplay(partner) }}
-          </span>
-        </div>
-
-        <div class="settle-item highlight">
-          <span class="label">Profit Due</span>
-          <span class="value" [ngClass]="{ 'positive': partner.profit_due > 0, 'negative': partner.profit_due < 0 }">
-            ₹{{ partner.profit_due | number: '1.2-2' }}
-          </span>
-        </div>
-      </div>
-
-      <button 
-        *ngIf="partner.settlement_due > 0"
-        (click)="openSettlementForm(partner.id)"
-        class="btn-settle">
-        Record Settlement (₹{{ partner.settlement_due | number: '1.2-2' }})
-      </button>
+    <!-- Success/Error Messages -->
+    <div *ngIf="successMessage" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9)); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 12px; animation: slideInDown 0.5s ease-out;">
+      <span style="font-size: 1.5rem;">✅</span>
+      <span style="font-weight: 600;">{{ successMessage }}</span>
     </div>
-  </div>
+    
+    <div *ngIf="errorMessage" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9)); color: white; padding: 20px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 12px; animation: slideInDown 0.5s ease-out;">
+      <span style="font-size: 1.5rem;">❌</span>
+      <span style="font-weight: 600;">{{ errorMessage }}</span>
+    </div>
 
-  <!-- Settlement Form Modal -->
-  <div *ngIf="showSettlementForm" class="modal-overlay" (click)="closeSettlementForm()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <h2>Record Settlement</h2>
+    <!-- Month Filter -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 32px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <label style="color: white; font-weight: 600; font-size: 1.1rem;">📅 Select Month:</label>
+        <input type="month" id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange()"
+               style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; font-weight: 600; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+      </div>
+    </div>
+
+    <!-- Partner Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 32px;">
+      <div *ngFor="let partner of partners; let i = index" 
+           style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s ease; animation: fadeInUp 0.5s ease-out;"
+           [style.animation-delay]="(i * 0.1) + 's'"
+           onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 25px 50px rgba(0,0,0,0.15)'"
+           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 20px 40px rgba(0,0,0,0.1)'">
+        
+        <!-- Partner Header -->
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)); padding: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h3 style="margin: 0; color: white; font-size: 1.4rem; font-weight: 700;">{{ partner.name }}</h3>
+            <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-top: 4px;">Partner Stake</div>
+          </div>
+          <div style="background: rgba(255,255,255,0.2); padding: 12px 20px; border-radius: 20px;">
+            <span style="color: white; font-size: 1.3rem; font-weight: 800;">{{ partner.percentage }}%</span>
+          </div>
+        </div>
+
+        <!-- Partner Stats -->
+        <div style="padding: 24px;">
+          <div style="display: grid; gap: 12px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+              <span style="color: rgba(255,255,255,0.8); font-weight: 600;">Total Earned</span>
+              <span style="color: white; font-weight: 700; font-size: 1.1rem;" [ngClass]="{ 'positive': partner.total_earned > 0 }">
+                ₹{{ partner.total_earned | number: '1.2-2' }}
+              </span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+              <span style="color: rgba(255,255,255,0.8); font-weight: 600;">Labour Paid</span>
+              <span style="color: white; font-weight: 700; font-size: 1rem;">₹{{ partner.labour_contributed | number: '1.2-2' }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+              <span style="color: rgba(255,255,255,0.8); font-weight: 600;">Materials Paid</span>
+              <span style="color: white; font-weight: 700; font-size: 1rem;">₹{{ partner.materials_contributed | number: '1.2-2' }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+              <span style="color: rgba(255,255,255,0.8); font-weight: 600;">Expenses Paid</span>
+              <span style="color: white; font-weight: 700; font-size: 1rem;">₹{{ partner.expenses_contributed | number: '1.2-2' }}</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)); border-radius: 12px;">
+              <span style="color: white; font-weight: 700; font-size: 1.1rem;">Total Paid</span>
+              <span style="color: white; font-weight: 800; font-size: 1.2rem;">₹{{ partner.total_contributed | number: '1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 20px;">
+            <div style="display: grid; gap: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                <span style="color: rgba(16, 185, 129, 1); font-weight: 600;">Cash Given</span>
+                <span style="color: white; font-weight: 700;">+₹{{ partner.cash_given | number: '1.2-2' }}</span>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(239, 68, 68, 0.2); border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                <span style="color: rgba(239, 68, 68, 1); font-weight: 600;">Cash Taken</span>
+                <span style="color: white; font-weight: 700;">-₹{{ partner.cash_taken | number: '1.2-2' }}</span>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(245, 158, 11, 0.2); border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                <span style="color: rgba(245, 158, 11, 1); font-weight: 600;">Net Cash</span>
+                <span style="color: white; font-weight: 700;" [ngClass]="getNetCashClass(partner)">
+                  {{ getNetCashDisplay(partner) }}
+                </span>
+              </div>
+              
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8)); border-radius: 12px;">
+                <span style="color: white; font-weight: 700; font-size: 1.1rem;">Profit Due</span>
+                <span style="color: white; font-weight: 800; font-size: 1.2rem;" [ngClass]="{ 'positive': partner.profit_due > 0, 'negative': partner.profit_due < 0 }">
+                  ₹{{ partner.profit_due | number: '1.2-2' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settlement Button -->
+          <button *ngIf="partner.settlement_due > 0" (click)="openSettlementForm(partner.id)"
+                  style="width: 100%; margin-top: 20px; padding: 16px; background: linear-gradient(135deg, #f5576c, #f093fb); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(245, 87, 108, 0.4)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            💰 Record Settlement (₹{{ partner.settlement_due | number: '1.2-2' }})
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settlement Form Modal -->
+    <div *ngIf="showSettlementForm" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: fadeIn 0.3s ease-out;" (click)="closeSettlementForm()">
+      <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; animation: scaleIn 0.3s ease-out;" (click)="$event.stopPropagation()">
+        
+        <h2 style="margin: 0 0 32px 0; color: #374151; font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+          <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 12px; border-radius: 16px; font-size: 1.2rem;">💰</span>
+          Record Settlement
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div>
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Partner</label>
+            <select [(ngModel)]="settlementForm.partner_id" 
+                    style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                    onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'">
+              <option value="">Select Partner</option>
+              <option *ngFor="let partner of partners" [value]="partner.id">
+                {{ partner.name }} (Due: ₹{{ partner.settlement_due | number: '1.2-2' }})
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Amount</label>
+            <input type="number" [(ngModel)]="settlementForm.amount" placeholder="Settlement amount"
+                   style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                   onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Payment Mode</label>
+          <select [(ngModel)]="settlementForm.payment_mode" 
+                  style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease;"
+                  onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                  onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'">
+            <option value="cash">💵 Cash</option>
+            <option value="check">📋 Check</option>
+            <option value="transfer">🏦 Bank Transfer</option>
+            <option value="adjust">⚖️ Adjust in Next Month</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 32px;">
+          <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Notes</label>
+          <textarea [(ngModel)]="settlementForm.notes" rows="3" placeholder="Settlement notes (optional)"
+                    style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease; resize: vertical;"
+                    onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                    onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 16px; justify-content: flex-end;">
+          <button (click)="closeSettlementForm()"
+                  style="padding: 14px 28px; background: rgba(107, 114, 128, 0.1); color: #374151; border: 2px solid rgba(107, 114, 128, 0.3); border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='rgba(107, 114, 128, 0.2)'; this.style.transform='translateY(-1px)'"
+                  onmouseout="this.style.background='rgba(107, 114, 128, 0.1)'; this.style.transform='translateY(0)'">
+            Cancel
+          </button>
+
+          <button (click)="submitSettlement()"
+                  style="padding: 14px 28px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            💾 Record Settlement
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Settlements -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px;">
+      <h2 style="margin: 0 0 32px 0; color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">📊</span>
+        Recent Settlements
+      </h2>
       
-      <div class="form-grid">
-        <div class="input-group">
-          <label>Partner</label>
-          <select [(ngModel)]="settlementForm.partner_id" class="input-field">
-            <option value="">Select Partner</option>
-            <option *ngFor="let partner of partners" [value]="partner.id">
-              {{ partner.name }} (Due: ₹{{ partner.settlement_due | number: '1.2-2' }})
-            </option>
-          </select>
-        </div>
-
-        <div class="input-group">
-          <label>Amount</label>
-          <input 
-            type="number" 
-            [(ngModel)]="settlementForm.amount" 
-            class="input-field"
-            placeholder="Settlement amount">
-        </div>
-
-        <div class="input-group">
-          <label>Payment Mode</label>
-          <select [(ngModel)]="settlementForm.payment_mode" class="input-field">
-            <option value="cash">Cash</option>
-            <option value="check">Check</option>
-            <option value="transfer">Bank Transfer</option>
-            <option value="adjust">Adjust in Next Month</option>
-          </select>
-        </div>
-
-        <div class="input-group full-width">
-          <label>Notes</label>
-          <textarea 
-            [(ngModel)]="settlementForm.notes" 
-            class="notes-field"
-            placeholder="Settlement notes (optional)"></textarea>
+      <div style="overflow-x: auto; border-radius: 16px; background: rgba(255,255,255,0.05);">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: rgba(255,255,255,0.1);">
+              <th style="padding: 16px; text-align: left; color: white; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.2);">Date</th>
+              <th style="padding: 16px; text-align: left; color: white; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.2);">Partner</th>
+              <th style="padding: 16px; text-align: left; color: white; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.2);">Amount</th>
+              <th style="padding: 16px; text-align: left; color: white; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.2);">Payment Mode</th>
+              <th style="padding: 16px; text-align: left; color: white; font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.2);">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let settlement of settlements; let i = index" 
+                style="border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.3s ease; animation: fadeInUp 0.3s ease-out;"
+                [style.animation-delay]="(i * 0.1) + 's'"
+                onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                onmouseout="this.style.background='transparent'">
+              <td style="padding: 16px; color: rgba(255,255,255,0.9); font-weight: 500;">{{ settlement.settlement_date | date: 'dd/MM/yyyy' }}</td>
+              <td style="padding: 16px; color: white; font-weight: 600;">{{ settlement.partner_name }}</td>
+              <td style="padding: 16px; color: white; font-weight: 700; font-size: 1.1rem;">₹{{ settlement.amount | number: '1.2-2' }}</td>
+              <td style="padding: 16px;">
+                <span style="background: rgba(16, 185, 129, 0.8); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
+                  {{ settlement.payment_mode }}
+                </span>
+              </td>
+              <td style="padding: 16px; color: rgba(255,255,255,0.8); font-style: italic;">{{ settlement.notes || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div *ngIf="settlements.length === 0" style="text-align: center; padding: 60px 20px; color: rgba(255,255,255,0.6);">
+          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;">💰</div>
+          <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No Settlements Recorded</div>
+          <div style="font-size: 0.9rem;">Partner settlements will appear here once recorded</div>
         </div>
       </div>
-
-      <div class="modal-buttons">
-        <button (click)="submitSettlement()" class="btn-submit">Record Settlement</button>
-        <button (click)="closeSettlementForm()" class="btn-cancel">Cancel</button>
-      </div>
     </div>
-  </div>
-
-  <!-- Recent Settlements -->
-  <div class="section settlements-section">
-    <h2>Recent Settlements</h2>
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Partner</th>
-            <th>Amount</th>
-            <th>Payment Mode</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let settlement of settlements">
-            <td>{{ settlement.settlement_date | date: 'dd/MM/yyyy' }}</td>
-            <td>{{ settlement.partner_name }}</td>
-            <td class="amount">₹{{ settlement.amount | number: '1.2-2' }}</td>
-            <td>{{ settlement.payment_mode }}</td>
-            <td>{{ settlement.notes || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p *ngIf="settlements.length === 0" class="no-data">No settlements recorded yet</p>
   </div>
 </div>
+
+<!-- CSS Animations -->
+<style>
+@keyframes gradientFlow {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>

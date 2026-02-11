@@ -106,8 +106,8 @@
             <input type="tel" [(ngModel)]="newStudent.mobile" class="form-control">
           </div>
           <div class="form-group">
-            <label>Emergency Contact <span class="required">*</span></label>
-            <input type="tel" [(ngModel)]="newStudent.emergency_contact" class="form-control">
+            <label>Emergency Contact</label>
+            <input type="tel" [(ngModel)]="newStudent.emergency_contact" class="form-control" placeholder="+91 9876543210">
           </div>
           <div class="form-group">
             <label>Emergency Contact Name</label>
@@ -117,17 +117,56 @@
             <label>Address <span class="required">*</span></label>
             <textarea [(ngModel)]="newStudent.address" class="form-control" rows="2"></textarea>
           </div>
-          <div class="form-group">
+          <div class="form-group full-width">
             <label>Date of Birth</label>
-            <input type="date" [(ngModel)]="newStudent.dob" class="form-control">
+            <div class="date-dropdowns">
+              <select [(ngModel)]="dobDay" class="form-control" style="flex: 1;">
+                <option value="">Day</option>
+                <option *ngFor="let day of days" [value]="day">{{day}}</option>
+              </select>
+              <select [(ngModel)]="dobMonth" class="form-control" style="flex: 2;">
+                <option value="">Month</option>
+                <option *ngFor="let month of months" [value]="month.value">{{month.label}}</option>
+              </select>
+              <select [(ngModel)]="dobYear" class="form-control" style="flex: 1.5;">
+                <option value="">Year</option>
+                <option *ngFor="let year of dobYears" [value]="year">{{year}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Joining Date <span class="required">*</span></label>
+            <div class="date-dropdowns">
+              <select [(ngModel)]="joiningDay" class="form-control" style="flex: 1;">
+                <option value="">Day</option>
+                <option *ngFor="let day of days" [value]="day">{{day}}</option>
+              </select>
+              <select [(ngModel)]="joiningMonth" class="form-control" style="flex: 2;">
+                <option value="">Month</option>
+                <option *ngFor="let month of months" [value]="month.value">{{month.label}}</option>
+              </select>
+              <select [(ngModel)]="joiningYear" class="form-control" style="flex: 1.5;">
+                <option value="">Year</option>
+                <option *ngFor="let year of joiningYears" [value]="year">{{year}}</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
             <label>Gender</label>
-            <select [(ngModel)]="newStudent.gender" class="form-control">
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" [(ngModel)]="newStudent.gender" value="Male" name="gender-add">
+                Male
+              </label>
+              <label class="radio-label">
+                <input type="radio" [(ngModel)]="newStudent.gender" value="Female" name="gender-add">
+                Female
+              </label>
+              <label class="radio-label">
+                <input type="radio" [(ngModel)]="newStudent.gender" value="Other" name="gender-add">
+                Other
+              </label>
+            </div>
           </div>
           <div class="form-group full-width">
             <label>Upload Photo</label>
@@ -188,6 +227,10 @@
         <div class="form-group">
           <label>Address</label>
           <textarea [(ngModel)]="selectedStudent.address" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Joining Date</label>
+          <input type="date" [(ngModel)]="selectedStudent.joining_date" class="form-control">
         </div>
         <div class="form-group">
           <label>Status</label>

@@ -1,91 +1,96 @@
-<div class="app-safe-container" *ngIf="authService.isLoggedIn">
-
-  <div class="top-header">
-    <div class="header-spacer"></div>
-    <div class="header-center">
-      🛡️ SURAKSHA GROUP
-    </div>
-    <div class="header-right">
-      <span class="user-info">👤 {{ currentUser?.full_name || currentUser?.email }}</span>
-      <button class="btn-logout" (click)="logout()">🚪 Logout</button>
-    </div>
-  </div>
-
-  <div class="menu-bar">
-    <button routerLink="/reports-dashboard" *ngIf="hasManufacturingAccess()">📊 Dashboard</button>
-    
-    <!-- 🏭 PRODUCTION MODULE -->
-    <details class="menu-group" *ngIf="hasManufacturingAccess()">
-      <summary>🏭 Production</summary>
-      <div class="submenu">
-        <button (click)="closeMenu()" routerLink="/production-entry">➕ Production Entry</button>
-        <button (click)="closeMenu()" routerLink="/worker-management">👷 Worker Management</button>
-        <button (click)="closeMenu()" routerLink="/inventory">📦 Inventory</button>
-      </div>
-    </details>
-
-    <!-- 💰 SALES MODULE -->
-    <details class="menu-group" *ngIf="hasManufacturingAccess()">
-      <summary>💰 Sales</summary>
-      <div class="submenu">
-        <button (click)="closeMenu()" routerLink="/sales-entry">💳 Sales Entry</button>
-        <button (click)="closeMenu()" routerLink="/client-ledger">👥 Client Ledger</button>
-      </div>
-    </details>
-
-    <!-- 📦 MATERIALS MODULE -->
-    <details class="menu-group" *ngIf="hasManufacturingAccess()">
-      <summary>📦 Materials</summary>
-      <div class="submenu">
-        <button (click)="closeMenu()" routerLink="/material-purchase">🛒 Material Purchase</button>
-        <button (click)="closeMenu()" routerLink="/yard-loss">⚠️ Yard Loss</button>
-        <button (click)="closeMenu()" routerLink="/stock-audit">✅ Stock Audit</button>
-      </div>
-    </details>
-
-    <!-- 📈 REPORTS MODULE -->
-    <details class="menu-group" *ngIf="hasManufacturingAccess()">
-      <summary>📈 Reports</summary>
-      <div class="submenu">
-        <button (click)="closeMenu()" routerLink="/reports-dashboard">📊 Reports Dashboard</button>
-      </div>
-    </details>
-
-    <!-- 🤝 PARTNER MODULE -->
-    <details class="menu-group" *ngIf="authService.isAdmin()">
-      <summary>🤝 Partner</summary>
-      <div class="submenu">
-        <button (click)="closeMenu()" routerLink="/partner-dashboard">📊 Dashboard</button>
-        <button (click)="closeMenu()" routerLink="/partner">⚙️ Settings</button>
-      </div>
-    </details>
-
-    <!-- 📚 LIBRARY MODULE (Separate Business) -->
-    <!-- Full Library Menu for Admin, Editor, Library Manager -->
-    <details class="menu-group" *ngIf="hasLibraryAccess() && hasFullLibraryAccess()">
-      <summary>📚 Library</summary>
-      <div class="submenu">
-        <button (click)="closeMenu()" routerLink="/library-grid">🎯 Seat Grid</button>
-        <button (click)="closeMenu()" routerLink="/library-dashboard">📊 Dashboard</button>
-        <button (click)="closeMenu()" routerLink="/library-students">👨‍🎓 Students</button>
-        <button (click)="closeMenu()" routerLink="/library-expenses">💸 Expenses</button>
-      </div>
-    </details>
-
-    <!-- Direct Link to Seat Grid for Library Viewers -->
-    <button *ngIf="hasLibraryAccess() && !hasFullLibraryAccess()" 
-            (click)="closeMenu()" 
-            routerLink="/library-grid"
-            class="primary-btn">
-      📚 Library - Seat Grid
+﻿<div class="app-container" *ngIf="authService.isLoggedIn">
+  <mat-toolbar color="primary" class="app-toolbar">
+    <button 
+      mat-icon-button 
+      (click)="drawer.toggle()"
+      aria-label="Toggle menu">
+      <mat-icon>menu</mat-icon>
     </button>
-  </div>
+    
+    <span class="app-title">
+      <mat-icon class="title-icon">shield</mat-icon>
+      SURAKSHA GROUP
+    </span>
+    
+    <span class="toolbar-spacer"></span>
+    
+    <span class="user-badge">
+      <mat-icon>account_circle</mat-icon>
+      {{ currentUser?.full_name || currentUser?.email }}
+    </span>
+    
+    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <button mat-menu-item disabled>
+        <mat-icon>person</mat-icon>
+        <span>{{ currentUser?.full_name || currentUser?.email }}</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>exit_to_app</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </mat-toolbar>
 
-  <div class="content-area">
-    <router-outlet></router-outlet>
-  </div>
-
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav 
+      #drawer 
+      mode="over"
+      [opened]="false"
+      class="sidenav">
+      
+      <mat-nav-list>
+        <ng-container *ngIf="hasManufacturingAccess()">
+          <a mat-list-item routerLink="/reports-dashboard" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)">
+            <mat-icon matListItemIcon>dashboard</mat-icon>
+            <span matListItemTitle>Dashboard</span>
+          </a>
+          <mat-divider></mat-divider>
+          <div class="nav-section-header"><mat-icon>factory</mat-icon><span>Production</span></div>
+          <a mat-list-item routerLink="/production-entry" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>add_circle</mat-icon><span matListItemTitle>Production Entry</span></a>
+          <a mat-list-item routerLink="/worker-management" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>engineering</mat-icon><span matListItemTitle>Worker Management</span></a>
+          <a mat-list-item routerLink="/inventory" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>inventory_2</mat-icon><span matListItemTitle>Inventory</span></a>
+          <mat-divider></mat-divider>
+          <div class="nav-section-header"><mat-icon>point_of_sale</mat-icon><span>Sales</span></div>
+          <a mat-list-item routerLink="/sales-entry" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>receipt</mat-icon><span matListItemTitle>Sales Entry</span></a>
+          <a mat-list-item routerLink="/client-ledger" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>people</mat-icon><span matListItemTitle>Client Ledger</span></a>
+          <mat-divider></mat-divider>
+          <div class="nav-section-header"><mat-icon>inventory</mat-icon><span>Materials</span></div>
+          <a mat-list-item routerLink="/material-purchase" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>shopping_cart</mat-icon><span matListItemTitle>Material Purchase</span></a>
+          <a mat-list-item routerLink="/yard-loss" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>warning</mat-icon><span matListItemTitle>Yard Loss</span></a>
+          <a mat-list-item routerLink="/stock-audit" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>fact_check</mat-icon><span matListItemTitle>Stock Audit</span></a>
+          <mat-divider></mat-divider>
+          <div class="nav-section-header"><mat-icon>assessment</mat-icon><span>Reports</span></div>
+          <a mat-list-item routerLink="/reports-dashboard" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>bar_chart</mat-icon><span matListItemTitle>Reports Dashboard</span></a>
+        </ng-container>
+        <ng-container *ngIf="authService.isAdmin()">
+          <mat-divider></mat-divider>
+          <div class="nav-section-header"><mat-icon>handshake</mat-icon><span>Partner</span></div>
+          <a mat-list-item routerLink="/partner-dashboard" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>dashboard</mat-icon><span matListItemTitle>Partner Dashboard</span></a>
+          <a mat-list-item routerLink="/partner" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>settings</mat-icon><span matListItemTitle>Partner Settings</span></a>
+        </ng-container>
+        <ng-container *ngIf="hasLibraryAccess()">
+          <mat-divider></mat-divider>
+          <div class="nav-section-header"><mat-icon>local_library</mat-icon><span>Library</span></div>
+          <a mat-list-item routerLink="/library-grid" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>grid_on</mat-icon><span matListItemTitle>Seat Grid</span></a>
+          <ng-container *ngIf="hasFullLibraryAccess()">
+            <a mat-list-item routerLink="/library-dashboard" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>dashboard</mat-icon><span matListItemTitle>Library Dashboard</span></a>
+            <a mat-list-item routerLink="/library-students" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>school</mat-icon><span matListItemTitle>Students</span></a>
+            <a mat-list-item routerLink="/library-expenses" routerLinkActive="active" (click)="closeDrawerOnMobile(drawer)"><mat-icon matListItemIcon>payments</mat-icon><span matListItemTitle>Expenses</span></a>
+          </ng-container>
+        </ng-container>
+      </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content class="main-content">
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
 </div>
-
-<!-- Show login page if not authenticated -->
 <router-outlet *ngIf="!authService.isLoggedIn"></router-outlet>
+

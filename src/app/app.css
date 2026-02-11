@@ -1,321 +1,225 @@
-.app-safe-container {
+﻿/* ===== BOOKMYSHOW INSPIRED APP STYLES ===== */
+
+.app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background: var(--bg-primary);
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* ===== TOP HEADER ===== */
-.top-header {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-  color: white;
-  font-weight: 600;
-  padding: var(--spacing-lg);
-  padding-top: calc(var(--spacing-lg) + var(--safe-top));
-  font-size: var(--font-xl);
-  box-shadow: var(--shadow-md);
+/* Toolbar - BookMyShow Style */
+.app-toolbar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.app-title {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-}
-
-.top-header .header-spacer {
-  flex: 1;
-}
-
-.top-header .header-center {
-  flex: 1;
-  text-align: center;
+  gap: 12px;
   font-weight: 700;
-  font-size: var(--font-xl);
+  font-size: 1.25rem;
+  letter-spacing: 0;
+}
+
+.title-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+/* User Badge - BookMyShow Style */
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 24px;
+  margin-right: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.user-badge mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+/* Sidenav Container */
+.sidenav-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidenav - BookMyShow Style */
+.sidenav {
+  width: 280px;
+  box-shadow: 3px 0 8px rgba(0,0,0,0.06);
+  background: #ffffff;
+}
+
+.sidenav .mat-mdc-list-item {
+  border-radius: 0 28px 28px 0;
+  margin: 6px 12px 6px 0;
+  transition: all 0.3s;
+  font-size: 1rem;
+}
+
+.sidenav .mat-mdc-list-item.active {
+  background: #ffe5ec;
+  color: #f84464;
+  font-weight: 600;
+}
+
+.sidenav .mat-mdc-list-item.active mat-icon {
+  color: #f84464;
+}
+
+.sidenav .mat-mdc-list-item:hover:not(.active) {
+  background: #f5f5f5;
+}
+
+/* Nav Section Header - BookMyShow Style */
+.nav-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 12px 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #333333;
   letter-spacing: 1px;
 }
 
-.top-header .header-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
+.nav-section-header mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #f84464;
 }
 
-.top-header .user-info {
-  font-size: var(--font-sm);
-  font-weight: 500;
-  opacity: 0.95;
+/* Main Content - BookMyShow Style */
+.main-content {
+  overflow: auto;
+  background: #f5f5f5;
+  width: 100%;
 }
 
-.top-header .btn-logout {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  font-weight: 600;
-  font-size: var(--font-xs);
-  transition: all var(--transition-fast);
-}
-
-.top-header .btn-logout:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* ===== MENU BAR (HORIZONTAL NAVIGATION) ===== */
-.menu-bar {
-  display: flex;
-  justify-content: flex-start;
-  gap: 0;
-  background: var(--bg-secondary);
-  border-bottom: 2px solid var(--border-color);
-  padding: 0;
-  overflow: visible;
-  scroll-behavior: smooth;
-  flex-wrap: wrap;
-  position: sticky;
-  top: var(--spacing-lg);
-  z-index: 99;
-  padding-bottom: var(--safe-bottom);
-  
-  /* Hide scrollbar */
-  scrollbar-width: none;
-}
-
-.menu-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.menu-bar button {
-  flex: 0 0 auto;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  border-bottom: 3px solid transparent;
-  border-radius: 0;
-  font-weight: 500;
-  font-size: var(--font-sm);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.menu-bar button:hover {
-  color: var(--primary-color);
-  background: rgba(33, 150, 243, 0.05);
-}
-
-.menu-bar button.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-  background: rgba(33, 150, 243, 0.08);
-}
-
-/* ===== PRIMARY BUTTON (Order Entry) ===== */
-.menu-bar .primary-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  font-weight: 700;
-  border-bottom: 3px solid transparent;
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
-  margin: 0 5px;
-}
-
-.menu-bar .primary-btn:hover {
-  background: linear-gradient(135deg, #5568d3 0%, #6b3f90 100%);
-  box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-  color: white;
-}
-
-/* ===== ADVANCED MENU ===== */
-.menu-bar details {
-  position: relative;
-  flex: 0 0 auto;
-}
-
-.menu-bar details summary {
-  cursor: pointer;
-  padding: var(--spacing-md) var(--spacing-lg);
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: var(--font-sm);
-  border-bottom: 3px solid transparent;
-  transition: all var(--transition-fast);
-  display: list-item;
-  white-space: nowrap;
-  list-style: none;
-  user-select: none;
-  background: transparent;
-  border: none;
-  font-family: inherit;
-}
-
-.menu-bar details summary::-webkit-details-marker {
-  display: none;
-}
-
-.menu-bar details summary::marker {
-  display: none;
-}
-
-.menu-bar details summary:hover {
-  color: var(--primary-color);
-  background: rgba(33, 150, 243, 0.05);
-}
-
-.menu-bar details[open] > summary {
-  color: var(--primary-color);
-  background: rgba(33, 150, 243, 0.08);
-  border-bottom-color: var(--primary-color);
-}
-
-.menu-bar .submenu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: auto;
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-lg);
-  z-index: 1000;
-  min-width: 200px;
+.content-wrapper {
+  padding: 24px;
+  width: 100%;
+  max-width: none;
   margin: 0;
-  padding: 0;
-  margin-top: 2px;
 }
 
-.menu-bar .advanced-menu .submenu {
-  right: 0;
-  left: auto;
+/* Menu Panel - BookMyShow Style */
+::ng-deep .mat-mdc-menu-panel {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
 }
 
-.menu-bar .submenu button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: var(--spacing-md) var(--spacing-lg);
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  font-size: var(--font-sm);
-  font-weight: normal;
-  font-family: inherit;
+::ng-deep .mat-mdc-menu-item {
+  font-size: 1rem !important;
+  border-radius: 8px;
+  margin: 4px 8px;
+  font-weight: 500;
 }
 
-.menu-bar .submenu button:first-child {
-  border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+::ng-deep .mat-mdc-menu-item:hover {
+  background: #f5f5f5 !important;
 }
 
-.menu-bar .submenu button:last-child {
-  border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+::ng-deep .mat-mdc-menu-item mat-icon {
+  margin-right: 12px !important;
+  color: #f84464;
 }
 
-.menu-bar .submenu button:hover {
-  background: rgba(33, 150, 243, 0.1);
-  color: var(--primary-color);
+::ng-deep .mat-divider {
+  margin: 8px 0 !important;
+  border-top-color: rgba(0,0,0,0.06) !important;
 }
 
-/* Hide default details styling */
-.menu-bar details {
-  all: revert;
-  position: relative;
-  flex: 0 0 auto;
+/* Toolbar Primary Color - BookMyShow */
+::ng-deep .mat-toolbar.mat-primary {
+  background: #ffffff;
+  color: #333333;
 }
 
-/* ===== MAIN CONTENT AREA ===== */
-.content-area {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--spacing-lg);
-  padding-bottom: calc(var(--spacing-lg) + var(--safe-bottom));
-  padding-left: calc(var(--spacing-lg) + var(--safe-left));
-  padding-right: calc(var(--spacing-lg) + var(--safe-right));
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
+::ng-deep .mat-toolbar.mat-primary .mat-icon {
+  color: #f84464;
 }
 
-/* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 576px) {
-  .top-header {
-    font-size: var(--font-lg);
-    padding: var(--spacing-md);
-    padding-top: calc(var(--spacing-md) + var(--safe-top));
+::ng-deep .mat-drawer-backdrop.mat-drawer-shown {
+  background-color: rgba(0,0,0,0.5);
+}
+
+/* ===== RESPONSIVE - BOOKMYSHOW STYLE ===== */
+@media (max-width: 768px) {
+  .app-title {
+    font-size: 1.125rem;
   }
 
-  .menu-bar {
-    padding-bottom: 0;
-    top: calc(var(--spacing-md) * 3 + var(--font-lg));
+  .title-icon {
+    font-size: 24px;
   }
 
-  .menu-bar button {
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-xs);
+  .content-wrapper {
+    padding: 16px;
   }
 
-  .content-area {
-    padding: var(--spacing-md);
-    padding-bottom: calc(var(--spacing-md) + var(--safe-bottom));
-    padding-left: calc(var(--spacing-md) + var(--safe-left));
-    padding-right: calc(var(--spacing-md) + var(--safe-right));
+  .sidenav {
+    width: 260px;
   }
 }
 
-/* ===== TABLET RESPONSIVE ===== */
-@media (min-width: 577px) and (max-width: 991px) {
-  .menu-bar {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
+@media (max-width: 480px) {
+  .app-title {
+    font-size: 1rem;
   }
 
-  .menu-bar button {
-    flex: 1 1 auto;
-    text-align: center;
-    min-width: 100px;
-  }
-}
-
-/* ===== LANDSCAPE MOBILE ===== */
-@media (max-height: 600px) {
-  .top-header {
-    padding: var(--spacing-sm);
-    font-size: var(--font-base);
+  .content-wrapper {
+    padding: 12px;
   }
 
-  .menu-bar button {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: 12px;
+  .nav-section-header {
+    padding: 16px 12px 8px 12px;
+    font-size: 0.688rem;
+  }
+
+  .user-badge {
+    display: none;
   }
 }
 
-/* ===== SCROLLBAR STYLING ===== */
-.content-area {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-color) var(--bg-primary);
-}
+@media (max-height: 600px) and (orientation: landscape) {
+  .app-toolbar {
+    min-height: 48px !important;
+    padding: 0 8px !important;
+  }
 
-.content-area::-webkit-scrollbar {
-  width: 6px;
-}
+  .app-title {
+    font-size: 1rem;
+  }
 
-.content-area::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
+  .content-wrapper {
+    padding: 12px;
+  }
 
-.content-area::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--border-radius-md);
-}
+  .nav-section-header {
+    padding: 12px 12px 6px 12px;
+  }
 
-.content-area::-webkit-scrollbar-thumb:hover {
-  background: var(--text-light);
+  ::ng-deep .mat-mdc-list-item {
+    height: 44px !important;
+    min-height: 44px !important;
+  }
 }

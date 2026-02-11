@@ -1,571 +1,82 @@
-/* src/app/pages/library-grid/library-grid.component.css */
+/* ===== BOOKMYSHOW INSPIRED DESIGN - LIBRARY GRID ===== */
 .library-grid-container {
-  padding: 20px;
+  padding: 16px;
   max-width: 1400px;
   margin: 0 auto;
+  background: #f5f5f5;
+  min-height: 100vh;
 }
 
+/* Header - BookMyShow Style */
 .header {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
   flex-wrap: wrap;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
+  gap: 16px;
 }
 
 .header h2 {
   margin: 0;
-  color: #333;
-  font-size: 24px;
+  color: #333333;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 .subtitle {
-  color: #666;
-  margin: 5px 0 0 0;
-  font-size: 14px;
+  color: #666666;
+  margin: 4px 0 0 0;
+  font-size: 1rem;
 }
 
-.btn-refresh {
-  padding: 10px 20px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.btn-refresh:hover {
-  background: #45a049;
-}
-
-/* Seat Grid - 6x6 */
-.seat-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 15px;
-  margin: 30px 0;
-}
-
-@media (max-width: 1024px) {
-  .seat-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .seat-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.seat-box {
-  aspect-ratio: 1;
-  border: 3px solid #ddd;
-  border-radius: 10px;
+.header-actions {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
   align-items: center;
+}
+
+/* Base Button Styles - BookMyShow */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-success,
+.btn-danger,
+.btn-info,
+.btn-refresh,
+.btn-bulk,
+.btn-warning {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 10px;
-  position: relative;
-}
-
-.seat-box:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.seat-number {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.seat-info {
-  text-align: center;
-  font-size: 12px;
-}
-
-.student-name {
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.student-name.small {
-  font-size: 10px;
-  font-weight: 400;
-  line-height: 1.3;
-}
-
-.seat-info .dual-students {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* Seat Status Colors */
-.seat-box.empty {
-  background: white;
-  border-color: #4CAF50;
-}
-
-.seat-box.empty .seat-number {
-  color: #4CAF50;
-}
-
-.seat-box.occupied {
-  background: #2196F3;
-  color: white;
-  border-color: #1976D2;
-}
-
-.seat-box.expiring {
-  background: #FFC107;
-  color: #333;
-  border-color: #FFA000;
-  animation: pulse 2s infinite;
-}
-
-.seat-box.expired {
-  background: #F44336;
-  color: white;
-  border-color: #C62828;
-  animation: pulse 1s infinite;
-}
-
-.seat-box.half-occupied {
-  background: linear-gradient(135deg, #2196F3 50%, white 50%);
-  border-color: #1976D2;
-}
-
-.seat-box.half-occupied .seat-number {
-  color: #333;
-  background: rgba(255,255,255,0.9);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.seat-box.half-occupied .student-name {
-  color: #1a1a1a;
+  font-size: 1rem;
   font-weight: 600;
-  text-shadow: 0 0 3px white, 0 0 5px white;
-}
-
-/* View-Only Mode - No Click */
-.seat-box.no-click {
-  cursor: not-allowed;
-  opacity: 0.85;
-}
-
-.seat-box.no-click:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* Legend */
-.legend {
-  display: flex;
+  transition: all 0.3s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
-  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-}
-
-.legend-box {
-  width: 30px;
-  height: 30px;
-  border: 2px solid #ddd;
-  border-radius: 5px;
-}
-
-.legend-box.empty {
-  background: white;
-  border-color: #4CAF50;
-}
-
-.legend-box.occupied {
-  background: #2196F3;
-}
-
-.legend-box.expiring {
-  background: #FFC107;
-}
-
-.legend-box.expired {
-  background: #F44336;
-}
-
-.legend-box.half-occupied {
-  background: linear-gradient(135deg, #2196F3 50%, white 50%);
-}
-
-/* Modals */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 10px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-}
-
-.modal-content.large {
-  max-width: 800px;
-}
-
-.modal-header {
-  padding: 20px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: #999;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  line-height: 1;
-}
-
-.close-btn:hover {
-  color: #333;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-footer {
-  padding: 15px 20px;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-/* Form Styling */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group.full-width {
-  grid-column: span 2;
-}
-
-.form-group label {
-  font-weight: 500;
-  margin-bottom: 5px;
-  color: #333;
-  font-size: 14px;
-}
-
-.form-control {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #2196F3;
-}
-
-.required {
-  color: #F44336;
-}
-
-.text-muted {
-  color: #999;
-  font-size: 12px;
-  margin-top: 3px;
-}
-
-/* Profile Section */
-.profile-section {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.profile-photo {
-  flex-shrink: 0;
-}
-
-.profile-photo img {
-  width: 120px;
-  height: 120px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 3px solid #ddd;
-}
-
-.no-photo {
-  width: 120px;
-  height: 120px;
-  border-radius: 10px;
-  background: #f5f5f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 48px;
-  border: 3px solid #ddd;
-}
-
-.profile-info {
-  flex: 1;
-}
-
-.profile-info h4 {
-  margin: 0 0 10px 0;
-  color: #333;
-  font-size: 20px;
-}
-
-.profile-info p {
-  margin: 5px 0;
-  color: #666;
-  font-size: 14px;
-}
-
-.badge {
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.badge-active {
-  background: #4CAF50;
-  color: white;
-}
-
-.badge-inactive {
-  background: #999;
-  color: white;
-}
-
-.badge-suspended {
-  background: #F44336;
-  color: white;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.9375rem;
 }
 
 .btn-primary {
-  background: #2196F3;
+  background: #f84464;
   color: white;
 }
 
 .btn-primary:hover {
-  background: #1976D2;
-}
-
-.btn-secondary {
-  background: #999;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: #777;
-}
-
-.btn-success {
-  background: #4CAF50;
-  color: white;
-}
-
-.btn-success:hover {
-  background: #45a049;
-}
-
-.btn-warning {
-  background: #FFC107;
-  color: #333;
-}
-
-.btn-warning:hover {
-  background: #FFA000;
-}
-
-.btn-danger {
-  background: #F44336;
-  color: white;
-}
-
-.btn-danger:hover {
-  background: #C62828;
-}
-
-/* Alerts */
-.alert {
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-
-.alert-success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-}
-
-.alert-error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #999;
-  font-size: 18px;
-}
-
-/* Wide Modal for Dual Students */
-.modal-content.wide-modal {
-  max-width: 900px;
-}
-
-/* Dual Students Layout */
-.modal-body.dual-students {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-}
-
-.student-card {
-  flex: 1;
-  background: #f9f9f9;
-  border-radius: 8px;
-  padding: 15px;
-  position: relative;
-}
-
-.shift-badge {
-  position: absolute;
-  top: -10px;
-  right: 15px;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.shift-badge.morning {
-  background: linear-gradient(135deg, #FF9800, #F57C00);
-}
-
-.shift-badge.evening {
-  background: linear-gradient(135deg, #673AB7, #512DA8);
-}
-
-.student-card .profile-section {
-  margin-bottom: 15px;
-}
-
-.student-card .action-buttons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.btn-sm {
-  padding: 8px 12px;
-  font-size: 13px;
-}
-
-.btn-info {
-  background: #2196F3;
-  color: white;
-}
-
-.btn-info:hover {
-  background: #1976D2;
+  background: #dc143c;
+  transform: scale(1.02);
 }
 
 .btn-secondary {
@@ -575,424 +86,1515 @@
 
 .btn-secondary:hover {
   background: #616161;
+  transform: scale(1.02);
 }
 
-/* Change Seat Modal */
-.change-seat-info {
-  background: #f5f5f5;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.change-seat-info h4 {
-  margin: 0 0 10px 0;
-  color: #333;
-}
-
-.change-seat-info p {
-  margin: 5px 0;
-}
-
-.available-seats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.seat-option {
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.seat-option:hover {
-  border-color: #2196F3;
-  background: #E3F2FD;
-  transform: translateY(-2px);
-}
-
-.seat-option.selected {
-  border-color: #2196F3;
-  background: #2196F3;
+.btn-success {
+  background: #4CAF50;
   color: white;
 }
 
-.seat-option-number {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 5px;
+.btn-success:hover {
+  background: #388E3C;
+  transform: scale(1.02);
 }
 
-.seat-option-status {
-  font-size: 11px;
-  opacity: 0.8;
+.btn-danger {
+  background: #eb4b4b;
+  color: white;
 }
 
-.modal-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 20px;
+.btn-danger:hover {
+  background: #d32f2f;
+  transform: scale(1.02);
 }
 
-.text-muted {
-  color: #999;
-  font-size: 14px;
-  font-style: italic;
+.btn-info {
+  background: #4CAF50;
+  color: white;
 }
 
-/* Receipt Styles */
-.receipt-container {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  border: 2px solid #ddd;
+.btn-info:hover {
+  transform: scale(1.02);
 }
 
-.receipt-header {
-  text-align: center;
-  border-bottom: 2px solid #333;
-  padding-bottom: 15px;
-  margin-bottom: 20px;
+.btn-refresh {
+  background: #4CAF50;
+  color: white;
 }
 
-.receipt-header h2 {
-  margin: 0;
-  color: #2196F3;
-  font-size: 28px;
+.btn-refresh:hover {
+  transform: scale(1.02);
 }
 
-.receipt-header p {
-  margin: 5px 0;
-  color: #666;
-}
-
-.receipt-number {
-  font-weight: bold;
-  color: #333;
-  font-size: 14px;
-}
-
-.receipt-details {
-  margin: 20px 0;
-}
-
-.receipt-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid #eee;
-}
-
-.receipt-row .label {
-  font-weight: 600;
-  color: #666;
-  flex: 0 0 40%;
-}
-
-.receipt-row .value {
-  color: #333;
-  flex: 1;
-  text-align: right;
-}
-
-.receipt-amount {
-  text-align: center;
-  margin: 30px 0;
-  padding: 20px;
-  background: #f5f5f5;
-  border-radius: 8px;
-}
-
-.amount-label {
-  font-size: 16px;
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.amount-value {
-  font-size: 36px;
-  color: #4CAF50;
-  font-weight: bold;
-}
-
-.receipt-footer {
-  text-align: center;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 2px solid #333;
-}
-
-.receipt-footer p {
-  margin: 5px 0;
-  color: #666;
-}
-
-/* Info Badge */
-.info-badge {
-  background: #E3F2FD;
-  color: #1976D2;
-  padding: 8px 16px;
-  border-radius: 5px;
-  font-size: 14px;
-  border: 1px solid #1976D2;
-  cursor: default;
-}
-
-.alert {
-  padding: 15px;
-  border-radius: 5px;
-  margin: 15px 0;
-}
-
-.alert-info {
-  background: #E3F2FD;
-  color: #1976D2;
-  border: 1px solid #BBDEFB;
-}
-
-.modal-footer {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-
-/* Bulk Operations */
 .btn-bulk {
-  padding: 10px 20px;
-  background: #FF9800;
+  background: #ff9800;
   color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
 }
 
 .btn-bulk:hover {
-  background: #F57C00;
+  transform: scale(1.02);
 }
 
-.bulk-operations-panel {
-  background: #FFF8E1;
-  border: 2px solid #FF9800;
+.btn-warning {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-warning:hover {
+  background: #f57c00;
+  transform: scale(1.02);
+}
+
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-success:active,
+.btn-danger:active,
+.btn-info:active,
+.btn-warning:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-success:disabled,
+.btn-danger:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Grid Container - BookMyShow Style */
+.grid-container {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+/* Seat Grid - BookMyShow Layout */
+.seat-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  max-width: 100%;
+}
+
+/* Seat Box - BookMyShow Style */
+.seat-box {
+  aspect-ratio: 1;
+  border: 2px solid #4CAF50;
   border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+  min-height: 120px;
+  transition: all 0.3s;
+  background: white;
+  position: relative;
+  padding: 10px 8px;
+}
+
+.seat-box:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  z-index: 10;
+}
+
+/* Available Seat - BookMyShow Green */
+.seat-box.available {
+  background: white;
+  border-color: #4CAF50;
+  border-width: 2px;
+}
+
+.seat-box.available:hover {
+  background: #e8f5e9;
+  border-color: #388E3C;
+}
+
+/* Full Day Occupied - Gray (Sold) */
+.seat-box.full-day-occupied {
+  background: #e0e0e0;
+  border-color: #bdbdbd;
+  border-width: 2px;
+  cursor: not-allowed;
+}
+
+.seat-box.full-day-occupied:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* First Half Occupied - Light Orange */
+.seat-box.first-half-occupied {
+  background: #fff3e0;
+  border-color: #FFA726;
+  border-width: 2px;
+}
+
+/* Second Half Occupied - Light Blue */
+.seat-box.second-half-occupied {
+  background: #e3f2fd;
+  border-color: #42A5F5;
+  border-width: 2px;
+}
+
+/* Both Halves - Split Colors */
+.seat-box.both-halves-occupied {
+  background: linear-gradient(180deg, #fff3e0 50%, #e3f2fd 50%);
+  border-color: #7B1FA2;
+  border-width: 2px;
+  cursor: not-allowed;
+}
+
+.seat-box.both-halves-occupied:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Selected Seat - Dark Green (BookMyShow Style) */
+.seat-box.selected {
+  background: #2E7D32;
+  border-color: #1B5E20;
+  border-width: 2px;
+}
+
+.seat-box.selected .seat-number,
+.seat-box.selected .seat-status-inline,
+.seat-box.selected .seat-status-top,
+.seat-box.selected .student-name,
+.seat-box.selected .seat-expiry,
+.seat-box.selected .checkin-time,
+.seat-box.selected .checkout-time,
+.seat-box.selected .shift-label {
+  color: white;
+}
+
+.seat-box.selected .seat-status-inline,
+.seat-box.selected .seat-status-top {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Seat Number - Centered and Larger */
+.seat-number {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333333;
+  margin: 6px 0;
+  text-align: center;
+}
+
+/* Top Status for Free Seats */
+.seat-status-top {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  color: #4CAF50;
+  letter-spacing: 0.3px;
+  padding: 2px 6px;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+
+/* Time and Status on Top Line */
+.time-status-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 6px;
+  gap: 4px;
+}
+
+.checkin-time {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #4CAF50;
+  white-space: nowrap;
+}
+
+.checkout-time {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #eb4b4b;
+  white-space: nowrap;
+}
+
+/* Seat Status Inline - In Top Line with Times */
+.seat-status-inline {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-align: center;
+  color: #f84464;
+  letter-spacing: 0.3px;
+  padding: 2px 6px;
+  background: rgba(248, 68, 100, 0.1);
+  border-radius: 10px;
+  flex: 1;
+}
+
+.seat-box.available .seat-status-inline {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+/* Time Status Compact - For Dual Students */
+.time-status-compact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+
+.time-status-compact .checkin-time,
+.time-status-compact .checkout-time {
+  font-size: 0.563rem;
+}
+
+.time-status-compact .shift-label {
+  font-size: 0.563rem;
+  font-weight: 600;
+  color: #666666;
+}
+
+/* Student Names - Simplified */
+.student-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555555;
+  text-align: center;
+  margin: 4px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Expiry Information at Bottom */
+.seat-expiry {
+  font-size: 0.625rem;
+  color: #999999;
+  text-align: center;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background: rgba(0,0,0,0.03);
+  border-radius: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Half Shift Layout for Dual Occupancy */
+.half-shift {
+  width: 100%;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.08);
+}
+
+.half-shift:last-child {
+  border-bottom: none;
+}
+
+.shift-label {
+  font-size: 0.563rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #f84464;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.half-shift .student-name {
+  font-size: 0.625rem;
+  padding: 2px 4px;
+}
+
+/* Dual Students Layout - Old style kept for backwards compatibility */
+.dual-students {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  align-items: center;
+}
+
+.dual-students .student-name {
+  font-size: 0.688rem;
+  padding: 3px 5px;
+}
+
+/* Seat Info Container */
+.seat-info {
+  width: 100%;
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+
+.attendance-absent {
+  background: #eb4b4b;
+  box-shadow: 0 0 6px #eb4b4b;
+}
+
+/* Alerts - BookMyShow Style */
+.alert {
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.alert-error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.alert-warning {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.alert-success {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border-left: 4px solid #4CAF50;
+}
+
+.alert-error {
+  background: #FFEBEE;
+  color: #C62828;
+  border-left: 4px solid #F44336;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 1rem;
+}
+
+/* Bulk Operations Panel - BookMyShow Style */
+.bulk-operations-panel {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
 }
 
 .bulk-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .bulk-header h3 {
   margin: 0;
-  color: #E65100;
-}
-
-.bulk-header .btn.active {
-  background: #4CAF50;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333333;
 }
 
 .bulk-controls {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
 }
 
 .selection-info {
-  padding: 10px;
-  background: white;
-  border-radius: 5px;
-  border: 1px solid #FFB74D;
+  color: #f84464;
+  font-weight: 600;
+  font-size: 1rem;
 }
 
-.bulk-actions {
+.bulk-actions, .bulk-execute {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
-}
-
-.bulk-execute {
-  display: flex;
-  gap: 10px;
-  padding-top: 15px;
-  border-top: 1px solid #FFB74D;
-}
-
-.seat-box.selected {
-  border: 4px solid #FF5722;
-  box-shadow: 0 0 15px rgba(255, 87, 34, 0.5);
-  transform: scale(1.05);
 }
 
 .bulk-checkbox {
   position: absolute;
-  top: 5px;
-  left: 5px;
-  z-index: 10;
+  top: 6px;
+  right: 6px;
+  z-index: 5;
 }
 
 .bulk-checkbox input[type="checkbox"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
+  accent-color: #f84464;
 }
 
-.alert-success {
-  background: #E8F5E9;
-  color: #2E7D32;
-  border: 1px solid #81C784;
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Large tablets: 4 columns */
+@media (max-width: 1024px) {
+  .seat-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .seat-box {
+    min-height: 80px;
+  }
+
+  .seat-number {
+    font-size: 1.3rem;
+  }
 }
 
-.alert-error {
-  background: #FFEBEE;
-  color: #C62828;
-  border: 1px solid #EF9A9A;
+/* Tablets: 3 columns */
+@media (max-width: 768px) {
+  .library-grid-container {
+    padding: 12px;
+  }
+
+  .header {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header h2 {
+    font-size: 1.1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .btn, .btn-refresh, .btn-primary, .btn-info, .btn-bulk {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .grid-container {
+    padding: 16px;
+  }
+
+  .seat-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .seat-box {
+    min-height: 120px;
+    padding: 8px 6px;
+  }
+
+  .seat-number {
+    font-size: 1rem;
+  }
+
+  .seat-status-inline,
+  .seat-status-top,
+  .time-status-top .checkin-time,
+  .time-status-top .checkout-time {
+    font-size: 0.625rem;
+  }
+
+  .student-name {
+    font-size: 0.688rem;
+  }
+
+  .seat-box.full-day-occupied::before,
+  .seat-box.first-half-occupied::before,
+  .seat-box.second-half-occupied::before,
+  .seat-box.both-halves-occupied::before {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
 }
 
-/* My Attendance Modal */
-.attendance-section {
+/* Mobile: 2 columns */
+@media (max-width: 480px) {
+  .library-grid-container {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 12px;
+  }
+
+  .header h2 {
+    font-size: 1rem;
+  }
+
+  .subtitle {
+    font-size: 0.813rem;
+  }
+
+  .btn, .btn-refresh, .btn-primary, .btn-info, .btn-bulk {
+    padding: 10px 12px;
+    font-size: 0.813rem;
+  }
+
+  .grid-container {
+    padding: 12px;
+  }
+
+  .seat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .seat-box {
+    min-height: 140px;
+    padding: 8px 6px;
+  }
+
+  .seat-number {
+    font-size: 1rem;
+    margin-bottom: 4px;
+  }
+
+  .seat-status-inline,
+  .seat-status-top,
+  .time-status-top .checkin-time,
+  .time-status-top .checkout-time {
+    font-size: 0.563rem;
+  }
+
+  .student-name {
+    font-size: 0.688rem;
+    padding: 2px 4px;
+  }
+
+  .shift-label {
+    font-size: 0.5rem;
+    margin-bottom: 2px;
+  }
+
+  .time-status-compact .checkin-time,
+  .time-status-compact .checkout-time {
+    font-size: 0.5rem;
+  }
+
+  .half-shift .student-name {
+    font-size: 0.625rem;
+    padding: 2px 3px;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+  .seat-grid {
+    gap: 6px;
+  }
+
+  .seat-box {
+    min-height: 130px;
+    padding: 6px 5px;
+  }
+
+  .seat-number {
+    font-size: 0.938rem;
+    margin-bottom: 3px;
+  }
+
+  .seat-status-inline,
+  .seat-status-top {
+    font-size: 0.5rem;
+    padding: 2px 5px;
+  }
+
+  .time-status-top .checkin-time,
+  .time-status-top .checkout-time {
+    font-size: 0.5rem;
+  }
+
+  .student-name {
+    font-size: 0.625rem;
+  }
+}
+
+/* ===== MODAL STYLING - BOOKMYSHOW STYLE ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 10001 !important;
+  padding: 80px 20px 20px 20px;
 }
 
-.student-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 20px;
+.modal-content {
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
 }
 
-.student-card h4 {
-  margin: 0 0 15px 0;
-  font-size: 20px;
+.modal-content.large {
+  max-width: 680px;
 }
 
-.student-details {
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #dce0e4;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 12px 12px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.detail-item {
-  font-size: 14px;
-  opacity: 0.95;
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #333333;
 }
 
-.detail-item strong {
-  margin-right: 8px;
-}
-
-.detail-item .badge {
-  background: rgba(255, 255, 255, 0.3);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.attendance-status {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid #4CAF50;
-}
-
-.attendance-status h5 {
-  margin: 0 0 12px 0;
-  color: #333;
-  font-size: 16px;
-}
-
-.status-row {
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  font-size: 14px;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
 }
 
-.status-label {
-  font-weight: 600;
-  color: #666;
-  min-width: 80px;
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #f84464;
 }
 
-.status-value {
-  font-family: monospace;
-  background: white;
-  padding: 4px 12px;
-  border-radius: 4px;
-  border: 1px solid #ddd;
+.modal-body {
+  padding: 20px;
 }
 
-.time-info {
-  background: #FFF3E0;
-  padding: 12px;
-  border-radius: 6px;
-  border-left: 4px solid #FF9800;
-  font-size: 14px;
-  color: #E65100;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
 }
 
-.help-text {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 15px;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.btn-full {
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Date Dropdowns - Horizontal Layout */
+.date-dropdowns {
+  display: flex;
+  gap: 12px;
   width: 100%;
+  align-items: center;
 }
 
-.btn-lg {
-  font-size: 18px;
-  padding: 15px;
+.date-dropdowns select {
+  flex: 1;
+  min-width: 0;
+}
+
+.date-dropdowns select:first-child {
+  flex: 0 0 90px; /* Day */
+}
+
+.date-dropdowns select:nth-child(2) {
+  flex: 1; /* Month - takes more space */
+}
+
+.date-dropdowns select:last-child {
+  flex: 0 0 100px; /* Year */
+}
+
+.form-group label {
+  font-size: 0.813rem;
   font-weight: 600;
+  color: #333333;
 }
 
-/* Attendance Indicators on Grid */
-.attendance-indicator {
-  display: inline-block;
-  font-size: 10px;
-  padding: 2px 6px;
+.form-group label .required {
+  color: #f84464;
+}
+
+.form-control,
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+select,
+textarea {
+  padding: 8px 12px;
+  border: 1px solid #dce0e4;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  background: white;
+  color: #333333;
+}
+
+.form-control:focus,
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="tel"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: #f84464;
+  box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.1);
+}
+
+.form-control:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+textarea {
+  min-height: 70px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid #dce0e4;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  background: #fafafa;
+  border-radius: 0 0 12px 12px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+}
+
+.btn-cancel {
+  padding: 12px 24px;
+  background: white;
+  color: #666666;
+  border: 1px solid #dce0e4;
   border-radius: 10px;
+  font-size: 1rem;
   font-weight: 600;
-  margin-left: 4px;
-  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.status-in {
-  background: rgba(76, 175, 80, 0.9);
+.btn-cancel:hover {
+  background: #f5f5f5;
+  border-color: #bdbdbd;
+}
+
+.btn-save,
+.btn-submit {
+  padding: 12px 24px;
+  background: #f84464;
   color: white;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-  animation: pulse-in 2s infinite;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.status-out {
-  background: rgba(230, 230, 230, 0.8);
-  color: #333;
-  border: 1px solid rgba(200, 200, 200, 0.6);
+.btn-save:hover,
+.btn-submit:hover {
+  background: #dc143c;
+  transform: scale(1.02);
 }
 
-@keyframes pulse-in {
-  0%, 100% {
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+.btn-save:active,
+.btn-submit:active {
+  transform: scale(0.98);
+}
+
+.btn-save:disabled,
+.btn-submit:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Radio Button Groups */
+.radio-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.radio-group label,
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #333333;
+  font-size: 1rem;
+}
+
+.radio-group input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #f84464;
+}
+
+/* Action Buttons Container - BookMyShow Style */
+.action-buttons,
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 20px 0 0 0;
+  margin-top: 20px;
+  border-top: 1px solid #dce0e4;
+}
+
+/* Student Profile Cards */
+.student-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.student-card:last-child {
+  margin-bottom: 0;
+}
+
+.shift-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.shift-badge.morning {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.shift-badge.evening {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.profile-section {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.profile-photo {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.no-photo {
+  font-size: 48px;
+  color: #bdbdbd;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-info h4 {
+  margin: 0 0 12px 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #333333;
+}
+
+.profile-info p {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #666666;
+}
+
+.profile-info strong {
+  color: #333333;
+  font-weight: 600;
+}
+
+/* ===== 3-COLUMN PROFILE LAYOUT ===== */
+/* Image (small) | Details (wide) | Buttons (vertical list) */
+.profile-layout-3col {
+  display: grid;
+  grid-template-columns: 80px 1fr 150px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Photo Column */
+.profile-photo-col {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-photo-col img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-col .no-photo {
+  font-size: 2rem;
+  color: #bdbdbd;
+}
+
+/* Details Column - Takes most space */
+.profile-info-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-info-col h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333333;
+}
+
+.profile-info-col p {
+  margin: 3px 0;
+  font-size: 0.75rem;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.profile-info-col strong {
+  color: #333333;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+/* Actions Column - Vertical button list */
+.profile-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 150px;
+  flex-shrink: 0;
+}
+
+/* Compact vertical buttons */
+.btn-compact {
+  padding: 7px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.btn-compact:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.btn-compact:active {
+  transform: translateY(0);
+}
+
+.btn-compact.btn-primary {
+  background: #f84464;
+  color: white;
+}
+
+.btn-compact.btn-primary:hover {
+  background: #dc143c;
+}
+
+.btn-compact.btn-success {
+  background: #4CAF50;
+  color: white;
+}
+
+.btn-compact.btn-success:hover {
+  background: #388E3C;
+}
+
+.btn-compact.btn-info {
+  background: #42A5F5;
+  color: white;
+}
+
+.btn-compact.btn-info:hover {
+  background: #1E88E5;
+}
+
+.btn-compact.btn-warning {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-compact.btn-warning:hover {
+  background: #F57C00;
+}
+
+.btn-compact.btn-danger {
+  background: #eb4b4b;
+  color: white;
+}
+
+.btn-compact.btn-danger:hover {
+  background: #c62828;
+}
+
+.btn-compact:disabled {
+  background: #e0e0e0;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-compact:disabled:hover {
+  box-shadow: none;
+}
+
+/* Student Card Wrapper */
+.student-card .profile-layout-3col {
+  margin-bottom: 0;
+}
+
+.student-card .shift-badge {
+  top: 12px;
+  right: 12px;
+  padding: 4px 10px;
+  font-size: 0.688rem;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-active {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.badge-expired {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.badge-pending {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.info-badge {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: default;
+}
+
+/* Text Utilities */
+.text-muted {
+  color: #999999;
+  font-style: italic;
+}
+
+.text-warning {
+  color: #ef6c00;
+  font-size: 0.813rem;
+}
+
+.text-info {
+  color: #1976D2;
+  font-size: 0.813rem;
+}
+
+.text-success {
+  color: #2E7D32;
+  font-size: 0.813rem;
+}
+
+/* Available Seats Grid */
+.available-seats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.seat-option {
+  border: 2px solid #dce0e4;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.seat-option:hover {
+  border-color: #f84464;
+  background: #fff5f7;
+  transform: scale(1.05);
+}
+
+.seat-option.selected {
+  border-color: #f84464;
+  background: #ffe5ec;
+}
+
+.seat-option-number {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+.seat-option-status {
+  font-size: 0.75rem;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+/* Change Seat Info */
+.change-seat-info {
+  background: #f5f5f5;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.change-seat-info h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #333333;
+}
+
+.change-seat-info p {
+  margin: 4px 0;
+  font-size: 0.9375rem;
+  color: #666666;
+}
+
+/* Wide Modal */
+.wide-modal {
+  max-width: 1000px;
+}
+
+/* Dual Students Modal Body */
+.modal-body.dual-students {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 24px;
+}
+
+/* Responsive: Profile Layout */
+@media (max-width: 768px) {
+  .profile-layout-3col {
+    grid-template-columns: 60px 1fr;
+    grid-template-rows: auto auto;
+    gap: 12px;
   }
-  50% {
-    box-shadow: 0 0 16px rgba(76, 175, 80, 0.8);
+
+  .profile-photo-col {
+    width: 60px;
+    height: 60px;
+  }
+
+  .profile-photo-col .no-photo {
+    font-size: 1.5rem;
+  }
+
+  .profile-actions-col {
+    grid-column: 1 / -1;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .profile-info-col h4 {
+    font-size: 0.938rem;
+  }
+
+  .profile-info-col p {
+    font-size: 0.688rem;
+  }
+
+  .btn-compact {
+    font-size: 0.688rem;
+    padding: 6px 8px;
+  }
+
+  .modal-body.dual-students {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .student-card {
+    padding: 12px;
+  }
+
+  .student-card .shift-badge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 8px;
   }
 }
+
+@media (max-width: 480px) {
+  .profile-actions-col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Receipt Container */
+.receipt-container {
+  padding: 20px;
+  border: 2px solid #dce0e4;
+  border-radius: 12px;
+}
+
+.receipt-header {
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px dashed #dce0e4;
+}
+
+.receipt-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333333;
+}
+
+.receipt-body {
+  margin-bottom: 24px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.receipt-label {
+  font-weight: 600;
+  color: #666666;
+}
+
+.receipt-value {
+  font-weight: 600;
+  color: #333333;
+}
+
+.receipt-total {
+  background: #f5f5f5;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.receipt-footer {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 2px dashed #dce0e4;
+  color: #999999;
+  font-size: 0.875rem;
+}
+
+/* File Upload */
+.file-upload-wrapper {
+  border: 2px dashed #dce0e4;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.file-upload-wrapper:hover {
+  border-color: #f84464;
+  background: #fff5f7;
+}
+
+.file-upload-wrapper input[type="file"] {
+  margin-top: 10px;
+}
+
+/* Alert in Modal */
+.modal-body .alert {
+  margin-bottom: 20px;
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-height: 85vh;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.25rem;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .date-dropdowns {
+    gap: 8px;
+  }
+
+  .date-dropdowns select:first-child {
+    flex: 0 0 70px;
+  }
+
+  .date-dropdowns select:last-child {
+    flex: 0 0 85px;
+  }
+
+  .modal-footer {
+    padding: 16px 20px;
+    flex-direction: column;
+  }
+
+  .modal-footer .btn,
+  .btn-cancel,
+  .btn-save,
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .action-buttons,
+  .modal-actions {
+    flex-direction: column;
+    padding: 16px 0 0 0;
+  }
+
+  .action-buttons .btn,
+  .modal-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .profile-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-photo {
+    margin: 0 auto;
+  }
+
+  .student-card {
+    padding: 20px;
+  }
+
+  .shift-badge {
+    position: static;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+
+  .available-seats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+}
+

@@ -1,212 +1,520 @@
-/* src/app/pages/material-purchase/material-purchase.component.css */
-.purchase-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+/* ===== BOOKMYSHOW INSPIRED DESIGN - UNIVERSAL STYLES ===== */
+
+/* Color Variables */
+:root {
+  --primary-color: #f84464;
+  --primary-dark: #dc143c;
+  --primary-light: #ff6b88;
+  --success-color: #4CAF50;
+  --success-dark: #388E3C;
+  --danger-color: #eb4b4b;
+  --warning-color: #ff9800;
+  --text-color: #333333;
+  --text-light: #666666;
+  --border-color: #dce0e4;
+  --background: #f5f5f5;
+  --white: #ffffff;
+  --gray-light: #e0e0e0;
+  --gray-medium: #bdbdbd;
 }
 
-.header {
-  margin-bottom: 24px;
-}
-
-.header h2 {
-  margin: 0 0 4px 0;
-  font-size: 24px;
-  color: #1a1a1a;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: #666;
-}
-
-.alert {
-  padding: 12px 16px;
-  border-radius: 6px;
-  margin-bottom: 16px;
-}
-
-.alert-success {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.alert-error {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 20px;
-}
-
-.form-card, .history-card {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.form-card h3, .history-card h3 {
-  margin: 0 0 20px 0;
-  font-size: 18px;
-  color: #333;
-}
-
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.required {
-  color: #dc3545;
-}
-
-.form-control {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.total-section {
-  background-color: #f8f9fa;
+.page-container {
   padding: 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--background);
+  min-height: 100vh;
+}
+
+/* Page Header - BookMyShow Style */
+.page-header {
+  background: var(--white);
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  font-size: 18px;
+  gap: 12px;
 }
 
-.total-section strong {
-  color: #4CAF50;
-  font-size: 24px;
+.page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-light);
+  margin: 0;
 }
 
-.radio-group {
-  display: flex;
+/* Form Container - BookMyShow Style */
+.form-container {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.form-section {
+  margin-bottom: 28px;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Form Grid - BookMyShow Style */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
 }
 
-.radio-label {
+.form-field {
   display: flex;
-  align-items: center;
-  cursor: pointer;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.radio-label input {
-  margin-right: 6px;
+.form-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-color);
 }
 
-.action-buttons {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
+.form-label.required::after {
+  content: " *";
+  color: var(--danger-color);
 }
 
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  flex: 1;
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: var(--white);
+  font-family: inherit;
+  color: var(--text-color);
 }
 
-.btn-primary {
-  background-color: #4CAF50;
-  color: white;
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.1);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background-color: #45a049;
-}
-
-.btn-secondary {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.btn:disabled {
-  opacity: 0.5;
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: var(--background);
+  color: var(--text-light);
   cursor: not-allowed;
 }
 
-.history-list {
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-error {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Form Actions - BookMyShow Style */
+.form-actions {
   display: flex;
-  flex-direction: column;
   gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
 }
 
-.history-item {
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-  border-left: 3px solid #4CAF50;
+/* Buttons - BookMyShow Style */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  text-transform: capitalize;
 }
 
-.history-header {
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--background);
+}
+
+.btn-success {
+  background: var(--success-color);
+  color: var(--white);
+}
+
+.btn-success:hover {
+  background: var(--success-dark);
+  transform: scale(1.02);
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+  transform: scale(1.02);
+}
+
+.btn:disabled {
+  background: var(--gray-light);
+  color: var(--text-light);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Data Table - BookMyShow Style */
+.table-container {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
-  margin-bottom: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.history-amount {
+.table-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.table-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead {
+  background: var(--background);
+}
+
+.data-table th {
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 16px 20px;
+  font-size: 1rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table tbody tr {
+  transition: background 0.2s;
+}
+
+.data-table tbody tr:hover {
+  background: var(--background);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges - BookMyShow Style */
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #4CAF50;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
-.history-details {
-  font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
+.badge.success {
+  background: #e8f5e9;
+  color: var(--success-dark);
 }
 
-.history-meta {
-  font-size: 12px;
-  color: #999;
+.badge.warning {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
-.no-data {
-  padding: 20px;
+.badge.danger {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.badge.info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* Empty State - BookMyShow Style */
+.empty-state {
   text-align: center;
-  color: #666;
+  padding: 60px 24px;
+  color: var(--text-light);
 }
 
-@media (max-width: 968px) {
-  .content-grid {
+.empty-icon {
+  font-size: 4rem;
+  color: var(--gray-light);
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.empty-subtext {
+  font-size: 1rem;
+  color: var(--text-light);
+}
+
+/* Loading State - BookMyShow Style */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+}
+
+.spinner {
+  border: 4px solid var(--background);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Stats Cards - BookMyShow Style */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* Alerts - BookMyShow Style */
+.alert {
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.alert-success {
+  background: #e8f5e9;
+  color: var(--success-dark);
+}
+
+.alert-error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.alert-warning {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.alert-info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* ===== RESPONSIVE - BOOKMYSHOW STYLE ===== */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .page-header,
+  .form-container,
+  .table-container {
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .form-grid {
     grid-template-columns: 1fr;
   }
 
-  .form-row {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 24px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-actions {
+    width: 100%;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 8px;
+  }
+
+  .page-header,
+  .form-container {
+    padding: 16px;
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .btn {
+    padding: 14px 20px;
+  }
+
+  .page-title {
+    font-size: 1.125rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
   }
 }

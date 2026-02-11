@@ -1,282 +1,433 @@
-<div class="production-entry-container">
-  <div class="header">
-    <h2>🏭 Production Entry</h2>
-    <input type="date" [(ngModel)]="date" class="date-input" />
-  </div>
+<div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%); background-attachment: fixed; padding: 20px; position: relative; overflow-x: auto;">
+  <!-- Animated Background Pattern -->
+  <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: 
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+    linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 70%);
+    animation: gradientFlow 15s ease-in-out infinite; z-index: 0;"></div>
 
-  <!-- Product Selection -->
-  <div class="card">
-    <h3>1. Product Selection</h3>
-    
-    <div class="form-group">
-      <label>Product</label>
-      <select [(ngModel)]="productName" (ngModelChange)="onProductChange()" class="form-control">
-        <option *ngFor="let product of products" [value]="product.product_name">
-          {{product.product_name}}
-        </option>
-      </select>
-    </div>
-
-    <div class="form-group" *ngIf="selectedProductVariants.length > 0">
-      <label>Variant</label>
-      <select [(ngModel)]="productVariant" (ngModelChange)="onVariantChange()" class="form-control">
-        <option *ngFor="let variant of selectedProductVariants" [value]="variant">
-          {{variant}}
-        </option>
-      </select>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label>Success Quantity *</label>
-        <input 
-          type="number" 
-          [(ngModel)]="successQuantity" 
-          (ngModelChange)="onQuantityChange()"
-          min="0" 
-          class="form-control" 
-          placeholder="0" />
-      </div>
-
-      <div class="form-group">
-        <label>Rejected Quantity</label>
-        <input 
-          type="number" 
-          [(ngModel)]="rejectedQuantity" 
-          (ngModelChange)="onQuantityChange()"
-          min="0" 
-          class="form-control" 
-          placeholder="0" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Material Preview -->
-  <div class="card material-preview" *ngIf="materialCalc">
-    <h3>2. Material Requirements</h3>
-
-    <div *ngIf="isCalculating" class="loading">Calculating...</div>
-
-    <div *ngIf="!isCalculating && materialCalc">
-      <div class="material-item">
-        <span class="material-name">📦 Cement</span>
-        <span class="material-qty">{{formatNumber(materialCalc.materials.cement)}} bags</span>
-        <span class="material-cost">@ ₹{{materialCalc.costs.cement_cost / materialCalc.materials.cement | number:'1.0-0'}}</span>
-        <span class="material-total">= {{formatCurrency(materialCalc.costs.cement_cost)}}</span>
-        <span 
-          class="stock-status" 
-          [class.success]="materialCalc.stock_check.cement_available"
-          [class.danger]="!materialCalc.stock_check.cement_available">
-          {{materialCalc.stock_check.cement_available ? '✅' : '❌'}} 
-          Stock: {{formatNumber(materialCalc.current_stock.cement)}}
-        </span>
-      </div>
-
-      <div class="material-item">
-        <span class="material-name">🏗️ Aggregates</span>
-        <span class="material-qty">{{formatNumber(materialCalc.materials.aggregates)}} cft</span>
-        <span class="material-cost">@ ₹{{materialCalc.costs.aggregates_cost / materialCalc.materials.aggregates | number:'1.0-0'}}</span>
-        <span class="material-total">= {{formatCurrency(materialCalc.costs.aggregates_cost)}}</span>
-        <span 
-          class="stock-status" 
-          [class.success]="materialCalc.stock_check.aggregates_available"
-          [class.danger]="!materialCalc.stock_check.aggregates_available">
-          {{materialCalc.stock_check.aggregates_available ? '✅' : '❌'}} 
-          Stock: {{formatNumber(materialCalc.current_stock.aggregates)}}
-        </span>
-      </div>
-
-      <div class="material-item">
-        <span class="material-name">🔩 Sariya (4mm)</span>
-        <span class="material-qty">{{formatNumber(materialCalc.materials.sariya)}} kg</span>
-        <span class="material-cost">@ ₹{{materialCalc.costs.sariya_cost / materialCalc.materials.sariya | number:'1.0-0'}}</span>
-        <span class="material-total">= {{formatCurrency(materialCalc.costs.sariya_cost)}}</span>
-        <span 
-          class="stock-status" 
-          [class.success]="materialCalc.stock_check.sariya_available"
-          [class.danger]="!materialCalc.stock_check.sariya_available">
-          {{materialCalc.stock_check.sariya_available ? '✅' : '❌'}} 
-          Stock: {{formatNumber(materialCalc.current_stock.sariya)}}
-        </span>
-      </div>
-
-      <div class="material-total-row">
-        <span class="label">Total Material Cost</span>
-        <span class="value">{{formatCurrency(materialCalc.costs.total_cost)}}</span>
-      </div>
-
-      <div *ngIf="!materialCalc.stock_check.all_available" class="alert alert-danger">
-        ⚠️ Insufficient stock! Cannot proceed with production.
-      </div>
-    </div>
-  </div>
-
-  <!-- Worker Selection -->
-  <div class="card">
-    <h3>3. Worker Selection</h3>
-
-    <div class="worker-selector">
-      <label>Add Worker</label>
-      <select #workerSelect class="form-control" (change)="addWorker(availableWorkers[workerSelect.selectedIndex]); workerSelect.selectedIndex = 0">
-        <option value="" selected disabled>Select worker...</option>
-        <option *ngFor="let worker of availableWorkers" [value]="worker.id">
-          {{getWorkerDisplayName(worker)}}
-        </option>
-      </select>
-    </div>
-
-    <div *ngIf="selectedWorkers.length === 0" class="alert alert-info">
-      No workers selected. Please add at least one worker.
-    </div>
-
-    <div class="worker-list" *ngIf="selectedWorkers.length > 0">
-      <div class="worker-entry" *ngFor="let workerEntry of selectedWorkers; let i = index">
-        <div class="worker-header">
-          <span class="worker-name">👷 {{workerEntry.worker.name}}</span>
-          <button type="button" (click)="removeWorker(i)" class="btn-remove">✕</button>
+  <div style="position: relative; z-index: 1; max-width: 1400px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <h2 style="margin: 0; color: white; font-size: 2rem; font-weight: 800; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 16px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px; font-size: 1.5rem; animation: pulse 2s ease-in-out infinite;">🏭</span>
+            Production Entry
+          </h2>
+          <p style="margin: 8px 0 0 60px; color: rgba(255,255,255,0.8); font-size: 1.1rem; font-weight: 500;">Record daily production activities</p>
         </div>
-
-        <div class="worker-details">
-          <div class="form-group">
-            <label>Attendance</label>
-            <select 
-              [(ngModel)]="workerEntry.attendanceType" 
-              (ngModelChange)="onAttendanceChange(workerEntry)"
-              class="form-control-sm">
-              <option value="Full Day">Full Day (₹400)</option>
-              <option value="Half Day">Half Day (₹200)</option>
-              <option value="Outdoor">Outdoor (₹450)</option>
-              <option value="Custom">Custom</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Wage Earned</label>
-            <input 
-              type="number" 
-              [(ngModel)]="workerEntry.wageEarned" 
-              [readonly]="workerEntry.attendanceType !== 'Custom'"
-              class="form-control-sm" />
-          </div>
-
-          <div class="form-group">
-            <label>Paid Today</label>
-            <input 
-              type="number" 
-              [(ngModel)]="workerEntry.paidToday" 
-              min="0" 
-              [max]="workerEntry.wageEarned"
-              class="form-control-sm" 
-              placeholder="₹0" />
-          </div>
-
-          <div class="form-group">
-            <label>Balance (to cumulative)</label>
-            <input 
-              type="text" 
-              [value]="formatCurrency(workerEntry.wageEarned - workerEntry.paidToday)" 
-              readonly 
-              class="form-control-sm balance-field" />
-          </div>
+        <div>
+          <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Production Date</label>
+          <input type="date" [(ngModel)]="date" 
+                 style="padding: 12px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; font-weight: 600; transition: all 0.3s ease;"
+                 onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
         </div>
       </div>
     </div>
 
-    <div class="labor-summary" *ngIf="selectedWorkers.length > 0">
-      <div class="summary-row">
-        <span class="label">Total Labor Cost</span>
-        <span class="value">{{formatCurrency(getTotalLaborCost())}}</span>
+    <!-- Product Selection Section -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">1️⃣</span>
+        Product Selection
+      </h3>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <!-- Product -->
+        <div>
+          <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">
+            Product <span style="color: rgba(239, 68, 68, 1);">*</span>
+          </label>
+          <select [(ngModel)]="productName" (ngModelChange)="onProductChange()" 
+                  style="width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                  onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                  onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+            <option value="">Select Product</option>
+            <option *ngFor="let product of products" [value]="product.product_name">
+              {{ product.product_name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Variant -->
+        <div *ngIf="selectedProductVariants.length > 0">
+          <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">
+            Variant
+          </label>
+          <select [(ngModel)]="productVariant" (ngModelChange)="onVariantChange()" 
+                  style="width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                  onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                  onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+            <option *ngFor="let variant of selectedProductVariants" [value]="variant">
+              {{ variant }}
+            </option>
+          </select>
+        </div>
       </div>
-      <div class="summary-row">
-        <span class="label">Total Paid Today</span>
-        <span class="value">{{formatCurrency(getTotalPaidToday())}}</span>
-      </div>
-      <div class="summary-row highlight">
-        <span class="label">Labor Liability</span>
-        <span class="value">{{formatCurrency(getLaborLiability())}}</span>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Success Quantity -->
+        <div>
+          <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">
+            Success Quantity <span style="color: rgba(239, 68, 68, 1);">*</span>
+          </label>
+          <input type="number" [(ngModel)]="successQuantity" (ngModelChange)="onQuantityChange()" min="0" placeholder="0"
+                 style="width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                 onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        </div>
+
+        <!-- Rejected Quantity -->
+        <div>
+          <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">
+            Rejected Quantity
+          </label>
+          <input type="number" [(ngModel)]="rejectedQuantity" (ngModelChange)="onQuantityChange()" min="0" placeholder="0"
+                 style="width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                 onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Production Summary -->
-  <div class="card summary-card">
-    <h3>4. Production Summary</h3>
+    <!-- Material Requirements Section -->
+    <div *ngIf="materialCalc" style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">2️⃣</span>
+        Material Requirements
+      </h3>
 
-    <div class="summary-grid">
-      <div class="summary-item">
-        <span class="label">Success Quantity</span>
-        <span class="value">{{successQuantity}} units</span>
+      <!-- Loading State -->
+      <div *ngIf="isCalculating" style="text-align: center; padding: 40px; color: white;">
+        <div style="width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <div style="font-size: 1.1rem; font-weight: 600;">Calculating materials...</div>
       </div>
-      <div class="summary-item">
-        <span class="label">Rejected Quantity</span>
-        <span class="value">{{rejectedQuantity}} units</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Material Cost</span>
-        <span class="value">{{formatCurrency((materialCalc?.costs?.total_cost) || 0)}}</span>
-      </div>
-      <div class="summary-item">
-        <span class="label">Labor Cost</span>
-        <span class="value">{{formatCurrency(getTotalLaborCost())}}</span>
-      </div>
-      <div class="summary-item highlight">
-        <span class="label">Total Cost</span>
-        <span class="value">{{formatCurrency(getTotalCost())}}</span>
-      </div>
-      <div class="summary-item highlight">
-        <span class="label">Cost Per Unit</span>
-        <span class="value">{{formatCurrency(getCostPerUnit())}}</span>
+
+      <div *ngIf="!isCalculating && materialCalc" style="display: grid; gap: 16px;">
+        <!-- Cement -->
+        <div style="display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 16px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2);">
+          <span style="color: white; font-size: 1.5rem;">📦</span>
+          <div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">Cement</div>
+            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ formatNumber(materialCalc.materials.cement) }} bags</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="color: white; font-weight: 600;">@ ₹{{ materialCalc.costs.cement_cost / materialCalc.materials.cement | number:'1.0-0' }}</div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">{{ formatCurrency(materialCalc.costs.cement_cost) }}</div>
+          </div>
+          <div style="padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; text-align: center;"
+               [style.background]="materialCalc.stock_check.cement_available ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'"
+               [style.color]="'white'">
+            {{ materialCalc.stock_check.cement_available ? '✅ Available' : '❌ Low Stock' }}
+          </div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; text-align: right;">
+            Stock: {{ formatNumber(materialCalc.current_stock.cement) }}
+          </div>
+        </div>
+
+        <!-- Aggregates -->
+        <div style="display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 16px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2);">
+          <span style="color: white; font-size: 1.5rem;">🏗️</span>
+          <div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">Aggregates</div>
+            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ formatNumber(materialCalc.materials.aggregates) }} cft</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="color: white; font-weight: 600;">@ ₹{{ materialCalc.costs.aggregates_cost / materialCalc.materials.aggregates | number:'1.0-0' }}</div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">{{ formatCurrency(materialCalc.costs.aggregates_cost) }}</div>
+          </div>
+          <div style="padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; text-align: center;"
+               [style.background]="materialCalc.stock_check.aggregates_available ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'"
+               [style.color]="'white'">
+            {{ materialCalc.stock_check.aggregates_available ? '✅ Available' : '❌ Low Stock' }}
+          </div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; text-align: right;">
+            Stock: {{ formatNumber(materialCalc.current_stock.aggregates) }}
+          </div>
+        </div>
+
+        <!-- Sariya -->
+        <div style="display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 16px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2);">
+          <span style="color: white; font-size: 1.5rem;">🔩</span>
+          <div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">Sariya (4mm)</div>
+            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">{{ formatNumber(materialCalc.materials.sariya) }} kg</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="color: white; font-weight: 600;">@ ₹{{ materialCalc.costs.sariya_cost / materialCalc.materials.sariya | number:'1.0-0' }}</div>
+            <div style="color: white; font-weight: 700; font-size: 1.1rem;">{{ formatCurrency(materialCalc.costs.sariya_cost) }}</div>
+          </div>
+          <div style="padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.85rem; text-align: center;"
+               [style.background]="materialCalc.stock_check.sariya_available ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)'"
+               [style.color]="'white'">
+            {{ materialCalc.stock_check.sariya_available ? '✅ Available' : '❌ Low Stock' }}
+          </div>
+          <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; text-align: right;">
+            Stock: {{ formatNumber(materialCalc.current_stock.sariya) }}
+          </div>
+        </div>
+
+        <!-- Total Cost -->
+        <div style="padding: 24px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8)); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+          <div style="color: white; font-size: 1.3rem; font-weight: 700;">Total Material Cost</div>
+          <div style="color: white; font-size: 1.5rem; font-weight: 800;">{{ formatCurrency(materialCalc.costs.total_cost) }}</div>
+        </div>
+
+        <!-- Insufficient Stock Alert -->
+        <div *ngIf="!materialCalc.stock_check.all_available" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9)); color: white; padding: 20px; border-radius: 16px; margin-top: 16px; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.5rem;">⚠️</span>
+          <span style="font-weight: 600;">Insufficient stock! Cannot proceed with production.</span>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Job Work Section -->
-  <div class="card">
-    <div class="checkbox-group">
-      <label>
-        <input type="checkbox" [(ngModel)]="isJobWork" />
-        <span>This is job work (external client production)</span>
-      </label>
+    <!-- Worker Selection Section -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">3️⃣</span>
+        Worker Selection
+      </h3>
+
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Add Worker</label>
+        <select #workerSelect (change)="addWorker(availableWorkers[workerSelect.selectedIndex]); workerSelect.selectedIndex = 0"
+                style="width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+          <option value="" selected disabled>Select worker...</option>
+          <option *ngFor="let worker of availableWorkers" [value]="worker.id">
+            {{ getWorkerDisplayName(worker) }}
+          </option>
+        </select>
+      </div>
+
+      <!-- No Workers Selected -->
+      <div *ngIf="selectedWorkers.length === 0" style="background: rgba(59, 130, 246, 0.2); color: rgba(59, 130, 246, 1); padding: 20px; border-radius: 16px; text-align: center; border: 2px solid rgba(59, 130, 246, 0.3);">
+        <div style="font-size: 1.5rem; margin-bottom: 8px;">👷‍♂️</div>
+        <div style="font-weight: 600;">No workers selected</div>
+        <div style="font-size: 0.9rem; margin-top: 4px;">Please add at least one worker to proceed</div>
+      </div>
+
+      <!-- Worker List -->
+      <div *ngIf="selectedWorkers.length > 0" style="display: grid; gap: 16px;">
+        <div *ngFor="let workerEntry of selectedWorkers; let i = index" 
+             style="background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); overflow: hidden; animation: fadeInUp 0.5s ease-out;"
+             [style.animation-delay]="(i * 0.1) + 's'">
+          
+          <!-- Worker Header -->
+          <div style="background: rgba(255,255,255,0.1); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="background: rgba(102, 126, 234, 0.8); color: white; width: 40px; height: 40px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem;">
+                👷
+              </div>
+              <div>
+                <div style="color: white; font-weight: 700; font-size: 1.1rem;">{{ workerEntry.worker.name }}</div>
+                <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Worker ID: {{ workerEntry.worker.id }}</div>
+              </div>
+            </div>
+            <button type="button" (click)="removeWorker(i)"
+                    style="background: rgba(239, 68, 68, 0.8); color: white; border: none; width: 32px; height: 32px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: all 0.3s ease;"
+                    onmouseover="this.style.background='rgba(239, 68, 68, 1)'; this.style.transform='scale(1.1)'"
+                    onmouseout="this.style.background='rgba(239, 68, 68, 0.8)'; this.style.transform='scale(1)'">
+              ✕
+            </button>
+          </div>
+
+          <!-- Worker Details -->
+          <div style="padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+              <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">Attendance Type</label>
+              <select [(ngModel)]="workerEntry.attendanceType" (ngModelChange)="onAttendanceChange(workerEntry)"
+                      style="width: 100%; padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(255,255,255,0.9); font-size: 0.9rem; transition: all 0.3s ease;"
+                      onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'"
+                      onblur="this.style.borderColor='rgba(255,255,255,0.3)'">
+                <option value="Full Day">Full Day (₹400)</option>
+                <option value="Half Day">Half Day (₹200)</option>
+                <option value="Outdoor">Outdoor (₹450)</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">Wage Earned (₹)</label>
+              <input type="number" [(ngModel)]="workerEntry.wageEarned" [readonly]="workerEntry.attendanceType !== 'Custom'"
+                     style="width: 100%; padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; font-size: 0.9rem; transition: all 0.3s ease;"
+                     [style.background]="workerEntry.attendanceType !== 'Custom' ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.9)'"
+                     onfocus="if(!this.readOnly) { this.style.borderColor='rgba(102, 126, 234, 0.6)'; }"
+                     onblur="this.style.borderColor='rgba(255,255,255,0.3)'">
+            </div>
+
+            <div>
+              <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">Paid Today (₹)</label>
+              <input type="number" [(ngModel)]="workerEntry.paidToday" min="0" [max]="workerEntry.wageEarned" placeholder="0"
+                     style="width: 100%; padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(255,255,255,0.9); font-size: 0.9rem; transition: all 0.3s ease;"
+                     onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'"
+                     onblur="this.style.borderColor='rgba(255,255,255,0.3)'">
+            </div>
+
+            <div>
+              <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.85rem;">Balance (to cumulative)</label>
+              <input type="text" [value]="formatCurrency(workerEntry.wageEarned - workerEntry.paidToday)" readonly
+                     style="width: 100%; padding: 10px 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 600;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Labor Summary -->
+      <div *ngIf="selectedWorkers.length > 0" style="margin-top: 24px; background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); padding: 24px;">
+        <h4 style="margin: 0 0 20px 0; color: white; font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+          <span>💰</span>
+          Labor Summary
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="background: rgba(16, 185, 129, 0.2); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3);">
+            <div style="color: rgba(16, 185, 129, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">Total Labor Cost</div>
+            <div style="color: white; font-size: 1.3rem; font-weight: 800;">{{ formatCurrency(getTotalLaborCost()) }}</div>
+          </div>
+          <div style="background: rgba(59, 130, 246, 0.2); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid rgba(59, 130, 246, 0.3);">
+            <div style="color: rgba(59, 130, 246, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">Total Paid Today</div>
+            <div style="color: white; font-size: 1.3rem; font-weight: 800;">{{ formatCurrency(getTotalPaidToday()) }}</div>
+          </div>
+          <div style="background: rgba(245, 158, 11, 0.2); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid rgba(245, 158, 11, 0.3);">
+            <div style="color: rgba(245, 158, 11, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 4px;">Labor Liability</div>
+            <div style="color: white; font-size: 1.3rem; font-weight: 800;">{{ formatCurrency(getLaborLiability()) }}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="form-group" *ngIf="isJobWork">
-      <label>Client Name</label>
-      <input 
-        type="text" 
-        [(ngModel)]="jobWorkClient" 
-        class="form-control" 
-        placeholder="Enter client name" />
+    <!-- Production Summary Section -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">4️⃣</span>
+        Production Summary
+      </h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+        <div style="background: rgba(16, 185, 129, 0.2); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3);">
+          <div style="color: rgba(16, 185, 129, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Success Quantity</div>
+          <div style="color: white; font-size: 1.8rem; font-weight: 800;">{{ successQuantity }} <span style="font-size: 1rem; font-weight: 500;">units</span></div>
+        </div>
+
+        <div style="background: rgba(239, 68, 68, 0.2); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(239, 68, 68, 0.3);">
+          <div style="color: rgba(239, 68, 68, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Rejected Quantity</div>
+          <div style="color: white; font-size: 1.8rem; font-weight: 800;">{{ rejectedQuantity }} <span style="font-size: 1rem; font-weight: 500;">units</span></div>
+        </div>
+
+        <div style="background: rgba(59, 130, 246, 0.2); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(59, 130, 246, 0.3);">
+          <div style="color: rgba(59, 130, 246, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Material Cost</div>
+          <div style="color: white; font-size: 1.4rem; font-weight: 800;">{{ formatCurrency((materialCalc?.costs?.total_cost) || 0) }}</div>
+        </div>
+
+        <div style="background: rgba(245, 158, 11, 0.2); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(245, 158, 11, 0.3);">
+          <div style="color: rgba(245, 158, 11, 1); font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Labor Cost</div>
+          <div style="color: white; font-size: 1.4rem; font-weight: 800;">{{ formatCurrency(getTotalLaborCost()) }}</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8)); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(102, 126, 234, 0.3);">
+          <div style="color: white; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Total Cost</div>
+          <div style="color: white; font-size: 1.6rem; font-weight: 800;">{{ formatCurrency(getTotalCost()) }}</div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.8)); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid rgba(16, 185, 129, 0.3);">
+          <div style="color: white; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px;">Cost Per Unit</div>
+          <div style="color: white; font-size: 1.6rem; font-weight: 800;">{{ formatCurrency(getCostPerUnit()) }}</div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <!-- Notes -->
-  <div class="card">
-    <div class="form-group">
-      <label>Notes (optional)</label>
-      <textarea 
-        [(ngModel)]="notes" 
-        class="form-control" 
-        rows="3" 
-        placeholder="Additional notes..."></textarea>
+    <!-- Job Work Section -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <div style="margin-bottom: 20px;">
+        <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; color: white; font-weight: 600; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 12px; transition: all 0.3s ease;"
+               onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+               onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+          <input type="checkbox" [(ngModel)]="isJobWork" style="margin: 0; transform: scale(1.3);">
+          <div>
+            <div style="font-size: 1.1rem; margin-bottom: 4px;">This is job work (external client production)</div>
+            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">Check if this production is for an external client</div>
+          </div>
+        </label>
+      </div>
+
+      <div *ngIf="isJobWork">
+        <label style="display: block; color: white; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Client Name</label>
+        <input type="text" [(ngModel)]="jobWorkClient" placeholder="Enter client name"
+               style="width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+               onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+               onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+      </div>
     </div>
-  </div>
 
-  <!-- Action Buttons -->
-  <div class="action-buttons">
-    <button 
-      type="button" 
-      (click)="saveProduction()" 
-      [disabled]="!isFormValid() || saving"
-      class="btn btn-primary">
-      {{saving ? 'Saving...' : '🟢 Save Production'}}
-    </button>
+    <!-- Notes Section -->
+    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
+      <label style="display: block; color: white; font-weight: 600; margin-bottom: 12px; font-size: 1.1rem;">Notes (optional)</label>
+      <textarea [(ngModel)]="notes" rows="4" placeholder="Additional notes about this production..."
+                style="width: 100%; padding: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease; resize: vertical;"
+                onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'"></textarea>
+    </div>
 
-    <button 
-      type="button" 
-      (click)="resetForm()" 
-      [disabled]="saving"
-      class="btn btn-secondary">
-      Reset Form
-    </button>
+    <!-- Action Buttons -->
+    <div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 40px;">
+      <button type="button" (click)="resetForm()" [disabled]="saving"
+              style="padding: 16px 32px; background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.4); border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; opacity: 1;"
+              [style.opacity]="saving ? '0.6' : '1'"
+              [style.cursor]="saving ? 'not-allowed' : 'pointer'"
+              onmouseover="if(!this.disabled) { this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateY(-1px)'; }"
+              onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(0)'">
+        🔄 Reset Form
+      </button>
+
+      <button type="button" (click)="saveProduction()" [disabled]="!isFormValid() || saving"
+              style="padding: 16px 40px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; opacity: 1;"
+              [style.opacity]="!isFormValid() || saving ? '0.6' : '1'"
+              [style.cursor]="!isFormValid() || saving ? 'not-allowed' : 'pointer'"
+              onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'; }"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+        <span *ngIf="!saving">🟢 Save Production</span>
+        <span *ngIf="saving">⏳ Saving...</span>
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- CSS Animations -->
+<style>
+@keyframes gradientFlow {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+</style>

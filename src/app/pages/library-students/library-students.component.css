@@ -1,352 +1,520 @@
-/* src/app/pages/library-students/library-students.component.css */
-.students-container {
-  padding: 20px;
-  max-width: 1600px;
-  margin: 0 auto;
+/* ===== BOOKMYSHOW INSPIRED DESIGN - UNIVERSAL STYLES ===== */
+
+/* Color Variables */
+:root {
+  --primary-color: #f84464;
+  --primary-dark: #dc143c;
+  --primary-light: #ff6b88;
+  --success-color: #4CAF50;
+  --success-dark: #388E3C;
+  --danger-color: #eb4b4b;
+  --warning-color: #ff9800;
+  --text-color: #333333;
+  --text-light: #666666;
+  --border-color: #dce0e4;
+  --background: #f5f5f5;
+  --white: #ffffff;
+  --gray-light: #e0e0e0;
+  --gray-medium: #bdbdbd;
 }
 
-.header {
+.page-container {
+  padding: 16px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--background);
+  min-height: 100vh;
+}
+
+/* Page Header - BookMyShow Style */
+.page-header {
+  background: var(--white);
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.page-subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-light);
+  margin: 0;
+}
+
+/* Form Container - BookMyShow Style */
+.form-container {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.form-section {
+  margin-bottom: 28px;
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Form Grid - BookMyShow Style */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.form-label.required::after {
+  content: " *";
+  color: var(--danger-color);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s;
+  background: var(--white);
+  font-family: inherit;
+  color: var(--text-color);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.1);
+}
+
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background: var(--background);
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-error {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Form Actions - BookMyShow Style */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Buttons - BookMyShow Style */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--background);
+}
+
+.btn-success {
+  background: var(--success-color);
+  color: var(--white);
+}
+
+.btn-success:hover {
+  background: var(--success-dark);
+  transform: scale(1.02);
+}
+
+.btn-danger {
+  background: var(--danger-color);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: #d32f2f;
+  transform: scale(1.02);
+}
+
+.btn:disabled {
+  background: var(--gray-light);
+  color: var(--text-light);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Data Table - BookMyShow Style */
+.table-container {
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.header h2 {
+.table-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color);
   margin: 0;
-  color: #333;
-  font-size: 28px;
 }
 
-.filters {
+.table-actions {
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-.search-input {
-  flex: 1;
-  min-width: 250px;
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.filter-select {
-  padding: 10px 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.table-container {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
 }
 
 .data-table thead {
-  background: #f5f5f5;
+  background: var(--background);
 }
 
 .data-table th {
-  padding: 15px 10px;
+  padding: 16px 20px;
   text-align: left;
-  font-weight: 600;
-  color: #666;
-  border-bottom: 2px solid #ddd;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
   white-space: nowrap;
 }
 
 .data-table td {
-  padding: 12px 10px;
-  border-bottom: 1px solid #eee;
+  padding: 16px 20px;
+  font-size: 1rem;
+  color: var(--text-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.data-table tbody tr {
+  transition: background 0.2s;
 }
 
 .data-table tbody tr:hover {
-  background: #f9f9f9;
+  background: var(--background);
 }
 
-.student-photo-small {
-  width: 50px;
-  height: 50px;
+.data-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.student-photo-small img {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.no-photo-small {
-  width: 100%;
-  height: 100%;
-  border-radius: 8px;
-  background: #f0f0f0;
-  display: flex;
-  justify-content: center;
+/* Status Badges - BookMyShow Style */
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
   align-items: center;
-  font-size: 24px;
-}
-
-.emergency-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.emergency-info small {
-  color: #999;
-  font-size: 12px;
-}
-
-.address-cell {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  gap: 6px;
   white-space: nowrap;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 5px;
+.badge.success {
+  background: #e8f5e9;
+  color: var(--success-dark);
 }
 
-.btn-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-  padding: 5px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+.badge.warning {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
-.btn-icon:hover {
-  background: #f0f0f0;
-  transform: scale(1.1);
-}
-
-.btn-icon.danger:hover {
+.badge.danger {
   background: #ffebee;
+  color: #c62828;
 }
 
-.badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  text-transform: uppercase;
-  font-weight: 500;
+.badge.info {
+  background: #e3f2fd;
+  color: #1565c0;
 }
 
-.badge-success {
-  background: #d4edda;
-  color: #155724;
-}
-
-.badge-secondary {
-  background: #e9ecef;
-  color: #495057;
-}
-
-.badge-danger {
-  background: #f8d7da;
-  color: #721c24;
-}
-
-.text-success {
-  color: #4CAF50;
-}
-
-.btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.btn-primary {
-  background: #2196F3;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #1976D2;
-}
-
-.btn-secondary {
-  background: #999;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: #777;
-}
-
+/* Empty State - BookMyShow Style */
 .empty-state {
   text-align: center;
-  padding: 60px;
-  color: #999;
+  padding: 60px 24px;
+  color: var(--text-light);
 }
 
 .empty-icon {
-  font-size: 64px;
-  margin-bottom: 15px;
+  font-size: 4rem;
+  color: var(--gray-light);
+  margin-bottom: 16px;
 }
 
-.empty-state p {
-  margin: 0 0 20px 0;
-  font-size: 18px;
+.empty-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-color);
 }
 
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
+.empty-subtext {
+  font-size: 1rem;
+  color: var(--text-light);
+}
+
+/* Loading State - BookMyShow Style */
+.loading-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  padding: 20px;
+  padding: 60px;
 }
 
-.modal-content {
-  background: white;
-  border-radius: 10px;
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+.spinner {
+  border: 4px solid var(--background);
+  border-top: 4px solid var(--primary-color);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 0.8s linear infinite;
 }
 
-.modal-content.large {
-  max-width: 800px;
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.modal-header {
-  padding: 20px;
-  border-bottom: 1px solid #ddd;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: #333;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  color: #999;
-}
-
-.close-btn:hover {
-  color: #333;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-footer {
-  padding: 15px 20px;
-  border-top: 1px solid #ddd;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.form-grid {
+/* Stats Cards - BookMyShow Style */
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
+.stat-card {
+  background: var(--white);
+  padding: 24px;
+  border-radius: 12px;
+  transition: all 0.3s;
 }
 
-.form-group.full-width {
-  grid-column: span 2;
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
 
-.form-group label {
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 1rem;
+  color: var(--text-light);
   font-weight: 500;
-  margin-bottom: 5px;
-  color: #333;
-  font-size: 14px;
 }
 
-.form-control {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 14px;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: #2196F3;
-}
-
-.required {
-  color: #F44336;
-}
-
-.text-muted {
-  color: #999;
-  font-size: 12px;
-  margin-top: 3px;
-}
-
+/* Alerts - BookMyShow Style */
 .alert {
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 20px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .alert-success {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: #e8f5e9;
+  color: var(--success-dark);
 }
 
 .alert-error {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: #ffebee;
+  color: #c62828;
 }
 
-.loading {
-  text-align: center;
-  padding: 60px;
-  color: #999;
-  font-size: 18px;
+.alert-warning {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.alert-info {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+/* ===== RESPONSIVE - BOOKMYSHOW STYLE ===== */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 12px;
+  }
+
+  .page-header,
+  .form-container,
+  .table-container {
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 24px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .table-actions {
+    width: 100%;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 12px 16px;
+    font-size: 0.9375rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 8px;
+  }
+
+  .page-header,
+  .form-container {
+    padding: 16px;
+  }
+
+  .form-section {
+    margin-bottom: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    padding: 14px 20px;
+  }
+
+  .page-title {
+    font-size: 1.125rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+  }
 }
