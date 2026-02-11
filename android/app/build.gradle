@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.suraksha.report"
+    namespace = "com.surakshahub.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.suraksha.report"
+        applicationId "com.surakshahub.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -27,11 +27,30 @@ android {
     targetCompatibility JavaVersion.VERSION_17
   }
 
+  applicationVariants.all { variant ->
+    variant.outputs.all { output ->
+      def appName = "surakshahub"
+      def buildType = variant.buildType.name
+      def versionName = variant.versionName
+      def versionCode = variant.versionCode
+      
+      outputFileName = "${appName}-${buildType}-v${versionName}.apk"
+    }
+  }
+
 }
 
 repositories {
     flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
     }
 }
 

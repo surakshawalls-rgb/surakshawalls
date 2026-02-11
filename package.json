@@ -1,12 +1,17 @@
 {
   "name": "suraksha-report",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "android:build": "npm run build:prod && npx cap sync android && npx cap copy android",
+    "android:run": "npm run android:build && npx cap open android"
   },
   "prettier": {
     "printWidth": 100,
@@ -31,9 +36,9 @@
     "@angular/material": "~21.1.1",
     "@angular/platform-browser": "^21.0.0",
     "@angular/router": "^21.0.0",
-    "@capacitor/android": "^8.0.2",
-    "@capacitor/cli": "^8.0.2",
-    "@capacitor/core": "^8.0.2",
+    "@capacitor/android": "6.1.2",
+    "@capacitor/cli": "6.1.2",
+    "@capacitor/core": "6.1.2",
     "@supabase/supabase-js": "^2.93.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
@@ -43,6 +48,7 @@
     "@angular/cli": "^21.0.1",
     "@angular/compiler-cli": "^21.0.0",
     "@angular/material": "^21.1.1",
+    "@capacitor/assets": "^3.0.5",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"

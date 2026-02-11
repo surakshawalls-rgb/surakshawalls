@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Suraksha Report</string>
-    <string name="title_activity_main">Suraksha Report</string>
-    <string name="package_name">com.suraksha.report</string>
-    <string name="custom_url_scheme">com.suraksha.report</string>
+    <string name="app_name">SurakshaHub</string>
+    <string name="title_activity_main">SurakshaHub</string>
+    <string name="package_name">com.surakshahub.app</string>
+    <string name="custom_url_scheme">com.surakshahub.app</string>
 </resources>

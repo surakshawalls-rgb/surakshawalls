@@ -41,3 +41,11 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Android Signing Keys (NEVER COMMIT THESE!)
+*.jks
+*.keystore
+android/keystore.properties
+android/app/release/
+android/app/build/outputs/
+release.keystore
