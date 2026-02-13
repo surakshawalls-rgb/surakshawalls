@@ -59,22 +59,27 @@ export class SalesEntryComponent implements OnInit {
   async loadData() {
     try {
       this.loading = true;
-      console.log('[SalesEntry] Loading data...');
 
-      const [clients, inventory] = await Promise.all([
+      const [clients, inventory, productList] = await Promise.all([
         this.clientService.getActiveClients(),
-        this.inventoryService.getInventory()
+        this.inventoryService.getInventory(),
+        this.recipeService.getProductList()
       ]);
 
       this.clients = clients;
       this.filteredClients = clients;
       
-      // Convert inventory to product list
-      this.products = inventory.map(inv => ({
-        product_name: inv.product_name,
-        stock: inv.current_stock,
-        selling_price: inv.selling_price
-      }));
+      // Build product list from product_recipes with inventory data merged
+      const inventoryMap = new Map(inventory.map(inv => [inv.product_name, inv]));
+      
+      this.products = productList.map(prod => {
+        const inv = inventoryMap.get(prod.product_name);
+        return {
+          product_name: prod.product_name,
+          stock: inv?.current_stock || 0,
+          selling_price: inv?.selling_price || 0
+        };
+      });
 
       // Load partners (for collection tracking)
       // TODO: Create PartnerService and load from partners_master
@@ -84,7 +89,6 @@ export class SalesEntryComponent implements OnInit {
         { id: '3', partner_name: 'Pappu' }
       ];
 
-      console.log('[SalesEntry] Loaded:', this.clients.length, 'clients,', this.products.length, 'products');
       this.cdr.detectChanges();
 
     } catch (error: any) {
@@ -175,8 +179,6 @@ export class SalesEntryComponent implements OnInit {
       this.errorMessage = '';
       this.successMessage = '';
 
-      console.log('[SalesEntry] Saving sale...');
-
       const result = await this.salesService.createSale({
         date: this.date,
         client_id: this.clientId,
@@ -193,7 +195,6 @@ export class SalesEntryComponent implements OnInit {
 
       if (result.success) {
         this.successMessage = `Sale saved successfully! Invoice #${result.sale?.invoice_number || 'N/A'}`;        
-        console.log('[SalesEntry] Sale saved:', result.sale);
         
         // Reset form
         this.resetForm();
@@ -227,5 +228,15 @@ export class SalesEntryComponent implements OnInit {
     this.notes = '';
     this.currentStock = 0;
     this.totalAmount = 0;
+  }
+
+  /**
+   * Format product name for display (ROUND_PLATE → Round Plate)
+   */
+  formatProductName(name: string): string {
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }

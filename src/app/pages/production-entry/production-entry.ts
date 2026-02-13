@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductionService, WorkerWage, ProductionData } from '../../services/production.service';
@@ -17,7 +17,8 @@ export class ProductionEntryComponent implements OnInit {
   constructor(
     private productionService: ProductionService,
     private recipeService: RecipeService,
-    private workerService: WorkerService
+    private workerService: WorkerService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   // Form data
@@ -61,17 +62,14 @@ export class ProductionEntryComponent implements OnInit {
    */
   async loadProducts() {
     try {
-      console.log('[ProductionEntry] Loading products...');
       this.products = await this.recipeService.getProductList();
-      console.log('[ProductionEntry] Products loaded:', this.products);
       
       if (this.products.length > 0) {
         this.productName = this.products[0].product_name;
-        console.log('[ProductionEntry] Set productName to:', this.productName);
         this.onProductChange();
-      } else {
-        console.warn('[ProductionEntry] No products found!');
       }
+      
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('[ProductionEntry] Failed to load products:', error);
       alert('Failed to load products');
@@ -84,6 +82,7 @@ export class ProductionEntryComponent implements OnInit {
   async loadWorkers() {
     try {
       this.availableWorkers = await this.workerService.getWorkers();
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('Failed to load workers:', error);
       alert('Failed to load workers');
@@ -327,5 +326,15 @@ export class ProductionEntryComponent implements OnInit {
    */
   formatCurrency(value: number): string {
     return `₹${value.toFixed(2)}`;
+  }
+
+  /**
+   * Format product name for display (ROUND_PLATE → Round Plate)
+   */
+  formatProductName(name: string): string {
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }

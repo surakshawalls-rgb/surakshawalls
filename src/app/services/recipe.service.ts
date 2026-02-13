@@ -60,7 +60,6 @@ export class RecipeService {
    * Get all active recipes
    */
   async getRecipes(): Promise<ProductRecipe[]> {
-    console.log('[RecipeService] getRecipes called');
     const { data, error } = await this.supabase.supabase
       .from('product_recipes')
       .select('*')
@@ -72,7 +71,6 @@ export class RecipeService {
       throw error;
     }
 
-    console.log('[RecipeService] getRecipes data:', data);
     return data || [];
   }
 
@@ -203,9 +201,7 @@ export class RecipeService {
    * Get product list with variants
    */
   async getProductList(): Promise<Array<{product_name: string, variants: string[]}>> {
-    console.log('[RecipeService] getProductList called');
     const recipes = await this.getRecipes();
-    console.log('[RecipeService] Recipes for product list:', recipes);
     
     const productMap = new Map<string, Set<string>>();
     
@@ -226,7 +222,6 @@ export class RecipeService {
       variants: Array.from(variantSet)
     }));
     
-    console.log('[RecipeService] Product list result:', result);
     return result;
   }
 
