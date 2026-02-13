@@ -45,7 +45,7 @@ export class YardLossComponent implements OnInit {
         this.recipeService.getProductList(),
         this.wastageService.getYardLossHistory()
       ]);
-      this.products = productList;
+      this.products = productList.map(p => p.product_name);
       this.wastageHistory = history.slice(0, 20);
     } catch (error: any) {
       this.errorMessage = 'Failed to load data: ' + error.message;
@@ -93,5 +93,11 @@ export class YardLossComponent implements OnInit {
     this.stage = 'stacking';
     this.reason = '';
     this.notes = '';
+  }
+
+  formatProductName(name: string): string {
+    return name.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
   }
 }
