@@ -79,6 +79,11 @@
            bulkMode && isSeatSelected(seat.seat_no) ? 'selected' : ''
          ]"
          [title]="getSeatTooltip(seat)"
+         [matBadge]="getSeatBadge(seat).value"
+         [matBadgeColor]="getSeatBadge(seat).color"
+         matBadgeSize="medium"
+         matBadgePosition="above after"
+         [matBadgeHidden]="getSeatBadge(seat).hidden"
          (click)="bulkMode ? toggleSeatSelection(seat.seat_no) : onSeatClick(seat)">
       
       <!-- Bulk Selection Checkbox -->
@@ -105,9 +110,6 @@
         </div>
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ seat.full_time_student?.name }}</div>
-        <div class="seat-expiry" *ngIf="seat.full_time_expiry">
-          {{ getDaysRemaining(seat.full_time_expiry) }}
-        </div>
       </ng-container>
       
       <!-- BOTH SHIFTS OCCUPIED -->
@@ -126,9 +128,6 @@
               </span>
             </div>
             <div class="student-name">{{ seat.first_half_student?.name }}</div>
-            <div class="seat-expiry" *ngIf="seat.first_half_expiry">
-              {{ getDaysRemaining(seat.first_half_expiry) }}
-            </div>
           </div>
           <div class="half-shift">
             <div class="time-status-compact">
@@ -141,9 +140,6 @@
               </span>
             </div>
             <div class="student-name">{{ seat.second_half_student?.name }}</div>
-            <div class="seat-expiry" *ngIf="seat.second_half_expiry">
-              {{ getDaysRemaining(seat.second_half_expiry) }}
-            </div>
           </div>
         </div>
       </ng-container>
@@ -161,9 +157,6 @@
         </div>
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ seat.first_half_student?.name }}</div>
-        <div class="seat-expiry" *ngIf="seat.first_half_expiry">
-          {{ getDaysRemaining(seat.first_half_expiry) }}
-        </div>
       </ng-container>
       
       <!-- SECOND HALF ONLY -->
@@ -179,283 +172,7 @@
         </div>
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ seat.second_half_student?.name }}</div>
-        <div class="seat-expiry" *ngIf="seat.second_half_expiry">
-          {{ getDaysRemaining(seat.second_half_expiry) }}
-        </div>
       </ng-container>
-    </div>
-  </div>
-
-
-
-  <!-- Registration Modal -->
-  <div class="modal-overlay" *ngIf="showRegistrationModal" (click)="closeModal()" 
-       style="backdrop-filter: blur(12px); background: rgba(0,0,0,0.7);">
-    <div class="modal-content large" (click)="$event.stopPropagation()" 
-         style="background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4);">
-      <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 24px 24px 0 0; position: relative; overflow: hidden;">
-        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%); background-size: 20px 20px; opacity: 0.3;"></div>
-        <h3 style="margin: 0; font-size: 1.4rem; font-weight: 700; z-index: 1; position: relative; display: flex; align-items: center; gap: 12px;">
-          <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">👨‍🎓</span>
-          Register Student - Seat {{ selectedSeat?.seat_no }}
-        </h3>
-        <button (click)="closeModal()" style="position: absolute; top: 20px; right: 24px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; font-weight: bold; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease; z-index: 2;"
-                onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1.1)'"
-                onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1)'">&times;</button>
-      </div>
-      <div class="modal-body" style="padding: 32px; max-height: 70vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.2) transparent;">
-        <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">👤</span> Full Name <span style="color: #e53e3e;">*</span>
-            </label>
-            <input type="text" [(ngModel)]="newStudent.name" 
-                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="Enter full name"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-          </div>
-          
-          <!-- Personal Details - Only for Admin and Library Manager -->
-          <div *ngIf="canViewPersonalDetails()" class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">📱</span> Mobile Number <span style="color: #e53e3e;">*</span>
-            </label>
-            <input type="tel" [(ngModel)]="newStudent.mobile" (blur)="checkExistingStudent()"
-                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="+91 9876543210"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-            <small *ngIf="checkingMobile" style="color: #3182ce; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-              <span class="loading-spinner" style="width: 12px; height: 12px; border: 2px solid #3182ce; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span>
-              Checking mobile number...
-            </small>
-            <small *ngIf="existingStudent && !checkingMobile" style="color: #38a169; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #38a169;">✓</span> Student data loaded from existing record
-            </small>
-          </div>
-          
-          <div *ngIf="canViewPersonalDetails()" class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">🆘</span> Emergency Contact
-            </label>
-            <input type="tel" [(ngModel)]="newStudent.emergency_contact"
-                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="+91 9876543210"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-          </div>
-          
-          <div *ngIf="canViewPersonalDetails()" class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">👨‍👩‍👧‍👦</span> Emergency Contact Name
-            </label>
-            <input type="text" [(ngModel)]="newStudent.emergency_contact_name"
-                   style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="Parent/Guardian name"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-          </div>
-          
-          <div *ngIf="canViewPersonalDetails()" style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">🏠</span> Address <span style="color: #e53e3e;">*</span>
-            </label>
-            <textarea [(ngModel)]="newStudent.address" rows="2"
-                      style="padding: 16px 20px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px); resize: vertical; min-height: 80px;"
-                      placeholder="Full address"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'"></textarea>
-          </div>
-          
-          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">🎂</span> Date of Birth
-            </label>
-            <div style="display: flex; gap: 12px;">
-              <select [(ngModel)]="dobDay" 
-                      style="flex: 1; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-                <option value="">Day</option>
-                <option *ngFor="let day of days" [value]="day">{{day}}</option>
-              </select>
-              <select [(ngModel)]="dobMonth" 
-                      style="flex: 2; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-                <option value="">Month</option>
-                <option *ngFor="let month of months" [value]="month.value">{{month.label}}</option>
-              </select>
-              <select [(ngModel)]="dobYear" 
-                      style="flex: 1.5; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-                <option value="">Year</option>
-                <option *ngFor="let year of dobYears" [value]="year">{{year}}</option>
-              </select>
-            </div>
-          </div>
-          
-          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">📅</span> Joining Date <span style="color: #e53e3e;">*</span>
-            </label>
-            <div style="display: flex; gap: 12px;">
-              <select [(ngModel)]="joiningDay" 
-                      style="flex: 1; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-                <option value="">Day</option>
-                <option *ngFor="let day of days" [value]="day">{{day}}</option>
-              </select>
-              <select [(ngModel)]="joiningMonth" 
-                      style="flex: 2; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-                <option value="">Month</option>
-                <option *ngFor="let month of months" [value]="month.value">{{month.label}}</option>
-              </select>
-              <select [(ngModel)]="joiningYear" 
-                      style="flex: 1.5; padding: 16px; border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease;"
-                      onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                      onblur="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.boxShadow='none'">
-                <option value="">Year</option>
-                <option *ngFor="let year of joiningYears" [value]="year">{{year}}</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #667eea;">♀️♂️</span> Gender
-            </label>
-            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; background: rgba(255,255,255,0.7); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 50px; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                     onmouseover="this.style.borderColor='#667eea'; this.style.background='rgba(102, 126, 234, 0.1)'"
-                     onmouseout="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.background='rgba(255,255,255,0.7)'">
-                <input type="radio" [(ngModel)]="newStudent.gender" value="Male" name="gender-register"
-                       style="margin: 0; accent-color: #667eea;">
-                <span style="font-weight: 500; color: #2d3748;">👨 Male</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; background: rgba(255,255,255,0.7); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 50px; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                     onmouseover="this.style.borderColor='#667eea'; this.style.background='rgba(102, 126, 234, 0.1)'"
-                     onmouseout="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.background='rgba(255,255,255,0.7)'">
-                <input type="radio" [(ngModel)]="newStudent.gender" value="Female" name="gender-register"
-                       style="margin: 0; accent-color: #667eea;">
-                <span style="font-weight: 500; color: #2d3748;">👩 Female</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 12px 20px; background: rgba(255,255,255,0.7); border: 2px solid rgba(102, 126, 234, 0.2); border-radius: 50px; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                     onmouseover="this.style.borderColor='#667eea'; this.style.background='rgba(102, 126, 234, 0.1)'"
-                     onmouseout="this.style.borderColor='rgba(102, 126, 234, 0.2)'; this.style.background='rgba(255,255,255,0.7)'">
-                <input type="radio" [(ngModel)]="newStudent.gender" value="Other" name="gender-register"
-                       style="margin: 0; accent-color: #667eea;">
-                <span style="font-weight: 500; color: #2d3748;">🏳️‍⚧️ Other</span>
-              </label>
-            </div>
-          </div>
-          
-          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #f59e0b;">⚠️</span> Upload Photo <span style="color: #f59e0b; font-size: 0.85rem;">(Temporarily Disabled)</span>
-            </label>
-            <input type="file" accept="image/*" (change)="onPhotoSelect($event)" disabled
-                   style="padding: 16px 20px; border: 2px dashed rgba(245, 158, 11, 0.3); border-radius: 16px; font-size: 1rem; background: rgba(245, 158, 11, 0.05); color: #92400e; cursor: not-allowed;">
-            <small style="color: #f59e0b; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 12px;">
-              <span>⚠️</span> Photo upload temporarily disabled. Configure storage bucket RLS policies first.
-            </small>
-          </div>
-          
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #10b981;">💳</span> Registration Fee
-            </label>
-            <input type="number" [(ngModel)]="newStudent.registration_fee_paid"
-                   style="padding: 16px 20px; border: 2px solid rgba(16, 185, 129, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="Enter amount"
-                   onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 3px rgba(16, 185, 129, 0.1)'"
-                   onblur="this.style.borderColor='rgba(16, 185, 129, 0.2)'; this.style.boxShadow='none'">
-          </div>
-          
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #8b5cf6;">⏰</span> Shift Type
-            </label>
-            <select [(ngModel)]="selectedShift" (change)="onShiftChange()"
-                    style="padding: 16px 20px; border: 2px solid rgba(139, 92, 246, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                    onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'"
-                    onblur="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'">
-              <option value="full_time">🌅 Full Time (₹400/month)</option>
-              <option value="first_half">🌅 First Half - 8AM-2PM (₹250/month)</option>
-              <option value="second_half">🌆 Second Half - 2PM-8PM (₹250/month)</option>
-            </select>
-          </div>
-          
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #10b981;">💰</span> Fee Amount
-            </label>
-            <input type="number" [(ngModel)]="feePayment.amount_paid"
-                   style="padding: 16px 20px; border: 2px solid rgba(16, 185, 129, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="Enter amount"
-                   onfocus="this.style.borderColor='#10b981'; this.style.boxShadow='0 0 0 3px rgba(16, 185, 129, 0.1)'"
-                   onblur="this.style.borderColor='rgba(16, 185, 129, 0.2)'; this.style.boxShadow='none'">
-          </div>
-          
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #3b82f6;">💳</span> Payment Mode
-            </label>
-            <select [(ngModel)]="feePayment.payment_mode"
-                    style="padding: 16px 20px; border: 2px solid rgba(59, 130, 246, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'"
-                    onblur="this.style.borderColor='rgba(59, 130, 246, 0.2)'; this.style.boxShadow='none'">
-              <option value="cash">💵 Cash</option>
-              <option value="upi">📱 UPI</option>
-              <option value="card">💳 Card</option>
-            </select>
-          </div>
-          
-          <div class="form-group" style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #f59e0b;">📅</span> Validity (Days)
-            </label>
-            <input type="number" [(ngModel)]="feePayment.days" value="30"
-                   style="padding: 16px 20px; border: 2px solid rgba(245, 158, 11, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                   placeholder="30"
-                   onfocus="this.style.borderColor='#f59e0b'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.1)'"
-                   onblur="this.style.borderColor='rgba(245, 158, 11, 0.2)'; this.style.boxShadow='none'">
-          </div>
-          
-          <div style="grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px;">
-            <label style="font-weight: 600; color: #2d3748; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-              <span style="color: #8b5cf6;">📝</span> Notes
-            </label>
-            <textarea [(ngModel)]="newStudent.notes" rows="2"
-                      style="padding: 16px 20px; border: 2px solid rgba(139, 92, 246, 0.2); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.9); transition: all 0.3s ease; backdrop-filter: blur(10px); resize: vertical; min-height: 80px;"
-                      placeholder="Any additional notes"
-                      onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'"
-                      onblur="this.style.borderColor='rgba(139, 92, 246, 0.2)'; this.style.boxShadow='none'"></textarea>
-          </div>
-        </div>
-      </div>
-      <div style="padding: 24px; border-top: 1px solid rgba(0,0,0,0.1); display: flex; gap: 16px; justify-content: flex-end; align-items: center; background: rgba(255,255,255,0.5); backdrop-filter: blur(10px); border-radius: 0 0 24px 24px;">
-        <button (click)="closeModal()" 
-                style="padding: 14px 28px; background: rgba(108, 117, 125, 0.1); color: #495057; border: 2px solid rgba(108, 117, 125, 0.2); border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                onmouseover="this.style.background='rgba(108, 117, 125, 0.2)'; this.style.transform='translateY(-2px)'" 
-                onmouseout="this.style.background='rgba(108, 117, 125, 0.1)'; this.style.transform='translateY(0)'">
-          Cancel
-        </button>
-        <button (click)="submitRegistration()" [disabled]="saving || uploadingPhoto"
-                style="padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); display: flex; align-items: center; gap: 8px;"
-                [style.opacity]="saving || uploadingPhoto ? '0.7' : '1'"
-                [style.cursor]="saving || uploadingPhoto ? 'not-allowed' : 'pointer'"
-                onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.5)'; }"
-                onmouseout="if(!this.disabled) { this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.4)'; }">
-          <span *ngIf="saving || uploadingPhoto" style="width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span>
-          {{ saving ? 'Saving...' : uploadingPhoto ? 'Uploading Photo...' : '💾 Register Student' }}
-        </button>
-      </div>
     </div>
   </div>
 

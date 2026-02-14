@@ -3,13 +3,21 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatBadgeModule } from '@angular/material/badge';
 import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
+import { RegistrationDialogComponent, RegistrationResult } from './registration-dialog.component';
+
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 @Component({
   selector: 'app-library-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule, MatSnackBarModule, MatBadgeModule, MatDatepickerModule, MatNativeDateModule],
+  providers: [MatDatepickerModule, MatNativeDateModule],
   templateUrl: './library-grid.component.html',
   styleUrls: ['./library-grid.component.css']
 })
@@ -44,7 +52,7 @@ export class LibraryGridComponent implements OnInit {
     emergency_contact_name: '',
     address: '',
     dob: null as any, // Use null for date field to avoid DB errors
-    gender: 'Male' as 'Male' | 'Female' | 'Other',
+    gender: 'Male' as 'Male' | 'Female',
     joining_date: new Date().toISOString().split('T')[0],
     registration_fee_paid: 0,
     notes: ''
@@ -119,13 +127,18 @@ export class LibraryGridComponent implements OnInit {
   joiningDay = '';
   joiningMonth = '';
   joiningYear = '';
+  expiryDay = '';
+  expiryMonth = '';
+  expiryYear = '';
 
   constructor(
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef,
-    public authService: AuthService
+    public authService: AuthService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {
-    // Generate year ranges
+        // Generate year ranges for DOB and Joining
     const currentYear = new Date().getFullYear();
     // DOB: 1990 to current year
     for (let year = currentYear; year >= 1990; year--) {
@@ -140,6 +153,67 @@ export class LibraryGridComponent implements OnInit {
     this.joiningDay = String(today.getDate()).padStart(2, '0');
     this.joiningMonth = String(today.getMonth() + 1).padStart(2, '0');
     this.joiningYear = String(today.getFullYear());
+    
+    // Set default expiry date to end of current month
+    this.calculateDefaultExpiryDate();
+  }
+
+  // Calculate expiry date as end of month from joining date
+  calculateDefaultExpiryDate(triggerChangeDetection: boolean = false) {
+    if (!this.joiningDay || !this.joiningMonth || !this.joiningYear) {
+      return;
+    }
+    
+    const joiningDate = new Date(
+      parseInt(this.joiningYear),
+      parseInt(this.joiningMonth) - 1,
+      parseInt(this.joiningDay)
+    );
+    
+    // Default expiry: 1 month from joining date minus 1 day
+    const expiryDate = new Date(joiningDate);
+    expiryDate.setMonth(expiryDate.getMonth() + 1);
+    expiryDate.setDate(expiryDate.getDate() - 1);
+    
+    this.expiryDay = String(expiryDate.getDate()).padStart(2, '0');
+    this.expiryMonth = String(expiryDate.getMonth() + 1).padStart(2, '0');
+    this.expiryYear = String(expiryDate.getFullYear());
+    
+    if (triggerChangeDetection) {
+      this.cdr.detectChanges();
+    }
+  }
+
+  // Called when joining date changes
+  onJoiningDateChange() {
+    this.calculateDefaultExpiryDate(true);
+  }
+
+  // Calculate days between joining and expiry for backend
+  calculateDaysBetween(): number {
+    if (!this.joiningDay || !this.joiningMonth || !this.joiningYear ||
+        !this.expiryDay || !this.expiryMonth || !this.expiryYear) {
+      return 30; // Default
+    }
+    
+    const start = new Date(
+      parseInt(this.joiningYear),
+      parseInt(this.joiningMonth) - 1,
+      parseInt(this.joiningDay)
+    );
+    start.setHours(0, 0, 0, 0);
+    
+    const end = new Date(
+      parseInt(this.expiryYear),
+      parseInt(this.expiryMonth) - 1,
+      parseInt(this.expiryDay)
+    );
+    end.setHours(0, 0, 0, 0);
+    
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : 30;
   }
 
   async ngOnInit() {
@@ -363,6 +437,44 @@ export class LibraryGridComponent implements OnInit {
     }
   }
 
+  getDaysRemainingNumber(expiryDate: string | undefined): number | null {
+    if (!expiryDate) return null;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const expiry = new Date(expiryDate);
+    expiry.setHours(0, 0, 0, 0);
+    
+    const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Only return badge for seats expiring within 30 days or already expired
+    if (daysRemaining <= 30) {
+      return daysRemaining;
+    }
+    
+    return null;
+  }
+
+  getBadgeColor(days: number | null): 'primary' | 'accent' | 'warn' | undefined {
+    if (days === null) return undefined;
+    if (days < 0) return 'warn'; // Expired - Red
+    if (days <= 3) return 'warn'; // 1-3 days - Red
+    if (days <= 7) return 'accent'; // 4-7 days - Yellow
+    return 'primary'; // 8+ days - Blue
+  }
+
+  getSeatBadge(seat: LibrarySeat): { value: number | string, color: 'primary' | 'accent' | 'warn' | undefined, hidden: boolean } {
+    const expiryDate = seat.full_time_expiry || seat.first_half_expiry || seat.second_half_expiry;
+    const days = this.getDaysRemainingNumber(expiryDate);
+    
+    return {
+      value: days ?? '',
+      color: this.getBadgeColor(days),
+      hidden: days === null
+    };
+  }
+
   getSeatTooltip(seat: LibrarySeat): string {
     if (seat.full_time_student_id) {
       return `${seat.full_time_student?.name}\nFull Time\nExpires: ${seat.full_time_expiry}`;
@@ -384,130 +496,75 @@ export class LibraryGridComponent implements OnInit {
     this.selectedSeat = seat;
     
     // Determine available shifts
+    let availableShifts: string[] = [];
+    let defaultShift = 'full_time';
+    
     if (!seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id) {
-      this.selectedShift = 'full_time';
+      availableShifts = ['full_time', 'first_half', 'second_half'];
+      defaultShift = 'full_time';
     } else if (seat.first_half_student_id && !seat.second_half_student_id) {
-      this.selectedShift = 'second_half';
+      availableShifts = ['second_half'];
+      defaultShift = 'second_half';
     } else if (seat.second_half_student_id && !seat.first_half_student_id) {
-      this.selectedShift = 'first_half';
+      availableShifts = ['first_half'];
+      defaultShift = 'first_half';
     }
     
-    this.updateFeeAmount();
-    this.showRegistrationModal = true;
-    this.cdr.detectChanges();
-  }
-
-  onShiftChange() {
-    this.updateFeeAmount();
-    this.cdr.detectChanges();
-  }
-
-  updateFeeAmount() {
-    if (this.selectedShift === 'full_time') {
-      this.feePayment.amount_paid = 400;
-    } else {
-      this.feePayment.amount_paid = 250;
-    }
-    this.cdr.detectChanges();
-  }
-
-  onPhotoSelect(event: any) {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      this.photoFile = file;
-    } else {
-      this.errorMessage = 'Please select a valid image file';
-    }
-  }
-
-  async checkExistingStudent() {
-    const mobile = this.newStudent.mobile.trim();
+    // Open Material Dialog
+    const dialogRef = this.dialog.open(RegistrationDialogComponent, {
+      width: '750px',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
+      data: {
+        seat: seat,
+        canViewPersonalDetails: this.canViewPersonalDetails()
+      },
+      disableClose: false,
+      autoFocus: true,
+      panelClass: 'registration-dialog'
+    });
     
-    // Reset existing student info
-    this.existingStudent = null;
-    this.successMessage = '';
-    
-    if (!mobile || mobile.length < 10) {
-      return;
-    }
-
-    try {
-      this.checkingMobile = true;
-      this.cdr.detectChanges();
-      
-      const student = await this.libraryService.getStudentByMobile(mobile);
-      
-      if (student) {
-        // Student already exists - pre-fill form
-        this.existingStudent = student;
-        this.newStudent = {
-          name: student.name,
-          mobile: student.mobile,
-          emergency_contact: student.emergency_contact,
-          emergency_contact_name: student.emergency_contact_name || '',
-          address: student.address,
-          dob: student.dob || '',
-          gender: student.gender || 'Male',
-          joining_date: student.joining_date || new Date().toISOString().split('T')[0],
-          registration_fee_paid: 0,
-          notes: student.notes || ''
-        };
-        
-        // Parse dates into dropdowns
-        if (student.dob) {
-          const [year, month, day] = student.dob.split('-');
-          this.dobYear = year;
-          this.dobMonth = month;
-          this.dobDay = String(parseInt(day));
-        }
-        if (student.joining_date) {
-          const [year, month, day] = student.joining_date.split('-');
-          this.joiningYear = year;
-          this.joiningMonth = month;
-          this.joiningDay = String(parseInt(day));
-        }
-        
-        this.successMessage = `ℹ️ Student already registered: ${student.name}. Using existing details.`;
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (result) {
+        await this.processRegistration(result, seat);
       }
-    } catch (error: any) {
-      console.error('Error checking mobile:', error);
-    } finally {
-      this.checkingMobile = false;
-      this.cdr.detectChanges();
-    }
+    });
   }
 
-  async submitRegistration() {
-    // Combine date fields
-    if (this.dobDay && this.dobMonth && this.dobYear) {
-      this.newStudent.dob = `${this.dobYear}-${this.dobMonth}-${String(this.dobDay).padStart(2, '0')}`;
-    }
-    if (this.joiningDay && this.joiningMonth && this.joiningYear) {
-      this.newStudent.joining_date = `${this.joiningYear}-${this.joiningMonth}-${String(this.joiningDay).padStart(2, '0')}`;
-    }
-
-    if (!this.newStudent.name || !this.newStudent.mobile || !this.newStudent.address || !this.newStudent.joining_date) {
-      this.errorMessage = 'Please fill all required fields';
-      this.cdr.detectChanges();
-      return;
-    }
-
+  async processRegistration(result: any, seat: LibrarySeat) {
     try {
-      this.saving = true;
-      this.errorMessage = '';
-      this.successMessage = '';
-      this.cdr.detectChanges();
-
       let student: LibraryStudent;
 
-      // 1. Use existing student or create new one
-      if (this.existingStudent) {
-        // Using existing student
-        student = this.existingStudent;
+      // Check if student already exists
+      const existingStudent = await this.libraryService.getStudentByMobile(result.mobile);
+
+      if (existingStudent) {
+        // Use existing student
+        student = existingStudent;
+        
+        // Update student details if they've changed
+        await this.libraryService.updateStudent(student.id, {
+          name: result.name,
+          emergency_contact: result.emergency_contact,
+          emergency_contact_name: result.emergency_contact_name,
+          address: result.address,
+          dob: result.dob ? result.dob.toISOString().split('T')[0] : null,
+          gender: result.gender,
+          notes: result.notes
+        });
       } else {
         // Create new student
         const studentResult = await this.libraryService.addStudent({
-          ...this.newStudent,
+          name: result.name,
+          mobile: result.mobile,
+          emergency_contact: result.emergency_contact,
+          emergency_contact_name: result.emergency_contact_name,
+          address: result.address,
+          dob: result.dob ? result.dob.toISOString().split('T')[0] : null,
+          gender: result.gender,
+          joining_date: result.startDate.toISOString().split('T')[0],
+          registration_fee_paid: result.registration_fee_paid || 0,
+          notes: result.notes,
           status: 'active'
         });
 
@@ -516,64 +573,60 @@ export class LibraryGridComponent implements OnInit {
         }
 
         student = studentResult.student;
+
+        // Record registration fee for new students
+        if (result.registration_fee_paid > 0) {
+          await this.libraryService.recordFeePayment({
+            student_id: student.id,
+            seat_no: seat.seat_no,
+            shift_type: 'registration',
+            amount_paid: result.registration_fee_paid,
+            payment_date: new Date().toISOString().split('T')[0],
+            valid_from: new Date().toISOString().split('T')[0],
+            valid_until: new Date().toISOString().split('T')[0],
+            payment_mode: result.paymentMode
+          });
+        }
       }
 
-      // 2. Upload photo if provided
-      // TODO: TEMPORARILY DISABLED - Fix storage bucket RLS policies first
-      // Uncomment this block after running the storage setup SQL in Supabase
-      /*
-      if (this.photoFile) {
-        this.uploadingPhoto = true;
-        const photoUrl = await this.libraryService.uploadStudentPhoto(this.photoFile);
-        await this.libraryService.updateStudent(student.id, { photo_url: photoUrl });
-        this.uploadingPhoto = false;
-      }
-      */
-
-      // 3. Record registration fee (skip for existing students)
-      if (!this.existingStudent) {
-        await this.libraryService.recordFeePayment({
-          student_id: student.id,
-          seat_no: this.selectedSeat!.seat_no,
-          shift_type: 'registration',
-          amount_paid: this.newStudent.registration_fee_paid,
-          payment_date: new Date().toISOString().split('T')[0],
-          valid_from: new Date().toISOString().split('T')[0],
-          valid_until: new Date().toISOString().split('T')[0],
-          payment_mode: this.feePayment.payment_mode
-        });
-      }
-
-      // 4. Record seat fee payment
-      const validFrom = new Date();
-      const validUntil = new Date();
-      validUntil.setDate(validUntil.getDate() + this.feePayment.days);
+      // Record seat fee payment
+      const validFrom = new Date(result.startDate);
+      validFrom.setHours(0, 0, 0, 0);
+      
+      const validUntil = new Date(result.endDate);
+      validUntil.setHours(0, 0, 0, 0);
 
       await this.libraryService.recordFeePayment({
         student_id: student.id,
-        seat_no: this.selectedSeat!.seat_no,
-        shift_type: this.selectedShift,
-        amount_paid: this.feePayment.amount_paid,
+        seat_no: seat.seat_no,
+        shift_type: result.selectedShift,
+        amount_paid: result.feeAmount,
         payment_date: validFrom.toISOString().split('T')[0],
         valid_from: validFrom.toISOString().split('T')[0],
         valid_until: validUntil.toISOString().split('T')[0],
-        payment_mode: this.feePayment.payment_mode
+        payment_mode: result.paymentMode
       });
 
-      this.successMessage = this.existingStudent ? 
-        '✅ Existing student registered to seat successfully!' : 
-        '✅ New student registered successfully!';
-      this.showRegistrationModal = false;
-      this.resetForm();
+      // Show success message
+      this.snackBar.open(
+        existingStudent 
+          ? '✅ Existing student registered to seat successfully!' 
+          : '✅ New student registered successfully!',
+        'Close',
+        { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' }
+      );
+
+      // Reload seats
       await this.loadSeats();
-      
-      setTimeout(() => this.successMessage = '', 3000);
-    } catch (error: any) {
-      this.errorMessage = error.message;
-    } finally {
-      this.saving = false;
-      this.uploadingPhoto = false;
       this.cdr.detectChanges();
+    } catch (error: any) {
+      // Show error message
+      this.snackBar.open(
+        `❌ Error: ${error.message}`,
+        'Close',
+        { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' }
+      );
+      console.error('Registration error:', error);
     }
   }
 
@@ -602,6 +655,9 @@ export class LibraryGridComponent implements OnInit {
     this.joiningDay = String(today.getDate()).padStart(2, '0');
     this.joiningMonth = String(today.getMonth() + 1).padStart(2, '0');
     this.joiningYear = String(today.getFullYear());
+    
+    // Reset expiry date
+    this.calculateDefaultExpiryDate(true);
   }
 
   // ==============================
@@ -774,7 +830,9 @@ export class LibraryGridComponent implements OnInit {
       this.cdr.detectChanges();
 
       const validFrom = new Date();
+      validFrom.setHours(0, 0, 0, 0);
       const validUntil = new Date();
+      validUntil.setHours(0, 0, 0, 0);
       validUntil.setDate(validUntil.getDate() + this.additionalFeePayment.days);
 
       const result = await this.libraryService.recordFeePayment({
@@ -782,7 +840,7 @@ export class LibraryGridComponent implements OnInit {
         seat_no: this.selectedSeat.seat_no,
         shift_type: this.getCurrentShiftType(),
         amount_paid: this.additionalFeePayment.amount_paid,
-        payment_date: new Date().toISOString().split('T')[0],
+        payment_date: validFrom.toISOString().split('T')[0],
         valid_from: validFrom.toISOString().split('T')[0],
         valid_until: validUntil.toISOString().split('T')[0],
         payment_mode: this.additionalFeePayment.payment_mode,

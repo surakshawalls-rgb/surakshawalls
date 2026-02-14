@@ -1,3 +1,70 @@
+.mat-calendar {
+  min-width: 320px !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+.mat-calendar-content {
+  min-width: 320px !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+.mat-calendar-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+.mat-calendar-table-header,
+.mat-calendar-table-header tr,
+.mat-calendar-table tr {
+  width: 100% !important;
+}
+.mat-calendar-body-cell-container,
+.mat-calendar-body-cell {
+  width: 14.2857% !important;
+  min-width: 40px;
+}
+.mat-calendar {
+  min-width: 320px !important;
+  width: 100% !important;
+}
+
+.mat-calendar-content {
+  min-width: 320px !important;
+  width: 100% !important;
+}
+/* Limit Angular Material datepicker popup size to fit dialog */
+/* Bigger and colored Angular Material date picker popup */
+
+.cdk-overlay-pane.mat-datepicker-popup,
+.cdk-overlay-pane.mat-date-range-picker-popup {
+  max-width: 320px !important;
+  min-width: 260px !important;
+  width: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+
+.mat-datepicker-content,
+.mat-date-range-picker-content {
+  max-width: 320px !important;
+  min-width: 260px !important;
+  width: auto !important;
+  background: #fff !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.12);
+  border: none !important;
+}
+.mat-calendar-body-selected, .mat-calendar-body-in-range, .mat-calendar-body-range-start, .mat-calendar-body-range-end {
+  background: #1976d2 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  font-weight: bold;
+}
+
+.mat-calendar {
+  background: #fff !important;
+}
 /* ===== GLOBAL THEME VARIABLES ===== */
 :root {
   /* Safe Area Insets for notch/navigation */
@@ -238,6 +305,32 @@
 
 .mat-form-field-wrapper {
   margin-bottom: 16px;
+}
+
+.mat-form-field {
+  width: 260px !important;
+  min-width: 180px !important;
+  max-width: 100% !important;
+  margin-bottom: 8px !important;
+  min-height: 32px !important;
+  font-size: 0.92rem !important;
+  background: none !important;
+  border-radius: 4px !important;
+}
+
+.mat-form-field-infix {
+  padding: 2px 6px !important;
+  min-height: 24px !important;
+}
+
+.mat-input-element {
+  font-size: 0.92rem !important;
+  padding: 2px 6px !important;
+  min-height: 24px !important;
+}
+
+.mat-form-field-appearance-outline .mat-form-field-outline {
+  border-width: 1px !important;
 }
 
 .mat-form-row {
@@ -1055,4 +1148,78 @@ a:hover {
   .content-area {
     padding: var(--spacing-sm) !important;
   }
+}
+
+/* Professional dialog and toggle layout */
+.toggle-section {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  margin-bottom: 24px;
+  background: #fff !important;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+  padding: 16px 12px;
+  justify-content: space-between;
+}
+.toggle-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 120px;
+}
+.toggle-group {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+}
+@media (max-width: 900px) {
+  .toggle-section {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .toggle-row {
+    min-width: 0;
+  }
+}
+
+.mat-dialog-content {
+  background: #f7f8fa !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.10);
+}
+
+.registration-form {
+  background: transparent !important;
+}
+
+.mat-dialog-title {
+  background: #1976d2 !important;
+  color: #fff !important;
+  border-radius: 16px 16px 0 0 !important;
+  padding: 16px 24px !important;
+  font-size: 1.3rem !important;
+  font-weight: 600;
+}
+
+/* Custom colors for Shift Type toggle buttons */
+.mat-button-toggle-group.shift-type-toggle .mat-button-toggle[value="full_time"] .mat-button-toggle-label-content {
+  background: #1976d2 !important;
+  color: #fff !important;
+  border-radius: 4px !important;
+}
+.mat-button-toggle-group.shift-type-toggle .mat-button-toggle[value="first_half"] .mat-button-toggle-label-content {
+  background: #43a047 !important;
+  color: #fff !important;
+  border-radius: 4px !important;
+}
+.mat-button-toggle-group.shift-type-toggle .mat-button-toggle[value="second_half"] .mat-button-toggle-label-content {
+  background: #ffb300 !important;
+  color: #fff !important;
+  border-radius: 4px !important;
+}
+
+.mat-button-toggle-group.shift-type-toggle .mat-button-toggle-checked .mat-button-toggle-label-content {
+  box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
 }

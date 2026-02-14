@@ -10,7 +10,7 @@ export interface LibraryStudent {
   emergency_contact_name?: string;
   address: string;
   dob?: string;
-  gender?: 'Male' | 'Female' | 'Other';
+  gender?: 'Male' | 'Female';
   photo_url?: string;
   joining_date: string;
   registration_fee_paid: number;

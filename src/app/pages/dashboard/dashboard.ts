@@ -5,6 +5,7 @@ import { ClientDueService } from '../../services/client-due.service';
 import { CompanyCashService } from '../../services/company-cash.service';
 import { PartnerWalletService } from '../../services/partner-wallet.service';
 import { StockSalesService } from '../../services/stock-sales.service';
+import { InventoryService } from '../../services/inventory.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +22,7 @@ export class DashboardComponent implements OnInit {
     private companyCashService: CompanyCashService,
     private partnerWalletService: PartnerWalletService,
     private stockSalesService: StockSalesService,
+    private inventoryService: InventoryService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -118,16 +120,16 @@ export class DashboardComponent implements OnInit {
       const payment = await this.db.getPayments();
       const labour = await this.db.getLabour();
       const pe = await this.db.getPartnerExpense();
-      const prod = await this.db.getProductionTotal();
-
-      console.log('[DashboardComponent] production raw ->', prod);
 
       this.revenueTotal = this.sum(revenue.data, 'total_bill');
       this.paymentTotal = this.sum(payment.data, 'amount_paid');
       this.labourTotal = this.sum(labour.data, 'amount');
       this.partnerExpenseTotal = this.sum(pe.data, 'amount');
 
-      // Production stock
+      // Production stock - Load from finished_goods_inventory (new system)
+      const inventory = await this.inventoryService.getInventory();
+      console.log('[DashboardComponent] inventory ->', inventory);
+
       this.production = {
         fencing_pole: 0,
         plain_plate: 0,
@@ -136,15 +138,22 @@ export class DashboardComponent implements OnInit {
         biscuit_plate: 0
       };
 
-      (prod.data || []).forEach(r => {
-        this.production.fencing_pole += Number(r.fencing_pole || 0);
-        this.production.plain_plate += Number(r.plain_plate || 0);
-        this.production.jumbo_pillar += Number(r.jumbo_pillar || 0);
-        this.production.round_plate += Number(r.round_plate || 0);
-        this.production.biscuit_plate += Number(r.biscuit_plate || 0);
+      inventory.forEach(item => {
+        const productKey = item.product_name.toLowerCase();
+        if (productKey === 'fencing_pole') {
+          this.production.fencing_pole = item.current_stock;
+        } else if (productKey === 'plain_plate') {
+          this.production.plain_plate = item.current_stock;
+        } else if (productKey === 'jumbo_pillar') {
+          this.production.jumbo_pillar = item.current_stock;
+        } else if (productKey === 'round_plate') {
+          this.production.round_plate = item.current_stock;
+        } else if (productKey === 'biscuit_plate') {
+          this.production.biscuit_plate = item.current_stock;
+        }
       });
 
-      console.log('[DashboardComponent] production totals ->', this.production);
+      console.log('[DashboardComponent] production stock from inventory ->', this.production);
 
       this.loading = false;
       this.cd.detectChanges();

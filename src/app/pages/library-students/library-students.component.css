@@ -432,6 +432,19 @@
   color: #1565c0;
 }
 
+/* Profile dialog action buttons bottom left */
+.profile-actions {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  gap: 12px;
+  z-index: 2;
+}
+.modal-content {
+  position: relative;
+}
+
 /* ===== RESPONSIVE - BOOKMYSHOW STYLE ===== */
 @media (max-width: 768px) {
   .page-container {

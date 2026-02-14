@@ -739,9 +739,9 @@
   background: rgba(0, 0, 0, 0.65);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   z-index: 10001 !important;
-  padding: 80px 20px 20px 20px;
+  padding: 20px;
 }
 
 .modal-content {
@@ -1598,3 +1598,66 @@ textarea {
   }
 }
 
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Material Badge Styling */
+::ng-deep .seat-box.mat-badge {
+  overflow: visible !important;
+}
+
+::ng-deep .mat-badge-content {
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+  border-radius: 50% !important;
+  z-index: 100 !important;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3) !important;
+  border: 2px solid white !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+::ng-deep .mat-badge.mat-badge-warn .mat-badge-content {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+::ng-deep .mat-badge.mat-badge-accent .mat-badge-content {
+  background-color: #ffa726 !important;
+  color: white !important;
+}
+
+::ng-deep .mat-badge.mat-badge-primary .mat-badge-content {
+  background-color: #2196f3 !important;
+  color: white !important;
+}
+
+::ng-deep .mat-badge-medium.mat-badge-above .mat-badge-content {
+  top: -10px !important;
+}
+
+::ng-deep .mat-badge-medium.mat-badge-after .mat-badge-content {
+  right: -10px !important;
+}
+
+/* Profile dialog action buttons bottom left */
+.profile-actions-bottom-left {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  gap: 12px;
+  z-index: 2;
+}
+.modal-content {
+  position: relative;
+}

@@ -290,4 +290,12 @@
       </div>
     </div>
   </div>
+
+  <!-- Profile Actions Bottom Left -->
+  <div class="profile-actions" *ngIf="showEditModal && selectedStudent">
+    <button (click)="openPaymentHistory(selectedStudent)" class="btn-icon" title="Payment History">💳</button>
+    <button (click)="sendWhatsApp(selectedStudent)" class="btn-icon" title="WhatsApp">💬</button>
+    <button (click)="openEditModal(selectedStudent)" class="btn-icon" title="Edit">✏️</button>
+    <button (click)="deleteStudent(selectedStudent)" class="btn-icon danger" title="Delete">🗑️</button>
+  </div>
 </div>
