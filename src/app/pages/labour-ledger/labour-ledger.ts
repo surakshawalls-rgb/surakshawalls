@@ -31,7 +31,7 @@ interface PaymentRecord {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './labour-ledger.html',
-  styleUrl: './labour-ledger.css'
+  styleUrls: ['./labour-ledger.css']
 })
 export class LabourLedgerComponent implements OnInit {
 

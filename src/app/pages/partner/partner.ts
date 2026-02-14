@@ -22,7 +22,7 @@ type ExpenseCategory =
   standalone: true,
   imports: [CommonModule, FormsModule, PartnerWithdrawComponent],
   templateUrl: './partner.html',
-  styleUrl: './partner.css'
+  styleUrls: ['./partner.css']
 })
 export class PartnerComponent implements OnInit {
 

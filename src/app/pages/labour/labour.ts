@@ -15,7 +15,7 @@ interface Worker {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './labour.html',
-  styleUrl: './labour.css'
+  styleUrls: ['./labour.css']
 })
 export class LabourComponent implements OnInit {
 

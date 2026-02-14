@@ -17,7 +17,7 @@ interface Material {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './raw-materials.html',
-  styleUrl: './raw-materials.css'
+  styleUrls: ['./raw-materials.css']
 })
 export class RawMaterialsComponent implements OnInit {
 

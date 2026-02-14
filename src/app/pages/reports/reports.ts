@@ -68,7 +68,7 @@ interface PartnerSettlement {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './reports.html',
-  styleUrl: './reports.css'
+  styleUrls: ['./reports.css']
 })
 export class ReportsComponent implements OnInit {
   

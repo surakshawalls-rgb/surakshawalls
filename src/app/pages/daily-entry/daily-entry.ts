@@ -32,7 +32,7 @@ interface Partner {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './daily-entry.html',
-  styleUrl: './daily-entry.css'
+  styleUrls: ['./daily-entry.css']
 })
 export class DailyEntryComponent implements OnInit {
 

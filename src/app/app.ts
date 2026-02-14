@@ -30,7 +30,7 @@ import { map, shareReplay } from 'rxjs/operators';
     MatDividerModule
   ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrls: ['./app.css']
 })
 export class AppComponent {
 

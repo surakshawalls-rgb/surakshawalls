@@ -67,7 +67,7 @@
   </div>
 
   <!-- PRODUCTION TAB -->
-  @if(activeTab === 'production') {
+  <ng-container *ngIf="activeTab === 'production'">
     <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px;">
 
       <!-- Date Input -->
@@ -151,27 +151,26 @@
           <div style="text-align: center;">Action</div>
         </div>
         
-        @for(r of filtered; track $index){
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 100px; gap: 16px; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;"
-               [style.background]="$index % 2 === 0 ? 'rgba(255,255,255,0.05)' : 'transparent'"
-               onmouseover="this.style.background='rgba(255,255,255,0.15)'"
-               onmouseout="this.style.background=''">             
-            <div>{{formatDateToDDMMYYYY(r.date)}}</div>
-            <div style="font-weight: 600;">{{r.fencing_pole}}</div>
-            <div style="font-weight: 600;">{{r.plain_plate}}</div>
-            <div style="font-weight: 600;">{{r.jumbo_pillar}}</div>
-            <div style="font-weight: 600;">{{r.round_plate}}</div>
-            <div style="font-weight: 600;">{{r.biscuit_plate}}</div>
-            <div style="text-align: center;">
-              <button (click)="deleteProduction(r.id)" title="Delete" 
-                      style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;"
-                      onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 15px rgba(239, 68, 68, 0.4)'"
-                      onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
-                🗑️
-              </button>
-            </div>
+        <div *ngFor="let r of filtered; let i = index"
+          style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 100px; gap: 16px; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; transition: all 0.3s ease;"
+          [style.background]="i % 2 === 0 ? 'rgba(255,255,255,0.05)' : 'transparent'"
+          onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+          onmouseout="this.style.background=''">
+          <div>{{formatDateToDDMMYYYY(r.date)}}</div>
+          <div style="font-weight: 600;">{{r.fencing_pole}}</div>
+          <div style="font-weight: 600;">{{r.plain_plate}}</div>
+          <div style="font-weight: 600;">{{r.jumbo_pillar}}</div>
+          <div style="font-weight: 600;">{{r.round_plate}}</div>
+          <div style="font-weight: 600;">{{r.biscuit_plate}}</div>
+          <div style="text-align: center;">
+            <button (click)="deleteProduction(r.id)" title="Delete" 
+                    style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;"
+                    onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 4px 15px rgba(239, 68, 68, 0.4)'"
+                    onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'">
+              🗑️
+            </button>
           </div>
-        }
+        </div>
       </div>
 
       <!-- Modern Pagination -->
@@ -194,10 +193,10 @@
       </div>
 
     </div>
-  }
+  </ng-container>
 
   <!-- SELLING TAB -->
-  @if(activeTab === 'selling') {
+  <ng-container *ngIf="activeTab === 'selling'">
     <div class="tab-content">
 
       <h3>{{language==='EN'?'Record Sale':'विक्रय रिकॉर्ड'}}</h3>
@@ -237,26 +236,24 @@
           <th>Total</th>
           <th>Action</th>
         </tr>
-        @for(s of sellingRecords; track $index){
-          <tr>
-            <td>{{formatDateToDDMMYYYY(s.date)}}</td>
-            <td>{{s.client}}</td>
-            <td>{{s.item}}</td>
-            <td>{{s.quantity}}</td>
-            <td>₹{{s.price}}</td>
-            <td>₹{{s.quantity * s.price}}</td>
-            <td>
-              <button class="delete-btn" (click)="deleteSelling(s.id)" title="Delete">🗑️</button>
-            </td>
-          </tr>
-        }
+        <tr *ngFor="let s of sellingRecords; let i = index">
+          <td>{{formatDateToDDMMYYYY(s.date)}}</td>
+          <td>{{s.client}}</td>
+          <td>{{s.item}}</td>
+          <td>{{s.quantity}}</td>
+          <td>₹{{s.price}}</td>
+          <td>₹{{s.quantity * s.price}}</td>
+          <td>
+            <button class="delete-btn" (click)="deleteSelling(s.id)" title="Delete">🗑️</button>
+          </td>
+        </tr>
       </table>
 
     </div>
-  }
+  </ng-container>
 
   <!-- DAMAGE TAB -->
-  @if(activeTab === 'damage') {
+  <ng-container *ngIf="activeTab === 'damage'">
     <div class="tab-content">
 
       <h3>{{language==='EN'?'Record Damage':'क्षति रिकॉर्ड'}}</h3>
@@ -291,21 +288,19 @@
           <th>Reason</th>
           <th>Action</th>
         </tr>
-        @for(d of damageRecords; track $index){
-          <tr>
-            <td>{{formatDateToDDMMYYYY(d.date)}}</td>
-            <td>{{d.item}}</td>
-            <td>{{d.quantity}}</td>
-            <td>{{d.reason}}</td>
-            <td>
-              <button class="delete-btn" (click)="deleteDamage(d.id)" title="Delete">🗑️</button>
-            </td>
-          </tr>
-        }
+        <tr *ngFor="let d of damageRecords; let i = index">
+          <td>{{formatDateToDDMMYYYY(d.date)}}</td>
+          <td>{{d.item}}</td>
+          <td>{{d.quantity}}</td>
+          <td>{{d.reason}}</td>
+          <td>
+            <button class="delete-btn" (click)="deleteDamage(d.id)" title="Delete">🗑️</button>
+          </td>
+        </tr>
       </table>
 
     </div>
-  }
+  </ng-container>
 
 </div>
 

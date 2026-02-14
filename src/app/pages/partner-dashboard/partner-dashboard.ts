@@ -34,7 +34,7 @@ interface Settlement {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './partner-dashboard.html',
-  styleUrl: './partner-dashboard.css'
+  styleUrls: ['./partner-dashboard.css']
 })
 export class PartnerDashboardComponent implements OnInit {
   partners: PartnerInfo[] = [];

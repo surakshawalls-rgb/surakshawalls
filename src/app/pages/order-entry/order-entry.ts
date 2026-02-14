@@ -51,7 +51,7 @@ interface OrderData {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './order-entry.html',
-  styleUrl: './order-entry.css'
+  styleUrls: ['./order-entry.css']
 })
 export class OrderEntryComponent implements OnInit {
 

@@ -26,13 +26,11 @@
         <th>Edit</th>
       </tr>
 
-      @for(c of clients; track $index){
-        <tr>
-          <td>{{c.client_name}}</td>
-          <td>{{c.site_name}}</td>
-          <td><button (click)="editClient(c)">✏️</button></td>
-        </tr>
-      }
+      <tr *ngFor="let c of clients; let i = index">
+        <td>{{c.client_name}}</td>
+        <td>{{c.site_name}}</td>
+        <td><button (click)="editClient(c)">✏️</button></td>
+      </tr>
     </table>
   </div>
 

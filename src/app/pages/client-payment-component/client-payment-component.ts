@@ -9,7 +9,7 @@ import { formatDateToDDMMYYYY } from '../../services/date-formatter';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './client-payment-component.html',
-  styleUrl: './client-payment-component.css'
+  styleUrls: ['./client-payment-component.css']
 })
 export class ClientPaymentComponent implements OnInit {
 

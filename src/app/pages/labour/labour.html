@@ -21,9 +21,7 @@
       <option value="CUSTOM">{{ language==='EN' ? 'Custom Amount' : 'कस्टम राशि' }}</option>
     </select>
 
-    @if(workerType==='CUSTOM'){
-      <input type="number" [placeholder]="language==='EN' ? 'Enter Amount' : 'राशि डालें'" [(ngModel)]="customWorkerAmount">
-    }
+    <input *ngIf="workerType==='CUSTOM'" type="number" [placeholder]="language==='EN' ? 'Enter Amount' : 'राशि डालें'" [(ngModel)]="customWorkerAmount">
 
     <button (click)="addWorker()">➕ {{ language==='EN' ? 'Add' : 'जोड़ें' }}</button>
   </div>
@@ -40,14 +38,12 @@
         <th></th>
       </tr>
 
-      @for(w of workers; track $index){
-        <tr>
-          <td>{{w.name}}</td>
-          <td>{{w.type}}</td>
-          <td>₹{{w.amount}}</td>
-          <td><button (click)="removeWorker($index)">❌</button></td>
-        </tr>
-      }
+      <tr *ngFor="let w of workers; let i = index">
+        <td>{{w.name}}</td>
+        <td>{{w.type}}</td>
+        <td>₹{{w.amount}}</td>
+        <td><button (click)="removeWorker(i)">❌</button></td>
+      </tr>
     </table>
   </div>
 
@@ -76,14 +72,12 @@
       <th>{{language==='EN'?'Amount':'राशि'}}</th>
     </tr>
 
-    @for(r of filteredRecords; track $index){
-      <tr>
-        <td>{{formatDateToDDMMYYYY(r.date)}}</td>
-        <td>{{r.name}}</td>
-        <td>{{r.type}}</td>
-        <td>₹{{r.amount}}</td>
-      </tr>
-    }
+    <tr *ngFor="let r of filteredRecords; let i = index">
+      <td>{{formatDateToDDMMYYYY(r.date)}}</td>
+      <td>{{r.name}}</td>
+      <td>{{r.type}}</td>
+      <td>₹{{r.amount}}</td>
+    </tr>
   </table>
 
   <!-- Pagination -->

@@ -9,7 +9,7 @@ import { formatDateToDDMMYYYY } from '../../services/date-formatter';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './partner-withdraw-component.html',
-  styleUrl: './partner-withdraw-component.css'
+  styleUrls: ['./partner-withdraw-component.css']
 })
 export class PartnerWithdrawComponent implements OnInit {
 

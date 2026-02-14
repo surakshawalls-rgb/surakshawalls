@@ -10,7 +10,7 @@ import { WorkerService, Worker, WAGE_RATES } from '../../services/worker.service
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './production-entry.html',
-  styleUrl: './production-entry.css'
+  styleUrls: ['./production-entry.css']
 })
 export class ProductionEntryComponent implements OnInit {
 

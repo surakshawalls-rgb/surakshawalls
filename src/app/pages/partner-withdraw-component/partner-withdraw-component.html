@@ -37,14 +37,12 @@
           <th>Remarks</th>
         </tr>
 
-        @for(r of records; track $index){
-          <tr>
-            <td>{{formatDateToDDMMYYYY(r.date)}}</td>
-            <td>{{r.partner_id}}</td>
-            <td>₹{{r.amount}}</td>
-            <td>{{r.description}}</td>
-          </tr>
-        }
+        <tr *ngFor="let r of records; let i = index">
+          <td>{{formatDateToDDMMYYYY(r.date)}}</td>
+          <td>{{r.partner_id}}</td>
+          <td>₹{{r.amount}}</td>
+          <td>{{r.description}}</td>
+        </tr>
       </table>
     </div>
 

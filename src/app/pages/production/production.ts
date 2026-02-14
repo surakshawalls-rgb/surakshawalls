@@ -16,7 +16,7 @@ export type ProductionKey =
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './production.html',
-  styleUrl: './production.css'
+  styleUrls: ['./production.css']
 })
 export class ProductionComponent implements OnInit {
 

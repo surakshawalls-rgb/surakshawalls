@@ -53,17 +53,19 @@ $custom-accent: (
   )
 );
 
-html {
-  height: 100%;
-  @include mat.theme((
-    color: (
-      primary: $custom-primary,
-      tertiary: $custom-accent,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
-}
+
+// Define a Material theme using the new API
+$theme: mat.define-light-theme((
+  color: (
+    primary: mat.define-palette($custom-primary),
+    accent: mat.define-palette($custom-accent),
+  ),
+  typography: mat.define-typography-config(),
+  density: 0,
+));
+
+// Apply the theme to the app
+@include mat.all-component-themes($theme);
 
 body {
   color-scheme: light;

@@ -20,7 +20,7 @@ interface SalesOrder {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './sales-order.html',
-  styleUrl: './sales-order.css'
+  styleUrls: ['./sales-order.css']
 })
 export class SalesOrderComponent implements OnInit {
 

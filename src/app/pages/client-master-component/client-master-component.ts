@@ -8,7 +8,7 @@ import { ClientService } from '../../services/client.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './client-master-component.html',
-  styleUrl: './client-master-component.css'
+  styleUrls: ['./client-master-component.css']
 })
 export class ClientMasterComponent implements OnInit {
 
