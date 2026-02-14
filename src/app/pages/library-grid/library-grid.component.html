@@ -10,9 +10,56 @@
   <div class="header">
     <div>
       <h2>📚 Suraksha Library - Seat Management</h2>
-      <p class="subtitle" *ngIf="authService.canEdit()">Click empty seats to register new students | Click occupied seats to view profiles</p>
-      <p class="subtitle" *ngIf="!authService.canEdit()">Viewing library seat occupancy and student attendance</p>
+      <!-- <p class="subtitle" *ngIf="authService.canEdit()">Click empty seats to register new students | Click occupied seats to view profiles</p> 
+      <p class="subtitle" *ngIf="!authService.canEdit()">Viewing library seat occupancy and student attendance</p>-->
     </div>
+    
+    <!-- Statistics Summary -->
+    <div class="stats-summary">
+      <div class="stat-card">
+        <div class="stat-icon">🪑</div>
+        <div class="stat-content">
+          <div class="stat-label">Free Full Day</div>
+          <div class="stat-value">{{ getFreeFullDaySeatsCount() }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-label">Occupied Full Day</div>
+          <div class="stat-value">{{ getOccupiedFullDaySeatsCount() }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-content">
+          <div class="stat-label">Free Half Day</div>
+          <div class="stat-value">{{ getFreeHalfDaySeatsCount() }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-content">
+          <div class="stat-label">Occupied Half Day</div>
+          <div class="stat-value">{{ getOccupiedHalfDaySeatsCount() }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👨</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Boys</div>
+          <div class="stat-value">{{ getTotalMalesCount() }}</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👩</div>
+        <div class="stat-content">
+          <div class="stat-label">Total Girls</div>
+          <div class="stat-value">{{ getTotalFemalesCount() }}</div>
+        </div>
+      </div>
+    </div>
+    
     <div class="header-actions">
       <button (click)="openMyAttendanceModal()" class="btn btn-primary">
         📝 Mark My Attendance
@@ -99,17 +146,9 @@
       
       <!-- FULL TIME STUDENT -->
       <ng-container *ngIf="seat.full_time_student_id">
-        <div class="time-status-top">
-          <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.full_time_student_id)?.check_in_time">
-            🟢 {{ getStudentAttendanceStatus(seat.full_time_student_id).check_in_time.substring(0, 5) }}
-          </span>
-          <span class="seat-status-inline">Full Time</span>
-          <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.full_time_student_id)?.check_out_time">
-            🔴 {{ getStudentAttendanceStatus(seat.full_time_student_id).check_out_time.substring(0, 5) }}
-          </span>
-        </div>
+        <div class="seat-status-top">Full Time</div>
         <div class="seat-number">{{ seat.seat_no }}</div>
-        <div class="student-name">{{ seat.full_time_student?.name }}</div>
+        <div class="student-name">{{ getFullTimeStudentDisplay(seat) }}</div>
       </ng-container>
       
       <!-- BOTH SHIFTS OCCUPIED -->
@@ -118,60 +157,28 @@
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="dual-students">
           <div class="half-shift">
-            <div class="time-status-compact">
-              <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_in_time">
-                🟢 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_in_time.substring(0, 5) }}
-              </span>
-              <span class="shift-label">🌅 1st</span>
-              <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_out_time">
-                🔴 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_out_time.substring(0, 5) }}
-              </span>
-            </div>
-            <div class="student-name">{{ seat.first_half_student?.name }}</div>
+            <div class="shift-label">🌅 1st</div>
+            <div class="student-name">{{ getFirstHalfStudentDisplay(seat) }}</div>
           </div>
           <div class="half-shift">
-            <div class="time-status-compact">
-              <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_in_time">
-                🟢 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_in_time.substring(0, 5) }}
-              </span>
-              <span class="shift-label">🌃 2nd</span>
-              <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_out_time">
-                🔴 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_out_time.substring(0, 5) }}
-              </span>
-            </div>
-            <div class="student-name">{{ seat.second_half_student?.name }}</div>
+            <div class="shift-label">🌃 2nd</div>
+            <div class="student-name">{{ getSecondHalfStudentDisplay(seat) }}</div>
           </div>
         </div>
       </ng-container>
       
       <!-- FIRST HALF ONLY -->
       <ng-container *ngIf="seat.first_half_student_id && !seat.second_half_student_id">
-        <div class="time-status-top">
-          <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_in_time">
-            🟢 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_in_time.substring(0, 5) }}
-          </span>
-          <span class="seat-status-inline">First Half</span>
-          <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.first_half_student_id)?.check_out_time">
-            🔴 {{ getStudentAttendanceStatus(seat.first_half_student_id).check_out_time.substring(0, 5) }}
-          </span>
-        </div>
+        <div class="seat-status-top">First Half</div>
         <div class="seat-number">{{ seat.seat_no }}</div>
-        <div class="student-name">{{ seat.first_half_student?.name }}</div>
+        <div class="student-name">{{ getFirstHalfStudentDisplay(seat) }}</div>
       </ng-container>
       
       <!-- SECOND HALF ONLY -->
       <ng-container *ngIf="seat.second_half_student_id && !seat.first_half_student_id">
-        <div class="time-status-top">
-          <span class="checkin-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_in_time">
-            🟢 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_in_time.substring(0, 5) }}
-          </span>
-          <span class="seat-status-inline">Second Half</span>
-          <span class="checkout-time" *ngIf="getStudentAttendanceStatus(seat.second_half_student_id)?.check_out_time">
-            🔴 {{ getStudentAttendanceStatus(seat.second_half_student_id).check_out_time.substring(0, 5) }}
-          </span>
-        </div>
+        <div class="seat-status-top">Second Half</div>
         <div class="seat-number">{{ seat.seat_no }}</div>
-        <div class="student-name">{{ seat.second_half_student?.name }}</div>
+        <div class="student-name">{{ getSecondHalfStudentDisplay(seat) }}</div>
       </ng-container>
     </div>
   </div>

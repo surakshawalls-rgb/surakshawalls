@@ -20,6 +20,56 @@
   gap: 16px;
 }
 
+/* Statistics Summary */
+.stats-summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #666666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #333333;
+  line-height: 1;
+}
+
 .header h2 {
   margin: 0;
   color: #333333;
@@ -304,6 +354,38 @@
   margin-bottom: 6px;
 }
 
+/* Attendance Badge - Top Right Corner */
+.attendance-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  gap: 2px;
+  font-size: 0.875rem;
+  z-index: 2;
+}
+
+.attendance-badge .checkin-time,
+.attendance-badge .checkout-time {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+/* Half Shift Header - For Dual Students */
+.half-shift-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.half-badge {
+  display: flex;
+  gap: 2px;
+  font-size: 0.75rem;
+}
+
 /* Time and Status on Top Line */
 .time-status-top {
   display: flex;
@@ -580,6 +662,29 @@
     font-size: 1.1rem;
   }
 
+  .stats-summary {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 12px;
+  }
+
+  .stat-icon {
+    font-size: 24px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
   .header-actions {
     width: 100%;
   }
@@ -643,6 +748,30 @@
 
   .subtitle {
     font-size: 0.813rem;
+  }
+
+  .stats-summary {
+    gap: 8px;
+  }
+
+  .stat-card {
+    min-width: 80px;
+    padding: 8px 10px;
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+  }
+
+  .stat-icon {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 9px;
+  }
+
+  .stat-value {
+    font-size: 18px;
   }
 
   .btn, .btn-refresh, .btn-primary, .btn-info, .btn-bulk {
@@ -740,7 +869,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10001 !important;
+  z-index: 900 !important;
   padding: 20px;
 }
 

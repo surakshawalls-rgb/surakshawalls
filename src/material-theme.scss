@@ -2,6 +2,9 @@
 // Professional Material Design Theme with Blue/Indigo palette
 @use '@angular/material' as mat;
 
+// Include the common styles for Angular Material
+@include mat.core();
+
 // Define professional custom color palette
 $custom-primary: (
   50: #e3f2fd,

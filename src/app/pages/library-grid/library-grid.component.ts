@@ -218,15 +218,19 @@ export class LibraryGridComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadSeats();
+    console.log('Loaded seats:', this.seats);
   }
 
   async loadSeats() {
     try {
       this.loading = true;
       
+      // Clear cache to ensure fresh data
+      this.libraryService.clearSeatsCache();
+      
       // Load seats and attendance in parallel
       const [seats, attendance] = await Promise.all([
-        this.libraryService.getAllSeats(),
+        this.libraryService.getAllSeats(false),
         this.libraryService.getAllTodayAttendance()
       ]);
       
@@ -239,6 +243,20 @@ export class LibraryGridComponent implements OnInit {
         this.attendanceMap[att.student_id] = att;
       });
       
+      console.log('Seats loaded, sample:', seats[0]);
+      console.log('Total seats:', seats.length);
+      
+      // Debug: Log student objects
+      const seatsWithStudents = seats.filter((s: any) => s.full_time_student_id || s.first_half_student_id || s.second_half_student_id);
+      console.log('Seats with students:', seatsWithStudents.length);
+      if (seatsWithStudents.length > 0) {
+        const sampleSeat = seatsWithStudents[0];
+        console.log('Sample occupied seat:', sampleSeat);
+        console.log('full_time_student object:', sampleSeat.full_time_student);
+        console.log('first_half_student object:', sampleSeat.first_half_student);
+        console.log('second_half_student object:', sampleSeat.second_half_student);
+      }
+      
       this.cdr.detectChanges();
       
     } catch (error: any) {
@@ -247,6 +265,40 @@ export class LibraryGridComponent implements OnInit {
       this.loading = false;
       this.cdr.detectChanges();
     }
+  }
+
+  // ==============================
+  // HELPER METHODS
+  // ==============================
+
+  getFullTimeStudentDisplay(seat: LibrarySeat): string {
+    if (seat.full_time_student && seat.full_time_student.name) {
+      return seat.full_time_student.name;
+    }
+    if (seat.full_time_student_id) {
+      return 'ID: ' + seat.full_time_student_id.substring(0, 8);
+    }
+    return '';
+  }
+
+  getFirstHalfStudentDisplay(seat: LibrarySeat): string {
+    if (seat.first_half_student && seat.first_half_student.name) {
+      return seat.first_half_student.name;
+    }
+    if (seat.first_half_student_id) {
+      return seat.first_half_student_id.substring(0, 6);
+    }
+    return '';
+  }
+
+  getSecondHalfStudentDisplay(seat: LibrarySeat): string {
+    if (seat.second_half_student && seat.second_half_student.name) {
+      return seat.second_half_student.name;
+    }
+    if (seat.second_half_student_id) {
+      return seat.second_half_student_id.substring(0, 6);
+    }
+    return '';
   }
 
   // ==============================
@@ -448,12 +500,8 @@ export class LibraryGridComponent implements OnInit {
     
     const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
-    // Only return badge for seats expiring within 30 days or already expired
-    if (daysRemaining <= 30) {
-      return daysRemaining;
-    }
-    
-    return null;
+    // Return days remaining for all students
+    return daysRemaining;
   }
 
   getBadgeColor(days: number | null): 'primary' | 'accent' | 'warn' | undefined {
@@ -461,12 +509,36 @@ export class LibraryGridComponent implements OnInit {
     if (days < 0) return 'warn'; // Expired - Red
     if (days <= 3) return 'warn'; // 1-3 days - Red
     if (days <= 7) return 'accent'; // 4-7 days - Yellow
-    return 'primary'; // 8+ days - Blue
+    if (days <= 30) return 'primary'; // 8-30 days - Blue
+    return undefined; // More than 30 days - No special color, use default
   }
 
   getSeatBadge(seat: LibrarySeat): { value: number | string, color: 'primary' | 'accent' | 'warn' | undefined, hidden: boolean } {
+    // Determine which student to check
+    const studentId = seat.full_time_student_id || seat.first_half_student_id || seat.second_half_student_id;
+    
+    // If no student, hide badge
+    if (!studentId) {
+      return { value: '', color: undefined, hidden: true };
+    }
+    
+    // Check attendance status
+    const attendance = this.getStudentAttendanceStatus(studentId);
+    if (attendance?.check_in_time && !attendance?.check_out_time) {
+      // Checked in (present)
+      console.log('Seat', seat.seat_no, 'badge: checked in 🟢');
+      return { value: '🟢', color: 'primary', hidden: false };
+    } else if (attendance?.check_out_time) {
+      // Checked out
+      console.log('Seat', seat.seat_no, 'badge: checked out 🔴');
+      return { value: '🔴', color: 'warn', hidden: false };
+    }
+    
+    // No attendance today - show days remaining
     const expiryDate = seat.full_time_expiry || seat.first_half_expiry || seat.second_half_expiry;
     const days = this.getDaysRemainingNumber(expiryDate);
+    
+    console.log('Seat', seat.seat_no, 'badge: days remaining', days, 'expiry:', expiryDate, 'hidden:', days === null);
     
     return {
       value: days ?? '',
@@ -486,6 +558,55 @@ export class LibraryGridComponent implements OnInit {
       return `${seat.second_half_student?.name}\nEvening Shift\nMorning Available`;
     }
     return 'Available';
+  }
+
+  // Statistics methods
+  getFreeFullDaySeatsCount(): number {
+    return this.seats.filter(seat => 
+      !seat.full_time_student_id && 
+      !seat.first_half_student_id && 
+      !seat.second_half_student_id
+    ).length;
+  }
+
+  getFreeHalfDaySeatsCount(): number {
+    return this.seats.filter(seat => {
+      // Count seats with at least one half available (not occupied by full time)
+      if (seat.full_time_student_id) return false;
+      return !seat.first_half_student_id || !seat.second_half_student_id;
+    }).length;
+  }
+
+  getTotalMalesCount(): number {
+    let count = 0;
+    this.seats.forEach(seat => {
+      if (seat.full_time_student?.gender === 'Male') count++;
+      if (seat.first_half_student?.gender === 'Male') count++;
+      if (seat.second_half_student?.gender === 'Male') count++;
+    });
+    return count;
+  }
+
+  getTotalFemalesCount(): number {
+    let count = 0;
+    this.seats.forEach(seat => {
+      if (seat.full_time_student?.gender === 'Female') count++;
+      if (seat.first_half_student?.gender === 'Female') count++;
+      if (seat.second_half_student?.gender === 'Female') count++;
+    });
+    return count;
+  }
+
+  getOccupiedFullDaySeatsCount(): number {
+    return this.seats.filter(seat => seat.full_time_student_id).length;
+  }
+
+  getOccupiedHalfDaySeatsCount(): number {
+    return this.seats.filter(seat => {
+      // Count seats with at least one half day occupied (not full time)
+      if (seat.full_time_student_id) return false;
+      return seat.first_half_student_id || seat.second_half_student_id;
+    }).length;
   }
 
   // ==============================
@@ -510,7 +631,7 @@ export class LibraryGridComponent implements OnInit {
       defaultShift = 'first_half';
     }
     
-    // Open Material Dialog
+    // Open Material Dialog with proper configuration
     const dialogRef = this.dialog.open(RegistrationDialogComponent, {
       width: '750px',
       maxWidth: '90vw',
@@ -521,7 +642,12 @@ export class LibraryGridComponent implements OnInit {
       },
       disableClose: false,
       autoFocus: true,
-      panelClass: 'registration-dialog'
+      panelClass: ['registration-dialog', 'custom-dialog-container'],
+      hasBackdrop: true,
+      backdropClass: 'custom-dialog-backdrop',
+      position: {
+        top: '50px'
+      }
     });
     
     dialogRef.afterClosed().subscribe(async (result) => {
@@ -616,7 +742,8 @@ export class LibraryGridComponent implements OnInit {
         { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' }
       );
 
-      // Reload seats
+      // Reload seats with force refresh
+      this.libraryService.clearSeatsCache();
       await this.loadSeats();
       this.cdr.detectChanges();
     } catch (error: any) {

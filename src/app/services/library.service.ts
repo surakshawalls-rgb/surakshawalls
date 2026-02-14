@@ -242,7 +242,7 @@ export class LibraryService {
       }
 
       // Fetch from database
-      console.log('[LibraryService] Fetching seats from database');
+      console.log('[LibraryService] Fetching seats from database with student joins');
       const { data, error } = await this.supabase.supabase
         .from('library_seats')
         .select(`
@@ -253,9 +253,20 @@ export class LibraryService {
         `)
         .order('seat_no');
 
-      if (error) throw error;
+      if (error) {
+        console.error('[LibraryService] Supabase query error:', error);
+        throw error;
+      }
       
       const seats = data || [];
+      console.log('[LibraryService] Fetched seats count:', seats.length);
+      console.log('[LibraryService] Sample seat data:', seats[0]);
+      
+      // Verify student data is loaded
+      const seatsWithStudents = seats.filter(s => 
+        s.full_time_student || s.first_half_student || s.second_half_student
+      );
+      console.log('[LibraryService] Seats with students:', seatsWithStudents.length);
       
       // Cache the result
       if (useCache) {

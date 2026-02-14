@@ -58,7 +58,7 @@ export interface RegistrationResult {
     MatNativeDateModule
   ],
   template: `
-    <h2 mat-dialog-title>Register Student - Seat {{ data.seat.seat_no }}</h2>
+    <h2 mat-dialog-title>📝 Register Student - Seat {{ data.seat.seat_no }}</h2>
     
     <mat-dialog-content>
       <form [formGroup]="registrationForm" class="registration-form">
@@ -117,8 +117,8 @@ export interface RegistrationResult {
           <div class="toggle-row">
             <label class="group-label">Gender</label>
             <mat-button-toggle-group formControlName="gender" class="toggle-group">
-              <mat-button-toggle value="Male">Male</mat-button-toggle>
-              <mat-button-toggle value="Female">Female</mat-button-toggle>
+              <mat-button-toggle value="Male">👨 Male</mat-button-toggle>
+              <mat-button-toggle value="Female">👩 Female</mat-button-toggle>
             </mat-button-toggle-group>
           </div>
         </div>
@@ -154,9 +154,9 @@ export interface RegistrationResult {
         <div class="form-group full-width">
           <label class="group-label">Shift Type</label>
           <mat-button-toggle-group formControlName="selectedShift" (change)="onShiftChange()" class="full-width-toggle">
-            <mat-button-toggle value="full_time" *ngIf="isShiftAvailable('full_time')">Full Day</mat-button-toggle>
-            <mat-button-toggle value="first_half" *ngIf="isShiftAvailable('first_half')">Morning</mat-button-toggle>
-            <mat-button-toggle value="second_half" *ngIf="isShiftAvailable('second_half')">Evening</mat-button-toggle>
+            <mat-button-toggle value="full_time" *ngIf="isShiftAvailable('full_time')">🕐 Full Day</mat-button-toggle>
+            <mat-button-toggle value="first_half" *ngIf="isShiftAvailable('first_half')">🌅 Morning</mat-button-toggle>
+            <mat-button-toggle value="second_half" *ngIf="isShiftAvailable('second_half')">🌃 Evening</mat-button-toggle>
           </mat-button-toggle-group>
         </div>
 
@@ -168,9 +168,9 @@ export interface RegistrationResult {
         <div class="form-group">
           <label class="group-label">Payment Mode</label>
           <mat-button-toggle-group formControlName="paymentMode" class="full-width-toggle">
-            <mat-button-toggle value="cash">Cash</mat-button-toggle>
-            <mat-button-toggle value="upi">UPI</mat-button-toggle>
-            <mat-button-toggle value="card">Card</mat-button-toggle>
+            <mat-button-toggle value="cash">💵 Cash</mat-button-toggle>
+            <mat-button-toggle value="upi">📱 UPI</mat-button-toggle>
+            <mat-button-toggle value="card">💳 Card</mat-button-toggle>
           </mat-button-toggle-group>
         </div>
 
@@ -190,10 +190,10 @@ export interface RegistrationResult {
     </mat-dialog-content>
 
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onCancel()">Cancel</button>
+      <button mat-button (click)="onCancel()">✖ Cancel</button>
       <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!registrationForm.valid || saving">
-        <mat-spinner diameter="20" *ngIf="saving" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-        {{ saving ? 'Saving...' : 'Register Student' }}
+        <mat-spinner diameter="18" *ngIf="saving" style="display: inline-block; margin-right: 8px; vertical-align: middle;"></mat-spinner>
+        {{ saving ? 'Saving...' : '✓ Register Student' }}
       </button>
     </mat-dialog-actions>
   `,
@@ -201,8 +201,8 @@ export interface RegistrationResult {
     .registration-form {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      padding: 14px 0;
+      gap: 16px;
+      padding: 20px 0;
       min-width: 600px;
     }
 
@@ -212,6 +212,9 @@ export interface RegistrationResult {
 
     .date-range {
       grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
     }
 
     .form-group {
@@ -221,15 +224,31 @@ export interface RegistrationResult {
     }
 
     .group-label {
-      font-size: 14px;
-      color: rgba(0, 0, 0, 0.6);
-      font-weight: 500;
+      font-size: 13px;
+      color: #333333;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .toggle-section {
+      margin: 8px 0;
+    }
+
+    .toggle-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     mat-button-toggle-group {
       width: 100%;
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      border-radius: 4px;
+      border: 1px solid #dce0e4;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .toggle-group {
+      box-shadow: none;
     }
 
     .full-width-toggle {
@@ -241,23 +260,34 @@ export interface RegistrationResult {
       flex: 1;
     }
 
+    ::ng-deep .mat-button-toggle {
+      border-right: 1px solid #dce0e4 !important;
+    }
+
+    ::ng-deep .mat-button-toggle:last-child {
+      border-right: none !important;
+    }
+
     ::ng-deep .mat-button-toggle-checked {
-      background-color: #3f51b5 !important;
+      background-color: #4CAF50 !important;
       color: white !important;
     }
 
     ::ng-deep .mat-button-toggle-label-content {
-      line-height: 36px !important;
-      padding: 0 12px !important;
+      line-height: 40px !important;
+      padding: 0 16px !important;
+      font-weight: 500;
+      font-size: 14px;
     }
 
     .readonly-field input {
       cursor: default;
       color: rgba(0, 0, 0, 0.87);
+      font-weight: 500;
     }
 
     .readonly-field ::ng-deep .mat-mdc-text-field-wrapper {
-      background-color: #fafafa;
+      background-color: #f5f7fa;
     }
 
     .readonly-field ::ng-deep .mat-mdc-form-field-focus-overlay {
@@ -268,46 +298,46 @@ export interface RegistrationResult {
       width: 100%;
     }
 
-    input[readonly] {
-      cursor: pointer !important;
-      user-select: none;
-    }
-
-    ::ng-deep input[readonly]:focus {
-      cursor: pointer !important;
-    }
-
-    ::ng-deep .mat-date-range-input-container {
-      cursor: pointer;
-    }
-
     ::ng-deep .mat-mdc-form-field {
       margin-bottom: 0 !important;
     }
 
     ::ng-deep .mat-mdc-text-field-wrapper {
       padding-bottom: 0 !important;
+      background-color: white;
+    }
+
+    ::ng-deep .mat-mdc-form-field-infix {
+      padding-top: 14px !important;
+      padding-bottom: 14px !important;
+    }
+
+    ::ng-deep .mat-mdc-outlined-button:not(:disabled) {
+      border-color: #dce0e4;
     }
 
     mat-dialog-content {
       overflow-y: auto;
-      max-height: 60vh;
-      padding: 16px 20px;
+      max-height: 64vh;
+      padding: 0 24px 20px 24px;
+      background: white;
     }
 
     mat-dialog-title {
-      padding: 12px 20px;
+      padding: 20px 24px;
       margin: 0;
-      background: #f5f5f5;
-      border-bottom: 1px solid #e0e0e0;
+      background: white;
+      border-bottom: 1px solid #dce0e4;
       font-size: 18px;
+      font-weight: 600;
+      color: #333333;
       flex-shrink: 0;
     }
 
     mat-dialog-actions {
-      padding: 12px 20px;
-      border-top: 1px solid #e0e0e0;
-      background: #f9f9f9;
+      padding: 16px 24px;
+      border-top: 1px solid #dce0e4;
+      background: white;
       display: flex;
       justify-content: flex-end;
       gap: 12px;
@@ -316,11 +346,22 @@ export interface RegistrationResult {
     }
 
     button[mat-button] {
-      min-width: 80px;
+      min-width: 90px;
+      font-weight: 500;
+      border-radius: 8px;
+      text-transform: none;
     }
 
     button[mat-raised-button] {
-      min-width: 140px;
+      min-width: 160px;
+      font-weight: 500;
+      border-radius: 8px;
+      text-transform: none;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+    }
+
+    button[mat-raised-button]:hover {
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.35);
     }
 
     ::ng-deep .mat-mdc-dialog-container {
@@ -328,11 +369,15 @@ export interface RegistrationResult {
       display: flex !important;
       flex-direction: column !important;
       max-height: 90vh !important;
+      border-radius: 12px !important;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2) !important;
     }
 
     ::ng-deep .mat-mdc-dialog-surface {
       display: flex !important;
       flex-direction: column !important;
+      border-radius: 12px !important;
+      background: white !important;
     }
 
     ::ng-deep .mat-mdc-dialog-content {
@@ -344,11 +389,42 @@ export interface RegistrationResult {
       flex-shrink: 0 !important;
     }
 
-    ::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
-      border-radius: 12px;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-      border: 2px solid #1976d2 !important;
-      box-shadow: 0 8px 32px rgba(25, 118, 210, 0.08);
+    ::ng-deep .mat-primary {
+      --mdc-protected-button-container-color: #4CAF50;
+      --mdc-protected-button-label-text-color: white;
+    }
+
+    ::ng-deep .mat-mdc-outlined-field {
+      border-radius: 8px !important;
+    }
+
+    ::ng-deep .mat-mdc-form-field-focus-overlay {
+      background-color: transparent;
+    }
+
+    ::ng-deep .mat-datepicker-toggle {
+      color: #4CAF50;
+    }
+
+    ::ng-deep .mat-mdc-text-field-wrapper.mdc-text-field--outlined .mat-mdc-form-field-infix {
+      padding-top: 14px;
+      padding-bottom: 14px;
+    }
+
+    ::ng-deep textarea.mat-mdc-input-element {
+      min-height: 40px;
+      resize: vertical;
+    }
+
+    ::ng-deep .mat-mdc-form-field-hint,
+    ::ng-deep .mat-mdc-form-field-error {
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    input[readonly] {
+      cursor: pointer !important;
+      user-select: none;
     }
 
     ::ng-deep .mat-mdc-form-field {
