@@ -67,16 +67,6 @@ export class AppComponent {
     window.location.href = '/login';
   }
 
-  public closeDrawerOnMobile(drawer: any): void {
-    if (this.breakpointObserver.isMatched(Breakpoints.Handset)) {
-      drawer.close();
-    }
-  }
-
-  debug(msg: string) {
-  console.log("🧭 MENU CLICK:", msg);
-}
-
   constructor() {
     console.log("✅ AppComponent Loaded");
 
@@ -84,10 +74,6 @@ export class AppComponent {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
         console.log("➡ Route Changed:", event);
-        // Auto-close mobile drawer on navigation
-        if (this.breakpointObserver.isMatched(Breakpoints.Handset)) {
-          // Drawer will close automatically via template binding
-        }
       });
   }
 }
