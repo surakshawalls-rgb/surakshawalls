@@ -425,21 +425,30 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label>Amount (₹) <span class="required">*</span></label>
-          <input type="number" [(ngModel)]="additionalFeePayment.amount_paid" class="form-control" min="1">
+          <label>Shift Type <span class="required">*</span></label>
+          <select [(ngModel)]="additionalFeePayment.shift_type" (change)="onShiftTypeChange()" class="form-control">
+            <option value="full_time">🌞 Full Day (₹400)</option>
+            <option value="first_half">🌅 Morning Shift (₹250)</option>
+            <option value="second_half">🌃 Evening Shift (₹250)</option>
+          </select>
         </div>
 
         <div class="form-group">
-          <label>Days <span class="required">*</span></label>
-          <select [(ngModel)]="additionalFeePayment.days" class="form-control">
-            <option [value]="7">1 Week</option>
-            <option [value]="15">15 Days</option>
-            <option [value]="30" selected>1 Month (30 days)</option>
-            <option [value]="60">2 Months (60 days)</option>
-            <option [value]="90">3 Months (90 days)</option>
-            <option [value]="180">6 Months (180 days)</option>
+          <label>Amount (₹) <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="additionalFeePayment.amount_paid" class="form-control" min="1" readonly>
+          <small class="text-muted">Amount is auto-set based on shift type</small>
+        </div>
+
+        <div class="form-group">
+          <label>Subscription Period <span class="required">*</span></label>
+          <select [(ngModel)]="additionalFeePayment.months" class="form-control">
+            <option [value]="1" selected>1 Month ({{ getDaysInSubscription(1) }} days)</option>
+            <option [value]="2">2 Months ({{ getDaysInSubscription(2) }} days)</option>
+            <option [value]="3">3 Months ({{ getDaysInSubscription(3) }} days)</option>
+            <option [value]="6">6 Months ({{ getDaysInSubscription(6) }} days)</option>
+            <option [value]="12">12 Months ({{ getDaysInSubscription(12) }} days)</option>
           </select>
-          <small class="text-muted">Subscription will be extended by {{ additionalFeePayment.days }} days</small>
+          <small class="text-muted">Valid until: {{ calculateExpiryDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}</small>
         </div>
 
         <div class="form-group">
@@ -456,8 +465,28 @@
           <input type="text" [(ngModel)]="additionalFeePayment.transaction_reference" class="form-control" placeholder="Transaction ID / Reference Number">
         </div>
 
-        <div class="alert alert-info">
-          <strong>Note:</strong> This will extend the current subscription by {{ additionalFeePayment.days }} days.
+        <div class="alert" [ngClass]="{'alert-danger': isSubscriptionOverdue(), 'alert-info': !isSubscriptionOverdue()}">
+          <!-- Subscription Status -->
+          <div *ngIf="getCurrentExpiryDate()">
+            <strong>Current Expiry:</strong> {{ getCurrentExpiryDate() | date:'dd MMM yyyy' }}
+            <span *ngIf="isSubscriptionOverdue()" style="color: #dc3545; font-weight: bold;">
+              ⚠️ OVERDUE by {{ getDaysOverdue() }} days
+            </span>
+            <span *ngIf="!isSubscriptionOverdue() && getCurrentSubscriptionDaysRemaining() > 0" style="color: #28a745; font-weight: bold;">
+              ✅ {{ getCurrentSubscriptionDaysRemaining() }} days remaining
+            </span>
+          </div>
+          <div *ngIf="!getCurrentExpiryDate()" style="color: #856404;">
+            <strong>Status:</strong> No active subscription
+          </div>
+          <hr style="margin: 8px 0;">
+          <!-- New Subscription Details -->
+          <strong>Payment Details:</strong><br>
+          <small>
+            📅 Valid From: {{ getSubscriptionStartDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}<br>
+            📅 Valid Until: {{ calculateExpiryDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}<br>
+            📊 Duration: {{ getDaysInSubscription(additionalFeePayment.months) }} days
+          </small>
         </div>
       </div>
       <div class="modal-footer">

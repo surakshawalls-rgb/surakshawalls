@@ -116,7 +116,7 @@ export class LibraryService {
         timestamp: Date.now()
       }));
     } catch (error) {
-      console.warn('[LibraryService] Failed to cache seats:', error);
+      // Silently fail if sessionStorage is full
     }
   }
 
@@ -236,13 +236,11 @@ export class LibraryService {
       if (useCache) {
         const cached = this.getCachedSeats();
         if (cached) {
-          console.log('[LibraryService] Using cached seats');
           return cached;
         }
       }
 
       // Fetch from database
-      console.log('[LibraryService] Fetching seats from database with student joins');
       const { data, error } = await this.supabase.supabase
         .from('library_seats')
         .select(`
@@ -259,14 +257,6 @@ export class LibraryService {
       }
       
       const seats = data || [];
-      console.log('[LibraryService] Fetched seats count:', seats.length);
-      console.log('[LibraryService] Sample seat data:', seats[0]);
-      
-      // Verify student data is loaded
-      const seatsWithStudents = seats.filter(s => 
-        s.full_time_student || s.first_half_student || s.second_half_student
-      );
-      console.log('[LibraryService] Seats with students:', seatsWithStudents.length);
       
       // Cache the result
       if (useCache) {

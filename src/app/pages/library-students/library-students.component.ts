@@ -1,19 +1,39 @@
 // src/app/pages/library-students/library-students.component.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LibraryService, LibraryStudent } from '../../services/library.service';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/library.service';
 
 @Component({
   selector: 'app-library-students',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    MatTableModule, 
+    MatSortModule, 
+    MatPaginatorModule,
+    MatTooltipModule,
+    MatButtonModule,
+    MatIconModule
+  ],
   templateUrl: './library-students.component.html',
   styleUrls: ['./library-students.component.css']
 })
 export class LibraryStudentsComponent implements OnInit {
   students: LibraryStudent[] = [];
   filteredStudents: LibraryStudent[] = [];
+  dataSource: MatTableDataSource<LibraryStudent> = new MatTableDataSource<LibraryStudent>();
+  displayedColumns: string[] = ['photo', 'name', 'mobile', 'emergency_contact', 'address', 'joining_date', 'registration_fee_paid', 'status', 'actions'];
+  
+  @ViewChild(MatSort) sort!: MatSort;
+  
   searchTerm = '';
   filterStatus = 'all';
   loading = true;
@@ -23,8 +43,24 @@ export class LibraryStudentsComponent implements OnInit {
   showAddModal = false;
   showEditModal = false;
   showPaymentHistoryModal = false;
+  showChangeSeatModal = false;
+  showProfileModal = false;
+  showAddShiftModal = false;
   selectedStudent: LibraryStudent | null = null;
   paymentHistory: any[] = [];
+  newShiftType: 'first_half' | 'second_half' = 'first_half';
+  canShowAddShiftButton = false;
+  addShiftButtonText = '';
+  
+  // Seat management
+  availableSeats: LibrarySeat[] = [];
+  newSeatNumber: number = 0;
+  currentShiftType: 'full_time' | 'first_half' | 'second_half' = 'full_time';
+  currentSeatNo: number = 0;
+  
+  // Attendance
+  todayAttendance: any[] = [];
+  attendanceMap: { [studentId: string]: any } = {};
 
   newStudent: Partial<LibraryStudent> = {
     name: '',
@@ -83,6 +119,7 @@ export class LibraryStudentsComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadStudents();
+    await this.loadTodayAttendance();
   }
 
   async loadStudents() {
@@ -100,6 +137,18 @@ export class LibraryStudentsComponent implements OnInit {
     }
   }
 
+  async loadTodayAttendance() {
+    try {
+      this.todayAttendance = await this.libraryService.getAllTodayAttendance();
+      this.attendanceMap = {};
+      this.todayAttendance.forEach((att: any) => {
+        this.attendanceMap[att.student_id] = att;
+      });
+    } catch (error) {
+      console.error('Error loading attendance:', error);
+    }
+  }
+
   applyFilters() {
     this.filteredStudents = this.students.filter(student => {
       const matchesSearch = !this.searchTerm || 
@@ -110,6 +159,10 @@ export class LibraryStudentsComponent implements OnInit {
       
       return matchesSearch && matchesStatus;
     });
+    
+    // Update MatTableDataSource
+    this.dataSource.data = this.filteredStudents;
+    this.dataSource.sort = this.sort;
   }
 
   onSearch() {
@@ -156,8 +209,22 @@ export class LibraryStudentsComponent implements OnInit {
     this.showAddModal = false;
     this.showEditModal = false;
     this.showPaymentHistoryModal = false;
+    this.showChangeSeatModal = false;
+    this.showProfileModal = false;
+    this.showAddShiftModal = false;
     this.selectedStudent = null;
     this.selectedPhoto = null;
+  }
+
+  async openProfileModal(student: LibraryStudent) {
+    this.selectedStudent = student;
+    this.showProfileModal = true;
+    
+    // Precompute shift button visibility and text
+    this.canShowAddShiftButton = await this.canAddShift(student);
+    if (this.canShowAddShiftButton) {
+      this.addShiftButtonText = await this.getAddShiftButtonText(student);
+    }
   }
 
   onPhotoSelect(event: any) {
@@ -275,5 +342,357 @@ export class LibraryStudentsComponent implements OnInit {
       'suspended': 'badge-danger'
     };
     return statusMap[status] || 'badge-secondary';
+  }
+
+  // ========== ATTENDANCE MANAGEMENT ==========
+  
+  getStudentAttendanceStatus(studentId: string): any {
+    return this.attendanceMap[studentId] || null;
+  }
+
+  isCheckedIn(studentId: string): boolean {
+    const attendance = this.getStudentAttendanceStatus(studentId);
+    return attendance && attendance.check_in_time && !attendance.check_out_time;
+  }
+
+  isCheckedOut(studentId: string): boolean {
+    const attendance = this.getStudentAttendanceStatus(studentId);
+    return attendance && attendance.check_out_time;
+  }
+
+  getAttendanceButtonText(studentId: string): string {
+    if (this.isCheckedIn(studentId)) {
+      return '✅ Check-out';
+    } else if (this.isCheckedOut(studentId)) {
+      return '✓ Already Checked-out';
+    } else {
+      return '⏱️ Check-in';
+    }
+  }
+
+  getAttendanceButtonClass(studentId: string): string {
+    if (this.isCheckedIn(studentId)) {
+      return 'btn-warning';
+    } else if (this.isCheckedOut(studentId)) {
+      return 'btn-success disabled';
+    } else {
+      return 'btn-primary';
+    }
+  }
+
+  async toggleAttendance(student: LibraryStudent) {
+    if (this.isCheckedOut(student.id!)) {
+      this.errorMessage = 'Student has already checked out today';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    try {
+      if (this.isCheckedIn(student.id!)) {
+        // Check-out
+        const result = await this.libraryService.checkOutStudent(student.id!);
+        if (!result.success) {
+          throw new Error(result.error || 'Check-out failed');
+        }
+        this.successMessage = `${student.name} checked out successfully!`;
+      } else {
+        // Check-in
+        const result = await this.libraryService.checkInStudent(student.id!);
+        if (!result.success) {
+          throw new Error(result.error || 'Check-in failed');
+        }
+        this.successMessage = `${student.name} checked in successfully!`;
+      }
+      
+      await this.loadTodayAttendance();
+      this.cdr.detectChanges();
+      
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      console.error('Error toggling attendance:', error);
+      this.errorMessage = 'Failed to update attendance: ' + error.message;
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
+  }
+
+  // ========== SEAT MANAGEMENT ==========
+
+  async openChangeSeatModal(student: LibraryStudent) {
+    try {
+      this.selectedStudent = student;
+      
+      // Find student's current seat assignment
+      const seats = await this.libraryService.getAllSeats();
+      const currentSeat = seats.find((seat: LibrarySeat) => 
+        seat.full_time_student_id === student.id ||
+        seat.first_half_student_id === student.id ||
+        seat.second_half_student_id === student.id
+      );
+      
+      if (!currentSeat) {
+        this.errorMessage = 'Student is not assigned to any seat';
+        return;
+      }
+      
+      this.currentSeatNo = currentSeat.seat_no;
+      
+      // Determine shift type
+      if (currentSeat.full_time_student_id === student.id) {
+        this.currentShiftType = 'full_time';
+      } else if (currentSeat.first_half_student_id === student.id) {
+        this.currentShiftType = 'first_half';
+      } else {
+        this.currentShiftType = 'second_half';
+      }
+      
+      // Get available seats for this shift type
+      this.availableSeats = seats.filter((seat: LibrarySeat) => this.isSeatAvailableForShift(seat, this.currentShiftType));
+      
+      this.showChangeSeatModal = true;
+    } catch (error: any) {
+      console.error('Error opening change seat modal:', error);
+      this.errorMessage = 'Failed to load seat information';
+    }
+  }
+
+  isSeatAvailableForShift(seat: LibrarySeat, shiftType: 'full_time' | 'first_half' | 'second_half'): boolean {
+    if (shiftType === 'full_time') {
+      return !seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id;
+    } else if (shiftType === 'first_half') {
+      return !seat.full_time_student_id && !seat.first_half_student_id;
+    } else {
+      return !seat.full_time_student_id && !seat.second_half_student_id;
+    }
+  }
+
+  async confirmSeatChange() {
+    if (!this.selectedStudent || !this.newSeatNumber) {
+      this.errorMessage = 'Please select a new seat';
+      return;
+    }
+
+    try {
+      // Get current seat to retrieve expiry date
+      const seats = await this.libraryService.getAllSeats();
+      const currentSeat = seats.find((seat: LibrarySeat) => seat.seat_no === this.currentSeatNo);
+      
+      let expiryDate = '';
+      if (currentSeat) {
+        if (this.currentShiftType === 'full_time') {
+          expiryDate = currentSeat.full_time_expiry || '';
+        } else if (this.currentShiftType === 'first_half') {
+          expiryDate = currentSeat.first_half_expiry || '';
+        } else {
+          expiryDate = currentSeat.second_half_expiry || '';
+        }
+      }
+      
+      const result = await this.libraryService.changeSeat(
+        this.selectedStudent.id!,
+        this.currentSeatNo,
+        this.newSeatNumber,
+        this.currentShiftType,
+        expiryDate
+      );
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Seat change failed');
+      }
+      
+      this.successMessage = `Seat changed successfully from ${this.currentSeatNo} to ${this.newSeatNumber}`;
+      this.showChangeSeatModal = false;
+      this.newSeatNumber = 0;
+      
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      console.error('Error changing seat:', error);
+      this.errorMessage = 'Failed to change seat: ' + error.message;
+    }
+  }
+
+  // ========== EMERGENCY SOS ==========
+
+  async sendEmergencySOS(student: LibraryStudent) {
+    if (!student.emergency_contact) {
+      this.errorMessage = 'No emergency contact available for this student';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const confirmSOS = confirm(`Send emergency SOS to ${student.emergency_contact_name || 'emergency contact'} (${student.emergency_contact})?`);
+    if (!confirmSOS) return;
+
+    try {
+      const message = `🚨 URGENT: This is an emergency message from Suraksha Library regarding ${student.name}. Please contact the library immediately at your earliest convenience. Library Contact: 8090272727`;
+      const url = `https://wa.me/${student.emergency_contact.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+      
+      this.successMessage = 'Emergency SOS sent!';
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      console.error('Error sending SOS:', error);
+      this.errorMessage = 'Failed to send SOS';
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
+  }
+
+  // ========== RELEASE SEAT ==========
+
+  async releaseSeat(student: LibraryStudent) {
+    const confirmRelease = confirm(`Are you sure you want to release the seat for ${student.name}? This will remove their seat assignment.`);
+    if (!confirmRelease) return;
+
+    try {
+      // Find student's seat to release
+      const seats = await this.libraryService.getAllSeats();
+      const seat = seats.find((s: LibrarySeat) => 
+        s.full_time_student_id === student.id ||
+        s.first_half_student_id === student.id ||
+        s.second_half_student_id === student.id
+      );
+      
+      if (!seat) {
+        this.errorMessage = 'Student is not assigned to any seat';
+        return;
+      }
+
+      let shiftType: 'full_time' | 'first_half' | 'second_half';
+      if (seat.full_time_student_id === student.id) {
+        shiftType = 'full_time';
+      } else if (seat.first_half_student_id === student.id) {
+        shiftType = 'first_half';
+      } else {
+        shiftType = 'second_half';
+      }
+
+      await this.libraryService.releaseSeat(seat.seat_no, shiftType);
+      
+      this.successMessage = `Seat ${seat.seat_no} released for ${student.name}`;
+      await this.loadStudents();
+      
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      console.error('Error releasing seat:', error);
+      this.errorMessage = 'Failed to release seat: ' + error.message;
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
+  }
+
+  // ========== PAY FEE ==========
+
+  openPayFeeModal(student: LibraryStudent) {
+    this.selectedStudent = student;
+    // Implementation would open a fee payment modal
+    // For now, just show a message
+    this.successMessage = 'Fee payment feature - would open payment modal';
+    setTimeout(() => this.successMessage = '', 3000);
+  }
+
+  // ========== ADD SHIFT ==========
+
+  // Check if student can add another shift
+  async canAddShift(student: LibraryStudent): Promise<boolean> {
+    try {
+      const seats = await this.libraryService.getAllSeats();
+      const hasFullTime = seats.some((s: LibrarySeat) => s.full_time_student_id === student.id);
+      return !hasFullTime; // Can add shift only if not on full time
+    } catch (error) {
+      console.error('Error checking shift availability:', error);
+      return false;
+    }
+  }
+
+  // Get the shift type that can be added
+  async getAvailableShiftToAdd(student: LibraryStudent): Promise<'first_half' | 'second_half' | null> {
+    try {
+      const seats = await this.libraryService.getAllSeats();
+      const hasFirstHalf = seats.some((s: LibrarySeat) => s.first_half_student_id === student.id);
+      const hasSecondHalf = seats.some((s: LibrarySeat) => s.second_half_student_id === student.id);
+      
+      if (hasFirstHalf && !hasSecondHalf) return 'second_half';
+      if (hasSecondHalf && !hasFirstHalf) return 'first_half';
+      return null;
+    } catch (error) {
+      console.error('Error getting available shift:', error);
+      return null;
+    }
+  }
+
+  // Get button text for add shift
+  async getAddShiftButtonText(student: LibraryStudent): Promise<string> {
+    const availableShift = await this.getAvailableShiftToAdd(student);
+    if (availableShift === 'second_half') return '➕ Add Evening Shift';
+    if (availableShift === 'first_half') return '➕ Add Morning Shift';
+    return '';
+  }
+
+  // Open add shift modal
+  async openAddShiftModal(student: LibraryStudent) {
+    const canAdd = await this.canAddShift(student);
+    if (!canAdd) {
+      alert('Student is already on full time or has both shifts');
+      return;
+    }
+
+    const availableShift = await this.getAvailableShiftToAdd(student);
+    if (!availableShift) {
+      alert('No available shift to add');
+      return;
+    }
+
+    this.selectedStudent = student;
+    this.newShiftType = availableShift;
+    this.currentShiftType = availableShift;
+    
+    // Load available seats for this shift
+    const seats = await this.libraryService.getAllSeats();
+    this.availableSeats = seats.filter((seat: LibrarySeat) => this.isSeatAvailableForShift(seat, availableShift));
+    
+    this.showProfileModal = false;
+    this.showAddShiftModal = true;
+  }
+
+  // Confirm adding shift
+  async confirmAddShift() {
+    if (!this.selectedStudent || !this.newSeatNumber) {
+      alert('Please select a seat');
+      return;
+    }
+
+    try {
+      const validUntil = new Date();
+      validUntil.setMonth(validUntil.getMonth() + 1);
+      const validUntilStr = validUntil.toISOString().split('T')[0];
+
+      const result = await this.libraryService.assignSeat(
+        this.newSeatNumber,
+        this.selectedStudent.id,
+        this.newShiftType,
+        validUntilStr
+      );
+
+      if (result.success) {
+        this.successMessage = `${this.newShiftType === 'first_half' ? 'Morning' : 'Evening'} shift added successfully!`;
+        this.showAddShiftModal = false;
+        await this.loadStudents();
+        this.cdr.detectChanges();
+        setTimeout(() => this.successMessage = '', 3000);
+      } else {
+        this.errorMessage = 'Failed to add shift: ' + result.error;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
+    } catch (error: any) {
+      console.error('Error adding shift:', error);
+      this.errorMessage = 'Failed to add shift: ' + error.message;
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
+  }
+
+  // ========== WHATSAPP REMINDER ==========
+
+  sendWhatsAppReminder(student: LibraryStudent) {
+    const message = `Hello ${student.name}! 👋\n\nThis is a reminder from Suraksha Library 📚\n\nPlease remember to:\n✅ Maintain library discipline\n✅ Keep your seat clean\n✅ Pay fees on time\n\nThank you for being a valued member! 🙏\n\nFor queries: 8090272727`;
+    const url = `https://wa.me/${student.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
   }
 }

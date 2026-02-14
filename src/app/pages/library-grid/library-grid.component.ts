@@ -78,7 +78,8 @@ export class LibraryGridComponent implements OnInit {
   additionalFeePayment = {
     amount_paid: 400,
     payment_mode: 'cash' as 'cash' | 'upi' | 'card',
-    days: 30,
+    months: 1,
+    shift_type: 'full_time' as 'full_time' | 'first_half' | 'second_half',
     transaction_reference: ''
   };
   
@@ -218,7 +219,6 @@ export class LibraryGridComponent implements OnInit {
 
   async ngOnInit() {
     await this.loadSeats();
-    console.log('Loaded seats:', this.seats);
   }
 
   async loadSeats() {
@@ -242,20 +242,6 @@ export class LibraryGridComponent implements OnInit {
       attendance.forEach((att: any) => {
         this.attendanceMap[att.student_id] = att;
       });
-      
-      console.log('Seats loaded, sample:', seats[0]);
-      console.log('Total seats:', seats.length);
-      
-      // Debug: Log student objects
-      const seatsWithStudents = seats.filter((s: any) => s.full_time_student_id || s.first_half_student_id || s.second_half_student_id);
-      console.log('Seats with students:', seatsWithStudents.length);
-      if (seatsWithStudents.length > 0) {
-        const sampleSeat = seatsWithStudents[0];
-        console.log('Sample occupied seat:', sampleSeat);
-        console.log('full_time_student object:', sampleSeat.full_time_student);
-        console.log('first_half_student object:', sampleSeat.first_half_student);
-        console.log('second_half_student object:', sampleSeat.second_half_student);
-      }
       
       this.cdr.detectChanges();
       
@@ -526,19 +512,15 @@ export class LibraryGridComponent implements OnInit {
     const attendance = this.getStudentAttendanceStatus(studentId);
     if (attendance?.check_in_time && !attendance?.check_out_time) {
       // Checked in (present)
-      console.log('Seat', seat.seat_no, 'badge: checked in 🟢');
       return { value: '🟢', color: 'primary', hidden: false };
     } else if (attendance?.check_out_time) {
       // Checked out
-      console.log('Seat', seat.seat_no, 'badge: checked out 🔴');
       return { value: '🔴', color: 'warn', hidden: false };
     }
     
     // No attendance today - show days remaining
     const expiryDate = seat.full_time_expiry || seat.first_half_expiry || seat.second_half_expiry;
     const days = this.getDaysRemainingNumber(expiryDate);
-    
-    console.log('Seat', seat.seat_no, 'badge: days remaining', days, 'expiry:', expiryDate, 'hidden:', days === null);
     
     return {
       value: days ?? '',
@@ -934,15 +916,141 @@ export class LibraryGridComponent implements OnInit {
 
   openFeePaymentModal(student: LibraryStudent) {
     this.selectedStudent = student;
+    const currentShiftType = this.getCurrentShiftType();
     this.additionalFeePayment = {
-      amount_paid: 400,
+      amount_paid: currentShiftType === 'full_time' ? 400 : 250,
       payment_mode: 'cash',
-      days: 30,
+      months: 1,
+      shift_type: currentShiftType,
       transaction_reference: ''
     };
     this.showFeePaymentModal = true;
     this.showProfileModal = false;
     this.cdr.detectChanges();
+  }
+
+  // Update fee amount based on shift type
+  onShiftTypeChange() {
+    this.additionalFeePayment.amount_paid = this.additionalFeePayment.shift_type === 'full_time' ? 400 : 250;
+    this.cdr.detectChanges();
+  }
+
+  // Get current expiry date from seat
+  getCurrentExpiryDate(): Date | null {
+    if (!this.selectedSeat) return null;
+    
+    const shiftType = this.getCurrentShiftType();
+    let expiryStr: string | null = null;
+    
+    if (shiftType === 'full_time') {
+      expiryStr = this.selectedSeat.full_time_expiry || null;
+    } else if (shiftType === 'first_half') {
+      expiryStr = this.selectedSeat.first_half_expiry || null;
+    } else if (shiftType === 'second_half') {
+      expiryStr = this.selectedSeat.second_half_expiry || null;
+    }
+    
+    if (!expiryStr) return null;
+    
+    const date = new Date(expiryStr);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  // Calculate new expiry date based on months from current expiry (or today if no current expiry)
+  calculateExpiryDate(months: number): Date {
+    const currentExpiry = this.getCurrentExpiryDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Determine start date for new subscription
+    let startDate: Date;
+    if (currentExpiry && currentExpiry >= today) {
+      // Early payment: Start from day after current expiry
+      startDate = new Date(currentExpiry);
+      startDate.setDate(startDate.getDate() + 1);
+    } else {
+      // Overdue or no subscription: Start from today
+      startDate = new Date(today);
+    }
+    
+    // Calculate end date by adding months to start date
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + months);
+    endDate.setDate(endDate.getDate() - 1); // Subtract 1 to get last day of period
+    
+    return endDate;
+  }
+
+  // Check if student subscription is overdue
+  isSubscriptionOverdue(): boolean {
+    const currentExpiry = this.getCurrentExpiryDate();
+    if (!currentExpiry) return false;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return currentExpiry < today;
+  }
+
+  // Get days overdue (returns 0 if not overdue)
+  getDaysOverdue(): number {
+    const currentExpiry = this.getCurrentExpiryDate();
+    if (!currentExpiry) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (currentExpiry >= today) return 0;
+    
+    const diffTime = today.getTime() - currentExpiry.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays;
+  }
+
+  // Get days remaining for current subscription (returns 0 if expired)
+  getCurrentSubscriptionDaysRemaining(): number {
+    const currentExpiry = this.getCurrentExpiryDate();
+    if (!currentExpiry) return 0;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (currentExpiry < today) return 0;
+    
+    const diffTime = currentExpiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays;
+  }
+
+  // Get subscription start date
+  getSubscriptionStartDate(months: number): Date {
+    const currentExpiry = this.getCurrentExpiryDate();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (currentExpiry && currentExpiry >= today) {
+      // Early payment: Start from day after current expiry
+      const startDate = new Date(currentExpiry);
+      startDate.setDate(startDate.getDate() + 1);
+      return startDate;
+    } else {
+      // Overdue or no subscription: Start from today
+      return today;
+    }
+  }
+
+  // Get days in the subscription period
+  getDaysInSubscription(months: number): number {
+    const startDate = this.getSubscriptionStartDate(months);
+    const endDate = this.calculateExpiryDate(months);
+    
+    const diffTime = endDate.getTime() - startDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end dates
+    
+    return diffDays;
   }
 
   async submitFeePayment() {
@@ -956,16 +1064,14 @@ export class LibraryGridComponent implements OnInit {
       this.errorMessage = '';
       this.cdr.detectChanges();
 
-      const validFrom = new Date();
-      validFrom.setHours(0, 0, 0, 0);
-      const validUntil = new Date();
-      validUntil.setHours(0, 0, 0, 0);
-      validUntil.setDate(validUntil.getDate() + this.additionalFeePayment.days);
+      // Determine valid from date based on current expiry
+      const validFrom = this.getSubscriptionStartDate(this.additionalFeePayment.months);
+      const validUntil = this.calculateExpiryDate(this.additionalFeePayment.months);
 
       const result = await this.libraryService.recordFeePayment({
         student_id: this.selectedStudent.id,
         seat_no: this.selectedSeat.seat_no,
-        shift_type: this.getCurrentShiftType(),
+        shift_type: this.additionalFeePayment.shift_type,
         amount_paid: this.additionalFeePayment.amount_paid,
         payment_date: validFrom.toISOString().split('T')[0],
         valid_from: validFrom.toISOString().split('T')[0],
@@ -1258,13 +1364,10 @@ export class LibraryGridComponent implements OnInit {
     );
 
     try {
-      console.log('Starting search for mobile:', this.myAttendanceMobile);
       this.searchingStudent = true;
       this.errorMessage = '';
       this.successMessage = '';
       this.cdr.detectChanges();
-
-      console.log('Calling findStudentByMobile service...');
       
       // Race between service call and timeout
       const student = await Promise.race([
@@ -1272,19 +1375,14 @@ export class LibraryGridComponent implements OnInit {
         timeoutPromise
       ]) as LibraryStudent | null;
       
-      console.log('Service response:', student);
-      
       if (!student) {
-        console.log('No student found');
         this.errorMessage = 'No student found with this mobile number. Please check your number or contact admin.';
         this.myAttendanceStudent = null;
         this.myAttendanceStatus = null;
       } else {
-        console.log('Student found:', (student as LibraryStudent).name);
         this.myAttendanceStudent = student as LibraryStudent;
         
         // Load today's attendance status with timeout
-        console.log('Loading attendance status...');
         try {
           this.myAttendanceStatus = await Promise.race([
             this.libraryService.getTodayAttendanceStatus((student as LibraryStudent).id),
@@ -1292,9 +1390,7 @@ export class LibraryGridComponent implements OnInit {
               setTimeout(() => reject(new Error('Attendance status timeout')), 5000)
             )
           ]);
-          console.log('Attendance status:', this.myAttendanceStatus);
         } catch (attendanceError) {
-          console.log('Failed to load attendance status, continuing without it:', attendanceError);
           this.myAttendanceStatus = null;
         }
         
