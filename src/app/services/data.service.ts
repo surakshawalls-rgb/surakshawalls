@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 /* ================= MODELS ================= */
 
@@ -24,9 +25,17 @@ export interface DayRecord {
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
+  private platformId = inject(PLATFORM_ID);
 
   getToday(date: string): DayRecord {
     const key = 'day_' + date;
+    if (!isPlatformBrowser(this.platformId)) {
+      return {
+        date,
+        production: { fencingPole: 0, plainPlate: 0, jumboPillar: 0, roundPlate: 0, biscuitPlate: 0 },
+        labour: []
+      };
+    }
     const data = localStorage.getItem(key);
     if (data) return JSON.parse(data);
 
@@ -42,11 +51,15 @@ export class DataService {
       labour: []
     };
 
-    localStorage.setItem(key, JSON.stringify(blank));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(key, JSON.stringify(blank));
+    }
     return blank;
   }
 
   updateToday(day: DayRecord) {
-    localStorage.setItem('day_' + day.date, JSON.stringify(day));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('day_' + day.date, JSON.stringify(day));
+    }
   }
 }

@@ -1,5 +1,6 @@
 // src/app/services/library.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from './supabase.service';
 
 export interface LibraryStudent {
@@ -79,6 +80,7 @@ export interface LibraryAttendance {
 export class LibraryService {
   private SEATS_CACHE_KEY = 'library_seats_cache';
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private platformId = inject(PLATFORM_ID);
 
   constructor(private supabase: SupabaseService) {}
 
@@ -87,6 +89,7 @@ export class LibraryService {
   // ========================================
 
   private getCachedSeats(): LibrarySeat[] | null {
+    if (!isPlatformBrowser(this.platformId)) return null;
     try {
       const cached = sessionStorage.getItem(this.SEATS_CACHE_KEY);
       if (!cached) return null;
@@ -106,6 +109,7 @@ export class LibraryService {
   }
 
   private setCachedSeats(seats: LibrarySeat[]) {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       sessionStorage.setItem(this.SEATS_CACHE_KEY, JSON.stringify({
         data: seats,
@@ -117,7 +121,9 @@ export class LibraryService {
   }
 
   clearSeatsCache() {
-    sessionStorage.removeItem(this.SEATS_CACHE_KEY);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.removeItem(this.SEATS_CACHE_KEY);
+    }
   }
 
   // ========================================

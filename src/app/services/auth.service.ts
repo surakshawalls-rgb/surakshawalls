@@ -1,5 +1,6 @@
 // src/app/services/auth.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 
@@ -16,6 +17,7 @@ export interface User {
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
+  private platformId = inject(PLATFORM_ID);
 
   constructor(private supabase: SupabaseService) {
     this.loadUserFromStorage();
@@ -23,6 +25,7 @@ export class AuthService {
 
   // Load user from localStorage on app start
   private loadUserFromStorage() {
+    if (!isPlatformBrowser(this.platformId)) return;
     const userJson = localStorage.getItem('currentUser');
     if (userJson) {
       try {
@@ -83,7 +86,9 @@ export class AuthService {
 
       // Save to state and localStorage
       this.currentUserSubject.next(user);
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      }
 
       return { success: true };
     } catch (error: any) {
@@ -100,7 +105,9 @@ export class AuthService {
       console.error('Logout error:', error);
     } finally {
       this.currentUserSubject.next(null);
-      localStorage.removeItem('currentUser');
+      if (isPlatformBrowser(this.platformId)) {
+        localStorage.removeItem('currentUser');
+      }
     }
   }
 
