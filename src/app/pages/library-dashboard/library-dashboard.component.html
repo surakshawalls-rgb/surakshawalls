@@ -1,390 +1,318 @@
 <!-- src/app/pages/library-dashboard/library-dashboard.component.html -->
-<div class="dashboard-container">
-  <div class="header">
-    <h2>📊 Library Dashboard</h2>
-    <button (click)="loadDashboardData()" class="btn-refresh">🔄 Refresh</button>
+<div class="dashboard-container-modern">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">
+          <mat-icon>dashboard</mat-icon>
+          Library Dashboard
+        </h1>
+        <p class="page-subtitle">Real-time overview of library operations</p>
+      </div>
+      <button mat-raised-button color="primary" (click)="loadDashboardData()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-  <div *ngIf="loading" class="loading">Loading dashboard...</div>
+  <div *ngIf="errorMessage" class="alert-danger">
+    <mat-icon>error</mat-icon>
+    {{ errorMessage }}
+  </div>
 
-  <div *ngIf="!loading">
-    <!-- Summary Cards -->
-    <div class="stats-grid">
-      <div class="stat-card blue">
-        <div class="stat-icon">🪑</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ stats.occupiedSeats }}/{{ stats.totalSeats }}</div>
-          <div class="stat-label">Occupied Seats</div>
-          <div class="stat-subtext">{{ getOccupancyPercentage() }}% Occupancy</div>
-        </div>
-      </div>
+  <div *ngIf="loading" class="loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>Loading dashboard data...</p>
+  </div>
 
-      <div class="stat-card green">
-        <div class="stat-icon">💰</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ formatCurrency(stats.totalRevenue) }}</div>
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-subtext">This Month</div>
-        </div>
-      </div>
+  <div *ngIf="!loading" class="dashboard-content">
+    <!-- Stats Cards Grid -->
+    <div class="stats-grid-modern">
+      <!-- Seat Occupancy Card -->
+      <mat-card class="stat-card-modern occupancy-card">
+        <mat-card-content>
+          <div class="card-icon blue">
+            <mat-icon>event_seat</mat-icon>
+          </div>
+          <div class="card-details">
+            <h3 class="card-value">{{ stats.occupiedSeats }}/{{ stats.totalSeats }}</h3>
+            <p class="card-label">Occupied Seats</p>
+            <div class="card-progress">
+              <mat-progress-bar 
+                mode="determinate" 
+                [value]="getOccupancyPercentage()"
+                color="primary">
+              </mat-progress-bar>
+              <span class="progress-text">{{ getOccupancyPercentage() }}% Occupancy</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-      <div class="stat-card orange">
-        <div class="stat-icon">💸</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ formatCurrency(stats.totalExpenses) }}</div>
-          <div class="stat-label">Total Expenses</div>
-          <div class="stat-subtext">This Month</div>
-        </div>
-      </div>
+      <!-- Revenue Card -->
+      <mat-card class="stat-card-modern revenue-card">
+        <mat-card-content>
+          <div class="card-icon green">
+            <mat-icon>attach_money</mat-icon>
+          </div>
+          <div class="card-details">
+            <h3 class="card-value">{{ formatCurrency(stats.totalRevenue) }}</h3>
+            <p class="card-label">Total Revenue</p>
+            <p class="card-subtext">
+              <mat-icon class="trend-up">trending_up</mat-icon>
+              This Month
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-      <div class="stat-card" [ngClass]="getCashBalanceClass()">
-        <div class="stat-icon">💵</div>
-        <div class="stat-content">
-          <div class="stat-value">{{ formatCurrency(stats.cashBalance) }}</div>
-          <div class="stat-label">Cash Balance</div>
-          <div class="stat-subtext">Current Available</div>
-        </div>
-      </div>
+      <!-- Expenses Card -->
+      <mat-card class="stat-card-modern expenses-card">
+        <mat-card-content>
+          <div class="card-icon orange">
+            <mat-icon>receipt_long</mat-icon>
+          </div>
+          <div class="card-details">
+            <h3 class="card-value">{{ formatCurrency(stats.totalExpenses) }}</h3>
+            <p class="card-label">Total Expenses</p>
+            <p class="card-subtext">
+              <mat-icon class="trend-down">trending_down</mat-icon>
+              This Month
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Cash Balance Card -->
+      <mat-card class="stat-card-modern balance-card" [class.negative]="stats.cashBalance < 0">
+        <mat-card-content>
+          <div class="card-icon" [ngClass]="stats.cashBalance >= 0 ? 'purple' : 'red'">
+            <mat-icon>account_balance_wallet</mat-icon>
+          </div>
+          <div class="card-details">
+            <h3 class="card-value">{{ formatCurrency(stats.cashBalance) }}</h3>
+            <p class="card-label">Cash Balance</p>
+            <p class="card-subtext">
+              <mat-icon>{{stats.cashBalance >= 0 ? 'check_circle' : 'warning'}}</mat-icon>
+              Current Available
+            </p>
+          </div>
+        </mat-card-content>
+      </mat-card>
     </div>
 
-    <!-- Shift Distribution -->
-    <div class="shift-distribution">
-      <h3>Shift Distribution</h3>
-      <div class="shift-bars">
-        <div class="shift-item">
-          <span class="shift-label">Full Time</span>
-          <div class="shift-bar">
-            <div class="shift-fill full-time" [style.width.%]="(stats.fullTimeCount / 36) * 100"></div>
+    <!-- Shift Distribution Card -->
+    <mat-card class="shift-card-modern">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>schedule</mat-icon>
+          Shift Distribution
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="shift-distribution-modern">
+          <div class="shift-item-modern">
+            <div class="shift-info">
+              <mat-icon class="shift-icon full-time">wb_sunny</mat-icon>
+              <span class="shift-name">Full Time</span>
+            </div>
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="(stats.fullTimeCount / 36) * 100"
+              color="primary">
+            </mat-progress-bar>
+            <span class="shift-count">{{ stats.fullTimeCount }} students</span>
           </div>
-          <span class="shift-count">{{ stats.fullTimeCount }}</span>
-        </div>
-        <div class="shift-item">
-          <span class="shift-label">First Half</span>
-          <div class="shift-bar">
-            <div class="shift-fill first-half" [style.width.%]="(stats.firstHalfCount / 36) * 100"></div>
+
+          <div class="shift-item-modern">
+            <div class="shift-info">
+              <mat-icon class="shift-icon morning">wb_twilight</mat-icon>
+              <span class="shift-name">Morning Shift</span>
+            </div>
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="(stats.firstHalfCount / 36) * 100"
+              color="accent">
+            </mat-progress-bar>
+            <span class="shift-count">{{ stats.firstHalfCount }} students</span>
           </div>
-          <span class="shift-count">{{ stats.firstHalfCount }}</span>
-        </div>
-        <div class="shift-item">
-          <span class="shift-label">Second Half</span>
-          <div class="shift-bar">
-            <div class="shift-fill second-half" [style.width.%]="(stats.secondHalfCount / 36) * 100"></div>
+
+          <div class="shift-item-modern">
+            <div class="shift-info">
+              <mat-icon class="shift-icon evening">nights_stay</mat-icon>
+              <span class="shift-name">Evening Shift</span>
+            </div>
+            <mat-progress-bar 
+              mode="determinate" 
+              [value]="(stats.secondHalfCount / 36) * 100"
+              color="warn">
+            </mat-progress-bar>
+            <span class="shift-count">{{ stats.secondHalfCount }} students</span>
           </div>
-          <span class="shift-count">{{ stats.secondHalfCount }}</span>
         </div>
-      </div>
-    </div>
+      </mat-card-content>
+    </mat-card>
 
     <!-- Two Column Layout -->
-    <div class="content-grid">
-      <!-- Expiring Seats -->
-      <div class="panel">
-        <div class="panel-header">
-          <h3>⚠️ Expiring Soon (Next 3 Days)</h3>
-          <button *ngIf="expiringSeats.length > 0" (click)="sendReminderToAll()" class="btn-small">
-            📱 Send All Reminders
+    <div class="content-grid-modern">
+      <!-- Expiring Seats Card -->
+      <mat-card class="data-card-modern">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon [matBadge]="expiringSeats.length" matBadgeColor="warn">warning</mat-icon>
+            Expiring Soon (Next 3 Days)
+          </mat-card-title>
+          <button *ngIf="expiringSeats.length > 0" mat-raised-button color="accent" (click)="sendReminderToAll()">
+            <mat-icon>send</mat-icon>
+            Send All Reminders
           </button>
-        </div>
-        <div class="panel-body">
-          <div *ngIf="expiringSeats.length === 0" class="empty-state">
-            <div class="empty-icon">✅</div>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="expiringSeats.length === 0" class="empty-state-modern">
+            <mat-icon>check_circle</mat-icon>
             <p>No seats expiring soon!</p>
           </div>
-          <table *ngIf="expiringSeats.length > 0" class="data-table">
-            <thead>
-              <tr>
-                <th>Seat</th>
-                <th>Student</th>
-                <th>Mobile</th>
-                <th>Shift</th>
-                <th>Expiry</th>
-                <th>Days Left</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let seat of expiringSeats">
-                <td><strong>{{ seat.seat_no }}</strong></td>
-                <td>{{ seat.student_name }}</td>
-                <td>{{ seat.mobile }}</td>
-                <td><span class="badge">{{ seat.shift_type }}</span></td>
-                <td>{{ formatDate(seat.expiry_date) }}</td>
-                <td>
-                  <span class="badge" [ngClass]="'badge-' + getDaysRemainingClass(seat.days_remaining)">
-                    {{ seat.days_remaining }} days
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- Recent Payments -->
-      <div class="panel">
-        <div class="panel-header">
-          <h3>💳 Recent Payments</h3>
-        </div>
-        <div class="panel-body">
-          <div *ngIf="recentPayments.length === 0" class="empty-state">
-            <div class="empty-icon">📭</div>
+          <table *ngIf="expiringSeats.length > 0" mat-table [dataSource]="expiringSeats" class="mat-elevation-z0">
+            <ng-container matColumnDef="seat_no">
+              <th mat-header-cell *matHeaderCellDef>Seat</th>
+              <td mat-cell *matCellDef="let seat"><strong>#{{ seat.seat_no }}</strong></td>
+            </ng-container>
+
+            <ng-container matColumnDef="student">
+              <th mat-header-cell *matHeaderCellDef>Student</th>
+              <td mat-cell *matCellDef="let seat">
+                <div class="student-cell">
+                  <strong>{{ seat.student_name }}</strong>
+                  <span class="student-mobile">{{ seat.mobile }}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="shift">
+              <th mat-header-cell *matHeaderCellDef>Shift</th>
+              <td mat-cell *matCellDef="let seat">
+                <mat-chip class="shift-chip">{{ seat.shift_type }}</mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="expiry">
+              <th mat-header-cell *matHeaderCellDef>Expiry</th>
+              <td mat-cell *matCellDef="let seat">{{ formatDate(seat.expiry_date) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="days">
+              <th mat-header-cell *matHeaderCellDef>Days Left</th>
+              <td mat-cell *matCellDef="let seat">
+                <mat-chip [color]="seat.days_remaining <= 1 ? 'warn' : 'primary'">
+                  <mat-icon>access_time</mat-icon>
+                  {{ seat.days_remaining }} days
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['seat_no', 'student', 'shift', 'expiry', 'days']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['seat_no', 'student', 'shift', 'expiry', 'days'];"></tr>
+          </table>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Recent Payments Card -->
+      <mat-card class="data-card-modern">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>payment</mat-icon>
+            Recent Payments
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div *ngIf="recentPayments.length === 0" class="empty-state-modern">
+            <mat-icon>inbox</mat-icon>
             <p>No payments yet</p>
           </div>
-          <table *ngIf="recentPayments.length > 0" class="data-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Student</th>
-                <th>Shift</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let payment of recentPayments">
-                <td>{{ formatDate(payment.payment_date) }}</td>
-                <td>{{ payment.student_name }}</td>
-                <td><span class="badge">{{ payment.shift_type }}</span></td>
-                <td class="text-success"><strong>{{ formatCurrency(payment.amount_paid) }}</strong></td>
-              </tr>
-            </tbody>
+
+          <table *ngIf="recentPayments.length > 0" mat-table [dataSource]="recentPayments" class="mat-elevation-z0">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Date</th>
+              <td mat-cell *matCellDef="let payment">{{ formatDate(payment.payment_date) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="student">
+              <th mat-header-cell *matHeaderCellDef>Student</th>
+              <td mat-cell *matCellDef="let payment"><strong>{{ payment.student_name }}</strong></td>
+            </ng-container>
+
+            <ng-container matColumnDef="shift">
+              <th mat-header-cell *matHeaderCellDef>Shift</th>
+              <td mat-cell *matCellDef="let payment">
+                <mat-chip class="shift-chip">{{ payment.shift_type }}</mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Amount</th>
+              <td mat-cell *matCellDef="let payment">
+                <span class="amount-success">{{ formatCurrency(payment.amount_paid) }}</span>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="['date', 'student', 'shift', 'amount']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['date', 'student', 'shift', 'amount'];"></tr>
           </table>
-        </div>
-      </div>
+        </mat-card-content>
+      </mat-card>
     </div>
 
-    <!-- Recent Expenses -->
-    <div class="panel">
-      <div class="panel-header">
-        <h3>💸 Recent Expenses</h3>
-      </div>
-      <div class="panel-body">
-        <div *ngIf="recentExpenses.length === 0" class="empty-state">
-          <div class="empty-icon">📭</div>
+    <!-- Recent Expenses Card -->
+    <mat-card class="data-card-modern full-width">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>receipt</mat-icon>
+          Recent Expenses
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div *ngIf="recentExpenses.length === 0" class="empty-state-modern">
+          <mat-icon>inbox</mat-icon>
           <p>No expenses yet</p>
         </div>
-        <table *ngIf="recentExpenses.length > 0" class="data-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Category</th>
-              <th>Description</th>
-              <th>Vendor</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let expense of recentExpenses">
-              <td>{{ formatDate(expense.date) }}</td>
-              <td><span class="badge badge-secondary">{{ expense.category }}</span></td>
-              <td>{{ expense.description || '-' }}</td>
-              <td>{{ expense.vendor_name || '-' }}</td>
-              <td class="text-danger"><strong>{{ formatCurrency(expense.amount) }}</strong></td>
-            </tr>
-          </tbody>
+
+        <table *ngIf="recentExpenses.length > 0" mat-table [dataSource]="recentExpenses" class="mat-elevation-z0">
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let expense">{{ formatDate(expense.date) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let expense">
+              <mat-chip color="accent">{{ expense.category }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let expense">{{ expense.description || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="vendor">
+            <th mat-header-cell *matHeaderCellDef>Vendor</th>
+            <td mat-cell *matCellDef="let expense">{{ expense.vendor_name || '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let expense">
+              <span class="amount-danger">{{ formatCurrency(expense.amount) }}</span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['date', 'category', 'description', 'vendor', 'amount']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['date', 'category', 'description', 'vendor', 'amount'];"></tr>
         </table>
-      </div>
-    </div>
-
-    <!-- ADMIN ONLY: Attendance Section -->
-    <div *ngIf="isAdmin()" class="panel">
-      <div class="panel-header">
-        <h3>📋 Today's Attendance</h3>
-        <button (click)="toggleAttendanceSection()" class="btn-small">
-          {{ showAttendanceSection ? '▲ Hide' : '▼ Show' }}
-        </button>
-      </div>
-      <div *ngIf="showAttendanceSection" class="panel-body">
-        <div *ngIf="todayAttendance.length === 0" class="empty-state">
-          <div class="empty-icon">📭</div>
-          <p>No attendance records today</p>
-        </div>
-        
-        <div *ngIf="todayAttendance.length > 0">
-          <div class="attendance-summary">
-            <span class="badge badge-success">✅ Present: {{ getAttendanceStats().present }}</span>
-            <span class="badge badge-warning">⏰ Late: {{ getAttendanceStats().late }}</span>
-            <span class="badge badge-secondary">🚪 Checked Out: {{ getAttendanceStats().checkedOut }}</span>
-            <span class="badge badge-primary">👥 Total: {{ getAttendanceStats().total }}</span>
-          </div>
-
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Student Name</th>
-                <th>Seat No</th>
-                <th>Check In</th>
-                <th>Check Out</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let attendance of todayAttendance">
-                <td><strong>{{ attendance.student_name }}</strong></td>
-                <td>{{ attendance.seat_no }}</td>
-                <td>{{ attendance.check_in_time }}</td>
-                <td>{{ attendance.check_out_time || '-' }}</td>
-                <td>
-                  <span class="badge" 
-                        [ngClass]="attendance.status === 'present' ? 'badge-success' : 'badge-warning'">
-                    {{ attendance.status === 'present' ? '✅ On Time' : '⏰ Late' }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ADMIN ONLY: Detailed Reports Section -->
-    <div *ngIf="isAdmin()" class="panel">
-      <div class="panel-header">
-        <h3>📊 Detailed Reports</h3>
-        <button (click)="toggleReportsSection()" class="btn-small">
-          {{ showReportsSection ? '▲ Hide' : '▼ Show' }}
-        </button>
-      </div>
-      <div *ngIf="showReportsSection" class="panel-body">
-        <!-- Month/Year Selector -->
-        <div class="report-filters">
-          <label>Month:</label>
-          <select [(ngModel)]="selectedMonth" (change)="onMonthYearChange()">
-            <option [value]="1">January</option>
-            <option [value]="2">February</option>
-            <option [value]="3">March</option>
-            <option [value]="4">April</option>
-            <option [value]="5">May</option>
-            <option [value]="6">June</option>
-            <option [value]="7">July</option>
-            <option [value]="8">August</option>
-            <option [value]="9">September</option>
-            <option [value]="10">October</option>
-            <option [value]="11">November</option>
-            <option [value]="12">December</option>
-          </select>
-
-          <label>Year:</label>
-          <select [(ngModel)]="selectedYear" (change)="onMonthYearChange()">
-            <option [value]="2024">2024</option>
-            <option [value]="2025">2025</option>
-            <option [value]="2026">2026</option>
-          </select>
-        </div>
-
-        <!-- Monthly Revenue Breakdown -->
-        <div class="report-section">
-          <div class="report-section-header">
-            <h4>💰 Monthly Revenue Breakdown</h4>
-            <button (click)="exportReportToCSV('revenue')" class="btn-small">📥 Export CSV</button>
-          </div>
-          <table *ngIf="monthlyRevenue.length > 0" class="data-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Registration Fees</th>
-                <th>Seat Rentals</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of monthlyRevenue">
-                <td>{{ formatDate(row.date) }}</td>
-                <td>{{ formatCurrency(row.registration_fees) }}</td>
-                <td>{{ formatCurrency(row.seat_rentals) }}</td>
-                <td><strong>{{ formatCurrency(row.total) }}</strong></td>
-              </tr>
-              <tr class="total-row">
-                <td><strong>TOTAL</strong></td>
-                <td colspan="2"></td>
-                <td><strong>{{ formatCurrency(getTotalRevenue()) }}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="monthlyRevenue.length === 0" class="empty-state">
-            No revenue data for selected period
-          </div>
-        </div>
-
-        <!-- Student Payment Report -->
-        <div class="report-section">
-          <div class="report-section-header">
-            <h4>👥 Student-wise Payment Report</h4>
-            <button (click)="exportReportToCSV('student-payments')" class="btn-small">📥 Export CSV</button>
-          </div>
-          <table *ngIf="studentPaymentReport.length > 0" class="data-table">
-            <thead>
-              <tr>
-                <th>Student Name</th>
-                <th>Total Paid</th>
-                <th>Payment Count</th>
-                <th>Last Payment</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of studentPaymentReport">
-                <td><strong>{{ row.student_name }}</strong></td>
-                <td>{{ formatCurrency(row.total_paid) }}</td>
-                <td>{{ row.payment_count }}</td>
-                <td>{{ row.last_payment_date ? formatDate(row.last_payment_date) : '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="studentPaymentReport.length === 0" class="empty-state">
-            No payment data available
-          </div>
-        </div>
-
-        <!-- Expense Category Report -->
-        <div class="report-section">
-          <div class="report-section-header">
-            <h4>💸 Expense by Category</h4>
-            <button (click)="exportReportToCSV('expenses')" class="btn-small">📥 Export CSV</button>
-          </div>
-          <table *ngIf="expenseCategoryReport.length > 0" class="data-table">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Total Amount</th>
-                <th>Transaction Count</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of expenseCategoryReport">
-                <td><span class="badge badge-secondary">{{ row.category }}</span></td>
-                <td>{{ formatCurrency(row.total) }}</td>
-                <td>{{ row.count }}</td>
-              </tr>
-              <tr class="total-row">
-                <td><strong>TOTAL</strong></td>
-                <td><strong>{{ formatCurrency(getTotalExpenses()) }}</strong></td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-          <div *ngIf="expenseCategoryReport.length === 0" class="empty-state">
-            No expense data for selected period
-          </div>
-        </div>
-
-        <!-- Profit & Loss Statement -->
-        <div *ngIf="profitLoss" class="report-section">
-          <h4>📈 Profit & Loss Statement</h4>
-          <div class="pl-summary">
-            <div class="pl-item revenue">
-              <span class="pl-label">Total Revenue:</span>
-              <span class="pl-value">{{ formatCurrency(profitLoss.revenue) }}</span>
-            </div>
-            <div class="pl-item expense">
-              <span class="pl-label">Total Expenses:</span>
-              <span class="pl-value">{{ formatCurrency(profitLoss.expenses) }}</span>
-            </div>
-            <div class="pl-item profit" [ngClass]="profitLoss.profit >= 0 ? 'positive' : 'negative'">
-              <span class="pl-label">Net Profit:</span>
-              <span class="pl-value"><strong>{{ formatCurrency(profitLoss.profit) }}</strong></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </mat-card-content>
+    </mat-card>
   </div>
 </div>

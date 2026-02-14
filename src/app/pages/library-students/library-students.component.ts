@@ -4,10 +4,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/library.service';
 
 @Component({
@@ -21,7 +24,10 @@ import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/libr
     MatPaginatorModule,
     MatTooltipModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatCardModule,
+    MatChipsModule,
+    MatProgressBarModule
   ],
   templateUrl: './library-students.component.html',
   styleUrls: ['./library-students.component.css']
@@ -33,6 +39,7 @@ export class LibraryStudentsComponent implements OnInit {
   displayedColumns: string[] = ['photo', 'name', 'mobile', 'emergency_contact', 'address', 'joining_date', 'registration_fee_paid', 'status', 'actions'];
   
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
   
   searchTerm = '';
   filterStatus = 'all';
@@ -163,6 +170,7 @@ export class LibraryStudentsComponent implements OnInit {
     // Update MatTableDataSource
     this.dataSource.data = this.filteredStudents;
     this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
   }
 
   onSearch() {

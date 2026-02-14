@@ -1,520 +1,647 @@
-/* ===== BOOKMYSHOW INSPIRED DESIGN - UNIVERSAL STYLES ===== */
+/* ===== MODERN MATERIAL DESIGN - LIBRARY EXPENSES ===== */
 
-/* Color Variables */
-:root {
-  --primary-color: #f84464;
-  --primary-dark: #dc143c;
-  --primary-light: #ff6b88;
-  --success-color: #4CAF50;
-  --success-dark: #388E3C;
-  --danger-color: #eb4b4b;
-  --warning-color: #ff9800;
-  --text-color: #333333;
-  --text-light: #666666;
-  --border-color: #dce0e4;
-  --background: #f5f5f5;
-  --white: #ffffff;
-  --gray-light: #e0e0e0;
-  --gray-medium: #bdbdbd;
-}
-
-.page-container {
-  padding: 16px;
+/* Container */
+.expenses-container-modern {
+  padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--background);
+  background: #f5f7fa;
   min-height: 100vh;
 }
 
-/* Page Header - BookMyShow Style */
-.page-header {
-  background: var(--white);
-  padding: 20px 24px;
-  border-radius: 12px;
-  margin-bottom: 16px;
+/* Header Section */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .page-title {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: var(--text-color);
-  margin: 0 0 4px 0;
+  color: #1a1a2e;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.page-subtitle {
-  font-size: 0.9375rem;
-  color: var(--text-light);
-  margin: 0;
+.page-title mat-icon {
+  font-size: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: #667eea;
 }
 
-/* Form Container - BookMyShow Style */
-.form-container {
-  background: var(--white);
-  padding: 24px;
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Alert Messages */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
   border-radius: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
 }
 
-.form-section {
-  margin-bottom: 28px;
+.alert mat-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
-.form-section:last-child {
-  margin-bottom: 0;
+.alert-success {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: #2e7d32;
+  border-left: 4px solid #4CAF50;
 }
 
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0 0 16px 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
+.alert-error {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+  border-left: 4px solid #f44336;
 }
 
-/* Form Grid - BookMyShow Style */
-.form-grid {
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Stats Grid */
+.stats-grid-modern {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
+  margin-bottom: 24px;
+  animation: fadeIn 0.5s ease-out;
 }
 
-.form-field {
+.stat-card-modern {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.stat-card-modern:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.stat-card-modern .mat-mdc-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-icon mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: white;
+}
+
+.card-icon.blue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card-icon.orange {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+.card-icon.green {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-label {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+/* Filters Card */
+.filters-card {
+  margin-bottom: 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.filters-card .mat-mdc-card-header {
+  padding: 20px 24px 16px;
+}
+
+.filters-card .mat-mdc-card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.filters-card .mat-mdc-card-title mat-icon {
+  color: #667eea;
+}
+
+.filters-card .mat-mdc-card-content {
+  padding: 0 24px 24px;
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.filter-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.form-label {
-  font-size: 0.9375rem;
+.filter-field label {
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-color);
+  color: #333;
 }
 
-.form-label.required::after {
-  content: " *";
-  color: var(--danger-color);
-}
-
-.form-input,
-.form-select,
-.form-textarea {
+.filter-select,
+.filter-input {
   padding: 12px 16px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #dce0e4;
   border-radius: 8px;
   font-size: 1rem;
   transition: all 0.2s;
-  background: var(--white);
-  font-family: inherit;
-  color: var(--text-color);
+  background: white;
+  color: #333;
 }
 
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
+.filter-select:focus,
+.filter-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.1);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.form-input:disabled,
-.form-select:disabled,
-.form-textarea:disabled {
-  background: var(--background);
-  color: var(--text-light);
-  cursor: not-allowed;
+/* Loading State */
+.loading-container {
+  text-align: center;
+  padding: 60px 24px;
 }
 
-.form-textarea {
-  min-height: 120px;
-  resize: vertical;
+.loading-container p {
+  margin-top: 16px;
+  font-size: 1.125rem;
+  color: #666;
 }
 
-.form-error {
-  color: var(--danger-color);
-  font-size: 0.875rem;
-  margin-top: 4px;
+/* Table Card */
+.table-card {
+  margin-bottom: 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  animation: fadeIn 0.5s ease-out 0.2s both;
 }
 
-/* Form Actions - BookMyShow Style */
-.form-actions {
+.table-card .mat-mdc-card-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.table-card .mat-mdc-card-title {
   display: flex;
+  align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border-color);
-}
-
-/* Buttons - BookMyShow Style */
-.btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  white-space: nowrap;
-  text-transform: capitalize;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: var(--white);
-}
-
-.btn-primary:hover {
-  background: var(--primary-dark);
-  transform: scale(1.02);
-}
-
-.btn-secondary {
-  background: var(--white);
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background: var(--background);
-}
-
-.btn-success {
-  background: var(--success-color);
-  color: var(--white);
-}
-
-.btn-success:hover {
-  background: var(--success-dark);
-  transform: scale(1.02);
-}
-
-.btn-danger {
-  background: var(--danger-color);
-  color: var(--white);
-}
-
-.btn-danger:hover {
-  background: #d32f2f;
-  transform: scale(1.02);
-}
-
-.btn:disabled {
-  background: var(--gray-light);
-  color: var(--text-light);
-  cursor: not-allowed;
-  transform: none;
-}
-
-.btn:active {
-  transform: scale(0.98);
-}
-
-/* Data Table - BookMyShow Style */
-.table-container {
-  background: var(--white);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.table-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.table-title {
   font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0;
+  font-weight: 600;
+  color: #1a1a2e;
 }
 
-.table-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.table-card .mat-mdc-card-title mat-icon {
+  color: #667eea;
+}
+
+.table-card .mat-mdc-card-content {
+  padding: 0;
 }
 
 .table-wrapper {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
-.data-table {
+.expenses-table {
   width: 100%;
-  border-collapse: collapse;
 }
 
-.data-table thead {
-  background: var(--background);
-}
-
-.data-table th {
-  padding: 16px 20px;
-  text-align: left;
-  font-size: 0.9375rem;
+.expenses-table .mat-mdc-header-cell {
+  background: #f5f7fa;
   font-weight: 700;
-  color: var(--text-color);
-  border-bottom: 1px solid var(--border-color);
-  white-space: nowrap;
+  color: #1a1a2e;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.data-table td {
-  padding: 16px 20px;
-  font-size: 1rem;
-  color: var(--text-color);
-  border-bottom: 1px solid var(--border-color);
+.expenses-table .mat-mdc-cell {
+  padding: 16px;
+  color: #333;
 }
 
-.data-table tbody tr {
+.expenses-table .mat-mdc-row {
   transition: background 0.2s;
 }
 
-.data-table tbody tr:hover {
-  background: var(--background);
+.expenses-table .mat-mdc-row:hover {
+  background: #f5f7fa;
 }
 
-.data-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* Status Badges - BookMyShow Style */
-.badge {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.875rem;
+/* Category and Payment Chips */
+.category-chip,
+.payment-chip {
+  font-size: 0.813rem;
   font-weight: 600;
-  display: inline-flex;
+  text-transform: capitalize;
+}
+
+.category-chip {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white !important;
+}
+
+.payment-chip {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+/* Amount Styling */
+.amount-danger {
+  color: #f44336;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.amount-success {
+  color: #4CAF50;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+/* Table Footer */
+.table-footer {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  padding: 20px 24px;
+  background: #f5f7fa;
+  border-top: 2px solid #dce0e4;
 }
 
-.badge.success {
-  background: #e8f5e9;
-  color: var(--success-dark);
+.footer-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1a1a2e;
 }
 
-.badge.warning {
-  background: #fff3e0;
-  color: #ef6c00;
+.footer-value {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.badge.danger {
-  background: #ffebee;
-  color: #c62828;
+/* Empty State */
+.empty-state-card {
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.badge.info {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-
-/* Empty State - BookMyShow Style */
 .empty-state {
   text-align: center;
   padding: 60px 24px;
-  color: var(--text-light);
 }
 
 .empty-icon {
-  font-size: 4rem;
-  color: var(--gray-light);
-  margin-bottom: 16px;
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  color: #ccc;
+  margin: 0 auto 20px;
 }
 
-.empty-text {
-  font-size: 1.125rem;
+.empty-state h3 {
+  font-size: 1.5rem;
   font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--text-color);
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
 }
 
-.empty-subtext {
+.empty-state p {
   font-size: 1rem;
-  color: var(--text-light);
+  color: #666;
+  margin: 0 0 24px 0;
 }
 
-/* Loading State - BookMyShow Style */
-.loading-container {
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== MODAL STYLES ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 60px;
+  z-index: 900 !important;
+  padding: 20px;
+  animation: fadeInOverlay 0.3s ease-out;
 }
 
-.spinner {
-  border: 4px solid var(--background);
-  border-top: 4px solid var(--primary-color);
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  animation: spin 0.8s linear infinite;
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease-out;
 }
 
-/* Stats Cards - BookMyShow Style */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.stat-card {
-  background: var(--white);
+.modal-content.large {
+  max-width: 680px;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #dce0e4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 16px 16px 0 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-header h3 mat-icon {
+  color: #667eea;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #f84464;
+  transform: rotate(90deg);
+}
+
+.modal-body {
   padding: 24px;
-  border-radius: 12px;
-  transition: all 0.3s;
 }
 
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #dce0e4;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: #fafafa;
+  border-radius: 0 0 16px 16px;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
-.stat-value {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 8px;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
-.stat-label {
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333333;
+}
+
+.form-group label .required {
+  color: #f84464;
+}
+
+.form-control {
+  padding: 12px 16px;
+  border: 1px solid #dce0e4;
+  border-radius: 8px;
   font-size: 1rem;
-  color: var(--text-light);
-  font-weight: 500;
+  transition: all 0.2s;
+  background: white;
+  color: #333333;
+  font-family: inherit;
 }
 
-/* Alerts - BookMyShow Style */
-.alert {
-  padding: 16px 20px;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  font-size: 1rem;
-  font-weight: 500;
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.alert-success {
-  background: #e8f5e9;
-  color: var(--success-dark);
+.form-control:disabled {
+  background: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
 }
 
-.alert-error {
-  background: #ffebee;
-  color: #c62828;
+textarea.form-control {
+  resize: vertical;
+  min-height: 80px;
 }
 
-.alert-warning {
-  background: #fff3e0;
-  color: #ef6c00;
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+  .stats-grid-modern {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.alert-info {
-  background: #e3f2fd;
-  color: #1565c0;
-}
-
-/* ===== RESPONSIVE - BOOKMYSHOW STYLE ===== */
 @media (max-width: 768px) {
-  .page-container {
-    padding: 12px;
+  .expenses-container-modern {
+    padding: 16px;
   }
 
-  .page-header,
-  .form-container,
-  .table-container {
-    padding: 20px;
-    border-radius: 10px;
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .page-title mat-icon {
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions button {
+    flex: 1;
+  }
+
+  .stats-grid-modern {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-value {
+    font-size: 1.5rem;
+  }
+
+  .filters-row {
+    grid-template-columns: 1fr;
+  }
+
+  .table-wrapper {
+    overflow-x: scroll;
+  }
+
+  .expenses-table {
+    min-width: 800px;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    margin: 20px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .expenses-container-modern {
+    padding: 12px;
   }
 
   .page-title {
     font-size: 1.25rem;
   }
 
-  .form-grid {
-    grid-template-columns: 1fr;
+  .card-value {
+    font-size: 1.25rem;
   }
 
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 24px;
-  }
-
-  .table-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .table-actions {
-    width: 100%;
-  }
-
-  .data-table th,
-  .data-table td {
-    padding: 12px 16px;
-    font-size: 0.9375rem;
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .stat-value {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-container {
-    padding: 8px;
-  }
-
-  .page-header,
-  .form-container {
-    padding: 16px;
-  }
-
-  .form-section {
-    margin-bottom: 24px;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .btn {
-    padding: 14px 20px;
-  }
-
-  .page-title {
+  .modal-header h3 {
     font-size: 1.125rem;
-  }
-
-  .section-title {
-    font-size: 1rem;
   }
 }

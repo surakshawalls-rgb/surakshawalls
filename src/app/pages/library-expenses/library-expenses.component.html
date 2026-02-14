@@ -1,109 +1,205 @@
 <!-- src/app/pages/library-expenses/library-expenses.component.html -->
-<div class="expenses-container">
-  <div class="header">
-    <h2>💸 Library Expenses</h2>
-    <button (click)="openAddModal()" class="btn btn-primary">➕ Add Expense</button>
+<div class="expenses-container-modern">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="page-title">
+      <mat-icon>receipt_long</mat-icon>
+      <span>Library Expenses</span>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="loadExpenses()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-raised-button color="primary" (click)="exportToCSV()">
+        <mat-icon>file_download</mat-icon>
+        Export CSV
+      </button>
+      <button mat-raised-button color="primary" (click)="openAddModal()">
+        <mat-icon>add</mat-icon>
+        Add Expense
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon>
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    {{ errorMessage }}
+  </div>
 
-  <!-- Summary Cards -->
-  <div class="summary-cards">
-    <div class="summary-card blue">
-      <div class="card-icon">💰</div>
+  <!-- Summary Stats Cards -->
+  <div class="stats-grid-modern" *ngIf="!loading">
+    <mat-card class="stat-card-modern blue">
+      <div class="card-icon blue">
+        <mat-icon>account_balance_wallet</mat-icon>
+      </div>
       <div class="card-content">
-        <div class="card-value">{{ formatCurrency(cashBalance) }}</div>
         <div class="card-label">Cash Balance</div>
+        <div class="card-value">{{ formatCurrency(cashBalance) }}</div>
       </div>
-    </div>
-    <div class="summary-card orange">
-      <div class="card-icon">💸</div>
+    </mat-card>
+
+    <mat-card class="stat-card-modern orange">
+      <div class="card-icon orange">
+        <mat-icon>payments</mat-icon>
+      </div>
       <div class="card-content">
-        <div class="card-value">{{ formatCurrency(monthlyTotal) }}</div>
         <div class="card-label">Filtered Total</div>
+        <div class="card-value">{{ formatCurrency(monthlyTotal) }}</div>
       </div>
-    </div>
-    <div class="summary-card green">
-      <div class="card-icon">📊</div>
+    </mat-card>
+
+    <mat-card class="stat-card-modern green">
+      <div class="card-icon green">
+        <mat-icon>list_alt</mat-icon>
+      </div>
       <div class="card-content">
-        <div class="card-value">{{ filteredExpenses.length }}</div>
         <div class="card-label">Total Entries</div>
+        <div class="card-value">{{ filteredExpenses.length }}</div>
       </div>
-    </div>
+    </mat-card>
   </div>
 
-  <!-- Filters -->
-  <div class="filters">
-    <select [(ngModel)]="filterCategory" (change)="onFilterChange()" class="filter-select">
-      <option value="all">All Categories</option>
-      <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
-    </select>
+  <!-- Filters Card -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Filters
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="filters-row">
+        <div class="filter-field">
+          <label>Category</label>
+          <select [(ngModel)]="filterCategory" (change)="onFilterChange()" class="filter-select">
+            <option value="all">All Categories</option>
+            <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+          </select>
+        </div>
+        
+        <div class="filter-field">
+          <label>Month</label>
+          <input 
+            type="month" 
+            [(ngModel)]="filterMonth" 
+            (change)="onFilterChange()" 
+            class="filter-input">
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
-    <input 
-      type="month" 
-      [(ngModel)]="filterMonth" 
-      (change)="onFilterChange()" 
-      class="filter-input">
-
-    <button (click)="loadExpenses()" class="btn btn-secondary">🔄 Refresh</button>
-    <button (click)="exportToCSV()" class="btn btn-success">📥 Export CSV</button>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>Loading expenses...</p>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading expenses...</div>
+  <!-- Expenses Table Card -->
+  <mat-card *ngIf="!loading && filteredExpenses.length > 0" class="table-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>receipt</mat-icon>
+        Expense Records
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="filteredExpenses" class="expenses-table">
+          <!-- Date Column -->
+          <ng-container matColumnDef="date">
+            <th mat-header-cell *matHeaderCellDef>Date</th>
+            <td mat-cell *matCellDef="let expense">{{ formatDate(expense.date!) }}</td>
+          </ng-container>
 
-  <!-- Expenses Table -->
-  <div *ngIf="!loading && filteredExpenses.length > 0" class="table-container">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Category</th>
-          <th>Description</th>
-          <th>Vendor</th>
-          <th>Amount</th>
-          <th>Payment Mode</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let expense of filteredExpenses">
-          <td>{{ formatDate(expense.date!) }}</td>
-          <td>
-            <span class="category-badge">{{ getCategoryIcon(expense.category!) }}</span>
-          </td>
-          <td>{{ expense.description || '-' }}</td>
-          <td>{{ expense.vendor_name || '-' }}</td>
-          <td class="amount-cell">{{ formatCurrency(expense.amount!) }}</td>
-          <td>
-            <span class="badge badge-secondary">{{ expense.payment_mode }}</span>
-          </td>
-          <td>
-            <button (click)="deleteExpense(expense)" class="btn-icon danger" title="Delete">🗑️</button>
-          </td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr class="total-row">
-          <td colspan="4"><strong>Total</strong></td>
-          <td class="amount-cell"><strong>{{ formatCurrency(monthlyTotal) }}</strong></td>
-          <td colspan="2"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
+          <!-- Category Column -->
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let expense">
+              <mat-chip class="category-chip">{{ getCategoryIcon(expense.category!) }}</mat-chip>
+            </td>
+          </ng-container>
 
-  <div *ngIf="!loading && filteredExpenses.length === 0" class="empty-state">
-    <div class="empty-icon">📭</div>
-    <p>No expenses found</p>
-    <button (click)="openAddModal()" class="btn btn-primary">Add First Expense</button>
-  </div>
+          <!-- Description Column -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let expense">{{ expense.description || '-' }}</td>
+          </ng-container>
+
+          <!-- Vendor Column -->
+          <ng-container matColumnDef="vendor">
+            <th mat-header-cell *matHeaderCellDef>Vendor</th>
+            <td mat-cell *matCellDef="let expense">{{ expense.vendor_name || '-' }}</td>
+          </ng-container>
+
+          <!-- Amount Column -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef>Amount</th>
+            <td mat-cell *matCellDef="let expense" class="amount-danger">
+              {{ formatCurrency(expense.amount!) }}
+            </td>
+          </ng-container>
+
+          <!-- Payment Mode Column -->
+          <ng-container matColumnDef="payment_mode">
+            <th mat-header-cell *matHeaderCellDef>Payment</th>
+            <td mat-cell *matCellDef="let expense">
+              <mat-chip class="payment-chip">{{ expense.payment_mode }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let expense">
+              <button mat-icon-button color="warn" (click)="deleteExpense(expense)" matTooltip="Delete Expense">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="['date', 'category', 'description', 'vendor', 'amount', 'payment_mode', 'actions']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['date', 'category', 'description', 'vendor', 'amount', 'payment_mode', 'actions'];"></tr>
+        </table>
+      </div>
+
+      <!-- Table Footer with Total -->
+      <div class="table-footer">
+        <div class="footer-label">Total Expenses:</div>
+        <div class="footer-value amount-danger">{{ formatCurrency(monthlyTotal) }}</div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Empty State -->
+  <mat-card *ngIf="!loading && filteredExpenses.length === 0" class="empty-state-card">
+    <mat-card-content>
+      <div class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <h3>No Expenses Found</h3>
+        <p>Start tracking expenses by adding your first entry</p>
+        <button mat-raised-button color="primary" (click)="openAddModal()">
+          <mat-icon>add</mat-icon>
+          Add First Expense
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
   <!-- Add Expense Modal -->
   <div class="modal-overlay" *ngIf="showAddModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>➕ Add New Expense</h3>
+        <h3>
+          <mat-icon>add_circle</mat-icon>
+          Add New Expense
+        </h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
@@ -146,8 +242,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
-        <button (click)="submitExpense()" class="btn btn-primary">💾 Save Expense</button>
+        <button mat-button (click)="closeModal()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="submitExpense()">
+          <mat-icon>save</mat-icon>
+          Save Expense
+        </button>
       </div>
     </div>
   </div>

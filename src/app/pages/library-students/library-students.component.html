@@ -1,37 +1,84 @@
 <!-- src/app/pages/library-students/library-students.component.html -->
-<div class="students-container">
-  <div class="header">
-    <h2>👨‍🎓 Library Students</h2>
-    <button (click)="openAddModal()" class="btn btn-primary">➕ Add Student</button>
+<div class="students-container-modern">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="page-title">
+      <mat-icon>school</mat-icon>
+      <span>Library Students</span>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="accent" (click)="loadStudents()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-raised-button color="primary" (click)="openAddModal()">
+        <mat-icon>person_add</mat-icon>
+        Add Student
+      </button>
+    </div>
   </div>
 
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-
-  <!-- Filters -->
-  <div class="filters">
-    <input 
-      type="text" 
-      [(ngModel)]="searchTerm" 
-      (input)="onSearch()" 
-      placeholder="🔍 Search by name or mobile..." 
-      class="search-input">
-    
-    <select [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
-      <option value="all">All Status</option>
-      <option value="active">Active</option>
-      <option value="inactive">Inactive</option>
-      <option value="suspended">Suspended</option>
-    </select>
-
-    <button (click)="loadStudents()" class="btn btn-secondary">🔄 Refresh</button>
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon>
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <mat-icon>error</mat-icon>
+    {{ errorMessage }}
   </div>
 
-  <div *ngIf="loading" class="loading">Loading students...</div>
+  <!-- Filters Card -->
+  <mat-card class="filters-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>filter_list</mat-icon>
+        Search & Filter
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="filters-row">
+        <div class="filter-field">
+          <label>Search</label>
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            (input)="onSearch()" 
+            placeholder="Search by name or mobile..." 
+            class="search-input">
+        </div>
+        
+        <div class="filter-field">
+          <label>Status</label>
+          <select [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>Loading students...</p>
+  </div>
 
   <!-- Students Material Table -->
-  <div *ngIf="!loading && filteredStudents.length > 0" class="table-container mat-elevation-z2">
-    <table mat-table [dataSource]="dataSource" matSort class="students-table">
+  <mat-card *ngIf="!loading && filteredStudents.length > 0" class="table-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>people</mat-icon>
+        Student Records
+        <mat-chip class="count-chip">{{ filteredStudents.length }}</mat-chip>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" matSort class="students-table">
       
       <!-- Photo Column -->
       <ng-container matColumnDef="photo">
@@ -139,13 +186,32 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="student-row"></tr>
     </table>
-  </div>
+      </div>
+      
+      <!-- Paginator -->
+      <mat-paginator 
+        [pageSizeOptions]="[10, 25, 50, 100]" 
+        [pageSize]="25"
+        showFirstLastButtons
+        aria-label="Select page of students">
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 
-  <div *ngIf="!loading && filteredStudents.length === 0" class="empty-state">
-    <div class="empty-icon">📭</div>
-    <p>No students found</p>
-    <button (click)="openAddModal()" class="btn btn-primary">Add First Student</button>
-  </div>
+  <!-- Empty State -->
+  <mat-card *ngIf="!loading && filteredStudents.length === 0" class="empty-state-card">
+    <mat-card-content>
+      <div class="empty-state">
+        <mat-icon class="empty-icon">inbox</mat-icon>
+        <h3>No Students Found</h3>
+        <p>Start managing students by adding your first entry</p>
+        <button mat-raised-button color="primary" (click)="openAddModal()">
+          <mat-icon>person_add</mat-icon>
+          Add First Student
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
   <!-- Add Student Modal -->
   <div class="modal-overlay" *ngIf="showAddModal" (click)="closeModal()">
