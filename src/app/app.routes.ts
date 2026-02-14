@@ -34,28 +34,22 @@ import { LibraryExpensesComponent } from './pages/library-expenses/library-expen
 import { DigitalLibraryComponent } from './pages/digital-library/digital-library.component';
 
 // 🌐🌐🌐 PUBLIC PAGES (NO AUTH REQUIRED) 🌐🌐🌐
-import { PublicHomeComponent } from './pages/public-home/public-home.component';
-import { WallsComponent } from './pages/walls/walls.component';
-import { LibraryPublicComponent } from './pages/library-public/library-public.component';
-import { PublicResourcesComponent } from './pages/public-resources/public-resources.component';
-import { QuotationComponent } from './pages/quotation/quotation.component';
+// EXCLUDED FROM DEPLOYMENT - Public pages not committed to repository
+// import { PublicHomeComponent } from './pages/public-home/public-home.component';
+// import { WallsComponent } from './pages/walls/walls.component';
+// import { LibraryPublicComponent } from './pages/library-public/library-public.component';
+// import { PublicResourcesComponent } from './pages/public-resources/public-resources.component';
+// import { QuotationComponent } from './pages/quotation/quotation.component';
 
 // 🔐 AUTHENTICATION
 import { LoginComponent } from './pages/login/login.component';
 import { authGuard, loginGuard, manufacturingGuard, libraryGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  // 🌐 PUBLIC ROUTES (Accessible to everyone - NO AUTH REQUIRED)
-  { path: '', component: PublicHomeComponent },  // Public homepage is now default
-  { path: 'home', component: PublicHomeComponent },
-  
-  // Suraksha Walls - Public Pages
-  { path: 'walls', component: WallsComponent },
-  { path: 'walls/quotation', component: QuotationComponent },
-  
-  // Suraksha Library - Public Pages (Hybrid)
-  { path: 'library', component: LibraryPublicComponent },
-  { path: 'library/public-resources', component: PublicResourcesComponent },
+  // 🌐 PUBLIC ROUTES - EXCLUDED FROM DEPLOYMENT
+  // Public pages not available in this deployment
+  { path: '', redirectTo: 'login', pathMatch: 'full' },  // Redirect root to login
+  { path: 'home', redirectTo: 'login', pathMatch: 'full' },
   
   // Login route (accessible without auth but redirects if already logged in)
   { path: 'login', component: LoginComponent, canActivate: [loginGuard] },
