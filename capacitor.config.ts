@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.surakshahub.app',
   appName: 'SurakshaHub',
-  webDir: 'dist/suraksha-report/browser',
+  webDir: 'dist/suraksha-report',
   
   server: {
     androidScheme: 'https',
