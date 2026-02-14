@@ -31,11 +31,24 @@ export class ClientPaymentService {
     ]);
   }
 
-  // Payment Entry
-  addPayment(date: string, clientId: string, amount: number, mode: string, receivedBy: string, remarks: string) {
-    return this.supabase.from('client_payment').insert([
-      { date, client_id: clientId, amount_paid: amount, payment_mode: mode, received_by: receivedBy, remarks }
-    ]);
+  // Payment Entry - Update client's total_paid in client_ledger
+  async addPayment(date: string, clientId: string, amount: number, mode: string, receivedBy: string, remarks: string) {
+    // Get current client totals
+    const { data: clientData } = await this.supabase
+      .from('client_ledger')
+      .select('total_paid')
+      .eq('id', clientId)
+      .single();
+
+    if (clientData) {
+      // Update total_paid and last_payment_date
+      return this.supabase.from('client_ledger').update({
+        total_paid: clientData.total_paid + amount,
+        last_payment_date: date
+      }).eq('id', clientId);
+    }
+    
+    return { error: { message: 'Client not found' } };
   }
 
   // Add Bill (New - uses client_bill table for proper tracking)
@@ -60,44 +73,48 @@ export class ClientPaymentService {
       .order('date', { ascending: false });
   }
 
-  // Get payments for a client
+  // Get payments for a client from sales_transactions
   getClientPayments(clientId: string) {
     return this.supabase
-      .from('client_payment')
-      .select('*')
+      .from('sales_transactions')
+      .select('date, paid_amount, invoice_number, payment_type')
       .eq('client_id', clientId)
+      .gt('paid_amount', 0)
       .order('date', { ascending: false });
   }
 
-  // Load Due Summary (Updated to use client_bill table)
+  // Load Due Summary from client_ledger master table
   async getDueSummary() {
-    const revenue = await this.supabase.from('client_bill').select('client_id, bill_amount').eq('entry_type', 'BILL');
-    const payments = await this.supabase.from('client_payment').select('client_id,amount_paid');
+    const clients = await this.supabase.from('client_ledger').select('id, total_billed, total_paid');
     
     // Convert to legacy format for backward compatibility
-    const legacyRevenue = (revenue.data || []).map(r => ({
-      client_id: r.client_id,
-      total_bill: r.bill_amount
+    const legacyRevenue = (clients.data || []).map((c: any) => ({
+      client_id: c.id,
+      total_bill: c.total_billed
     }));
     
-    return { revenue: legacyRevenue, payments: payments.data || [] };
+    const legacyPayments = (clients.data || []).map((c: any) => ({
+      client_id: c.id,
+      amount_paid: c.total_paid
+    }));
+    
+    return { revenue: legacyRevenue, payments: legacyPayments };
   }
 
-  // New Due Calculation using client_bill table
+  // New Due Calculation from client_ledger master table
   async getClientDue(clientId: string) {
-    const bills = await this.supabase
-      .from('client_bill')
-      .select('bill_amount')
-      .eq('client_id', clientId)
-      .eq('entry_type', 'BILL');
+    const { data: clientData } = await this.supabase
+      .from('client_ledger')
+      .select('total_billed, total_paid, outstanding')
+      .eq('id', clientId)
+      .single();
 
-    const payments = await this.supabase
-      .from('client_payment')
-      .select('amount_paid')
-      .eq('client_id', clientId);
+    if (!clientData) {
+      return { totalBilled: 0, totalPaid: 0, outstanding: 0 };
+    }
 
-    const totalBilled = (bills.data || []).reduce((sum: number, b: any) => sum + (b.bill_amount || 0), 0);
-    const totalPaid = (payments.data || []).reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
+    const totalBilled = clientData.total_billed || 0;
+    const totalPaid = clientData.total_paid || 0;
 
     return {
       clientId,

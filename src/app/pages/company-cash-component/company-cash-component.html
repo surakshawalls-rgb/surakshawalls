@@ -1,126 +1,170 @@
-<div class="cash-container">
-  <div class="top-bar">
-    <h2>💰 Company Cash Management</h2>
-    <button (click)="loadCashBalance()" [disabled]="loading">🔄 Refresh</button>
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">
+      <span>💰</span>
+      <span>Firm Cash Ledger</span>
+    </h1>
+    <p class="page-subtitle">Track all company cash transactions and balances</p>
   </div>
 
-  <!-- Current Balance Card -->
-  <div class="card balance-card">
-    <h3>💵 Current Cash Balance</h3>
-    <div class="balance-display">
-      <p class="big-number">₹{{currentBalance.balance | number:'0.2-2'}}</p>
+  <!-- Balance Summary Cards -->
+  <div class="stats-grid">
+    <div class="stat-card balance">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <div class="stat-label">Cash Balance</div>
+        <div class="stat-value">₹{{currentBalance.balance | number:'1.0-0'}}</div>
+      </div>
     </div>
-
-    <div class="balance-breakdown">
-      <div class="item">
-        <span>Income (Client Payments):</span>
-        <span class="positive">₹{{currentBalance.income | number:'0.2-2'}}</span>
+    
+    <div class="stat-card income">
+      <div class="stat-icon">📈</div>
+      <div class="stat-content">
+        <div class="stat-label">Total Income</div>
+        <div class="stat-value positive">+₹{{currentBalance.income | number:'1.0-0'}}</div>
+        <div class="stat-detail">Client: ₹{{(currentBalance.income - currentBalance.partnerExpenseCost) | number:'1.0-0'}}</div>
       </div>
-      <div class="item">
-        <span>Total Expenses:</span>
-        <span class="negative">₹{{currentBalance.expenses | number:'0.2-2'}}</span>
+    </div>
+    
+    <div class="stat-card expense">
+      <div class="stat-icon">📉</div>
+      <div class="stat-content">
+        <div class="stat-label">Total Expenses</div>
+        <div class="stat-value negative">-₹{{currentBalance.expenses | number:'1.0-0'}}</div>
+        <div class="stat-detail">Wages: ₹{{currentBalance.labourCost | number:'1.0-0'}}</div>
       </div>
-      <div class="item">
-        <span>└─ Labour Cost:</span>
-        <span>₹{{currentBalance.labourCost | number:'0.2-2'}}</span>
-      </div>
-      <div class="item">
-        <span>└─ Partner Expenses:</span>
-        <span>₹{{currentBalance.partnerExpenseCost | number:'0.2-2'}}</span>
-      </div>
-      <div class="item">
-        <span>└─ Partner Withdrawals:</span>
-        <span>₹{{currentBalance.partnerWithdrawalAmount | number:'0.2-2'}}</span>
-      </div>
-      <div class="item" *ngIf="currentBalance.manualAdjustment !== 0">
-        <span>Manual Adjustments:</span>
-        <span [ngClass]="currentBalance.manualAdjustment > 0 ? 'positive' : 'negative'">
-          ₹{{currentBalance.manualAdjustment | number:'0.2-2'}}
-        </span>
+    </div>
+    
+    <div class="stat-card partner">
+      <div class="stat-icon">🤝</div>
+      <div class="stat-content">
+        <div class="stat-label">Partner Activity</div>
+        <div class="stat-value">₹{{(currentBalance.partnerExpenseCost - currentBalance.partnerWithdrawalAmount) | number:'1.0-0'}}</div>
+        <div class="stat-detail">In: ₹{{currentBalance.partnerExpenseCost | number:'1.0-0'}} | Out: ₹{{currentBalance.partnerWithdrawalAmount | number:'1.0-0'}}</div>
       </div>
     </div>
   </div>
 
-  <!-- Add Cash Entry Form -->
-  <div class="card form-card">
-    <h3>➕ Add Cash Entry</h3>
-    <div class="form-group">
-      <div>
-        <label>Date:</label>
-        <input type="date" [(ngModel)]="entryDate" />
-      </div>
-
-      <div>
-        <label>Type:</label>
-        <select [(ngModel)]="entryType">
-          <option value="INCOME">Income</option>
-          <option value="EXPENSE">Expense</option>
-          <option value="ADJUSTMENT">Adjustment</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Description:</label>
-        <input type="text" [(ngModel)]="entryDescription" placeholder="e.g., Bank deposit, Manual adjustment" />
-      </div>
-
-      <div>
-        <label>Amount (₹):</label>
-        <input type="number" [(ngModel)]="entryAmount" placeholder="0.00" step="0.01" min="0" />
-      </div>
-
-      <button (click)="addCashEntry()" [disabled]="loading" class="submit-btn">
-        {{loading ? 'Saving...' : 'Add Entry'}}
+  <!-- Add Manual Entry Section -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">➕ Add Manual Cash Entry</h3>
+      <button class="btn-refresh" (click)="loadCashBalance()" [disabled]="loading">
+        🔄 Refresh
       </button>
     </div>
+    <div class="card-body">
+      <div class="form-grid">
+        <div class="form-field">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" [(ngModel)]="entryDate" />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Entry Type</label>
+          <select class="form-select" [(ngModel)]="entryType">
+            <option value="INCOME">💰 Income</option>
+            <option value="EXPENSE">💸 Expense</option>
+            <option value="ADJUSTMENT">⚙️ Adjustment</option>
+          </select>
+        </div>
+
+        <div class="form-field full-width">
+          <label class="form-label">Description</label>
+          <input 
+            type="text" 
+            class="form-input" 
+            [(ngModel)]="entryDescription" 
+            placeholder="Enter transaction description" 
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="form-label">Amount (₹)</label>
+          <input 
+            type="number" 
+            class="form-input" 
+            [(ngModel)]="entryAmount" 
+            placeholder="0.00" 
+            step="0.01" 
+            min="0" 
+          />
+        </div>
+
+        <div class="form-field">
+          <button class="btn-primary" (click)="addCashEntry()" [disabled]="loading">
+            {{loading ? '⏳ Saving...' : '✅ Add Entry'}}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Cash Ledger Section -->
-  <div class="card ledger-card">
-    <h3>📋 Cash Ledger</h3>
-
-    <!-- Date Filter -->
-    <div class="filter-section">
-      <div>
-        <label>From Date:</label>
-        <input type="date" [(ngModel)]="fromDate" />
+  <!-- Transaction History -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">📋 Transaction History</h3>
+    </div>
+    
+    <!-- Filters -->
+    <div class="card-body">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label class="filter-label">From Date</label>
+          <input type="date" class="filter-input" [(ngModel)]="fromDate" />
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">To Date</label>
+          <input type="date" class="filter-input" [(ngModel)]="toDate" />
+        </div>
+        <button class="btn-filter" (click)="filterByDateRange()" [disabled]="loading">
+          🔍 Apply Filter
+        </button>
       </div>
-      <div>
-        <label>To Date:</label>
-        <input type="date" [(ngModel)]="toDate" />
-      </div>
-      <button (click)="filterByDateRange()" [disabled]="loading">Filter</button>
     </div>
 
-    <!-- Ledger Table -->
-    <div *ngIf="cashLedger && cashLedger.length > 0; else noLedger">
-      <table class="ledger-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Type</th>
-            <th>Amount (₹)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let entry of cashLedger" [ngClass]="'type-' + entry.entry_type.toLowerCase()">
-            <td>{{formatDateToDDMMYYYY(entry.date)}}</td>
-            <td>{{entry.description}}</td>
-            <td>
-              <span class="badge" [ngClass]="'badge-' + entry.entry_type.toLowerCase()">
-                {{entry.entry_type}}
-              </span>
-            </td>
-            <td [ngClass]="entry.entry_type === 'EXPENSE' ? 'negative' : 'positive'">
-              {{entry.entry_type === 'EXPENSE' ? '-' : '+'}}₹{{entry.amount | number:'0.2-2'}}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Transaction Table -->
+    <div class="table-container">
+      <div *ngIf="cashLedger && cashLedger.length > 0; else noLedger">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of cashLedger" class="table-row">
+              <td class="date-cell">{{formatDateToDDMMYYYY(entry.date)}}</td>
+              <td>
+                <span class="category-badge">{{entry.display_category}}</span>
+              </td>
+              <td class="description-cell">{{entry.description || '-'}}</td>
+              <td>
+                <span 
+                  class="type-badge" 
+                  [ngClass]="entry.type === 'receipt' ? 'badge-income' : 'badge-expense'"
+                >
+                  {{entry.type === 'receipt' ? '📈 Income' : '📉 Expense'}}
+                </span>
+              </td>
+              <td class="amount-cell text-right" [ngClass]="entry.type === 'receipt' ? 'positive' : 'negative'">
+                {{entry.type === 'receipt' ? '+' : '-'}}₹{{entry.amount | number:'1.2-2'}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noLedger>
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p class="empty-text">No transactions found</p>
+          <p class="empty-subtext">Try adjusting your date filter or add your first entry</p>
+        </div>
+      </ng-template>
     </div>
-    <ng-template #noLedger>
-      <p>No cash entries found for the selected date range</p>
-    </ng-template>
   </div>
 </div>

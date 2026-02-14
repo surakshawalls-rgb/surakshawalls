@@ -92,6 +92,10 @@
             <mat-icon>settings</mat-icon>
             <span>Partner Settings</span>
           </button>
+          <button mat-menu-item routerLink="/company-cash" routerLinkActive="active">
+            <mat-icon>account_balance</mat-icon>
+            <span>Company Cash Ledger</span>
+          </button>
         </mat-menu>
       </ng-container>
 
@@ -230,6 +234,10 @@
         <button mat-menu-item routerLink="/partner">
           <mat-icon>settings</mat-icon>
           <span>Partner Settings</span>
+        </button>
+        <button mat-menu-item routerLink="/company-cash">
+          <mat-icon>account_balance</mat-icon>
+          <span>Company Cash Ledger</span>
         </button>
       </ng-container>
       <ng-container *ngIf="hasLibraryAccess()">

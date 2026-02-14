@@ -14,13 +14,13 @@ export class CompanyCashService {
 
   // Add manual cash entry (adjustment/deposit/withdrawal)
   addCashEntry(date: string, description: string, amount: number, type: 'INCOME' | 'EXPENSE' | 'ADJUSTMENT') {
-    return this.supabase.from('company_cash_ledger').insert([
+    return this.supabase.from('firm_cash_ledger').insert([
       {
         date,
         description,
-        amount,
-        entry_type: type,
-        source: 'MANUAL'
+        type: type === 'INCOME' ? 'receipt' : 'payment',
+        category: type === 'ADJUSTMENT' ? 'adjustment' : 'operational',
+        amount
       }
     ]);
   }
@@ -28,7 +28,7 @@ export class CompanyCashService {
   // Get all cash ledger entries
   getCashLedger(from?: string, to?: string) {
     let query = this.supabase
-      .from('company_cash_ledger')
+      .from('firm_cash_ledger')
       .select('*');
 
     if (from && to) {
@@ -40,55 +40,61 @@ export class CompanyCashService {
 
   // Calculate current cash balance (aggregated from all sources)
   async getCurrentBalance(date?: string) {
-    // Client Payments (INCOME)
-    const clientPayments = await this.supabase
-      .from('client_payment')
-      .select('amount_paid')
-      .then(res => res.data || []);
-    const clientIncome = clientPayments.reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
+    // Get all firm cash ledger entries and calculate balance
+    const { data: ledgerData } = await this.supabase
+      .from('firm_cash_ledger')
+      .select('type, amount, category');
 
-    // Labour Expenses (EXPENSE)
-    const labourExpenses = await this.supabase
-      .from('labour')
-      .select('amount')
-      .then(res => res.data || []);
-    const labourCost = labourExpenses.reduce((sum: number, l: any) => sum + (l.amount || 0), 0);
-
-    // Partner Expenses (EXPENSE)
-    const partnerExpenses = await this.supabase
-      .from('partner_expense')
-      .select('amount')
-      .then(res => res.data || []);
-    const partnerExpenseCost = partnerExpenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
-
-    // Partner Withdrawals (EXPENSE)
-    const partnerWithdrawals = await this.supabase
-      .from('partner_withdrawal')
-      .select('amount')
-      .then(res => res.data || []);
-    const partnerWithdrawalAmount = partnerWithdrawals.reduce((sum: number, w: any) => sum + (w.amount || 0), 0);
-
-    // Manual Entries
-    const manualEntries = await this.supabase
-      .from('company_cash_ledger')
-      .select('amount, entry_type')
-      .then(res => res.data || []);
-
+    const entries = ledgerData || [];
+    let clientIncome = 0;
+    let labourCost = 0;
+    let partnerExpenseCost = 0;
+    let partnerWithdrawalAmount = 0;
     let manualBalance = 0;
-    manualEntries.forEach((entry: any) => {
-      if (entry.entry_type === 'INCOME' || entry.entry_type === 'ADJUSTMENT') {
-        manualBalance += entry.amount;
-      } else if (entry.entry_type === 'EXPENSE') {
-        manualBalance -= entry.amount;
+
+    entries.forEach((entry: any) => {
+      const amount = entry.amount || 0;
+      
+      if (entry.type === 'receipt') {
+        // Income categories
+        if (entry.category === 'sales') {
+          clientIncome += amount;
+        } else if (entry.category === 'partner_contribution') {
+          partnerExpenseCost += amount; // Partner money in
+        } else {
+          manualBalance += amount;
+        }
+      } else if (entry.type === 'payment') {
+        // Expense categories
+        if (entry.category === 'wage') {
+          labourCost += amount;
+        } else if (entry.category === 'partner_withdrawal') {
+          partnerWithdrawalAmount += amount;
+        } else {
+          manualBalance -= amount;
+        }
       }
     });
 
-    const balance = clientIncome - labourCost - partnerExpenseCost - partnerWithdrawalAmount + manualBalance;
+    // Get client payments from sales_transactions
+    const { data: salesData } = await this.supabase
+      .from('sales_transactions')
+      .select('paid_amount, deposited_to_firm');
+
+    if (salesData) {
+      salesData.forEach((sale: any) => {
+        if (sale.deposited_to_firm) {
+          clientIncome += sale.paid_amount || 0;
+        }
+      });
+    }
+
+    const balance = clientIncome + partnerExpenseCost - labourCost - partnerWithdrawalAmount + manualBalance;
 
     return {
       balance,
-      income: clientIncome,
-      expenses: labourCost + partnerExpenseCost + partnerWithdrawalAmount,
+      income: clientIncome + partnerExpenseCost,
+      expenses: labourCost + partnerWithdrawalAmount,
       labourCost,
       partnerExpenseCost,
       partnerWithdrawalAmount,
@@ -98,61 +104,59 @@ export class CompanyCashService {
 
   // Get cash summary for specific date range
   async getCashSummary(from: string, to: string) {
-    // Client Payments (INCOME)
-    const clientPayments = await this.supabase
-      .from('client_payment')
-      .select('amount_paid')
+    // Get firm cash ledger entries for date range
+    const { data: ledgerData } = await this.supabase
+      .from('firm_cash_ledger')
+      .select('type, amount, category')
       .gte('date', from)
-      .lte('date', to)
-      .then(res => res.data || []);
-    const clientIncome = clientPayments.reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
+      .lte('date', to);
 
-    // Labour Expenses (EXPENSE)
-    const labourExpenses = await this.supabase
-      .from('labour')
-      .select('amount')
-      .gte('date', from)
-      .lte('date', to)
-      .then(res => res.data || []);
-    const labourCost = labourExpenses.reduce((sum: number, l: any) => sum + (l.amount || 0), 0);
-
-    // Partner Expenses (EXPENSE)
-    const partnerExpenses = await this.supabase
-      .from('partner_expense')
-      .select('amount')
-      .gte('date', from)
-      .lte('date', to)
-      .then(res => res.data || []);
-    const partnerExpenseCost = partnerExpenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
-
-    // Partner Withdrawals (EXPENSE)
-    const partnerWithdrawals = await this.supabase
-      .from('partner_withdrawal')
-      .select('amount')
-      .gte('date', from)
-      .lte('date', to)
-      .then(res => res.data || []);
-    const partnerWithdrawalAmount = partnerWithdrawals.reduce((sum: number, w: any) => sum + (w.amount || 0), 0);
-
-    // Manual Entries
-    const manualEntries = await this.supabase
-      .from('company_cash_ledger')
-      .select('amount, entry_type')
-      .gte('date', from)
-      .lte('date', to)
-      .then(res => res.data || []);
-
+    const entries = ledgerData || [];
+    let clientIncome = 0;
+    let labourCost = 0;
+    let partnerExpenseCost = 0;
+    let partnerWithdrawalAmount = 0;
     let manualBalance = 0;
-    manualEntries.forEach((entry: any) => {
-      if (entry.entry_type === 'INCOME' || entry.entry_type === 'ADJUSTMENT') {
-        manualBalance += entry.amount;
-      } else if (entry.entry_type === 'EXPENSE') {
-        manualBalance -= entry.amount;
+
+    entries.forEach((entry: any) => {
+      const amount = entry.amount || 0;
+      
+      if (entry.type === 'receipt') {
+        if (entry.category === 'sales') {
+          clientIncome += amount;
+        } else if (entry.category === 'partner_contribution') {
+          partnerExpenseCost += amount;
+        } else {
+          manualBalance += amount;
+        }
+      } else if (entry.type === 'payment') {
+        if (entry.category === 'wage') {
+          labourCost += amount;
+        } else if (entry.category === 'partner_withdrawal') {
+          partnerWithdrawalAmount += amount;
+        } else {
+          manualBalance -= amount;
+        }
       }
     });
 
-    const totalExpenses = labourCost + partnerExpenseCost + partnerWithdrawalAmount;
-    const totalIncome = clientIncome + manualBalance;
+    // Get client payments from sales_transactions
+    const { data: salesData } = await this.supabase
+      .from('sales_transactions')
+      .select('paid_amount, deposited_to_firm')
+      .gte('date', from)
+      .lte('date', to);
+
+    if (salesData) {
+      salesData.forEach((sale: any) => {
+        if (sale.deposited_to_firm) {
+          clientIncome += sale.paid_amount || 0;
+        }
+      });
+    }
+
+    const totalExpenses = labourCost + partnerWithdrawalAmount;
+    const totalIncome = clientIncome + partnerExpenseCost + manualBalance;
 
     return {
       period: { from, to },

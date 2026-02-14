@@ -26,25 +26,29 @@ export class DashboardService {
   }
 
   async getPayments() {
-    const res = await this.supabase.from('client_payment').select('amount_paid,client_id');
+    // Get payments from sales_transactions
+    const res = await this.supabase.from('sales_transactions').select('paid_amount as amount, client_id');
     console.log('[DashboardService] getPayments ->', res);
     return res;
   }
 
   async getLabour() {
-    const res = await this.supabase.from('labour').select('amount');
+    // Get wage expenses from firm_cash_ledger
+    const res = await this.supabase.from('firm_cash_ledger').select('amount').eq('category', 'wage').eq('type', 'payment');
     console.log('[DashboardService] getLabour ->', res);
     return res;
   }
 
   async getPartnerExpense() {
-    const res = await this.supabase.from('partner_expense').select('partner,amount');
+    // Get partner contributions from firm_cash_ledger
+    const res = await this.supabase.from('firm_cash_ledger').select('partner_id, amount').eq('category', 'partner_contribution').eq('type', 'receipt');
     console.log('[DashboardService] getPartnerExpense ->', res);
     return res;
   }
 
   async getPartnerWithdraw() {
-    const res = await this.supabase.from('partner_withdrawal').select('partner,amount');
+    // Get partner withdrawals from firm_cash_ledger
+    const res = await this.supabase.from('firm_cash_ledger').select('partner_id, amount').eq('category', 'partner_withdrawal').eq('type', 'payment');
     console.log('[DashboardService] getPartnerWithdraw ->', res);
     return res;
   }

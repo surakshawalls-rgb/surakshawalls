@@ -65,10 +65,34 @@ export class CompanyCashComponent implements OnInit {
   async loadCashLedger() {
     try {
       const response = await this.companyCashService.getCashLedger(this.fromDate, this.toDate);
-      this.cashLedger = response.data || [];
+      this.cashLedger = (response.data || []).map((entry: any) => ({
+        ...entry,
+        display_type: this.getDisplayType(entry.type, entry.category),
+        display_category: this.formatCategory(entry.category)
+      }));
+      console.log('Loaded ledger entries:', this.cashLedger);
     } catch (error) {
       console.error('Error loading cash ledger:', error);
     }
+  }
+
+  getDisplayType(type: string, category: string): string {
+    if (type === 'receipt') return 'INCOME';
+    if (type === 'payment') return 'EXPENSE';
+    return 'OTHER';
+  }
+
+  formatCategory(category: string): string {
+    const categoryMap: any = {
+      'sales': 'Sales Income',
+      'wage': 'Worker Wages',
+      'partner_contribution': 'Partner Contribution',
+      'partner_withdrawal': 'Partner Withdrawal',
+      'purchase': 'Material Purchase',
+      'operational': 'Operational Expense',
+      'adjustment': 'Manual Adjustment'
+    };
+    return categoryMap[category] || category;
   }
 
   async addCashEntry() {
