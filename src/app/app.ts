@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, Injector } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -32,11 +32,10 @@ import { map, shareReplay } from 'rxjs/operators';
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-export class AppComponent implements OnInit, OnDestroy {
+export class AppComponent implements OnInit {
 
   public router: Router;
   public authService: AuthService;
-  private injector: Injector;
   private breakpointObserver: BreakpointObserver;
 
   isHandset$: Observable<boolean>;
@@ -44,14 +43,12 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     router: Router,
     authService: AuthService,
-    injector: Injector,
     breakpointObserver: BreakpointObserver
   ) {
     console.log("✅ AppComponent Constructor started");
     
     this.router = router;
     this.authService = authService;
-    this.injector = injector;
     this.breakpointObserver = breakpointObserver;
     
     this.isHandset$ = this.breakpointObserver.observe([Breakpoints.Handset])
@@ -95,91 +92,8 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('🚀 AppComponent ngOnInit started');
     
-    // Initialize services dynamically to avoid build issues
-    this.initializeNotificationServices();
-  }
-
-  private async initializeNotificationServices() {
-    // Only initialize notification services on non-production or supported platforms
-    if (typeof window === 'undefined') {
-      console.log('⚠️ Running in SSR mode, skipping notification services');
-      return;
-    }
-
-    try {
-      // Dynamically import and initialize notification service
-      const notificationModule = await import('./services/notification.service').catch(() => null);
-      
-      if (notificationModule) {
-        const notificationService = this.injector.get(notificationModule.NotificationService);
-        
-        // Start listening to database changes for real-time notifications (in-app)
-        notificationService.startListening();
-        console.log('✅ Notification service started');
-        
-        // Show welcome notification after delay
-        setTimeout(() => {
-          try {
-            notificationService.notify(
-              'Welcome! 👋',
-              'Real-time notifications are active',
-              'success'
-            );
-          } catch (error: any) {
-            console.error('❌ Error showing welcome notification:', error);
-          }
-        }, 2000);
-      } else {
-        console.log('⚠️ Notification service not available');
-      }
-    } catch (error: any) {
-      console.error('❌ Error starting notification service:', error);
-    }
-    
-    // Initialize push notifications AFTER a delay (only on native platforms)
-    setTimeout(async () => {
-      try {
-        // Check if we're on a native platform
-        const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
-        
-        if (!isNative) {
-          console.log('⚠️ Push notifications only available on native platforms');
-          return;
-        }
-
-        console.log('⏰ Attempting push notification initialization...');
-        const pushModule = await import('./services/push-notification.service').catch(() => null);
-        
-        if (pushModule) {
-          const pushNotificationService = this.injector.get(pushModule.PushNotificationService);
-          
-          pushNotificationService.initializePushNotifications()
-            .then(() => console.log('✅ Push notification initialization complete'))
-            .catch((error: any) => {
-              console.error('❌ Error initializing push notifications:', error);
-            });
-        } else {
-          console.log('⚠️ Push notification service not available');
-        }
-      } catch (error: any) {
-        console.error('❌ Error calling push notification init:', error);
-      }
-    }, 3000); // Wait 3 seconds after app loads
-  }
-
-  ngOnDestroy() {
-    // Clean up subscriptions when component is destroyed
-    try {
-      import('./services/notification.service').then((module) => {
-        if (module) {
-          const notificationService = this.injector.get(module.NotificationService);
-          notificationService.stopListening();
-        }
-      }).catch(() => {
-        console.log('⚠️ Could not cleanup notification service');
-      });
-    } catch (error: any) {
-      console.error('❌ Error in ngOnDestroy:', error);
-    }
+    // Note: Notification services are automatically initialized via Angular's DI
+    // when the app runs on mobile. Web version doesn't require them.
   }
 }
+
