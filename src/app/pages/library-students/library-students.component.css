@@ -208,29 +208,34 @@
   background: #f5f7fa;
   font-weight: 700;
   color: #1a1a2e;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 16px;
+  letter-spacing: 0.3px;
+  padding: 10px 12px;
+  height: 48px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .students-table .mat-mdc-cell {
-  padding: 16px;
+  padding: 8px 12px;
   color: #333;
+  font-size: 0.875rem;
+  height: 52px;
 }
 
 .students-table .mat-mdc-row {
   transition: background 0.2s;
+  height: 52px;
 }
 
 .students-table .mat-mdc-row:hover {
-  background: #f5f7fa;
+  background: #f9fafb;
 }
 
 /* Student Photo */
 .student-photo-small {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   overflow: hidden;
   display: flex;
@@ -238,7 +243,7 @@
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
 }
 
 .student-photo-small img {
@@ -255,30 +260,34 @@
 .emergency-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  line-height: 1.3;
 }
 
 .emergency-info small {
   color: #666;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
 }
 
 /* Address Cell */
 .address-cell {
-  max-width: 200px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.4;
 }
 
 /* Status Badge */
 .badge {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.813rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
   white-space: nowrap;
+  display: inline-block;
+  line-height: 1.2;
 }
 
 .badge.success {
@@ -703,14 +712,15 @@
 
 /* Status Badges - BookMyShow Style */
 .badge {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.875rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .badge.success {
@@ -960,17 +970,19 @@
   background: #f5f7fa;
   color: #333333;
   font-weight: 700;
-  font-size: 0.9375rem;
-  padding: 16px 12px;
+  font-size: 0.8125rem;
+  padding: 10px 12px;
   text-align: left;
   border-bottom: 2px solid #dce0e4;
+  height: 48px;
 }
 
 .students-table td {
-  padding: 16px 12px;
+  padding: 8px 12px;
   color: #333333;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   border-bottom: 1px solid #e0e0e0;
+  height: 52px;
 }
 
 .student-row {
@@ -983,21 +995,21 @@
 }
 
 .photo-column {
-  width: 80px;
+  width: 60px;
 }
 
 /* Horizontal Action Buttons */
 .action-buttons-horizontal {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 .action-buttons-horizontal button {
-  min-width: 36px;
-  height: 36px;
-  font-size: 16px;
+  min-width: 32px;
+  height: 32px;
+  font-size: 15px;
   transition: all 0.2s ease;
 }
 

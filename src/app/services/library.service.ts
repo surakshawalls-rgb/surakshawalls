@@ -429,12 +429,16 @@ export class LibraryService {
 
       // 3. Update seat assignment
       if (payment.shift_type !== 'registration') {
-        await this.assignSeat(
+        const assignResult = await this.assignSeat(
           payment.seat_no!,
           payment.student_id!,
           payment.shift_type as any,
           payment.valid_until!
         );
+        
+        if (!assignResult.success) {
+          throw new Error(assignResult.error || 'Failed to assign seat');
+        }
       }
 
       return { success: true, payment: paymentData };

@@ -1,2 +1,5 @@
 /build/*
 !/build/.npmkeep
+
+# Firebase configuration (contains sensitive keys)
+google-services.json

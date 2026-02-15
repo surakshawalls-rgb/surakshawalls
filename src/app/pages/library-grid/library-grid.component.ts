@@ -704,7 +704,7 @@ export class LibraryGridComponent implements OnInit {
       const validUntil = new Date(result.endDate);
       validUntil.setHours(0, 0, 0, 0);
 
-      await this.libraryService.recordFeePayment({
+      const paymentResult = await this.libraryService.recordFeePayment({
         student_id: student.id,
         seat_no: seat.seat_no,
         shift_type: result.selectedShift,
@@ -714,6 +714,11 @@ export class LibraryGridComponent implements OnInit {
         valid_until: validUntil.toISOString().split('T')[0],
         payment_mode: result.paymentMode
       });
+
+      // Check if payment and seat assignment succeeded
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Failed to record payment and assign seat');
+      }
 
       // Show success message
       this.snackBar.open(

@@ -36,7 +36,8 @@ export class LibraryStudentsComponent implements OnInit {
   students: LibraryStudent[] = [];
   filteredStudents: LibraryStudent[] = [];
   dataSource: MatTableDataSource<LibraryStudent> = new MatTableDataSource<LibraryStudent>();
-  displayedColumns: string[] = ['photo', 'name', 'mobile', 'emergency_contact', 'address', 'joining_date', 'registration_fee_paid', 'status', 'actions'];
+  displayedColumns: string[] = ['photo', 'name', 'gender', 'mobile', 'seat_no', 'emergency_contact', 'address', 'joining_date', 'registration_fee_paid', 'status', 'actions'];
+  studentSeatMap: { [studentId: string]: { seatNo: number, shiftType: string } } = {};
   
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -134,6 +135,10 @@ export class LibraryStudentsComponent implements OnInit {
       this.loading = true;
       this.errorMessage = '';
       this.students = await this.libraryService.getAllStudents();
+      
+      // Load seats to get seat numbers for students
+      await this.loadStudentSeats();
+      
       this.applyFilters();
       this.loading = false;
       this.cdr.detectChanges();
@@ -142,6 +147,44 @@ export class LibraryStudentsComponent implements OnInit {
       this.errorMessage = 'Failed to load students: ' + error.message;
       this.loading = false;
     }
+  }
+
+  async loadStudentSeats() {
+    try {
+      const seats = await this.libraryService.getAllSeats();
+      this.studentSeatMap = {};
+      
+      seats.forEach(seat => {
+        if (seat.full_time_student_id) {
+          this.studentSeatMap[seat.full_time_student_id] = {
+            seatNo: seat.seat_no,
+            shiftType: 'Full Time'
+          };
+        }
+        if (seat.first_half_student_id) {
+          this.studentSeatMap[seat.first_half_student_id] = {
+            seatNo: seat.seat_no,
+            shiftType: 'First Half'
+          };
+        }
+        if (seat.second_half_student_id) {
+          this.studentSeatMap[seat.second_half_student_id] = {
+            seatNo: seat.seat_no,
+            shiftType: 'Second Half'
+          };
+        }
+      });
+    } catch (error) {
+      console.error('Error loading student seats:', error);
+    }
+  }
+
+  getStudentSeatInfo(studentId: string): string {
+    const seatInfo = this.studentSeatMap[studentId];
+    if (seatInfo) {
+      return `${seatInfo.seatNo} (${seatInfo.shiftType})`;
+    }
+    return '-';
   }
 
   async loadTodayAttendance() {

@@ -13,6 +13,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ToastrModule } from 'ngx-toastr';
 
 import { AppComponent } from './app/app';
 import { routes } from './app/app.routes';
@@ -32,7 +33,15 @@ bootstrapApplication(AppComponent, {
       MatNativeDateModule,
       MatSelectModule,
       MatRadioModule,
-      MatProgressSpinnerModule
+      MatProgressSpinnerModule,
+      ToastrModule.forRoot({
+        timeOut: 5000,
+        positionClass: 'toast-top-right',
+        preventDuplicates: true,
+        progressBar: true,
+        closeButton: true,
+        newestOnTop: true
+      })
     )
   ]
 });

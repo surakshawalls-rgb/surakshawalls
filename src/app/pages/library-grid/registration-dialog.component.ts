@@ -11,7 +11,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { LibrarySeat } from '../../services/library.service';
+import { LibrarySeat, LibraryService } from '../../services/library.service';
 
 export interface RegistrationDialogData {
   seat: LibrarySeat;
@@ -96,7 +96,7 @@ export interface RegistrationResult {
 
         <div class="form-group">
           <mat-form-field class="example-form-field" appearance="outline" style="width: 100%;">
-            <mat-label>Choose a date</mat-label>
+            <mat-label>Date of Birth</mat-label>
             <input matInput [matDatepicker]="datepicker" formControlName="dob" />
             <mat-hint>MM/DD/YYYY</mat-hint>
             <mat-datepicker-toggle matIconSuffix [for]="datepicker"></mat-datepicker-toggle>
@@ -441,8 +441,18 @@ export class RegistrationDialogComponent implements OnInit {
         const start: Date = event.value;
         if (start && (!this.registrationForm.get('endDate')?.value || this.registrationForm.get('endDate')?.pristine)) {
           const end = new Date(start);
-          end.setMonth(end.getMonth() + 1);
-          end.setDate(end.getDate() - 1);
+          const targetMonth = end.getMonth() + 1;
+          end.setMonth(targetMonth);
+          
+          // Check if month overflowed (e.g., Jan 31 + 1 month = Mar 3)
+          if (end.getMonth() !== (targetMonth % 12)) {
+            // If overflowed, set to last day of target month
+            end.setMonth(targetMonth + 1, 0);
+          } else {
+            // Otherwise, subtract 1 day for normal cases
+            end.setDate(end.getDate() - 1);
+          }
+          
           this.registrationForm.get('endDate')?.setValue(end);
         }
       }
@@ -453,7 +463,8 @@ export class RegistrationDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<RegistrationDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: RegistrationDialogData
+    @Inject(MAT_DIALOG_DATA) public data: RegistrationDialogData,
+    private libraryService: LibraryService
   ) {}
 
   ngOnInit() {
@@ -506,9 +517,42 @@ export class RegistrationDialogComponent implements OnInit {
     this.registrationForm.get('startDate')?.valueChanges.subscribe(startDate => {
       if (startDate && startDate instanceof Date) {
         const endDate = new Date(startDate);
-        endDate.setMonth(endDate.getMonth() + 1);
-        endDate.setDate(endDate.getDate() - 1);
+        const targetMonth = endDate.getMonth() + 1;
+        endDate.setMonth(targetMonth);
+        
+        // Check if month overflowed (e.g., Jan 31 + 1 month = Mar 3)
+        if (endDate.getMonth() !== (targetMonth % 12)) {
+          // If overflowed, set to last day of target month
+          endDate.setMonth(targetMonth + 1, 0);
+        } else {
+          // Otherwise, subtract 1 day for normal cases
+          endDate.setDate(endDate.getDate() - 1);
+        }
+        
         this.registrationForm.patchValue({ endDate }, { emitEvent: false });
+      }
+    });
+    
+    // Auto-fill form when mobile number is entered
+    this.registrationForm.get('mobile')?.valueChanges.subscribe(async mobile => {
+      if (mobile && mobile.length === 10 && /^[0-9]{10}$/.test(mobile)) {
+        try {
+          const existingStudent = await this.libraryService.getStudentByMobile(mobile);
+          if (existingStudent) {
+            // Pre-fill the form with existing student data
+            this.registrationForm.patchValue({
+              name: existingStudent.name || '',
+              emergency_contact: existingStudent.emergency_contact || '',
+              emergency_contact_name: existingStudent.emergency_contact_name || '',
+              address: existingStudent.address || '',
+              dob: existingStudent.dob ? new Date(existingStudent.dob) : null,
+              gender: existingStudent.gender || 'Male',
+              notes: existingStudent.notes || ''
+            }, { emitEvent: false });
+          }
+        } catch (error) {
+          console.error('Error fetching student by mobile:', error);
+        }
       }
     });
   }
@@ -517,8 +561,18 @@ export class RegistrationDialogComponent implements OnInit {
     const startDate = this.registrationForm.get('startDate')?.value;
     if (startDate && startDate instanceof Date) {
       const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + 1);
-      endDate.setDate(endDate.getDate() - 1);
+      const targetMonth = endDate.getMonth() + 1;
+      endDate.setMonth(targetMonth);
+      
+      // Check if month overflowed (e.g., Jan 31 + 1 month = Mar 3)
+      if (endDate.getMonth() !== (targetMonth % 12)) {
+        // If overflowed, set to last day of target month
+        endDate.setMonth(targetMonth + 1, 0);
+      } else {
+        // Otherwise, subtract 1 day for normal cases
+        endDate.setDate(endDate.getDate() - 1);
+      }
+      
       this.registrationForm.patchValue({ endDate }, { emitEvent: false });
     }
   }
