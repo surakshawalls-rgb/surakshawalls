@@ -1,10 +1,8 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Injector } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
-import { NotificationService } from './services/notification.service';
-import { PushNotificationService } from './services/push-notification.service';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -38,8 +36,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   public router: Router;
   public authService: AuthService;
-  private notificationService: NotificationService;
-  private pushNotificationService: PushNotificationService;
+  private injector: Injector;
   private breakpointObserver: BreakpointObserver;
 
   isHandset$: Observable<boolean>;
@@ -47,16 +44,14 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(
     router: Router,
     authService: AuthService,
-    notificationService: NotificationService,
-    pushNotificationService: PushNotificationService,
+    injector: Injector,
     breakpointObserver: BreakpointObserver
   ) {
     console.log("✅ AppComponent Constructor started");
     
     this.router = router;
     this.authService = authService;
-    this.notificationService = notificationService;
-    this.pushNotificationService = pushNotificationService;
+    this.injector = injector;
     this.breakpointObserver = breakpointObserver;
     
     this.isHandset$ = this.breakpointObserver.observe([Breakpoints.Handset])
@@ -100,46 +95,65 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('🚀 AppComponent ngOnInit started');
     
+    // Initialize services dynamically to avoid build issues
+    this.initializeNotificationServices();
+  }
+
+  private async initializeNotificationServices() {
     try {
+      // Dynamically import and initialize notification service
+      const { NotificationService } = await import('./services/notification.service');
+      const notificationService = this.injector.get(NotificationService);
+      
       // Start listening to database changes for real-time notifications (in-app)
-      this.notificationService.startListening();
+      notificationService.startListening();
       console.log('✅ Notification service started');
-    } catch (error) {
+      
+      // Show welcome notification after delay
+      setTimeout(() => {
+        try {
+          notificationService.notify(
+            'Welcome! 👋',
+            'Real-time notifications are active',
+            'success'
+          );
+        } catch (error: any) {
+          console.error('❌ Error showing welcome notification:', error);
+        }
+      }, 2000);
+    } catch (error: any) {
       console.error('❌ Error starting notification service:', error);
     }
     
     // Initialize push notifications AFTER a delay to not block app startup
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         console.log('⏰ Attempting push notification initialization...');
-        this.pushNotificationService.initializePushNotifications()
+        const { PushNotificationService } = await import('./services/push-notification.service');
+        const pushNotificationService = this.injector.get(PushNotificationService);
+        
+        pushNotificationService.initializePushNotifications()
           .then(() => console.log('✅ Push notification initialization complete'))
-          .catch(error => {
+          .catch((error: any) => {
             console.error('❌ Error initializing push notifications:', error);
             // Don't let this crash the app
           });
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error calling push notification init:', error);
         // Don't let this crash the app
       }
     }, 3000); // Wait 3 seconds after app loads
-    
-    // Show welcome notification (optional)
-    setTimeout(() => {
-      try {
-        this.notificationService.notify(
-          'Welcome! 👋',
-          'Real-time notifications are active',
-          'success'
-        );
-      } catch (error) {
-        console.error('❌ Error showing welcome notification:', error);
-      }
-    }, 2000);
   }
 
   ngOnDestroy() {
     // Clean up subscriptions when component is destroyed
-    this.notificationService.stopListening();
+    try {
+      import('./services/notification.service').then(({ NotificationService }) => {
+        const notificationService = this.injector.get(NotificationService);
+        notificationService.stopListening();
+      });
+    } catch (error: any) {
+      console.error('❌ Error in ngOnDestroy:', error);
+    }
   }
 }
