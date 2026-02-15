@@ -13,6 +13,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
+import { NotificationInboxComponent } from './components/notification-inbox/notification-inbox.component';
 
 // Conditional type for mobile services (not available during build)
 type NotificationServiceType = any;
@@ -31,7 +32,8 @@ type PushNotificationServiceType = any;
     MatIconModule,
     MatSidenavModule,
     MatListModule,
-    MatDividerModule
+    MatDividerModule,
+    NotificationInboxComponent
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
