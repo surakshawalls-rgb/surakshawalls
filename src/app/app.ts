@@ -99,6 +99,7 @@ export class AppComponent implements OnInit {
     // Initialize notification services on runtime (after build)
     if (typeof window !== 'undefined') {
       this.initializeServices();
+      this.setupAppStateListeners();
     }
   }
 
@@ -119,6 +120,11 @@ export class AppComponent implements OnInit {
       notificationService.startListening();
       console.log('✅ Real-time notifications active');
       
+      // Sync missed notifications on startup
+      setTimeout(async () => {
+        await notificationService.syncMissedNotifications();
+      }, 2000);
+      
       // Load and initialize push notifications after delay (mobile only)
       setTimeout(async () => {
         try {
@@ -135,6 +141,60 @@ export class AppComponent implements OnInit {
     } catch (error: any) {
       // Services not available (Vercel build) - silently continue
       console.log('⚠️ Mobile services not available (web mode)');
+    }
+  }
+
+  /**
+   * Setup app state listeners for foreground/background transitions
+   * Syncs missed notifications when app comes to foreground
+   */
+  private setupAppStateListeners(): void {
+    // Web: Listen to page visibility changes
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') {
+          console.log('📱 App came to foreground (web)');
+          await this.syncNotifications();
+        }
+      });
+    }
+
+    // Mobile: Listen to Capacitor App state changes
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      const loadApp = new Function('return import("@capacitor/app")');
+      loadApp().then((AppModule: any) => {
+        AppModule.App.addListener('appStateChange', async (state: any) => {
+          if (state.isActive) {
+            console.log('📱 App came to foreground (mobile)');
+            await this.syncNotifications();
+          }
+        });
+        console.log('✅ App state listener registered');
+      }).catch(() => {
+        console.log('⚠️ Capacitor App plugin not available');
+      });
+    }
+
+    // Web: Listen to online/offline events
+    window.addEventListener('online', async () => {
+      console.log('🌐 Network connection restored');
+      await this.syncNotifications();
+    });
+  }
+
+  /**
+   * Sync missed notifications
+   */
+  private async syncNotifications(): Promise<void> {
+    try {
+      const loadService = new Function('path', 'return import(path)');
+      const notifModule: any = await loadService('./services/notification.service');
+      const notificationService: any = inject(notifModule.NotificationService);
+      
+      await notificationService.syncMissedNotifications();
+    } catch (error) {
+      // Silently fail if service not available
+      console.log('⚠️ Could not sync notifications:', error);
     }
   }
 }
