@@ -76,6 +76,22 @@
   line-height: normal;
 }
 
+/* Admin Button - Special Styling */
+.admin-btn {
+  background: rgba(255, 193, 7, 0.2) !important;
+  border: 1px solid rgba(255, 193, 7, 0.4) !important;
+  margin-left: 8px !important;
+}
+
+.admin-btn:hover {
+  background: rgba(255, 193, 7, 0.3) !important;
+  border-color: rgba(255, 193, 7, 0.6) !important;
+}
+
+.admin-btn mat-icon {
+  color: #ffc107 !important;
+}
+
 /* Dropdown Menus - Professional Style */
 ::ng-deep .nav-dropdown.mat-mdc-menu-panel {
   min-width: 200px !important;

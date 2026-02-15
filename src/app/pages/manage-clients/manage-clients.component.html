@@ -1,0 +1,187 @@
+<!-- src/app/pages/manage-clients/manage-clients.component.html -->
+<div class="manage-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <mat-icon class="header-icon">business</mat-icon>
+      <div>
+        <h1>Client Management</h1>
+        <p class="subtitle">View, edit, and delete client records</p>
+      </div>
+    </div>
+    <button mat-raised-button color="primary" routerLink="/admin-manage">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Admin
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search clients...</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Name, phone, or address">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <div class="stats">
+      <span class="stat-item">
+        <mat-icon>group</mat-icon>
+        Total: {{ clients.length }}
+      </span>
+      <span class="stat-item">
+        <mat-icon>filter_alt</mat-icon>
+        Filtered: {{ filteredClients.length }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>Loading clients...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-container">
+    <table mat-table [dataSource]="filteredClients" class="clients-table">
+      <!-- Name Column -->
+      <ng-container matColumnDef="client_name">
+        <th mat-header-cell *matHeaderCellDef>Client Name</th>
+        <td mat-cell *matCellDef="let client">
+          <strong>{{ client.client_name }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Phone Column -->
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef>Phone</th>
+        <td mat-cell *matCellDef="let client">{{ client.phone || '-' }}</td>
+      </ng-container>
+
+      <!-- Address Column -->
+      <ng-container matColumnDef="address">
+        <th mat-header-cell *matHeaderCellDef>Address</th>
+        <td mat-cell *matCellDef="let client">{{ client.address || '-' }}</td>
+      </ng-container>
+
+      <!-- Credit Limit Column -->
+      <ng-container matColumnDef="credit_limit">
+        <th mat-header-cell *matHeaderCellDef>Credit Limit</th>
+        <td mat-cell *matCellDef="let client">₹{{ client.credit_limit | number }}</td>
+      </ng-container>
+
+      <!-- Outstanding Column -->
+      <ng-container matColumnDef="outstanding">
+        <th mat-header-cell *matHeaderCellDef>Outstanding</th>
+        <td mat-cell *matCellDef="let client">
+          <span [class]="getOutstandingClass(client)">₹{{ client.outstanding | number }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="active">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let client">
+          <span class="status-badge" [class]="getStatusClass(client.active)">
+            {{ client.active ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let client">
+          <button mat-icon-button color="primary" (click)="openEditModal(client)" matTooltip="Edit Client">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="openDeleteModal(client)" matTooltip="Delete Client">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredClients.length === 0" class="empty-state">
+      <mat-icon>inbox</mat-icon>
+      <p>No clients found</p>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><mat-icon>edit</mat-icon> Edit Client</h2>
+      <button mat-icon-button (click)="closeEditModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Client Name</mat-label>
+        <input matInput [(ngModel)]="editForm.client_name" required>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Phone</mat-label>
+        <input matInput [(ngModel)]="editForm.phone">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Address</mat-label>
+        <textarea matInput [(ngModel)]="editForm.address" rows="2"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Credit Limit</mat-label>
+        <input matInput type="number" [(ngModel)]="editForm.credit_limit">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Status</mat-label>
+        <select matNativeControl [(ngModel)]="editForm.active">
+          <option [value]="true">Active</option>
+          <option [value]="false">Inactive</option>
+        </select>
+      </mat-form-field>
+    </div>
+    <div class="modal-actions">
+      <button mat-button (click)="closeEditModal()">Cancel</button>
+      <button mat-raised-button color="primary" (click)="saveEdit()">
+        <mat-icon>save</mat-icon>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeDeleteModal()">
+  <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><mat-icon color="warn">warning</mat-icon> Confirm Delete</h2>
+      <button mat-icon-button (click)="closeDeleteModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <strong>{{ deletingClient?.client_name }}</strong>?</p>
+      <p class="warning-text">
+        <mat-icon>info</mat-icon>
+        This action cannot be undone. All related transactions will be affected.
+      </p>
+    </div>
+    <div class="modal-actions">
+      <button mat-button (click)="closeDeleteModal()">Cancel</button>
+      <button mat-raised-button color="warn" (click)="confirmDelete()">
+        <mat-icon>delete</mat-icon>
+        Delete Client
+      </button>
+    </div>
+  </div>
+</div>

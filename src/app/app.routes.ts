@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, loginGuard, manufacturingGuard, libraryGuard } from './guards/auth.guard';
+import { authGuard, loginGuard, manufacturingGuard, libraryGuard, adminGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   // 🌐 PUBLIC ROUTES - EXCLUDED FROM DEPLOYMENT
@@ -11,6 +11,33 @@ export const routes: Routes = [
     path: 'login', 
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent),
     canActivate: [loginGuard] 
+  },
+
+  // 🔧 ADMIN MANAGEMENT ROUTES (Admin only)
+  { 
+    path: 'admin-manage', 
+    loadComponent: () => import('./pages/admin-manage/admin-manage.component').then(m => m.AdminManageComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
+    path: 'manage/clients', 
+    loadComponent: () => import('./pages/manage-clients/manage-clients.component').then(m => m.ManageClientsComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
+    path: 'manage/workers', 
+    loadComponent: () => import('./pages/manage-workers/manage-workers.component').then(m => m.ManageWorkersComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
+    path: 'manage/materials', 
+    loadComponent: () => import('./pages/manage-materials/manage-materials.component').then(m => m.ManageMaterialsComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
+    path: 'manage/products', 
+    loadComponent: () => import('./pages/manage-products/manage-products.component').then(m => m.ManageProductsComponent),
+    canActivate: [authGuard, adminGuard] 
   },
 
   // ⭐⭐⭐ NEW RECIPE-BASED PRODUCTION SYSTEM (Lazy Loaded)

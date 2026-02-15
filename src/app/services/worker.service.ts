@@ -340,4 +340,22 @@ export class WorkerService {
       total_paid: activeWorkers.reduce((sum, w) => sum + w.total_paid, 0)
     };
   }
+
+  /**
+   * Delete worker
+   */
+  async deleteWorker(workerId: string): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('workers_master')
+        .delete()
+        .eq('id', workerId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[WorkerService] deleteWorker error:', error);
+      return { success: false, error: error.message || 'Failed to delete worker' };
+    }
+  }
 }

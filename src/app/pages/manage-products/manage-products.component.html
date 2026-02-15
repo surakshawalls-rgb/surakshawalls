@@ -1,0 +1,183 @@
+<div class="manage-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1><mat-icon>category</mat-icon> Product Management</h1>
+      <button mat-raised-button (click)="goBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon> Back to Admin
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search Products</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Product name, variant...">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <div class="stats">
+      <span><strong>Total:</strong> {{ products.length }}</span>
+      <span><strong>Filtered:</strong> {{ filteredProducts.length }}</span>
+    </div>
+  </div>
+
+  <!-- Products Table -->
+  <div class="table-container">
+    <table mat-table [dataSource]="filteredProducts" class="products-table">
+      
+      <!-- Product Name Column -->
+      <ng-container matColumnDef="product_name">
+        <th mat-header-cell *matHeaderCellDef>Product Name</th>
+        <td mat-cell *matCellDef="let product">
+          <strong>{{ product.product_name }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Variant Column -->
+      <ng-container matColumnDef="product_variant">
+        <th mat-header-cell *matHeaderCellDef>Variant</th>
+        <td mat-cell *matCellDef="let product">
+          {{ product.product_variant || '-' }}
+        </td>
+      </ng-container>
+
+      <!-- Current Stock Column -->
+      <ng-container matColumnDef="current_stock">
+        <th mat-header-cell *matHeaderCellDef>Stock</th>
+        <td mat-cell *matCellDef="let product">
+          <span [class]="getStockClass(product)">
+            {{ product.current_stock }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Unit Cost Column -->
+      <ng-container matColumnDef="unit_cost">
+        <th mat-header-cell *matHeaderCellDef>Cost</th>
+        <td mat-cell *matCellDef="let product">
+          ₹{{ product.unit_cost }}
+        </td>
+      </ng-container>
+
+      <!-- Unit Price Column -->
+      <ng-container matColumnDef="unit_price">
+        <th mat-header-cell *matHeaderCellDef>Price</th>
+        <td mat-cell *matCellDef="let product">
+          ₹{{ product.unit_price }}
+        </td>
+      </ng-container>
+
+      <!-- Low Stock Alert Column -->
+      <ng-container matColumnDef="low_stock_alert">
+        <th mat-header-cell *matHeaderCellDef>Alert Level</th>
+        <td mat-cell *matCellDef="let product">
+          {{ product.low_stock_alert }}
+        </td>
+      </ng-container>
+
+      <!-- Total Sold Column -->
+      <ng-container matColumnDef="total_sold">
+        <th mat-header-cell *matHeaderCellDef>Total Sold</th>
+        <td mat-cell *matCellDef="let product">
+          {{ product.total_sold || 0 }}
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let product">
+          <button mat-icon-button color="primary" (click)="openEditModal(product)" matTooltip="Edit Product">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="openDeleteModal(product)" matTooltip="Delete Product">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <div *ngIf="filteredProducts.length === 0" class="no-data">
+      <mat-icon>inventory_2</mat-icon>
+      <p>No products found</p>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><mat-icon>edit</mat-icon> Edit Product</h2>
+        <button mat-icon-button (click)="closeEditModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Name</mat-label>
+          <input matInput [(ngModel)]="editForm.product_name" placeholder="Enter product name">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Product Variant</mat-label>
+          <input matInput [(ngModel)]="editForm.product_variant" placeholder="e.g., 6ft, 8ft, Red">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Selling Price (₹)</mat-label>
+          <input matInput type="number" [(ngModel)]="editForm.unit_price" min="0" step="0.01">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Low Stock Alert Level</mat-label>
+          <input matInput type="number" [(ngModel)]="editForm.low_stock_alert" min="0">
+        </mat-form-field>
+
+        <div class="info-note">
+          <mat-icon>info</mat-icon>
+          <span>Note: Stock quantity and unit cost are managed through production and sales entries.</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button (click)="closeEditModal()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="saveEdit()">
+          <mat-icon>save</mat-icon> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><mat-icon color="warn">warning</mat-icon> Confirm Delete</h2>
+        <button mat-icon-button (click)="closeDeleteModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="warning-text">
+          Are you sure you want to delete <strong>{{ getProductDisplay(deletingProduct!) }}</strong>?
+        </p>
+        <p class="info-text">
+          This action cannot be undone. Production and sales history will be preserved but the product record will be removed.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button (click)="closeDeleteModal()">Cancel</button>
+        <button mat-raised-button color="warn" (click)="confirmDelete()">
+          <mat-icon>delete</mat-icon> Delete Product
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

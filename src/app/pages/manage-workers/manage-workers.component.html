@@ -1,0 +1,183 @@
+<div class="manage-container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1><mat-icon>engineering</mat-icon> Worker Management</h1>
+      <button mat-raised-button (click)="goBack()" class="back-btn">
+        <mat-icon>arrow_back</mat-icon> Back to Admin
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search Workers</mat-label>
+      <input matInput [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" placeholder="Name, phone...">
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    <div class="stats">
+      <span><strong>Total:</strong> {{ workers.length }}</span>
+      <span><strong>Filtered:</strong> {{ filteredWorkers.length }}</span>
+    </div>
+  </div>
+
+  <!-- Workers Table -->
+  <div class="table-container">
+    <table mat-table [dataSource]="filteredWorkers" class="workers-table">
+      
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let worker">
+          <strong>{{ worker.name }}</strong>
+        </td>
+      </ng-container>
+
+      <!-- Phone Column -->
+      <ng-container matColumnDef="phone">
+        <th mat-header-cell *matHeaderCellDef>Phone</th>
+        <td mat-cell *matCellDef="let worker">
+          {{ worker.phone || 'N/A' }}
+        </td>
+      </ng-container>
+
+      <!-- Total Days Column -->
+      <ng-container matColumnDef="total_days_worked">
+        <th mat-header-cell *matHeaderCellDef>Days Worked</th>
+        <td mat-cell *matCellDef="let worker">
+          {{ worker.total_days_worked || 0 }}
+        </td>
+      </ng-container>
+
+      <!-- Total Earned Column -->
+      <ng-container matColumnDef="total_earned">
+        <th mat-header-cell *matHeaderCellDef>Total Earned</th>
+        <td mat-cell *matCellDef="let worker">
+          ₹{{ worker.total_earned || 0 }}
+        </td>
+      </ng-container>
+
+      <!-- Total Paid Column -->
+      <ng-container matColumnDef="total_paid">
+        <th mat-header-cell *matHeaderCellDef>Total Paid</th>
+        <td mat-cell *matCellDef="let worker">
+          ₹{{ worker.total_paid || 0 }}
+        </td>
+      </ng-container>
+
+      <!-- Balance Column -->
+      <ng-container matColumnDef="cumulative_balance">
+        <th mat-header-cell *matHeaderCellDef>Balance</th>
+        <td mat-cell *matCellDef="let worker">
+          <span [class]="getBalanceClass(worker.cumulative_balance)">
+            ₹{{ worker.cumulative_balance || 0 }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="active">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let worker">
+          <span class="status-badge" [class]="getStatusClass(worker.active)">
+            {{ worker.active ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let worker">
+          <button mat-icon-button color="primary" (click)="openEditModal(worker)" matTooltip="Edit Worker">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="openDeleteModal(worker)" matTooltip="Delete Worker">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <div *ngIf="filteredWorkers.length === 0" class="no-data">
+      <mat-icon>person_off</mat-icon>
+      <p>No workers found</p>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><mat-icon>edit</mat-icon> Edit Worker</h2>
+        <button mat-icon-button (click)="closeEditModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Worker Name</mat-label>
+          <input matInput [(ngModel)]="editForm.name" placeholder="Enter worker name">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Phone Number</mat-label>
+          <input matInput [(ngModel)]="editForm.phone" placeholder="Enter phone number">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notes</mat-label>
+          <textarea matInput [(ngModel)]="editForm.notes" rows="3" placeholder="Additional notes"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Status</mat-label>
+          <select matNativeControl [(ngModel)]="editForm.active">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </mat-form-field>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button (click)="closeEditModal()">Cancel</button>
+        <button mat-raised-button color="primary" (click)="saveEdit()">
+          <mat-icon>save</mat-icon> Save Changes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><mat-icon color="warn">warning</mat-icon> Confirm Delete</h2>
+        <button mat-icon-button (click)="closeDeleteModal()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="warning-text">
+          Are you sure you want to delete worker <strong>{{ deletingWorker?.name }}</strong>?
+        </p>
+        <p class="info-text">
+          This action cannot be undone. All wage history will be preserved but the worker record will be removed.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button mat-button (click)="closeDeleteModal()">Cancel</button>
+        <button mat-raised-button color="warn" (click)="confirmDelete()">
+          <mat-icon>delete</mat-icon> Delete Worker
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

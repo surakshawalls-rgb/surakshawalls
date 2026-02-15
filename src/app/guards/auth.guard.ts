@@ -55,3 +55,17 @@ export const libraryGuard = () => {
   router.navigate(['/reports-dashboard']);
   return false;
 };
+
+// Admin-only access guard (for management operations)
+export const adminGuard = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.isAdmin()) {
+    return true;
+  }
+
+  // Redirect to dashboard if not admin
+  router.navigate(['/reports-dashboard']);
+  return false;
+};

@@ -303,4 +303,99 @@ export class InventoryService {
         materials.reduce((sum, item) => sum + (item.current_stock * item.unit_cost), 0)
     };
   }
+
+  /**
+   * Get all raw materials (including inactive)
+   */
+  async getAllRawMaterials(): Promise<MaterialStock[]> {
+    const { data, error } = await this.supabase.supabase
+      .from('raw_materials_master')
+      .select('*')
+      .order('material_name', { ascending: true });
+
+    if (error) {
+      console.error('[InventoryService] getAllRawMaterials error:', error);
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  /**
+   * Update raw material
+   */
+  async updateRawMaterial(
+    materialId: string,
+    updates: { material_name?: string; unit?: string; unit_cost?: number; low_stock_alert?: number; active?: boolean }
+  ): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('raw_materials_master')
+        .update(updates)
+        .eq('id', materialId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[InventoryService] updateRawMaterial error:', error);
+      return { success: false, error: error.message || 'Failed to update material' };
+    }
+  }
+
+  /**
+   * Delete raw material
+   */
+  async deleteRawMaterial(materialId: string): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('raw_materials_master')
+        .delete()
+        .eq('id', materialId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[InventoryService] deleteRawMaterial error:', error);
+      return { success: false, error: error.message || 'Failed to delete material' };
+    }
+  }
+
+  /**
+   * Update product
+   */
+  async updateProduct(
+    productId: string,
+    updates: { product_name?: string; product_variant?: string; unit_price?: number; low_stock_alert?: number }
+  ): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('finished_goods_inventory')
+        .update(updates)
+        .eq('id', productId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[InventoryService] updateProduct error:', error);
+      return { success: false, error: error.message || 'Failed to update product' };
+    }
+  }
+
+  /**
+   * Delete product
+   */
+  async deleteProduct(productId: string): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('finished_goods_inventory')
+        .delete()
+        .eq('id', productId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[InventoryService] deleteProduct error:', error);
+      return { success: false, error: error.message || 'Failed to delete product' };
+    }
+  }
 }

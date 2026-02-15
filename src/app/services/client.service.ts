@@ -146,6 +146,26 @@ export class ClientService {
   }
 
   /**
+   * Delete client (Admin only)
+   */
+  async deleteClient(clientId: string): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('client_ledger')
+        .delete()
+        .eq('id', clientId);
+
+      if (error) throw error;
+
+      return { success: true };
+
+    } catch (error: any) {
+      console.error('[ClientService] deleteClient error:', error);
+      return { success: false, error: error.message || 'Failed to delete client' };
+    }
+  }
+
+  /**
    * Get client statement
    */
   async getClientStatement(clientId: string, startDate?: string, endDate?: string): Promise<ClientStatement[]> {
