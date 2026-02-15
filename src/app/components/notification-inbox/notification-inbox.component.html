@@ -60,19 +60,17 @@
     *ngFor="let notification of notifications" 
     class="notification-item"
     [class.unread]="!notification.is_read"
+    [class.swiping]="swipingNotificationId === notification.id"
     (click)="handleNotificationClick(notification)"
+    (touchstart)="onTouchStart($event, notification.id)"
+    (touchmove)="onTouchMove($event, notification.id)"
+    (touchend)="onTouchEnd($event, notification)"
     mat-menu-item>
-    
-    <div class="notification-icon">
-      <mat-icon [ngClass]="getIconColor(notification.type)">
-        {{ getIcon(notification.type) }}
-      </mat-icon>
-    </div>
 
     <div class="notification-content">
       <div class="notification-title">
+        <span *ngIf="!notification.is_read" class="unread-tick">✓</span>
         {{ notification.title }}
-        <span *ngIf="!notification.is_read" class="unread-dot"></span>
       </div>
       <div class="notification-message">{{ notification.content }}</div>
       <div class="notification-time">{{ getTimeAgo(notification.created_at) }}</div>
