@@ -37,14 +37,34 @@ export class NotificationInboxComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     console.log('🔔 NotificationInboxComponent initialized');
+    
+    // Wait for notification service to be ready (user loaded)
+    await this.waitForServiceReady();
+    
     await this.loadNotifications();
     await this.updateUnreadCount();
     
     // Subscribe to real-time notification updates
     this.notificationService.subscribeToNotificationUpdates((notification) => {
+      console.log('📬 New notification in inbox:', notification);
       this.notifications.unshift(notification);
       this.unreadCount++;
     });
+  }
+
+  private async waitForServiceReady() {
+    // Wait up to 5 seconds for user to be loaded
+    let attempts = 0;
+    while (attempts < 50) {
+      const count = await this.notificationService.getUnreadCount();
+      if (count !== undefined) {
+        console.log('✅ Notification service ready');
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+    console.warn('⚠️ Notification service took too long to initialize');
   }
 
   ngOnDestroy() {
