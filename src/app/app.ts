@@ -100,47 +100,69 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   private async initializeNotificationServices() {
+    // Only initialize notification services on non-production or supported platforms
+    if (typeof window === 'undefined') {
+      console.log('⚠️ Running in SSR mode, skipping notification services');
+      return;
+    }
+
     try {
       // Dynamically import and initialize notification service
-      const { NotificationService } = await import('./services/notification.service');
-      const notificationService = this.injector.get(NotificationService);
+      const notificationModule = await import('./services/notification.service').catch(() => null);
       
-      // Start listening to database changes for real-time notifications (in-app)
-      notificationService.startListening();
-      console.log('✅ Notification service started');
-      
-      // Show welcome notification after delay
-      setTimeout(() => {
-        try {
-          notificationService.notify(
-            'Welcome! 👋',
-            'Real-time notifications are active',
-            'success'
-          );
-        } catch (error: any) {
-          console.error('❌ Error showing welcome notification:', error);
-        }
-      }, 2000);
+      if (notificationModule) {
+        const notificationService = this.injector.get(notificationModule.NotificationService);
+        
+        // Start listening to database changes for real-time notifications (in-app)
+        notificationService.startListening();
+        console.log('✅ Notification service started');
+        
+        // Show welcome notification after delay
+        setTimeout(() => {
+          try {
+            notificationService.notify(
+              'Welcome! 👋',
+              'Real-time notifications are active',
+              'success'
+            );
+          } catch (error: any) {
+            console.error('❌ Error showing welcome notification:', error);
+          }
+        }, 2000);
+      } else {
+        console.log('⚠️ Notification service not available');
+      }
     } catch (error: any) {
       console.error('❌ Error starting notification service:', error);
     }
     
-    // Initialize push notifications AFTER a delay to not block app startup
+    // Initialize push notifications AFTER a delay (only on native platforms)
     setTimeout(async () => {
       try {
-        console.log('⏰ Attempting push notification initialization...');
-        const { PushNotificationService } = await import('./services/push-notification.service');
-        const pushNotificationService = this.injector.get(PushNotificationService);
+        // Check if we're on a native platform
+        const isNative = (window as any).Capacitor?.isNativePlatform?.() || false;
         
-        pushNotificationService.initializePushNotifications()
-          .then(() => console.log('✅ Push notification initialization complete'))
-          .catch((error: any) => {
-            console.error('❌ Error initializing push notifications:', error);
-            // Don't let this crash the app
-          });
+        if (!isNative) {
+          console.log('⚠️ Push notifications only available on native platforms');
+          return;
+        }
+
+        console.log('⏰ Attempting push notification initialization...');
+        const pushModule = await import('./services/push-notification.service').catch(() => null);
+        
+        if (pushModule) {
+          const pushNotificationService = this.injector.get(pushModule.PushNotificationService);
+          
+          pushNotificationService.initializePushNotifications()
+            .then(() => console.log('✅ Push notification initialization complete'))
+            .catch((error: any) => {
+              console.error('❌ Error initializing push notifications:', error);
+            });
+        } else {
+          console.log('⚠️ Push notification service not available');
+        }
       } catch (error: any) {
         console.error('❌ Error calling push notification init:', error);
-        // Don't let this crash the app
       }
     }, 3000); // Wait 3 seconds after app loads
   }
@@ -148,9 +170,13 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Clean up subscriptions when component is destroyed
     try {
-      import('./services/notification.service').then(({ NotificationService }) => {
-        const notificationService = this.injector.get(NotificationService);
-        notificationService.stopListening();
+      import('./services/notification.service').then((module) => {
+        if (module) {
+          const notificationService = this.injector.get(module.NotificationService);
+          notificationService.stopListening();
+        }
+      }).catch(() => {
+        console.log('⚠️ Could not cleanup notification service');
       });
     } catch (error: any) {
       console.error('❌ Error in ngOnDestroy:', error);
