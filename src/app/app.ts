@@ -14,6 +14,10 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 
+// Conditional type for mobile services (not available during build)
+type NotificationServiceType = any;
+type PushNotificationServiceType = any;
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -92,8 +96,46 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     console.log('🚀 AppComponent ngOnInit started');
     
-    // Note: Notification services are automatically initialized via Angular's DI
-    // when the app runs on mobile. Web version doesn't require them.
+    // Initialize notification services on runtime (after build)
+    if (typeof window !== 'undefined') {
+      this.initializeServices();
+    }
+  }
+
+  private async initializeServices(): Promise<void> {
+    // Only run on actual runtime, not during SSR
+    try {
+      // Check if we're in a browser environment
+      if (typeof document === 'undefined') return;
+      
+      // Use Function constructor to avoid TypeScript resolving imports during build
+      const loadService = new Function('path', 'return import(path)');
+      
+      // Load notification service
+      const notifModule: any = await loadService('./services/notification.service');
+      const notificationService: any = inject(notifModule.NotificationService);
+      
+      // Start real-time notifications
+      notificationService.startListening();
+      console.log('✅ Real-time notifications active');
+      
+      // Load and initialize push notifications after delay (mobile only)
+      setTimeout(async () => {
+        try {
+          const pushModule: any = await loadService('./services/push-notification.service');
+          const pushNotificationService: any = inject(pushModule.PushNotificationService);
+          
+          await pushNotificationService.initializePushNotifications();
+          console.log('✅ Push notifications initialized');
+        } catch (e: any) {
+          console.log('⚠️ Push notifications not available:', e.message);
+        }
+      }, 3000);
+      
+    } catch (error: any) {
+      // Services not available (Vercel build) - silently continue
+      console.log('⚠️ Mobile services not available (web mode)');
+    }
   }
 }
 
