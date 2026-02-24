@@ -968,23 +968,49 @@ export class LibraryGridComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // Determine start date for new subscription
-    let startDate: Date;
     if (currentExpiry && currentExpiry >= today) {
       // Early payment: Start from day after current expiry
-      startDate = new Date(currentExpiry);
+      const startDate = new Date(currentExpiry);
       startDate.setDate(startDate.getDate() + 1);
+      
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + months);
+      endDate.setDate(endDate.getDate() - 1);
+      return endDate;
+    } else if (currentExpiry && currentExpiry < today) {
+      // Overdue: Calculate subscription days and deduct overdue days
+      // Formula: subscription_days - overdue_days = days_to_add_from_today
+      
+      // Calculate what the subscription period would have been
+      const theoreticalStartDate = new Date(currentExpiry);
+      theoreticalStartDate.setDate(theoreticalStartDate.getDate() + 1);
+      
+      const theoreticalEndDate = new Date(theoreticalStartDate);
+      theoreticalEndDate.setMonth(theoreticalEndDate.getMonth() + months);
+      theoreticalEndDate.setDate(theoreticalEndDate.getDate() - 1);
+      
+      // Calculate total days in subscription period (inclusive)
+      const diffTime = theoreticalEndDate.getTime() - theoreticalStartDate.getTime();
+      const subscriptionDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      
+      // Get overdue days
+      const overdueDays = this.getDaysOverdue();
+      
+      // Calculate remaining days after deducting overdue
+      const remainingDays = Math.max(0, subscriptionDays - overdueDays);
+      
+      // New expiry = today + remaining days - 1 (to account for inclusive counting)
+      const endDate = new Date(today);
+      endDate.setDate(endDate.getDate() + remainingDays - 1);
+      return endDate;
     } else {
-      // Overdue or no subscription: Start from today
-      startDate = new Date(today);
+      // No subscription: Start from today
+      const startDate = new Date(today);
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + months);
+      endDate.setDate(endDate.getDate() - 1);
+      return endDate;
     }
-    
-    // Calculate end date by adding months to start date
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + months);
-    endDate.setDate(endDate.getDate() - 1); // Subtract 1 to get last day of period
-    
-    return endDate;
   }
 
   // Check if student subscription is overdue
