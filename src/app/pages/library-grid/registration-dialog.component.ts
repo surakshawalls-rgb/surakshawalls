@@ -161,9 +161,16 @@ export interface RegistrationResult {
           </mat-button-toggle-group>
         </div>
 
-        <mat-form-field appearance="outline" class="readonly-field">
-          <mat-label>Fee Amount</mat-label>
-          <input matInput type="number" formControlName="feeAmount" readonly>
+        <mat-form-field appearance="outline">
+          <mat-label>Fee Amount (₹)</mat-label>
+          <input matInput type="number" formControlName="feeAmount" placeholder="Default: 250/400" required>
+          <mat-hint>Default: ₹250 (Half Day), ₹400 (Full Day) - Editable</mat-hint>
+          <mat-error *ngIf="registrationForm.get('feeAmount')?.hasError('required')">
+            Fee amount is required
+          </mat-error>
+          <mat-error *ngIf="registrationForm.get('feeAmount')?.hasError('min')">
+            Fee must be at least ₹1
+          </mat-error>
         </mat-form-field>
 
         <div class="form-group">
@@ -501,7 +508,7 @@ export class RegistrationDialogComponent implements OnInit {
       registration_fee_paid: [0],
       notes: [''],
       selectedShift: [defaultShift],
-      feeAmount: [defaultShift === 'full_time' ? 400 : 250],
+      feeAmount: [defaultShift === 'full_time' ? 400 : 250, [Validators.required, Validators.min(1)]],
       paymentMode: ['cash']
     });
 

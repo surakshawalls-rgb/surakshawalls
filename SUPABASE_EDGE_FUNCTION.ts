@@ -154,19 +154,24 @@ async function sendFCMNotification(token: string, payload: NotificationPayload) 
 
   const fcmPayload = {
     to: token,
-    priority: 'high',
+    priority: 'high', // ⚡ High priority for instant delivery
     notification: {
       title: payload.title,
       body: payload.content,
       sound: 'default',
       badge: '1',
+      android_channel_id: 'suraksha_high_priority', // Use high-priority channel
     },
     data: {
       type: payload.type || 'info',
+      route: payload.data?.route || '/',
+      timestamp: Date.now().toString(),
       ...payload.data
     },
-    // Set expiration to 30 days (2592000 seconds)
-    time_to_live: 2592000
+    // Set expiration to 28 days (2419200 seconds) - same as GPay
+    time_to_live: 2419200,
+    // Don't collapse messages - deliver all notifications
+    collapse_key: undefined
   }
 
   try {
