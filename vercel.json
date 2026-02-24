@@ -1,12 +1,16 @@
 {
   "version": 2,
   "buildCommand": "npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "dist/suraksha-report",
+  "outputDirectory": "dist/suraksha-report/browser",
   "framework": "angular",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|eot|map))",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
