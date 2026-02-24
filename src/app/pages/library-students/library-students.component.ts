@@ -84,6 +84,7 @@ export class LibraryStudentsComponent implements OnInit {
 
   selectedPhoto: File | null = null;
   uploadingPhoto = false;
+  originalJoiningDate: string = ''; // Track original joining date for edit
 
   // Date dropdown arrays
   days: number[] = Array.from({length: 31}, (_, i) => i + 1);
@@ -242,6 +243,7 @@ export class LibraryStudentsComponent implements OnInit {
 
   openEditModal(student: LibraryStudent) {
     this.selectedStudent = { ...student };
+    this.originalJoiningDate = student.joining_date; // Store original joining date
     this.showEditModal = true;
   }
 
@@ -265,6 +267,7 @@ export class LibraryStudentsComponent implements OnInit {
     this.showAddShiftModal = false;
     this.selectedStudent = null;
     this.selectedPhoto = null;
+    this.originalJoiningDate = ''; // Clear original joining date
   }
 
   async openProfileModal(student: LibraryStudent) {
@@ -336,11 +339,29 @@ export class LibraryStudentsComponent implements OnInit {
     try {
       if (!this.selectedStudent) return;
 
+      // Update student details
       await this.libraryService.updateStudent(this.selectedStudent.id!, this.selectedStudent);
       
-      this.successMessage = 'Student updated successfully!';
+      // If joining date changed, update seat expiry dates
+      if (this.selectedStudent.joining_date !== this.originalJoiningDate) {
+        const result = await this.libraryService.updateSeatExpiryForStudent(
+          this.selectedStudent.id!,
+          this.selectedStudent.joining_date
+        );
+        
+        if (!result.success) {
+          console.error('Failed to update seat expiry:', result.error);
+          this.successMessage = 'Student updated, but expiry date update failed. Please check seat assignments.';
+        } else {
+          this.successMessage = 'Student and seat expiry dates updated successfully!';
+        }
+      } else {
+        this.successMessage = 'Student updated successfully!';
+      }
+      
       this.closeModal();
       await this.loadStudents();
+      await this.loadStudentSeats(); // Reload seats to reflect expiry changes
       this.cdr.detectChanges();
       
       setTimeout(() => {
@@ -349,6 +370,24 @@ export class LibraryStudentsComponent implements OnInit {
     } catch (error: any) {
       console.error('Error updating student:', error);
       this.errorMessage = 'Failed to update student: ' + error.message;
+    }
+  }
+
+  onJoiningDateChange() {
+    // Show info message that expiry will be recalculated
+    if (this.selectedStudent && this.selectedStudent.joining_date !== this.originalJoiningDate) {
+      // Calculate what the new expiry date will be
+      const joiningDate = new Date(this.selectedStudent.joining_date);
+      const daysInMonth = new Date(joiningDate.getFullYear(), joiningDate.getMonth() + 1, 0).getDate();
+      const expiryDate = new Date(joiningDate);
+      expiryDate.setDate(expiryDate.getDate() + daysInMonth - 1);
+      
+      const expiryString = expiryDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+      this.successMessage = `📅 Seat expiry will be updated to: ${expiryString}`;
+      
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 3000);
     }
   }
 

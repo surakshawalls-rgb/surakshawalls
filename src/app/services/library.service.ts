@@ -2,7 +2,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from './supabase.service';
-import { format, startOfMonth } from 'date-fns';
+import { format, startOfMonth, addDays, getDaysInMonth } from 'date-fns';
 
 export interface LibraryStudent {
   id: string;
@@ -223,6 +223,61 @@ export class LibraryService {
       return { success: true };
     } catch (error: any) {
       console.error('[LibraryService] updateStudent error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Update seat expiry dates when joining date changes
+  async updateSeatExpiryForStudent(studentId: string, newJoiningDate: string): Promise<{success: boolean, error?: string}> {
+    try {
+      // Parse the new joining date
+      const joiningDate = new Date(newJoiningDate);
+      
+      // Calculate new expiry date: joining date + days in month - 1
+      const daysInMonth = getDaysInMonth(joiningDate);
+      const expiryDate = addDays(joiningDate, daysInMonth - 1);
+      const expiryString = format(expiryDate, 'yyyy-MM-dd');
+      
+      // Find the seat(s) assigned to this student
+      const { data: seats, error: fetchError } = await this.supabase.supabase
+        .from('library_seats')
+        .select('*')
+        .or(`full_time_student_id.eq.${studentId},first_half_student_id.eq.${studentId},second_half_student_id.eq.${studentId}`);
+      
+      if (fetchError) throw fetchError;
+      if (!seats || seats.length === 0) {
+        // No seat assigned, that's okay
+        return { success: true };
+      }
+      
+      // Update expiry dates for each seat
+      for (const seat of seats) {
+        const updates: any = {};
+        
+        if (seat.full_time_student_id === studentId) {
+          updates.full_time_expiry = expiryString;
+        }
+        if (seat.first_half_student_id === studentId) {
+          updates.first_half_expiry = expiryString;
+        }
+        if (seat.second_half_student_id === studentId) {
+          updates.second_half_expiry = expiryString;
+        }
+        
+        const { error: updateError } = await this.supabase.supabase
+          .from('library_seats')
+          .update(updates)
+          .eq('seat_no', seat.seat_no);
+        
+        if (updateError) throw updateError;
+      }
+      
+      // Clear seats cache
+      this.clearSeatsCache();
+      
+      return { success: true };
+    } catch (error: any) {
+      console.error('[LibraryService] updateSeatExpiryForStudent error:', error);
       return { success: false, error: error.message };
     }
   }
