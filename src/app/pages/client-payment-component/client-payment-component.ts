@@ -1,7 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ClientPaymentService } from '../../services/client-payment.service';
+import { ClientPaymentService, ClientPaymentRecord } from '../../services/client-payment.service';
+import { ClientService } from '../../services/client.service';
+import { SalesService, SaleData } from '../../services/sales.service';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
 
 @Component({
@@ -13,7 +15,12 @@ import { formatDateToDDMMYYYY } from '../../services/date-formatter';
 })
 export class ClientPaymentComponent implements OnInit {
 
-  constructor(private db: ClientPaymentService, private cd: ChangeDetectorRef) {}
+  constructor(
+    private clientPaymentService: ClientPaymentService,
+    private clientService: ClientService,
+    private salesService: SalesService,
+    private cd: ChangeDetectorRef
+  ) {}
 
   // Form Fields
   date = new Date().toISOString().split('T')[0];
@@ -47,8 +54,7 @@ export class ClientPaymentComponent implements OnInit {
   }
 
   async loadClients() {
-    const res = await this.db.getClients();
-    this.clients = res.data || [];
+    this.clients = await this.clientService.getAllClients();
   }
 
   async saveRevenue() {
@@ -56,21 +62,46 @@ export class ClientPaymentComponent implements OnInit {
 
     this.startLoading();
 
-    // Save Revenue
-    if (this.totalBill > 0) {
-      await this.db.addRevenue(this.date, this.selectedClientId, this.siteName, this.totalBill);
+    try {
+      // Save Revenue (as a sale transaction)
+      if (this.totalBill > 0) {
+        const saleData: SaleData = {
+          date: this.date,
+          client_id: this.selectedClientId,
+          product_name: this.siteName || 'General Sale',
+          product_variant: null,
+          quantity: 1,
+          rate_per_unit: this.totalBill,
+          payment_type: this.paidAmount >= this.totalBill ? 'full' : this.paidAmount > 0 ? 'partial' : 'credit',
+          paid_amount: this.paidAmount,
+          collected_by_partner_id: undefined,
+          deposited_to_firm: this.paymentMode !== 'Cash',
+          notes: this.remarks || undefined
+        };
+        await this.salesService.createSale(saleData);
+      } else if (this.paidAmount > 0) {
+        // Save Payment only (against existing outstanding)
+        const payment: ClientPaymentRecord = {
+          client_id: this.selectedClientId,
+          payment_date: this.date,
+          amount_paid: this.paidAmount,
+          payment_mode: this.paymentMode.toLowerCase() as 'cash' | 'upi' | 'cheque' | 'bank_transfer',
+          deposited_to_firm: this.paymentMode !== 'Cash',
+          notes: this.remarks || undefined
+        };
+        await this.clientPaymentService.recordPayment(payment);
+      }
+
+      this.stopLoading();
+      alert("✅ Saved Successfully");
+
+      this.resetForm();
+      await this.loadDueLedger();
+    } catch (error) {
+      this.stopLoading();
+      console.error('Error saving:', error);
+      alert("❌ Error saving data");
     }
-
-    // Save Payment
-    if (this.paidAmount > 0) {
-      await this.db.addPayment(this.date, this.selectedClientId, this.paidAmount, this.paymentMode, this.receivedBy, this.remarks);
-    }
-
-    this.stopLoading();
-    alert("✅ Saved Successfully");
-
-    this.resetForm();
-    await this.loadDueLedger();
   }
 
   resetForm() {
@@ -83,20 +114,13 @@ export class ClientPaymentComponent implements OnInit {
   async loadDueLedger() {
     this.startLoading();
 
-    const res = await this.db.getDueSummary();
-    const revenue = res.revenue;
-    const payments = res.payments;
+    const clientsWithOutstanding = await this.clientPaymentService.getClientsWithOutstanding();
 
     this.dueLedger = {};
 
-    // Add Bills
-    revenue.forEach((r: any) => {
-      this.dueLedger[r.client_id] = (this.dueLedger[r.client_id] || 0) + Number(r.total_bill);
-    });
-
-    // Subtract Payments
-    payments.forEach((p: any) => {
-      this.dueLedger[p.client_id] = (this.dueLedger[p.client_id] || 0) - Number(p.amount_paid);
+    // Build due ledger from clients with outstanding
+    clientsWithOutstanding.forEach(client => {
+      this.dueLedger[client.client_id] = client.outstanding;
     });
 
     this.stopLoading();

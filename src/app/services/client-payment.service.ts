@@ -1,144 +1,370 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 
-@Injectable({ providedIn: 'root' })
+export interface ClientPaymentRecord {
+  id?: string;
+  client_id: string;
+  sales_transaction_id?: string;
+  payment_date: string;
+  amount_paid: number;
+  payment_mode: 'cash' | 'upi' | 'cheque' | 'bank_transfer';
+  cheque_number?: string;
+  upi_transaction_id?: string;
+  collected_by_partner_id?: string;
+  deposited_to_firm: boolean;
+  notes?: string;
+  created_at?: string;
+}
+
+export interface SalesTransactionWithPayments {
+  sales_id: string;
+  sale_date: string;
+  client_id: string;
+  client_name: string;
+  total_amount: number;
+  paid_initially: number;
+  total_paid_later: number;
+  current_outstanding: number;
+  payment_history: ClientPaymentRecord[];
+}
+
+export interface ClientOutstanding {
+  client_id: string;
+  client_name: string;
+  phone: string;
+  total_sales: number;
+  total_paid: number;
+  outstanding: number;
+  sales_transactions: SalesTransactionWithPayments[];
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class ClientPaymentService {
 
-  private supabase: SupabaseClient;
+  constructor(private supabase: SupabaseService) {}
 
-  constructor() {
-    this.supabase = createClient(
-      'https://lcwjtwidxihclizliksd.supabase.co',
-      'sb_publishable_h161nq_O9ZsC30WbVTaxNg_x9DhrYIh'
-    );
-  }
+  /**
+   * Get all clients with outstanding payments
+   */
+  async getClientsWithOutstanding(): Promise<ClientOutstanding[]> {
+    try {
+      // Get all sales transactions
+      const { data: sales, error: salesError } = await this.supabase.supabase
+        .from('sales_transactions')
+        .select(`
+          id,
+          date,
+          client_id,
+          total_amount,
+          payment_amount,
+          clients_master!inner(id, client_name, phone)
+        `)
+        .order('date', { ascending: false });
 
-  // Clients
-  getClients() {
-    return this.supabase.from('clients').select('*').order('client_name');
-  }
+      if (salesError) throw salesError;
 
-  // Revenue Entry (writes to client_bill table)
-  addRevenue(date: string, clientId: string, site: string, bill: number) {
-    return this.supabase.from('client_bill').insert([
-      {
-        date,
-        client_id: clientId,
-        bill_amount: bill,
-        entry_type: 'BILL',
-        description: `Invoice for ${site}`
-      }
-    ]);
-  }
+      // Get all subsequent payments
+      const { data: payments, error: paymentsError } = await this.supabase.supabase
+        .from('client_payments')
+        .select('*')
+        .order('payment_date', { ascending: false });
 
-  // Payment Entry - Update client's total_paid in client_ledger
-  async addPayment(date: string, clientId: string, amount: number, mode: string, receivedBy: string, remarks: string) {
-    // Get current client totals
-    const { data: clientData } = await this.supabase
-      .from('client_ledger')
-      .select('total_paid')
-      .eq('id', clientId)
-      .single();
+      if (paymentsError) throw paymentsError;
 
-    if (clientData) {
-      // Update total_paid and last_payment_date
-      return this.supabase.from('client_ledger').update({
-        total_paid: clientData.total_paid + amount,
-        last_payment_date: date
-      }).eq('id', clientId);
+      // Group by client
+      const clientMap = new Map<string, ClientOutstanding>();
+
+      sales?.forEach((sale: any) => {
+        const clientId = sale.client_id;
+        const client = sale.clients_master;
+
+        if (!clientMap.has(clientId)) {
+          clientMap.set(clientId, {
+            client_id: clientId,
+            client_name: client.client_name,
+            phone: client.phone,
+            total_sales: 0,
+            total_paid: 0,
+            outstanding: 0,
+            sales_transactions: []
+          });
+        }
+
+        // Calculate payments for this sale
+        const salePayments = payments?.filter((p: any) => p.sales_transaction_id === sale.id) || [];
+        const totalPaidLater = salePayments.reduce((sum: number, p: any) => sum + p.amount_paid, 0);
+        const currentOutstanding = sale.total_amount - sale.payment_amount - totalPaidLater;
+
+        const clientData = clientMap.get(clientId)!;
+        clientData.total_sales += sale.total_amount;
+        clientData.total_paid += sale.payment_amount + totalPaidLater;
+        clientData.outstanding += currentOutstanding;
+
+        if (currentOutstanding > 0) {
+          clientData.sales_transactions.push({
+            sales_id: sale.id,
+            sale_date: sale.date,
+            client_id: clientId,
+            client_name: client.client_name,
+            total_amount: sale.total_amount,
+            paid_initially: sale.payment_amount,
+            total_paid_later: totalPaidLater,
+            current_outstanding: currentOutstanding,
+            payment_history: salePayments
+          });
+        }
+      });
+
+      // Filter only clients with outstanding
+      return Array.from(clientMap.values()).filter(c => c.outstanding > 0);
+    } catch (error) {
+      console.error('Error getting clients with outstanding:', error);
+      throw error;
     }
-    
-    return { error: { message: 'Client not found' } };
   }
 
-  // Add Bill (New - uses client_bill table for proper tracking)
-  addBill(date: string, clientId: string, amount: number, description?: string) {
-    return this.supabase.from('client_bill').insert([
-      {
-        date,
-        client_id: clientId,
-        bill_amount: amount,
-        entry_type: 'BILL',
-        description: description || null
+  /**
+   * Record a payment from client
+   */
+  async recordPayment(payment: ClientPaymentRecord): Promise<{ success: boolean; error?: string }> {
+    try {
+      // If linked to a sales transaction, validate outstanding
+      if (payment.sales_transaction_id) {
+        const { data: sale, error: saleError } = await this.supabase.supabase
+          .from('sales_transactions')
+          .select('id, total_amount, payment_amount, client_id')
+          .eq('id', payment.sales_transaction_id)
+          .single();
+
+        if (saleError) throw saleError;
+
+        // Calculate current outstanding
+        const { data: existingPayments } = await this.supabase.supabase
+          .from('client_payments')
+          .select('amount_paid')
+          .eq('sales_transaction_id', payment.sales_transaction_id);
+
+        const totalPaidLater = existingPayments?.reduce((sum: number, p: any) => sum + p.amount_paid, 0) || 0;
+        const currentOutstanding = sale.total_amount - sale.payment_amount - totalPaidLater;
+
+        if (payment.amount_paid > currentOutstanding) {
+          return {
+            success: false,
+            error: `Payment amount ₹${payment.amount_paid} exceeds outstanding ₹${currentOutstanding}`
+          };
+        }
       }
-    ]);
-  }
 
-  // Get bills for a client
-  getClientBills(clientId: string) {
-    return this.supabase
-      .from('client_bill')
-      .select('*')
-      .eq('client_id', clientId)
-      .order('date', { ascending: false });
-  }
+      // Insert payment record
+      const { error: insertError } = await this.supabase.supabase
+        .from('client_payments')
+        .insert([{
+          client_id: payment.client_id,
+          sales_transaction_id: payment.sales_transaction_id || null,
+          payment_date: payment.payment_date,
+          amount_paid: payment.amount_paid,
+          payment_mode: payment.payment_mode,
+          cheque_number: payment.cheque_number,
+          upi_transaction_id: payment.upi_transaction_id,
+          collected_by_partner_id: payment.collected_by_partner_id || null,
+          deposited_to_firm: payment.deposited_to_firm,
+          notes: payment.notes
+        }]);
 
-  // Get payments for a client from sales_transactions
-  getClientPayments(clientId: string) {
-    return this.supabase
-      .from('sales_transactions')
-      .select('date, paid_amount, invoice_number, payment_type')
-      .eq('client_id', clientId)
-      .gt('paid_amount', 0)
-      .order('date', { ascending: false });
-  }
+      if (insertError) throw insertError;
 
-  // Load Due Summary from client_ledger master table
-  async getDueSummary() {
-    const clients = await this.supabase.from('client_ledger').select('id, total_billed, total_paid');
-    
-    // Convert to legacy format for backward compatibility
-    const legacyRevenue = (clients.data || []).map((c: any) => ({
-      client_id: c.id,
-      total_bill: c.total_billed
-    }));
-    
-    const legacyPayments = (clients.data || []).map((c: any) => ({
-      client_id: c.id,
-      amount_paid: c.total_paid
-    }));
-    
-    return { revenue: legacyRevenue, payments: legacyPayments };
-  }
+      // Update client outstanding
+      const { data: client } = await this.supabase.supabase
+        .from('clients_master')
+        .select('outstanding')
+        .eq('id', payment.client_id)
+        .single();
 
-  // New Due Calculation from client_ledger master table
-  async getClientDue(clientId: string) {
-    const { data: clientData } = await this.supabase
-      .from('client_ledger')
-      .select('total_billed, total_paid, outstanding')
-      .eq('id', clientId)
-      .single();
+      if (client) {
+        await this.supabase.supabase
+          .from('clients_master')
+          .update({ outstanding: Math.max(0, client.outstanding - payment.amount_paid) })
+          .eq('id', payment.client_id);
+      }
 
-    if (!clientData) {
-      return { totalBilled: 0, totalPaid: 0, outstanding: 0 };
+      // Record in firm_cash_ledger (income)
+      const collectedByName = payment.collected_by_partner_id ? 
+        await this.getPartnerName(payment.collected_by_partner_id) : 'Firm';
+
+      await this.supabase.supabase
+        .from('firm_cash_ledger')
+        .insert([{
+          transaction_date: payment.payment_date,
+          transaction_type: 'income',
+          category: 'sales_payment',
+          amount: payment.amount_paid,
+          partner_id: payment.deposited_to_firm ? null : payment.collected_by_partner_id,
+          description: `Payment received from client (Collected by ${collectedByName}, Mode: ${payment.payment_mode})${payment.notes ? ' - ' + payment.notes : ''}`
+        }]);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error recording client payment:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
-
-    const totalBilled = clientData.total_billed || 0;
-    const totalPaid = clientData.total_paid || 0;
-
-    return {
-      clientId,
-      totalBilled,
-      totalPaid,
-      due: totalBilled - totalPaid
-    };
   }
 
-  // Get all clients with due
-  async getAllClientsDue() {
-    const clients = await this.supabase.from('clients').select('id, client_name');
-    const clientList = clients.data || [];
+  /**
+   * Get payment history for a specific sale
+   */
+  async getPaymentHistory(salesTransactionId: string): Promise<ClientPaymentRecord[]> {
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('client_payments')
+        .select(`
+          *,
+          partner_master(name)
+        `)
+        .eq('sales_transaction_id', salesTransactionId)
+        .order('payment_date', { ascending: false});
 
-    const dueSummary = await Promise.all(
-      clientList.map(async (client: any) => {
-        const due = await this.getClientDue(client.id);
-        return {
-          ...due,
-          clientName: client.client_name
-        };
-      })
-    );
+      if (error) throw error;
 
-    return dueSummary;
+      return data || [];
+    } catch (error) {
+      console.error('Error getting payment history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all payments from a client
+   */
+  async getClientPaymentHistory(clientId: string): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('client_payments')
+        .select(`
+          *,
+          sales_transactions(date, total_amount, payment_amount),
+          partner_master(name)
+        `)
+        .eq('client_id', clientId)
+        .order('payment_date', { ascending: false });
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error getting client payment history:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Clear all outstanding for a sale
+   */
+  async clearOutstanding(
+    salesTransactionId: string,
+    clientId: string,
+    collectedByPartnerId: string | null,
+    paymentDate: string,
+    paymentMode: 'cash' | 'upi' | 'cheque' | 'bank_transfer',
+    notes?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      // Get current outstanding
+      const { data: sale } = await this.supabase.supabase
+        .from('sales_transactions')
+        .select('total_amount, payment_amount')
+        .eq('id', salesTransactionId)
+        .single();
+
+      if (!sale) {
+        return { success: false, error: 'Sale not found' };
+      }
+
+      const { data: existingPayments } = await this.supabase.supabase
+        .from('client_payments')
+        .select('amount_paid')
+        .eq('sales_transaction_id', salesTransactionId);
+
+      const totalPaidLater = existingPayments?.reduce((sum: number, p: any) => sum + p.amount_paid, 0) || 0;
+      const outstanding = sale.total_amount - sale.payment_amount - totalPaidLater;
+
+      if (outstanding <= 0) {
+        return { success: false, error: 'No outstanding amount' };
+      }
+
+      // Record full payment
+      return await this.recordPayment({
+        client_id: clientId,
+        sales_transaction_id: salesTransactionId,
+        payment_date: paymentDate,
+        amount_paid: outstanding,
+        payment_mode: paymentMode,
+        collected_by_partner_id: collectedByPartnerId || undefined,
+        deposited_to_firm: true,
+        notes: notes || 'Full outstanding cleared'
+      });
+    } catch (error) {
+      console.error('Error clearing outstanding:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Get client summary
+   */
+  async getClientSummary(clientId: string): Promise<{
+    total_sales: number;
+    total_paid: number;
+    outstanding: number;
+  }> {
+    try {
+      const { data: sales } = await this.supabase.supabase
+        .from('sales_transactions')
+        .select('total_amount, payment_amount')
+        .eq('client_id', clientId);
+
+      const { data: payments } = await this.supabase.supabase
+        .from('client_payments')
+        .select('amount_paid')
+        .eq('client_id', clientId);
+
+      const totalSales = sales?.reduce((sum, s) => sum + s.total_amount, 0) || 0;
+      const paidAtSale = sales?.reduce((sum, s) => sum + s.payment_amount, 0) || 0;
+      const paidLater = payments?.reduce((sum, p) => sum + p.amount_paid, 0) || 0;
+
+      return {
+        total_sales: totalSales,
+        total_paid: paidAtSale + paidLater,
+        outstanding: totalSales - paidAtSale - paidLater
+      };
+    } catch (error) {
+      console.error('Error getting client summary:', error);
+      return { total_sales: 0, total_paid: 0, outstanding: 0 };
+    }
+  }
+
+  /**
+   * Helper: Get partner name
+   */
+  private async getPartnerName(partnerId: string): Promise<string> {
+    try {
+      const { data } = await this.supabase.supabase
+        .from('partner_master')
+        .select('name')
+        .eq('partner_id', partnerId)
+        .single();
+
+      return data?.name || 'Unknown Partner';
+    } catch (error) {
+      return 'Unknown Partner';
+    }
   }
 }
+

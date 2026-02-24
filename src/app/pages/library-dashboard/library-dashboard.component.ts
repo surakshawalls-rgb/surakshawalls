@@ -56,6 +56,9 @@ export class LibraryDashboardComponent implements OnInit {
     secondHalfCount: 0
   };
 
+  last3MonthsRevenue: Array<{month: string, year: number, revenue: number}> = [];
+  yearlyRevenue: number = 0;
+
   expiringSeats: any[] = [];
   recentPayments: any[] = [];
   recentExpenses: any[] = [];
@@ -93,6 +96,10 @@ export class LibraryDashboardComponent implements OnInit {
       // Load stats
       const dashboardStats = await this.libraryService.getDashboardStats();
       this.stats = { ...this.stats, ...dashboardStats };
+
+      // Load revenue data
+      this.last3MonthsRevenue = await this.libraryService.getLast3MonthsRevenue();
+      this.yearlyRevenue = await this.libraryService.getYearlyRevenue();
 
       // Load expiring seats
       this.expiringSeats = await this.libraryService.getExpiringSeats(3);
@@ -158,6 +165,14 @@ export class LibraryDashboardComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.authService.isAdmin();
+  }
+
+  getTotalLast3Months(): number {
+    return this.last3MonthsRevenue.reduce((sum, month) => sum + month.revenue, 0);
+  }
+
+  getCurrentMonthNumber(): number {
+    return new Date().getMonth() + 1; // Returns 1-12
   }
 
   // ========================================

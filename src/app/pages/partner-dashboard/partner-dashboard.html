@@ -136,6 +136,14 @@
                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
             💰 Record Settlement (₹{{ partner.settlement_due | number: '1.2-2' }})
           </button>
+
+          <!-- Withdrawal Button -->
+          <button (click)="openWithdrawalForm(partner.id)"
+                  style="width: 100%; margin-top: 12px; padding: 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            💵 Record Withdrawal
+          </button>
         </div>
       </div>
     </div>
@@ -206,6 +214,64 @@
                   onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'"
                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
             💾 Record Settlement
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Withdrawal Form Modal -->
+    <div *ngIf="showWithdrawalForm" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999; animation: fadeIn 0.3s ease-out;" (click)="closeWithdrawalForm()">
+      <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); padding: 40px; border-radius: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; animation: scaleIn 0.3s ease-out;" (click)="$event.stopPropagation()">
+        
+        <h2 style="margin: 0 0 32px 0; color: #374151; font-size: 1.8rem; font-weight: 700; display: flex; align-items: center; gap: 12px;">
+          <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 12px; border-radius: 16px; font-size: 1.2rem;">💵</span>
+          Record Partner Withdrawal
+        </h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+          <div>
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Partner</label>
+            <select [(ngModel)]="withdrawalForm.partner_id" 
+                    style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                    onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'">
+              <option value="">Select Partner</option>
+              <option *ngFor="let partner of partners" [value]="partner.id">
+                {{ partner.name }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Amount</label>
+            <input type="number" [(ngModel)]="withdrawalForm.amount" placeholder="Withdrawal amount"
+                   style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease;"
+                   onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                   onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 32px;">
+          <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Notes</label>
+          <textarea [(ngModel)]="withdrawalForm.notes" rows="3" placeholder="Withdrawal notes (optional)"
+                    style="width: 100%; padding: 14px 16px; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px; background: white; font-size: 1rem; transition: all 0.3s ease; resize: vertical;"
+                    onfocus="this.style.borderColor='rgba(102, 126, 234, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.2)'"
+                    onblur="this.style.borderColor='rgba(0,0,0,0.1)'; this.style.boxShadow='none'"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 16px; justify-content: flex-end;">
+          <button (click)="closeWithdrawalForm()"
+                  style="padding: 14px 28px; background: rgba(107, 114, 128, 0.1); color: #374151; border: 2px solid rgba(107, 114, 128, 0.3); border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.background='rgba(107, 114, 128, 0.2)'; this.style.transform='translateY(-1px)'"
+                  onmouseout="this.style.background='rgba(107, 114, 128, 0.1)'; this.style.transform='translateY(0)'">
+            Cancel
+          </button>
+
+          <button (click)="submitWithdrawal()"
+                  style="padding: 14px 28px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease;"
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(102, 126, 234, 0.4)'"
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+            💾 Record Withdrawal
           </button>
         </div>
       </div>

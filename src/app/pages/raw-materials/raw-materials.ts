@@ -22,6 +22,7 @@ interface Material {
 export class RawMaterialsComponent implements OnInit {
 
   materials: Material[] = [];
+  partners: any[] = [];
   
   // Purchase form
   selectedMaterial: string = 'Cement';
@@ -29,6 +30,7 @@ export class RawMaterialsComponent implements OnInit {
   purchaseUnitCost: number = 0;
   vendorName: string = '';
   purchaseDate: string = '';
+  paidByPartnerId: string = '';
   
   loading = false;
   successMessage = '';
@@ -40,6 +42,7 @@ export class RawMaterialsComponent implements OnInit {
     this.loading = true;
     this.purchaseDate = new Date().toISOString().split('T')[0];
     this.loadMaterials();
+    this.loadPartners();
   }
 
   async refreshData() {
@@ -81,6 +84,20 @@ export class RawMaterialsComponent implements OnInit {
     }
   }
 
+  async loadPartners() {
+    try {
+      const { data, error } = await this.db.queryView('partner_master');
+      if (error) throw error;
+      this.partners = data || [];
+      console.log('✅ Partners loaded:', this.partners);
+      this.cd.detectChanges();
+    } catch (error) {
+      console.error('Error loading partners:', error);
+      this.errorMessage = 'Failed to load partners';
+      this.cd.detectChanges();
+    }
+  }
+
   async recordPurchase() {
     if (!this.selectedMaterial) {
       this.errorMessage = '⚠️ Select a material first';
@@ -102,6 +119,12 @@ export class RawMaterialsComponent implements OnInit {
     }
     if (!this.vendorName) {
       this.errorMessage = '⚠️ Enter vendor name';
+      this.cd.detectChanges();
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+    if (!this.paidByPartnerId) {
+      this.errorMessage = '⚠️ Select who paid for this purchase';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
@@ -137,12 +160,31 @@ export class RawMaterialsComponent implements OnInit {
       
       if (updateError) throw updateError;
       
-      this.successMessage = `✅ ${this.purchaseQuantity} ${selectedMat.unit} of ${this.selectedMaterial} purchased from ${this.vendorName}`;
+      // Record payment in firm cash ledger
+      const selectedPartner = this.partners.find(p => p.partner_id === this.paidByPartnerId);
+      const paymentSource = this.paidByPartnerId === 'FIRM_CASH' ? 'Firm Cash' : 
+                           (selectedPartner?.full_name || 'Partner');
+      
+      const { error: ledgerError } = await this.db.supabase
+        .from('firm_cash_ledger')
+        .insert([{
+          transaction_type: 'expense',
+          category: 'material_purchase',
+          amount: totalCost,
+          partner_id: this.paidByPartnerId === 'FIRM_CASH' ? null : this.paidByPartnerId,
+          description: `Material Purchase: ${this.purchaseQuantity} ${selectedMat.unit} ${this.selectedMaterial} from ${this.vendorName} (Paid by ${paymentSource})`,
+          transaction_date: this.purchaseDate
+        }]);
+      
+      if (ledgerError) throw ledgerError;
+      
+      this.successMessage = `✅ ${this.purchaseQuantity} ${selectedMat.unit} of ${this.selectedMaterial} purchased from ${this.vendorName} (Paid by ${paymentSource})`;
       this.cd.detectChanges();
       
       this.purchaseQuantity = 0;
       this.purchaseUnitCost = 0;
       this.vendorName = '';
+      this.paidByPartnerId = '';
       this.cd.detectChanges();
       
       await this.loadMaterials();

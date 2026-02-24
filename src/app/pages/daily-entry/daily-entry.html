@@ -1,262 +1,735 @@
-<div class="daily-entry-container">
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="top-left">
-      <h1>🏭 Daily Entry</h1>
-      <p>Record daily operations, labour, materials, and expenses</p>
+﻿<div class="unified-daily-entry-container">
+  
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1 class="page-title">
+          <span class="icon"></span>
+          Unified Daily Entry
+        </h1>
+        <p class="page-subtitle">Complete daily operations: Production  Labor  Sales  Expenses  Yard Loss</p>
+      </div>
+      <div class="header-right">
+        <input type="date" [(ngModel)]="entryDate" class="date-picker">
+      </div>
     </div>
-    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
-      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
-    </button>
   </div>
 
-  <!-- Date Selector -->
-  <div class="date-section">
-    <label>📅 Date:</label>
-    <input type="date" [(ngModel)]="entryDate" class="date-input">
+  <!-- MESSAGES -->
+  <div class="messages-container" *ngIf="successMessage || errorMessage">
+    <div class="success-alert" *ngIf="successMessage">
+      <span class="alert-icon"></span>
+      {{ successMessage }}
+    </div>
+    <div class="error-alert" *ngIf="errorMessage">
+      <span class="alert-icon"></span>
+      {{ errorMessage }}
+    </div>
   </div>
 
-  <!-- Success/Error Messages -->
-  <div *ngIf="successMessage" class="success-message">{{ successMessage }}</div>
-  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-  <!-- Info Box -->
-  <div class="info-box">
-    <p><strong>💡 How it works:</strong> Record labour work here (types and amounts). Partners pay later through the Labour Ledger. Payment due = total earned - total paid.</p>
+    <!-- ========== SECTION 1: PRODUCTION ========== -->
+    <div class="section-card">
+      <div class="section-header production-header">
+        <div class="section-title">
+          <span class="section-icon"></span>
+          <h2>Production</h2>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="hasProduction">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Production Today?</span>
+        </label>
+      </div>
+
+      <div class="section-body" *ngIf="hasProduction">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Product</label>
+            <select [(ngModel)]="selectedProduct" (change)="onProductChange()" class="form-control">
+              <option value="">Select Product</option>
+              <option *ngFor="let prod of products" [value]="prod.product_name">
+                {{ prod.product_name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="selectedProductVariants.length > 0">
+            <label>Variant</label>
+            <select [(ngModel)]="selectedProductVariant" class="form-control">
+              <option *ngFor="let variant of selectedProductVariants" [value]="variant">
+                {{ variant }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" [(ngModel)]="productQuantity" min="1" placeholder="0" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button (click)="addProductionItem()" 
+                    [disabled]="!selectedProduct || productQuantity <= 0 || isCalculatingMaterials"
+                    class="btn btn-primary">
+              {{ isCalculatingMaterials ? 'Calculating...' : '+ Add Product' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Production Items Table -->
+        <div class="data-table" *ngIf="productionItems.length > 0">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Variant</th>
+                <th>Quantity</th>
+                <th>Materials Needed</th>
+                <th>Cost</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of productionItems; let i = index">
+                <td><strong>{{ item.product_name }}</strong></td>
+                <td>{{ item.product_variant || 'Standard' }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>
+                  <div class="materials-breakdown" *ngIf="item.material_calc">
+                    <span>Cement: {{ item.material_calc.materials.cement | number:'1.2-2' }} bags</span>
+                    <span>Aggregates: {{ item.material_calc.materials.aggregates | number:'1.2-2' }} cft</span>
+                    <span>Sariya: {{ item.material_calc.materials.sariya | number:'1.2-2' }} kg</span>
+                  </div>
+                </td>
+                <td class="amount-cell">{{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }}</td>
+                <td>
+                  <button (click)="removeProductionItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="4" class="text-right"><strong>Total Material Cost:</strong></td>
+                <td class="amount-cell"><strong>{{ formatCurrency(getTotalProductionCost()) }}</strong></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="productionItems.length === 0">
+          <span class="empty-icon"></span>
+          <p>No production items added yet</p>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!hasProduction">
+        <span class="empty-icon">🏭</span>
+        <p>No production today</p>
+        <small>Enable the toggle above if you have production to record</small>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 2: LABOR ========== -->
+    <div class="section-card">
+      <div class="section-header labor-header">
+        <div class="section-title">
+          <span class="section-icon"></span>
+          <h2>Labor</h2>
+        </div>
+        <span class="section-badge">{{ workerEntries.length }} workers</span>
+      </div>
+
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Worker</label>
+            <div class="input-with-button">
+              <select [(ngModel)]="selectedWorkerId" class="form-control">
+                <option value="">Select Worker</option>
+                <option *ngFor="let worker of availableWorkers" [value]="worker.id">
+                  {{ worker.name }} (Balance: {{ formatCurrency(worker.cumulative_balance) }})
+                </option>
+              </select>
+              <button (click)="showQuickAddWorker = true" class="btn btn-sm btn-secondary" title="Quick Add Worker">
+                <span>+ New</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Attendance Type</label>
+            <select [(ngModel)]="selectedAttendanceType" (change)="onAttendanceTypeChange()" class="form-control">
+              <option value="Full Day">Full Day (400)</option>
+              <option value="Half Day">Half Day (200)</option>
+              <option value="Outdoor">Outdoor (450)</option>
+              <option value="Custom">Custom Amount</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="selectedAttendanceType === 'Custom'">
+            <label>Wage Amount ()</label>
+            <input type="number" [(ngModel)]="customWageAmount" min="1" placeholder="0" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="isPaid">
+              <span>Mark as Paid</span>
+            </label>
+          </div>
+
+          <div class="form-group" *ngIf="isPaid">
+            <label>Paid By</label>
+            <select [(ngModel)]="paidByPartnerId" class="form-control">
+              <option value="">Select Partner</option>
+              <option *ngFor="let partner of partners" [value]="partner.partner_id">
+                {{ partner.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button (click)="addWorkerEntry()" 
+                    [disabled]="!selectedWorkerId"
+                    class="btn btn-primary">
+              + Add Worker
+            </button>
+          </div>
+        </div>
+
+        <!-- Worker Entries Table -->
+        <div class="data-table" *ngIf="workerEntries.length > 0">
+          <table>
+            <thead>
+              <tr>
+                <th>Worker Name</th>
+                <th>Attendance Type</th>
+                <th>Wage Earned</th>
+                <th>Paid Today</th>
+                <th>Paid By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let entry of workerEntries; let i = index">
+                <td><strong>{{ entry.worker.name }}</strong></td>
+                <td>{{ entry.attendance_type }}</td>
+                <td class="amount-cell">{{ formatCurrency(entry.wage_earned) }}</td>
+                <td class="amount-cell">
+                  <span [class.text-success]="entry.paid_today > 0">
+                    {{ formatCurrency(entry.paid_today) }}
+                  </span>
+                </td>
+                <td>{{ entry.paid_by_partner_id ? getPartnerName(entry.paid_by_partner_id) : 'Unpaid' }}</td>
+                <td>
+                  <button (click)="removeWorkerEntry(i)" class="btn btn-sm btn-danger-outline">Remove</button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="2" class="text-right"><strong>Total:</strong></td>
+                <td class="amount-cell"><strong>{{ formatCurrency(getTotalLaborCost()) }}</strong></td>
+                <td class="amount-cell"><strong>{{ formatCurrency(getTotalPaidToday()) }}</strong></td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="workerEntries.length === 0">
+          <span class="empty-icon"></span>
+          <p>No workers added yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 3: SALES ========== -->
+    <div class="section-card">
+      <div class="section-header sales-header">
+        <div class="section-title">
+          <span class="section-icon"></span>
+          <h2>Sales</h2>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="hasSalesToday">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Sale Today?</span>
+        </label>
+      </div>
+
+      <div class="section-body" *ngIf="hasSalesToday">
+        <!-- Client Selection -->
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label>Client</label>
+            <div class="input-with-button">
+              <input type="text" 
+                     [(ngModel)]="clientSearchTerm" 
+                     (focus)="showClientDropdown = true"
+                     (input)="filterClients()"
+                     placeholder="Search client by name or phone"
+                     class="form-control">
+              <button (click)="showQuickAddClient = true" class="btn btn-sm btn-secondary" title="Quick Add Client">
+                <span>+ New</span>
+              </button>
+            </div>
+            <div class="dropdown-list" *ngIf="showClientDropdown && filteredClients.length > 0">
+              <div *ngFor="let client of filteredClients" 
+                   (click)="selectClient(client)"
+                   class="dropdown-item">
+                <strong>{{ client.client_name }}</strong>
+                <small>{{ client.phone }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sales Items -->
+        <div class="subsection">
+          <h3 class="subsection-title">Sales Items</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Product</label>
+              <select [(ngModel)]="selectedSalesProduct" (change)="onSalesProductChange()" class="form-control">
+                <option value="">Select Product</option>
+                <option *ngFor="let prod of products" [value]="prod.product_name">
+                  {{ prod.product_name }} (Stock: {{ productStockMap.get(prod.product_name) || 0 }})
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Quantity</label>
+              <input type="number" [(ngModel)]="salesQuantity" min="1" placeholder="0" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Rate ()</label>
+              <input type="number" [(ngModel)]="salesRate" min="1" placeholder="0" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>&nbsp;</label>
+              <button (click)="addSalesItem()" 
+                      [disabled]="!selectedSalesProduct || salesQuantity <= 0 || salesRate <= 0"
+                      class="btn btn-primary">
+                + Add Item
+              </button>
+            </div>
+          </div>
+
+          <!-- Sales Items Table -->
+          <div class="data-table" *ngIf="salesItems.length > 0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th>Rate</th>
+                  <th>Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of salesItems; let i = index">
+                  <td><strong>{{ item.product_name }}</strong></td>
+                  <td>{{ item.quantity }}</td>
+                  <td class="amount-cell">{{ formatCurrency(item.rate) }}</td>
+                  <td class="amount-cell">{{ formatCurrency(item.total) }}</td>
+                  <td>
+                    <button (click)="removeSalesItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="subsection">
+          <h3 class="subsection-title">Payment Details</h3>
+          <div class="payment-summary">
+            <div class="payment-row">
+              <span>Total Revenue:</span>
+              <strong class="amount-lg">{{ formatCurrency(totalRevenue) }}</strong>
+            </div>
+            <div class="payment-row">
+              <label>Amount Received:</label>
+              <input type="number" 
+                     [(ngModel)]="amountReceived" 
+                     (input)="calculateRevenue()"
+                     min="0" 
+                     [max]="totalRevenue"
+                     placeholder="0" 
+                     class="form-control payment-input">
+            </div>
+            <div class="payment-row pending-row">
+              <span>Pending Amount:</span>
+              <strong class="amount-lg text-warning">{{ formatCurrency(pendingAmount) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Expenses -->
+        <div class="subsection">
+          <h3 class="subsection-title">Delivery Expenses</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Transport ()</label>
+              <input type="number" [(ngModel)]="transportExpense" min="0" placeholder="0" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Paid By</label>
+              <select [(ngModel)]="transportPaidBy" class="form-control">
+                <option value="">Select Partner</option>
+                <option *ngFor="let partner of partners" [value]="partner.partner_id">
+                  {{ partner.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Snacks ()</label>
+              <input type="number" [(ngModel)]="snacksExpense" min="0" placeholder="0" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Paid By</label>
+              <select [(ngModel)]="snacksPaidBy" class="form-control">
+                <option value="">Select Partner</option>
+                <option *ngFor="let partner of partners" [value]="partner.partner_id">
+                  {{ partner.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Other ()</label>
+              <input type="number" [(ngModel)]="otherDeliveryExpense" min="0" placeholder="0" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Paid By</label>
+              <select [(ngModel)]="otherDeliveryPaidBy" class="form-control">
+                <option value="">Select Partner</option>
+                <option *ngFor="let partner of partners" [value]="partner.partner_id">
+                  {{ partner.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="expense-total" *ngIf="getTotalDeliveryExpenses() > 0">
+            Total Delivery Expenses: <strong>{{ formatCurrency(getTotalDeliveryExpenses()) }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!hasSalesToday">
+        <span class="empty-icon"></span>
+        <p>Toggle "Sale Today?" to record sales</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 4: OTHER EXPENSES ========== -->
+    <div class="section-card">
+      <div class="section-header expenses-header">
+        <div class="section-title">
+          <span class="section-icon"></span>
+          <h2>Other Expenses</h2>
+        </div>
+        <span class="section-badge">{{ otherExpenses.length }} items</span>
+      </div>
+
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="selectedExpenseCategory" class="form-control">
+              <option value="Snacks">Snacks</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Medical">Medical</option>
+              <option value="Transport">Transport</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" [(ngModel)]="expenseDescription" placeholder="Optional notes" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Amount ()</label>
+            <input type="number" [(ngModel)]="expenseAmount" min="1" placeholder="0" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Paid By</label>
+            <select [(ngModel)]="expensePaidBy" class="form-control">
+              <option value="">Select Partner</option>
+              <option *ngFor="let partner of partners" [value]="partner.partner_id">
+                {{ partner.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button (click)="addOtherExpense()" 
+                    [disabled]="!selectedExpenseCategory || expenseAmount <= 0 || !expensePaidBy"
+                    class="btn btn-primary">
+              + Add Expense
+            </button>
+          </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="data-table" *ngIf="otherExpenses.length > 0">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Paid By</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let expense of otherExpenses; let i = index">
+                <td><strong>{{ expense.category }}</strong></td>
+                <td>{{ expense.description || '-' }}</td>
+                <td class="amount-cell">{{ formatCurrency(expense.amount) }}</td>
+                <td>{{ getPartnerName(expense.paid_by_partner_id) }}</td>
+                <td>
+                  <button (click)="removeOtherExpense(i)" class="btn btn-sm btn-danger-outline">Remove</button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="2" class="text-right"><strong>Total Other Expenses:</strong></td>
+                <td class="amount-cell"><strong>{{ formatCurrency(getTotalOtherExpenses()) }}</strong></td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="empty-state" *ngIf="otherExpenses.length === 0">
+          <span class="empty-icon"></span>
+          <p>No expenses added yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 5: YARD LOSS ========== -->
+    <div class="section-card">
+      <div class="section-header loss-header">
+        <div class="section-title">
+          <span class="section-icon"></span>
+          <h2>Yard Loss</h2>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="hasYardLoss">
+          <span class="toggle-slider"></span>
+          <span class="toggle-label">Damaged Items?</span>
+        </label>
+      </div>
+
+      <div class="section-body" *ngIf="hasYardLoss">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Product</label>
+            <select [(ngModel)]="selectedYardLossProduct" class="form-control">
+              <option value="">Select Product</option>
+              <option *ngFor="let prod of products" [value]="prod.product_name">
+                {{ prod.product_name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Quantity Damaged</label>
+            <input type="number" [(ngModel)]="yardLossQuantity" min="1" placeholder="0" class="form-control">
+          </div>
+
+          <div class="form-group col-span-2">
+            <label>Reason</label>
+            <input type="text" [(ngModel)]="yardLossReason" placeholder="Enter reason for damage" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button (click)="addYardLossItem()" 
+                    [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossReason"
+                    class="btn btn-primary">
+              + Add Loss
+            </button>
+          </div>
+        </div>
+
+        <!-- Yard Loss Table -->
+        <div class="data-table" *ngIf="yardLossItems.length > 0">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Reason</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of yardLossItems; let i = index">
+                <td><strong>{{ item.product_name }}</strong></td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.reason }}</td>
+                <td>
+                  <button (click)="removeYardLossItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!hasYardLoss">
+        <span class="empty-icon"></span>
+        <p>No yard loss today</p>
+      </div>
+    </div>
+
+    <!-- ========== SECTION 6: SUMMARY & SUBMIT ========== -->
+    <div class="summary-card">
+      <h2 class="summary-title">
+        <span class="summary-icon"></span>
+        Daily Summary
+      </h2>
+
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-label">Material Costs:</span>
+          <span class="summary-value">{{ formatCurrency(getTotalProductionCost()) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Labor Costs:</span>
+          <span class="summary-value">{{ formatCurrency(getTotalLaborCost()) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Delivery Expenses:</span>
+          <span class="summary-value">{{ formatCurrency(getTotalDeliveryExpenses()) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Other Expenses:</span>
+          <span class="summary-value">{{ formatCurrency(getTotalOtherExpenses()) }}</span>
+        </div>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-totals">
+        <div class="summary-row">
+          <span class="total-label">Grand Total (Expenses):</span>
+          <span class="total-value expense-total">{{ formatCurrency(getGrandTotal()) }}</span>
+        </div>
+        <div class="summary-row" *ngIf="hasSalesToday">
+          <span class="total-label">Total Revenue:</span>
+          <span class="total-value revenue-total">{{ formatCurrency(totalRevenue) }}</span>
+        </div>
+        <div class="summary-row net-profit-row" *ngIf="hasSalesToday">
+          <span class="total-label">Net Profit:</span>
+          <span class="total-value" [class.profit-positive]="getNetProfit() >= 0" 
+                                     [class.profit-negative]="getNetProfit() < 0">
+            {{ formatCurrency(getNetProfit()) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-section">
+        <label>Notes (Optional)</label>
+        <textarea [(ngModel)]="notes" 
+                  rows="3" 
+                  placeholder="Add any additional notes for today's entry..."
+                  class="form-control"></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="submit-section">
+        <button (click)="submitDailyEntry()" 
+                [disabled]="saving || loading"
+                class="btn btn-submit">
+          <span *ngIf="!saving"> Submit Daily Entry</span>
+          <span *ngIf="saving"> Saving...</span>
+        </button>
+        <p class="submit-hint">All data will be saved atomically. Production, sales, and expenses will update respective tables.</p>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Main Form -->
-  <div class="form-section">
+</div>
 
-    <!-- ===== LABOUR SECTION ===== -->
-    <div class="section">
-      <h2>👷 Labour</h2>
-      
-      <div class="input-group">
-        <label>Worker Name:</label>
-        <input type="text" [(ngModel)]="newLabourName" placeholder="Enter worker name" class="input-field">
+<!-- ========== QUICK ADD WORKER MODAL ========== -->
+<div class="modal-overlay" *ngIf="showQuickAddWorker" (click)="showQuickAddWorker = false">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Quick Add Worker</h3>
+      <button (click)="showQuickAddWorker = false" class="btn-close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Worker Name *</label>
+        <input type="text" [(ngModel)]="newWorkerName" placeholder="Enter name" class="form-control" autofocus>
       </div>
-
-      <div class="input-group">
-        <label>Labour Type:</label>
-        <select [(ngModel)]="newLabourType" (change)="onLabourTypeChange()" class="input-field">
-          <option *ngFor="let type of labourTypes" [value]="type">{{ type }}</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Amount (₹):</label>
-        <input type="number" [(ngModel)]="newLabourAmount" placeholder="0" class="input-field">
-      </div>
-
-      <button (click)="addLabourEntry()" class="add-btn">➕ Add Labour</button>
-
-      <!-- Labour Entries Table -->
-      <div *ngIf="labourEntries.length > 0" class="entries-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Worker</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let entry of labourEntries; let i = index">
-              <td>{{ entry.name }}</td>
-              <td>{{ entry.type }}</td>
-              <td>₹{{ entry.amount | number:'1.0-2' }}</td>
-              <td><button (click)="removeLabourEntry(i)" class="remove-btn">❌</button></td>
-            </tr>
-            <tr class="total-row">
-              <td colspan="2"><strong>Total Labour:</strong></td>
-              <td colspan="2"><strong>₹{{ getTotalLabourCost() | number:'1.0-2' }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" [(ngModel)]="newWorkerPhone" placeholder="Enter phone (optional)" class="form-control">
       </div>
     </div>
+    <div class="modal-footer">
+      <button (click)="showQuickAddWorker = false" class="btn btn-secondary">Cancel</button>
+      <button (click)="quickAddWorker()" [disabled]="!newWorkerName.trim() || loading" class="btn btn-primary">
+        {{ loading ? 'Adding...' : 'Add Worker' }}
+      </button>
+    </div>
+  </div>
+</div>
 
-    <!-- ===== PRODUCTION SECTION ===== -->
-    <div class="section">
-      <h2>🏗️ Production Today</h2>
-      
-      <div class="production-grid">
-        <div class="input-group">
-          <label>Fencing Poles:</label>
-          <input type="number" [(ngModel)]="poles" placeholder="0" class="input-field">
-        </div>
-        <div class="input-group">
-          <label>Round Plates:</label>
-          <input type="number" [(ngModel)]="roundPlates" placeholder="0" class="input-field">
-        </div>
-        <div class="input-group">
-          <label>Plain Plates:</label>
-          <input type="number" [(ngModel)]="plainPlates" placeholder="0" class="input-field">
-        </div>
-        <div class="input-group">
-          <label>Jumbo Pillars:</label>
-          <input type="number" [(ngModel)]="jumpoPillars" placeholder="0" class="input-field">
-        </div>
-        <div class="input-group">
-          <label>Biscuit Plates:</label>
-          <input type="number" [(ngModel)]="biscuitPlates" placeholder="0" class="input-field">
-        </div>
+<!-- ========== QUICK ADD CLIENT MODAL ========== -->
+<div class="modal-overlay" *ngIf="showQuickAddClient" (click)="showQuickAddClient = false">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Quick Add Client</h3>
+      <button (click)="showQuickAddClient = false" class="btn-close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Client Name *</label>
+        <input type="text" [(ngModel)]="newClientName" placeholder="Enter name" class="form-control" autofocus>
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="tel" [(ngModel)]="newClientPhone" placeholder="Enter phone" class="form-control">
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" [(ngModel)]="newClientAddress" placeholder="Enter address (optional)" class="form-control">
       </div>
     </div>
-
-    <!-- ===== MATERIALS SECTION ===== -->
-    <div class="section">
-      <h2>🏭 Materials Used</h2>
-      
-      <div class="input-group">
-        <label>Material:</label>
-        <select [(ngModel)]="selectedMaterial" (change)="onMaterialSelected(selectedMaterial)" class="input-field">
-          <option *ngFor="let mat of materials" [value]="mat">{{ mat }}</option>
-        </select>
-      </div>
-
-      <div *ngIf="showCustomMaterialInput" class="input-group">
-        <label>Custom Material Name:</label>
-        <input type="text" [(ngModel)]="customMaterialName" placeholder="Enter material name" class="input-field">
-      </div>
-
-      <div class="input-group">
-        <label>Quantity ({{ materialUnits[selectedMaterial] }}):</label>
-        <input type="number" [(ngModel)]="materialQuantity" placeholder="0" class="input-field">
-      </div>
-
-      <div class="input-group">
-        <label>Unit Cost (₹):</label>
-        <input type="number" [(ngModel)]="materialUnitCost" placeholder="0" class="input-field">
-      </div>
-
-      <div class="input-group">
-        <label>Paid By:</label>
-        <select [(ngModel)]="materialPaidByPartnerId" class="input-field">
-          <option *ngFor="let partner of partners" [value]="partner.partner_id">
-            {{ partner.name }}
-          </option>
-        </select>
-      </div>
-
-      <button (click)="addMaterialEntry()" class="add-btn">➕ Add Material</button>
-
-      <!-- Materials Entries Table -->
-      <div *ngIf="materialEntries.length > 0" class="entries-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Material</th>
-              <th>Quantity</th>
-              <th>Unit Cost</th>
-              <th>Total</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let entry of materialEntries; let i = index">
-              <td>{{ entry.material_name }}</td>
-              <td>{{ entry.quantity }} {{ materialUnits[entry.material_name] }}</td>
-              <td>₹{{ entry.unit_cost | number:'1.0-2' }}</td>
-              <td>₹{{ entry.total_cost | number:'1.0-2' }}</td>
-              <td><button (click)="removeMaterialEntry(i)" class="remove-btn">❌</button></td>
-            </tr>
-            <tr class="total-row">
-              <td colspan="3"><strong>Total Material:</strong></td>
-              <td colspan="2"><strong>₹{{ getTotalMaterialCost() | number:'1.0-2' }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="modal-footer">
+      <button (click)="showQuickAddClient = false" class="btn btn-secondary">Cancel</button>
+      <button (click)="quickAddClient()" [disabled]="!newClientName.trim() || loading" class="btn btn-primary">
+        {{ loading ? 'Adding...' : 'Add Client' }}
+      </button>
     </div>
-
-    <!-- ===== EXPENSES SECTION ===== -->
-    <div class="section">
-      <h2>💰 Daily Expenses</h2>
-      
-      <div class="input-group">
-        <label>Category:</label>
-        <select [(ngModel)]="expenseCategory" class="input-field">
-          <option value="">-- Select Category --</option>
-          <option *ngFor="let cat of expenseCategories" [value]="cat">{{ cat }}</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label>Amount (₹):</label>
-        <input type="number" [(ngModel)]="expenseAmount" placeholder="0" class="input-field">
-      </div>
-
-      <div class="input-group">
-        <label>Paid By:</label>
-        <select [(ngModel)]="expensesPaidByPartnerId" class="input-field">
-          <option *ngFor="let partner of partners" [value]="partner.partner_id">
-            {{ partner.name }}
-          </option>
-        </select>
-      </div>
-
-      <button (click)="addExpenseEntry()" class="add-btn">➕ Add Expense</button>
-
-      <!-- Expenses Entries Table -->
-      <div *ngIf="expenseEntries.length > 0" class="entries-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let entry of expenseEntries; let i = index">
-              <td>{{ entry.category }}</td>
-              <td>₹{{ entry.amount | number:'1.0-2' }}</td>
-              <td><button (click)="removeExpenseEntry(i)" class="remove-btn">❌</button></td>
-            </tr>
-            <tr class="total-row">
-              <td><strong>Total Expenses:</strong></td>
-              <td colspan="2"><strong>₹{{ getTotalExpenses() | number:'1.0-2' }}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ===== NOTES SECTION ===== -->
-    <div class="section">
-      <h2>📝 Notes</h2>
-      <textarea [(ngModel)]="notes" placeholder="Add any additional notes..." class="notes-field"></textarea>
-    </div>
-
-    <!-- ===== SUMMARY & SUBMIT ===== -->
-    <div class="summary-section">
-      <div class="summary-row">
-        <span>👷 Total Labour Cost:</span>
-        <strong>₹{{ getTotalLabourCost() | number:'1.0-2' }}</strong>
-      </div>
-      <div class="summary-row">
-        <span>🏭 Total Material Cost:</span>
-        <strong>₹{{ getTotalMaterialCost() | number:'1.0-2' }}</strong>
-      </div>
-      <div class="summary-row">
-        <span>💰 Total Expenses:</span>
-        <strong>₹{{ getTotalExpenses() | number:'1.0-2' }}</strong>
-      </div>
-      <div class="summary-row grand-total">
-        <span>📊 GRAND TOTAL:</span>
-        <strong>₹{{ getGrandTotal() | number:'1.0-2' }}</strong>
-      </div>
-    </div>
-
-    <!-- Submit Button -->
-    <button 
-      (click)="submitDailyEntry()" 
-      [disabled]="loading"
-      class="submit-btn">
-      {{ loading ? '💾 Saving...' : '✅ Save Daily Entry' }}
-    </button>
   </div>
 </div>

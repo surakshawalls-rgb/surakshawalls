@@ -28,8 +28,8 @@
   </div>
 
   <div *ngIf="!loading" class="dashboard-content">
-    <!-- Stats Cards Grid -->
-    <div class="stats-grid-modern">
+    <!-- Primary KPI Cards Grid -->
+    <div class="stats-grid-modern primary-kpi">
       <!-- Seat Occupancy Card -->
       <mat-card class="stat-card-modern occupancy-card">
         <mat-card-content>
@@ -96,11 +96,100 @@
             <p class="card-label">Cash Balance</p>
             <p class="card-subtext">
               <mat-icon>{{stats.cashBalance >= 0 ? 'check_circle' : 'warning'}}</mat-icon>
-              Current Available
+              Auto-Calculated
             </p>
           </div>
         </mat-card-content>
       </mat-card>
+    </div>
+
+    <!-- Revenue Overview Section -->
+    <div class="revenue-overview-section">
+      <div class="section-header">
+        <div class="header-left">
+          <mat-icon class="section-icon">bar_chart</mat-icon>
+          <h2 class="section-title">Revenue Overview</h2>
+        </div>
+        <p class="section-subtitle">Last 3 Months & Yearly Performance</p>
+      </div>
+
+      <div class="revenue-grid">
+        <!-- Last 3 Months Revenue Cards -->
+        <mat-card class="revenue-overview-card monthly-revenue-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>calendar_month</mat-icon>
+              Last 3 Months Performance
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="monthly-revenue-list">
+              <div *ngFor="let monthData of last3MonthsRevenue; let i = index" 
+                   class="month-item"
+                   [class.latest]="i === 2">
+                <div class="month-info">
+                  <div class="month-icon-wrapper" [ngClass]="'color-' + i">
+                    <mat-icon>calendar_today</mat-icon>
+                  </div>
+                  <div class="month-details">
+                    <span class="month-name">{{ monthData.month }} {{ monthData.year }}</span>
+                    <span class="month-label" *ngIf="i === 2">Current Month</span>
+                    <span class="month-label" *ngIf="i !== 2">Past Month</span>
+                  </div>
+                </div>
+                <div class="month-revenue">
+                  <span class="revenue-amount">{{ formatCurrency(monthData.revenue) }}</span>
+                  <mat-icon class="trend-icon" *ngIf="i > 0 && monthData.revenue > last3MonthsRevenue[i-1].revenue">trending_up</mat-icon>
+                  <mat-icon class="trend-icon down" *ngIf="i > 0 && monthData.revenue < last3MonthsRevenue[i-1].revenue">trending_down</mat-icon>
+                </div>
+              </div>
+              
+              <div class="total-3months">
+                <span class="total-label">Total (3 Months)</span>
+                <span class="total-amount">{{ formatCurrency(getTotalLast3Months()) }}</span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Yearly Revenue Card -->
+        <mat-card class="revenue-overview-card yearly-revenue-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>assessment</mat-icon>
+              Annual Performance
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="yearly-revenue-content">
+              <div class="year-badge">
+                <mat-icon>calendar_view_year</mat-icon>
+                <span>{{ selectedYear }}</span>
+              </div>
+              <div class="yearly-amount">
+                <h2>{{ formatCurrency(yearlyRevenue) }}</h2>
+                <p class="yearly-label">Total Yearly Revenue</p>
+              </div>
+              <div class="yearly-stats">
+                <div class="stat-item">
+                  <mat-icon>trending_up</mat-icon>
+                  <div>
+                    <span class="stat-value">{{ formatCurrency(yearlyRevenue / 12) }}</span>
+                    <span class="stat-label">Avg. Monthly</span>
+                  </div>
+                </div>
+                <div class="stat-item">
+                  <mat-icon>date_range</mat-icon>
+                  <div>
+                    <span class="stat-value">{{ getCurrentMonthNumber() }}/12</span>
+                    <span class="stat-label">Months Tracked</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
     </div>
 
     <!-- Shift Distribution Card -->

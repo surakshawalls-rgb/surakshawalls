@@ -50,7 +50,14 @@ export class PartnerDashboardComponent implements OnInit {
     notes: ''
   };
   
+  withdrawalForm = {
+    partner_id: '',
+    amount: 0,
+    notes: ''
+  };
+  
   showSettlementForm = false;
+  showWithdrawalForm = false;
   loading = false;
   successMessage = '';
   errorMessage = '';
@@ -313,6 +320,70 @@ export class PartnerDashboardComponent implements OnInit {
 
   closeSettlementForm() {
     this.showSettlementForm = false;
+    this.errorMessage = '';
+  }
+
+  openWithdrawalForm(partnerId: string) {
+    this.withdrawalForm.partner_id = partnerId;
+    this.withdrawalForm.amount = 0;
+    this.withdrawalForm.notes = '';
+    this.showWithdrawalForm = true;
+  }
+
+  async submitWithdrawal() {
+    if (!this.withdrawalForm.partner_id) {
+      this.errorMessage = '⚠️ Please select a partner';
+      this.cd.detectChanges();
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+    if (!this.withdrawalForm.amount || this.withdrawalForm.amount <= 0) {
+      this.errorMessage = '⚠️ Enter a valid withdrawal amount';
+      this.cd.detectChanges();
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+    
+    this.loading = true;
+    this.cd.detectChanges();
+    try {
+      const partner = this.partners.find(p => p.id === this.withdrawalForm.partner_id);
+      
+      // Record withdrawal in firm_cash_ledger
+      const { error } = await this.db.supabase
+        .from('firm_cash_ledger')
+        .insert([{
+          transaction_type: 'payment',
+          category: 'partner_withdrawal',
+          amount: this.withdrawalForm.amount,
+          partner_id: this.withdrawalForm.partner_id,
+          description: `Partner Withdrawal: ${partner?.name || 'Partner'} withdrew ₹${this.withdrawalForm.amount} - ${this.withdrawalForm.notes || 'No notes'}`,
+          transaction_date: new Date().toISOString().split('T')[0]
+        }]);
+
+      if (error) throw error;
+
+      this.successMessage = `✅ Withdrawal of ₹${this.withdrawalForm.amount.toFixed(2)} recorded for ${partner?.name || 'partner'}`;
+      this.showWithdrawalForm = false;
+      this.cd.detectChanges();
+      
+      setTimeout(() => {
+        this.successMessage = '';
+        this.cd.detectChanges();
+        this.loadPartnerData();
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting withdrawal:', error);
+      this.errorMessage = '❌ Failed to record withdrawal';
+      this.cd.detectChanges();
+    } finally {
+      this.loading = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  closeWithdrawalForm() {
+    this.showWithdrawalForm = false;
     this.errorMessage = '';
   }
 }

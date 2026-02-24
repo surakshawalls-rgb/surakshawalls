@@ -44,6 +44,14 @@
       <input type="text" [(ngModel)]="vendorName" placeholder="Enter vendor name" class="input-field">
     </div>
     <div class="input-group">
+      <label>Paid By:</label>
+      <select [(ngModel)]="paidByPartnerId" class="input-field">
+        <option value="">-- Select Payment Source --</option>
+        <option value="FIRM_CASH">Firm Cash (Company)</option>
+        <option *ngFor="let partner of partners" [value]="partner.partner_id">{{ partner.full_name }} (Partner)</option>
+      </select>
+    </div>
+    <div class="input-group">
       <label>Date:</label>
       <input type="date" [(ngModel)]="purchaseDate" class="input-field">
     </div>

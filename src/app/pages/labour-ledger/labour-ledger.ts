@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { LaborPaymentService, WorkerOutstanding, WagePayment, WageEntryWithPayments } from '../../services/labor-payment.service';
 
 interface Labour {
   labour_id: string;
@@ -36,6 +37,9 @@ interface PaymentRecord {
 export class LabourLedgerComponent implements OnInit {
 
   labourList: Labour[] = [];
+  workersWithOutstanding: WorkerOutstanding[] = [];
+  selectedWorkerForHistory: WorkerOutstanding | null = null;
+  showPaymentHistoryModal = false;
   partners: Partner[] = [];
   
   // New Labour form
@@ -47,6 +51,7 @@ export class LabourLedgerComponent implements OnInit {
   showPaymentForm = false;
   selectedLabourId: string = '';
   selectedLabourName: string = '';
+  selectedWageEntryId: string = '';
   paymentAmount: number = 0;
   paymentDate: string = '';
   paidByPartnerId: string = '';
@@ -61,13 +66,14 @@ export class LabourLedgerComponent implements OnInit {
   
   constructor(
     private db: SupabaseService,
+    private laborPaymentService: LaborPaymentService,
     private cd: ChangeDetectorRef
   ) {}
   
   ngOnInit() {
     this.loading = true;
     this.paymentDate = new Date().toISOString().split('T')[0];
-    Promise.all([this.loadLabours(), this.loadPartners()]).finally(() => {
+    Promise.all([this.loadLabours(), this.loadWorkersWithOutstanding(), this.loadPartners()]).finally(() => {
       this.loading = false;
       this.cd.detectChanges();
     });
@@ -79,7 +85,7 @@ export class LabourLedgerComponent implements OnInit {
     this.errorMessage = '';
     this.cd.detectChanges();
     try {
-      await Promise.all([this.loadLabours(), this.loadPartners()]);
+      await Promise.all([this.loadLabours(), this.loadWorkersWithOutstanding(), this.loadPartners()]);
       this.successMessage = '✅ Data refreshed successfully!';
       this.cd.detectChanges();
       setTimeout(() => {
@@ -105,6 +111,16 @@ export class LabourLedgerComponent implements OnInit {
     } catch (error) {
       console.error('Error loading labour ledger:', error);
       this.errorMessage = 'Failed to load labour ledger';
+      this.cd.detectChanges();
+    }
+  }
+
+  async loadWorkersWithOutstanding() {
+    try {
+      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding();
+      this.cd.detectChanges();
+    } catch (error) {
+      console.error('Error loading workers with outstanding:', error);
       this.cd.detectChanges();
     }
   }
@@ -179,16 +195,30 @@ export class LabourLedgerComponent implements OnInit {
     }
   }
   
-  openPaymentForm(labour: Labour) {
-    this.selectedLabourId = labour.labour_id;
-    this.selectedLabourName = labour.name;
-    this.paymentAmount = labour.due_amount;
-    this.showPaymentForm = true;
+  openPaymentForm(wageEntry: WageEntryWithPayments | Labour, workerOutstanding?: WorkerOutstanding) {
+    // Handle old Labour interface for backward compatibility
+    if ('labour_id' in wageEntry) {
+      this.selectedLabourId = wageEntry.labour_id;
+      this.selectedLabourName = wageEntry.name;
+      this.paymentAmount = wageEntry.due_amount;
+      this.selectedWageEntryId = ''; // No wage entry ID in old structure
+      this.showPaymentForm = true;
+      return;
+    }
+    
+    // Handle new WageEntryWithPayments interface
+    if (workerOutstanding) {
+      this.selectedWageEntryId = wageEntry.wage_entry_id;
+      this.selectedLabourId = workerOutstanding.worker_id;
+      this.selectedLabourName = workerOutstanding.worker_name;
+      this.paymentAmount = wageEntry.current_outstanding;
+      this.showPaymentForm = true;
+    }
   }
   
   async recordPayment() {
-    if (!this.selectedLabourId) {
-      this.errorMessage = '⚠️ Please select a labour record';
+    if (!this.selectedWageEntryId) {
+      this.errorMessage = '⚠️ Please select a wage entry';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
@@ -206,65 +236,43 @@ export class LabourLedgerComponent implements OnInit {
       return;
     }
     
-    const labour = this.labourList.find(l => l.labour_id === this.selectedLabourId);
-    if (!labour) {
-      this.errorMessage = '⚠️ Labour record not found';
-      this.cd.detectChanges();
-      setTimeout(() => this.errorMessage = '', 3000);
-      return;
-    }
-    
-    if (this.paymentAmount > labour.due_amount) {
-      this.errorMessage = `⚠️ Payment amount exceeds due amount (₹${labour.due_amount.toFixed(2)})`;
-      this.cd.detectChanges();
-      setTimeout(() => this.errorMessage = '', 3000);
-      return;
-    }
-    
     this.loading = true;
     this.cd.detectChanges();
+    
     try {
-      // Record payment in labour_transactions
-      const { error: txnError } = await this.db.supabase
-        .from('labour_transactions')
-        .insert([{
-          labour_id: this.selectedLabourId,
-          date: this.paymentDate,
-          type: 'payment',
-          amount: this.paymentAmount,
-          paid_by_partner_id: this.paidByPartnerId
-        }]);
+      const payment: WagePayment = {
+        wage_entry_id: this.selectedWageEntryId,
+        worker_id: this.selectedLabourId,
+        payment_date: this.paymentDate,
+        amount_paid: this.paymentAmount,
+        paid_by_partner_id: this.paidByPartnerId,
+        payment_mode: 'cash',
+        notes: ''
+      };
+
+      const result = await this.laborPaymentService.recordPayment(payment);
       
-      if (txnError) throw txnError;
-      
-      // Update labour_ledger total_paid
-      if (labour) {
-        const newTotalPaid = labour.total_paid + this.paymentAmount;
-        const newDue = labour.total_earned - newTotalPaid;
-        
-        const { error: updateError } = await this.db.supabase
-          .from('labour_ledger')
-          .update({
-            total_paid: newTotalPaid,
-            due_amount: Math.max(0, newDue),
-            last_paid_date: this.paymentDate,
-            paid_by_partner_id: this.paidByPartnerId
-          })
-          .eq('labour_id', this.selectedLabourId);
-        
-        if (updateError) throw updateError;
-      }
-      
-      this.successMessage = `✅ Payment of ₹${this.paymentAmount.toFixed(2)} recorded for ${labour.name}`;
-      this.showPaymentForm = false;
-      this.paymentAmount = 0;
-      this.cd.detectChanges();
-      await this.loadLabours();
-      
-      setTimeout(() => {
-        this.successMessage = '';
+      if (result.success) {
+        this.successMessage = `✅ Payment of ₹${this.paymentAmount.toFixed(2)} recorded for ${this.selectedLabourName}`;
+        this.showPaymentForm = false;
+        this.paymentAmount = 0;
+        this.selectedWageEntryId = '';
+        this.selectedLabourId = '';
         this.cd.detectChanges();
-      }, 3000);
+        await this.loadWorkersWithOutstanding();
+        
+        setTimeout(() => {
+          this.successMessage = '';
+          this.cd.detectChanges();
+        }, 3000);
+      } else {
+        this.errorMessage = `❌ ${result.error || 'Failed to record payment'}`;
+        this.cd.detectChanges();
+        setTimeout(() => {
+          this.errorMessage = '';
+          this.cd.detectChanges();
+        }, 3000);
+      }
     } catch (error) {
       console.error('Error recording payment:', error);
       this.errorMessage = '❌ Failed to record payment. Please try again.';
@@ -273,6 +281,55 @@ export class LabourLedgerComponent implements OnInit {
       this.loading = false;
       this.cd.detectChanges();
     }
+  }
+
+  async clearAllOutstanding(wageEntry: WageEntryWithPayments, workerOutstanding: WorkerOutstanding) {
+    if (!confirm(`Clear all outstanding ₹${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}?`)) {
+      return;
+    }
+
+    this.loading = true;
+    this.cd.detectChanges();
+
+    try {
+      const currentDate = new Date().toISOString().split('T')[0];
+      const result = await this.laborPaymentService.clearOutstanding(
+        wageEntry.wage_entry_id,
+        this.paidByPartnerId || this.partners[0]?.partner_id,
+        currentDate
+      );
+
+      if (result.success) {
+        this.successMessage = `✅ Cleared outstanding ₹${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}`;
+        this.cd.detectChanges();
+        await this.loadWorkersWithOutstanding();
+        
+        setTimeout(() => {
+          this.successMessage = '';
+          this.cd.detectChanges();
+        }, 3000);
+      } else {
+        this.errorMessage = `❌ ${result.error || 'Failed to clear outstanding'}`;
+        this.cd.detectChanges();
+      }
+    } catch (error) {
+      console.error('Error clearing outstanding:', error);
+      this.errorMessage = '❌ Failed to clear outstanding';
+      this.cd.detectChanges();
+    } finally {
+      this.loading = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  viewPaymentHistory(worker: WorkerOutstanding) {
+    this.selectedWorkerForHistory = worker;
+    this.showPaymentHistoryModal = true;
+  }
+
+  closePaymentHistoryModal() {
+    this.showPaymentHistoryModal = false;
+    this.selectedWorkerForHistory = null;
   }
   
   getTotalEarned(): number {

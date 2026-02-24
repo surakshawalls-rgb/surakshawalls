@@ -2,7 +2,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from './supabase.service';
-import { format, startOfMonth, addDays, getDaysInMonth } from 'date-fns';
+import { format, startOfMonth, addDays, getDaysInMonth, subMonths, startOfYear } from 'date-fns';
 
 export interface LibraryStudent {
   id: string;
@@ -665,6 +665,61 @@ export class LibraryService {
         secondHalfCount: 0,
         occupancyRate: 0
       };
+    }
+  }
+
+  // Get revenue for last 3 months (month-wise breakdown)
+  async getLast3MonthsRevenue(): Promise<Array<{month: string, year: number, revenue: number}>> {
+    try {
+      const today = new Date();
+      const payments = await this.getPaymentHistory();
+      
+      const monthlyData: Array<{month: string, year: number, revenue: number}> = [];
+      
+      // Get last 3 months data
+      for (let i = 2; i >= 0; i--) {
+        const targetDate = subMonths(today, i);
+        const monthStart = format(startOfMonth(targetDate), 'yyyy-MM-dd');
+        const monthEnd = i === 0 
+          ? format(today, 'yyyy-MM-dd') 
+          : format(new Date(targetDate.getFullYear(), targetDate.getMonth() + 1, 0), 'yyyy-MM-dd');
+        
+        const monthRevenue = payments
+          .filter(p => p.payment_date >= monthStart && p.payment_date <= monthEnd)
+          .reduce((sum, p) => sum + p.amount_paid, 0);
+        
+        monthlyData.push({
+          month: format(targetDate, 'MMMM'), // e.g., "December", "January", "February"
+          year: targetDate.getFullYear(),
+          revenue: monthRevenue
+        });
+      }
+      
+      return monthlyData;
+    } catch (error) {
+      console.error('[LibraryService] getLast3MonthsRevenue error:', error);
+      return [
+        { month: 'N/A', year: new Date().getFullYear(), revenue: 0 },
+        { month: 'N/A', year: new Date().getFullYear(), revenue: 0 },
+        { month: 'N/A', year: new Date().getFullYear(), revenue: 0 }
+      ];
+    }
+  }
+
+  // Get revenue for current year
+  async getYearlyRevenue(): Promise<number> {
+    try {
+      const yearStart = format(startOfYear(new Date()), 'yyyy-MM-dd');
+      
+      const payments = await this.getPaymentHistory();
+      const yearlyRevenue = payments
+        .filter(p => p.payment_date >= yearStart)
+        .reduce((sum, p) => sum + p.amount_paid, 0);
+      
+      return yearlyRevenue;
+    } catch (error) {
+      console.error('[LibraryService] getYearlyRevenue error:', error);
+      return 0;
     }
   }
 

@@ -10,56 +10,35 @@
     <nav class="main-nav" *ngIf="!(isHandset$ | async)">
       <!-- Manufacturing Section -->
       <ng-container *ngIf="hasManufacturingAccess()">
-        <button mat-button [matMenuTriggerFor]="productionMenu" class="nav-button">
-          <span>Production</span>
+        <!-- ⭐ UNIFIED DAILY ENTRY - ALL-IN-ONE -->
+        <button mat-button routerLink="/daily-entry" routerLinkActive="active" class="nav-button">
+          <span>Daily Entry</span>
+        </button>
+
+        <button mat-button [matMenuTriggerFor]="viewMenu" class="nav-button">
+          <span>View & Reports</span>
           <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
         </button>
-        <mat-menu #productionMenu="matMenu" class="nav-dropdown">
+        <mat-menu #viewMenu="matMenu" class="nav-dropdown">
           <button mat-menu-item routerLink="/dashboard" routerLinkActive="active">
-            <mat-icon>inventory</mat-icon>
-            <span>Stock Dashboard</span>
-          </button>
-          <button mat-menu-item routerLink="/production-entry" routerLinkActive="active">
-            <mat-icon>add_circle</mat-icon>
-            <span>Production Entry</span>
-          </button>
-          <button mat-menu-item routerLink="/worker-management" routerLinkActive="active">
-            <mat-icon>engineering</mat-icon>
-            <span>Worker Management</span>
+            <mat-icon>dashboard</mat-icon>
+            <span>Dashboard</span>
           </button>
           <button mat-menu-item routerLink="/inventory" routerLinkActive="active">
             <mat-icon>inventory_2</mat-icon>
             <span>Inventory</span>
           </button>
-        </mat-menu>
-
-        <button mat-button [matMenuTriggerFor]="salesMenu" class="nav-button">
-          <span>Sales</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #salesMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/sales-entry" routerLinkActive="active">
-            <mat-icon>receipt</mat-icon>
-            <span>Sales Entry</span>
+          <button mat-menu-item routerLink="/reports-dashboard" routerLinkActive="active">
+            <mat-icon>assessment</mat-icon>
+            <span>Reports & Due Management</span>
           </button>
           <button mat-menu-item routerLink="/client-ledger" routerLinkActive="active">
             <mat-icon>people</mat-icon>
             <span>Client Ledger</span>
           </button>
-        </mat-menu>
-
-        <button mat-button [matMenuTriggerFor]="materialsMenu" class="nav-button">
-          <span>Materials</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #materialsMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/material-purchase" routerLinkActive="active">
-            <mat-icon>shopping_cart</mat-icon>
-            <span>Material Purchase</span>
-          </button>
-          <button mat-menu-item routerLink="/yard-loss" routerLinkActive="active">
-            <mat-icon>warning</mat-icon>
-            <span>Yard Loss</span>
+          <button mat-menu-item routerLink="/labour-ledger" routerLinkActive="active">
+            <mat-icon>engineering</mat-icon>
+            <span>Labour Ledger</span>
           </button>
           <button mat-menu-item routerLink="/stock-audit" routerLinkActive="active">
             <mat-icon>fact_check</mat-icon>
@@ -67,9 +46,20 @@
           </button>
         </mat-menu>
 
-        <button mat-button routerLink="/reports-dashboard" class="nav-button">
-          <span>Reports</span>
+        <button mat-button [matMenuTriggerFor]="managementMenu" class="nav-button">
+          <span>Management</span>
+          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
         </button>
+        <mat-menu #managementMenu="matMenu" class="nav-dropdown">
+          <button mat-menu-item routerLink="/worker-management" routerLinkActive="active">
+            <mat-icon>engineering</mat-icon>
+            <span>Workers</span>
+          </button>
+          <button mat-menu-item routerLink="/material-purchase" routerLinkActive="active">
+            <mat-icon>shopping_cart</mat-icon>
+            <span>Material Purchase</span>
+          </button>
+        </mat-menu>
       </ng-container>
 
       <!-- Partner Section -->
@@ -168,61 +158,52 @@
     <!-- Mobile Full Menu -->
     <mat-menu #mobileMenu="matMenu" class="mobile-nav-menu">
       <ng-container *ngIf="hasManufacturingAccess()">
-        <button mat-menu-item routerLink="/dashboard">
-          <mat-icon>inventory</mat-icon>
-          <span>Stock Dashboard</span>
+        <!-- ⭐ UNIFIED DAILY ENTRY -->
+        <button mat-menu-item routerLink="/daily-entry">
+          <mat-icon>edit_note</mat-icon>
+          <span>Daily Entry</span>
         </button>
         <mat-divider></mat-divider>
         <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>factory</mat-icon>
-          <span>Production</span>
+          <mat-icon>visibility</mat-icon>
+          <span>View & Reports</span>
         </button>
-        <button mat-menu-item routerLink="/production-entry">
-          <mat-icon>add_circle</mat-icon>
-          <span>Production Entry</span>
-        </button>
-        <button mat-menu-item routerLink="/worker-management">
-          <mat-icon>engineering</mat-icon>
-          <span>Worker Management</span>
+        <button mat-menu-item routerLink="/dashboard">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
         </button>
         <button mat-menu-item routerLink="/inventory">
           <mat-icon>inventory_2</mat-icon>
           <span>Inventory</span>
         </button>
-        <mat-divider></mat-divider>
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>point_of_sale</mat-icon>
-          <span>Sales</span>
-        </button>
-        <button mat-menu-item routerLink="/sales-entry">
-          <mat-icon>receipt</mat-icon>
-          <span>Sales Entry</span>
-        </button>
         <button mat-menu-item routerLink="/client-ledger">
           <mat-icon>people</mat-icon>
           <span>Client Ledger</span>
         </button>
-        <mat-divider></mat-divider>
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>inventory</mat-icon>
-          <span>Materials</span>
-        </button>
-        <button mat-menu-item routerLink="/material-purchase">
-          <mat-icon>shopping_cart</mat-icon>
-          <span>Material Purchase</span>
-        </button>
-        <button mat-menu-item routerLink="/yard-loss">
-          <mat-icon>warning</mat-icon>
-          <span>Yard Loss</span>
+        <button mat-menu-item routerLink="/labour-ledger">
+          <mat-icon>engineering</mat-icon>
+          <span>Labour Ledger</span>
         </button>
         <button mat-menu-item routerLink="/stock-audit">
           <mat-icon>fact_check</mat-icon>
           <span>Stock Audit</span>
         </button>
-        <mat-divider></mat-divider>
         <button mat-menu-item routerLink="/reports-dashboard">
           <mat-icon>assessment</mat-icon>
           <span>Reports Dashboard</span>
+        </button>
+        <mat-divider></mat-divider>
+        <button mat-menu-item disabled class="menu-section-header">
+          <mat-icon>settings</mat-icon>
+          <span>Management</span>
+        </button>
+        <button mat-menu-item routerLink="/worker-management">
+          <mat-icon>engineering</mat-icon>
+          <span>Workers</span>
+        </button>
+        <button mat-menu-item routerLink="/material-purchase">
+          <mat-icon>shopping_cart</mat-icon>
+          <span>Material Purchase</span>
         </button>
       </ng-container>
       <ng-container *ngIf="authService.isAdmin()">
