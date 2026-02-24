@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { LibrarySeat, LibraryService } from '../../services/library.service';
+import { addDays, getDaysInMonth, startOfDay } from 'date-fns';
 
 export interface RegistrationDialogData {
   seat: LibrarySeat;
@@ -440,18 +441,11 @@ export class RegistrationDialogComponent implements OnInit {
       onStartDateChange(event: any): void {
         const start: Date = event.value;
         if (start && (!this.registrationForm.get('endDate')?.value || this.registrationForm.get('endDate')?.pristine)) {
-          const end = new Date(start);
-          const targetMonth = end.getMonth() + 1;
-          end.setMonth(targetMonth);
+          // Get days in the start month using date-fns
+          const daysInMonth = getDaysInMonth(start);
           
-          // Check if month overflowed (e.g., Jan 31 + 1 month = Mar 3)
-          if (end.getMonth() !== (targetMonth % 12)) {
-            // If overflowed, set to last day of target month
-            end.setMonth(targetMonth + 1, 0);
-          } else {
-            // Otherwise, subtract 1 day for normal cases
-            end.setDate(end.getDate() - 1);
-          }
+          // Calculate end date: start date + days in month - 1
+          const end = addDays(start, daysInMonth - 1);
           
           this.registrationForm.get('endDate')?.setValue(end);
         }
@@ -468,10 +462,10 @@ export class RegistrationDialogComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const today = new Date();
-    const endDate = new Date(today);
-    endDate.setMonth(endDate.getMonth() + 1);
-    endDate.setDate(endDate.getDate() - 1);
+    const today = startOfDay(new Date());
+    // Calculate end date: today + days in current month - 1 using date-fns
+    const daysInMonth = getDaysInMonth(today);
+    const endDate = addDays(today, daysInMonth - 1);
 
     // Determine default shift based on seat availability
     let defaultShift = 'full_time';
@@ -516,18 +510,11 @@ export class RegistrationDialogComponent implements OnInit {
     // Auto-adjust end date when start date changes
     this.registrationForm.get('startDate')?.valueChanges.subscribe(startDate => {
       if (startDate && startDate instanceof Date) {
-        const endDate = new Date(startDate);
-        const targetMonth = endDate.getMonth() + 1;
-        endDate.setMonth(targetMonth);
+        // Get days in the start month using date-fns
+        const daysInMonth = getDaysInMonth(startDate);
         
-        // Check if month overflowed (e.g., Jan 31 + 1 month = Mar 3)
-        if (endDate.getMonth() !== (targetMonth % 12)) {
-          // If overflowed, set to last day of target month
-          endDate.setMonth(targetMonth + 1, 0);
-        } else {
-          // Otherwise, subtract 1 day for normal cases
-          endDate.setDate(endDate.getDate() - 1);
-        }
+        // Calculate end date: start date + days in month - 1
+        const endDate = addDays(startDate, daysInMonth - 1);
         
         this.registrationForm.patchValue({ endDate }, { emitEvent: false });
       }
@@ -560,18 +547,11 @@ export class RegistrationDialogComponent implements OnInit {
   onDateRangeChange() {
     const startDate = this.registrationForm.get('startDate')?.value;
     if (startDate && startDate instanceof Date) {
-      const endDate = new Date(startDate);
-      const targetMonth = endDate.getMonth() + 1;
-      endDate.setMonth(targetMonth);
+      // Get days in the start month using date-fns
+      const daysInMonth = getDaysInMonth(startDate);
       
-      // Check if month overflowed (e.g., Jan 31 + 1 month = Mar 3)
-      if (endDate.getMonth() !== (targetMonth % 12)) {
-        // If overflowed, set to last day of target month
-        endDate.setMonth(targetMonth + 1, 0);
-      } else {
-        // Otherwise, subtract 1 day for normal cases
-        endDate.setDate(endDate.getDate() - 1);
-      }
+      // Calculate end date: start date + days in month - 1
+      const endDate = addDays(startDate, daysInMonth - 1);
       
       this.registrationForm.patchValue({ endDate }, { emitEvent: false });
     }

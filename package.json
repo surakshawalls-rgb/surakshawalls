@@ -43,6 +43,7 @@
     "@capacitor/core": "6.1.2",
     "@capacitor/push-notifications": "^8.0.1",
     "@supabase/supabase-js": "^2.93.3",
+    "date-fns": "^4.1.0",
     "ngx-toastr": "^17.0.2",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

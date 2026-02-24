@@ -2,6 +2,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from './supabase.service';
+import { format, startOfMonth } from 'date-fns';
 
 export interface LibraryStudent {
   id: string;
@@ -559,8 +560,8 @@ export class LibraryService {
         this.getAllStudents('active'),
         this.getLibraryCashBalance(),
         this.getExpenses(
-          new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
-          new Date().toISOString().split('T')[0]
+          format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+          format(new Date(), 'yyyy-MM-dd')
         )
       ]);
 
@@ -575,10 +576,10 @@ export class LibraryService {
       const monthlyExpense = expenses.reduce((sum, e) => sum + e.amount, 0);
 
       // Calculate total revenue from payments this month
-      const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+      const startOfMonthDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
       const payments = await this.getPaymentHistory();
       const monthlyRevenue = payments
-        .filter(p => p.payment_date >= startOfMonth)
+        .filter(p => p.payment_date >= startOfMonthDate)
         .reduce((sum, p) => sum + p.amount_paid, 0);
 
       const totalSeats = seats.length; // Dynamic total seats from database
@@ -706,7 +707,7 @@ export class LibraryService {
 
   async checkInStudent(studentId: string, bypassTimeRestriction: boolean = false): Promise<{success: boolean, attendance?: LibraryAttendance, error?: string}> {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = format(new Date(), 'yyyy-MM-dd');
       const now = new Date();
       const currentHour = now.getHours();
       const timeString = now.toTimeString().split(' ')[0];
@@ -753,7 +754,7 @@ export class LibraryService {
 
   async checkOutStudent(studentId: string, bypassTimeRestriction: boolean = false): Promise<{success: boolean, error?: string}> {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = format(new Date(), 'yyyy-MM-dd');
       const now = new Date();
       const currentHour = now.getHours();
       const timeString = now.toTimeString().split(' ')[0];
@@ -796,7 +797,7 @@ export class LibraryService {
 
   async getTodayAttendanceStatus(studentId: string): Promise<LibraryAttendance | null> {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = format(new Date(), 'yyyy-MM-dd');
       
       const { data, error } = await this.supabase.supabase
         .from('library_attendance')
@@ -858,7 +859,7 @@ export class LibraryService {
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - days);
       
-      const records = await this.getAttendanceRecords(studentId, startDate.toISOString().split('T')[0]);
+      const records = await this.getAttendanceRecords(studentId, format(startDate, 'yyyy-MM-dd'));
       
       const total = days;
       const present = records.filter(r => r.status === 'present').length;
@@ -874,7 +875,7 @@ export class LibraryService {
 
   async getAllTodayAttendance(): Promise<LibraryAttendance[]> {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const today = format(new Date(), 'yyyy-MM-dd');
       
       const { data, error } = await this.supabase.supabase
         .from('library_attendance')
@@ -936,7 +937,7 @@ export class LibraryService {
   async getMonthlyRevenueBreakdown(year: number, month: number): Promise<any[]> {
     try {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+      const endDate = format(new Date(year, month, 0), 'yyyy-MM-dd');
 
       const { data, error } = await this.supabase.supabase
         .from('library_fee_payments')
@@ -1010,7 +1011,7 @@ export class LibraryService {
   async getExpenseCategoryReport(year: number, month: number): Promise<any[]> {
     try {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+      const endDate = format(new Date(year, month, 0), 'yyyy-MM-dd');
 
       const { data, error } = await this.supabase.supabase
         .from('library_expenses')
@@ -1040,7 +1041,7 @@ export class LibraryService {
   async getProfitLossStatement(year: number, month: number): Promise<{revenue: number, expenses: number, profit: number, details: any}> {
     try {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+      const endDate = format(new Date(year, month, 0), 'yyyy-MM-dd');
 
       // Get revenue
       const payments = await this.getPaymentHistory();

@@ -9,6 +9,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
 import { RegistrationDialogComponent, RegistrationResult } from './registration-dialog.component';
+import { addDays, differenceInDays, getDaysInMonth, startOfDay, format } from 'date-fns';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -53,7 +54,7 @@ export class LibraryGridComponent implements OnInit {
     address: '',
     dob: null as any, // Use null for date field to avoid DB errors
     gender: 'Male' as 'Male' | 'Female',
-    joining_date: new Date().toISOString().split('T')[0],
+    joining_date: format(new Date(), 'yyyy-MM-dd'),
     registration_fee_paid: 0,
     notes: ''
   };
@@ -197,22 +198,19 @@ export class LibraryGridComponent implements OnInit {
       return 30; // Default
     }
     
-    const start = new Date(
+    const start = startOfDay(new Date(
       parseInt(this.joiningYear),
       parseInt(this.joiningMonth) - 1,
       parseInt(this.joiningDay)
-    );
-    start.setHours(0, 0, 0, 0);
+    ));
     
-    const end = new Date(
+    const end = startOfDay(new Date(
       parseInt(this.expiryYear),
       parseInt(this.expiryMonth) - 1,
       parseInt(this.expiryDay)
-    );
-    end.setHours(0, 0, 0, 0);
+    ));
     
-    const diffTime = end.getTime() - start.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = differenceInDays(end, start);
     
     return diffDays > 0 ? diffDays : 30;
   }
@@ -450,13 +448,10 @@ export class LibraryGridComponent implements OnInit {
   getDaysRemaining(expiryDate: string | undefined): string {
     if (!expiryDate) return '';
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
+    const expiry = startOfDay(new Date(expiryDate));
     
-    const expiry = new Date(expiryDate);
-    expiry.setHours(0, 0, 0, 0);
-    
-    const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const daysRemaining = differenceInDays(expiry, today);
     
     if (daysRemaining < 0) {
       return `Expired ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) === 1 ? '' : 's'} ago`;
@@ -478,13 +473,11 @@ export class LibraryGridComponent implements OnInit {
   getDaysRemainingNumber(expiryDate: string | undefined): number | null {
     if (!expiryDate) return null;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
+    const expiry = startOfDay(new Date(expiryDate));
     
-    const expiry = new Date(expiryDate);
-    expiry.setHours(0, 0, 0, 0);
-    
-    const daysRemaining = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    // Use date-fns differenceInDays + 1 to include today as a full service day
+    const daysRemaining = differenceInDays(expiry, today) + 1;
     
     // Return days remaining for all students
     return daysRemaining;
@@ -493,10 +486,11 @@ export class LibraryGridComponent implements OnInit {
   getBadgeColor(days: number | null): 'primary' | 'accent' | 'warn' | undefined {
     if (days === null) return undefined;
     if (days < 0) return 'warn'; // Expired - Red
-    if (days <= 3) return 'warn'; // 1-3 days - Red
-    if (days <= 7) return 'accent'; // 4-7 days - Yellow
-    if (days <= 30) return 'primary'; // 8-30 days - Blue
-    return undefined; // More than 30 days - No special color, use default
+    if (days === 0) return 'warn'; // Expires today - Red
+    if (days <= 3) return 'warn'; // 1-3 days - Red (critical)
+    if (days <= 7) return 'accent'; // 4-7 days - Yellow (warning)
+    if (days <= 30) return 'primary'; // 8-30 days - Blue (normal)
+    return 'accent'; // More than 30 days - Yellow (advance payment)
   }
 
   getSeatBadge(seat: LibrarySeat): { value: number | string, color: 'primary' | 'accent' | 'warn' | undefined, hidden: boolean } {
@@ -656,7 +650,7 @@ export class LibraryGridComponent implements OnInit {
           emergency_contact: result.emergency_contact,
           emergency_contact_name: result.emergency_contact_name,
           address: result.address,
-          dob: result.dob ? result.dob.toISOString().split('T')[0] : null,
+          dob: result.dob ? format(result.dob, 'yyyy-MM-dd') : undefined,
           gender: result.gender,
           notes: result.notes
         });
@@ -668,9 +662,9 @@ export class LibraryGridComponent implements OnInit {
           emergency_contact: result.emergency_contact,
           emergency_contact_name: result.emergency_contact_name,
           address: result.address,
-          dob: result.dob ? result.dob.toISOString().split('T')[0] : null,
+          dob: result.dob ? format(result.dob, 'yyyy-MM-dd') : undefined,
           gender: result.gender,
-          joining_date: result.startDate.toISOString().split('T')[0],
+          joining_date: format(result.startDate, 'yyyy-MM-dd'),
           registration_fee_paid: result.registration_fee_paid || 0,
           notes: result.notes,
           status: 'active'
@@ -689,29 +683,26 @@ export class LibraryGridComponent implements OnInit {
             seat_no: seat.seat_no,
             shift_type: 'registration',
             amount_paid: result.registration_fee_paid,
-            payment_date: new Date().toISOString().split('T')[0],
-            valid_from: new Date().toISOString().split('T')[0],
-            valid_until: new Date().toISOString().split('T')[0],
+            payment_date: format(new Date(), 'yyyy-MM-dd'),
+            valid_from: format(new Date(), 'yyyy-MM-dd'),
+            valid_until: format(new Date(), 'yyyy-MM-dd'),
             payment_mode: result.paymentMode
           });
         }
       }
 
       // Record seat fee payment
-      const validFrom = new Date(result.startDate);
-      validFrom.setHours(0, 0, 0, 0);
-      
-      const validUntil = new Date(result.endDate);
-      validUntil.setHours(0, 0, 0, 0);
+      const validFrom = startOfDay(new Date(result.startDate));
+      const validUntil = startOfDay(new Date(result.endDate));
 
       const paymentResult = await this.libraryService.recordFeePayment({
         student_id: student.id,
         seat_no: seat.seat_no,
         shift_type: result.selectedShift,
         amount_paid: result.feeAmount,
-        payment_date: validFrom.toISOString().split('T')[0],
-        valid_from: validFrom.toISOString().split('T')[0],
-        valid_until: validUntil.toISOString().split('T')[0],
+        payment_date: format(validFrom, 'yyyy-MM-dd'),
+        valid_from: format(validFrom, 'yyyy-MM-dd'),
+        valid_until: format(validUntil, 'yyyy-MM-dd'),
         payment_mode: result.paymentMode
       });
 
@@ -753,7 +744,7 @@ export class LibraryGridComponent implements OnInit {
       address: '',
       dob: null as any,
       gender: 'Male',
-      joining_date: new Date().toISOString().split('T')[0],
+      joining_date: format(new Date(), 'yyyy-MM-dd'),
       registration_fee_paid: 0,
       notes: ''
     };
@@ -915,6 +906,74 @@ export class LibraryGridComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // View last receipt for student
+  async viewLastReceipt() {
+    if (!this.selectedStudent) return;
+    
+    try {
+      // Get payment history for this student
+      const payments = await this.libraryService.getPaymentHistory(this.selectedStudent.id);
+      
+      if (!payments || payments.length === 0) {
+        alert('No payment history found for this student.');
+        return;
+      }
+      
+      // Get the most recent payment (excluding registration payments)
+      const lastPayment = payments
+        .filter(p => p.shift_type !== 'registration')
+        .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())[0];
+      
+      if (!lastPayment) {
+        alert('No fee payment receipts found.');
+        return;
+      }
+      
+      // Generate and show receipt
+      this.receiptData = this.libraryService.generateReceiptData(lastPayment, this.selectedStudent);
+      this.showReceiptModal = true;
+      this.showProfileModal = false;
+      this.cdr.detectChanges();
+    } catch (error: any) {
+      console.error('Error loading receipt:', error);
+      alert('Failed to load receipt: ' + error.message);
+    }
+  }
+
+  // View last receipt for a specific student (used in dual student view)
+  async viewLastReceiptForStudent(student: LibraryStudent) {
+    if (!student) return;
+    
+    try {
+      // Get payment history for this student
+      const payments = await this.libraryService.getPaymentHistory(student.id);
+      
+      if (!payments || payments.length === 0) {
+        alert('No payment history found for this student.');
+        return;
+      }
+      
+      // Get the most recent payment (excluding registration payments)
+      const lastPayment = payments
+        .filter(p => p.shift_type !== 'registration')
+        .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())[0];
+      
+      if (!lastPayment) {
+        alert('No fee payment receipts found.');
+        return;
+      }
+      
+      // Generate and show receipt
+      this.receiptData = this.libraryService.generateReceiptData(lastPayment, student);
+      this.showReceiptModal = true;
+      this.showProfileModal = false;
+      this.cdr.detectChanges();
+    } catch (error: any) {
+      console.error('Error loading receipt:', error);
+      alert('Failed to load receipt: ' + error.message);
+    }
+  }
+
   // ==============================
   // FEE PAYMENT
   // ==============================
@@ -957,59 +1016,63 @@ export class LibraryGridComponent implements OnInit {
     
     if (!expiryStr) return null;
     
-    const date = new Date(expiryStr);
-    date.setHours(0, 0, 0, 0);
-    return date;
+    return startOfDay(new Date(expiryStr));
   }
 
   // Calculate new expiry date based on months from current expiry (or today if no current expiry)
   calculateExpiryDate(months: number): Date {
     const currentExpiry = this.getCurrentExpiryDate();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
     
     if (currentExpiry && currentExpiry >= today) {
       // Early payment: Start from day after current expiry
-      const startDate = new Date(currentExpiry);
-      startDate.setDate(startDate.getDate() + 1);
+      const startDate = addDays(currentExpiry, 1);
       
-      const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + months);
-      endDate.setDate(endDate.getDate() - 1);
-      return endDate;
+      // Calculate total days for the subscription period using date-fns
+      let totalDays = 0;
+      let tempDate = new Date(startDate);
+      for (let i = 0; i < months; i++) {
+        const daysInMonth = getDaysInMonth(tempDate);
+        totalDays += daysInMonth;
+        tempDate = addDays(tempDate.setDate(1), 32); // Move to next month
+        tempDate.setDate(1); // Reset to 1st of next month
+      }
+      
+      return addDays(startDate, totalDays - 1);
     } else if (currentExpiry && currentExpiry < today) {
       // Overdue: Calculate subscription days and deduct overdue days
-      // Formula: subscription_days - overdue_days = days_to_add_from_today
+      const startDate = addDays(currentExpiry, 1);
       
-      // Calculate what the subscription period would have been
-      const theoreticalStartDate = new Date(currentExpiry);
-      theoreticalStartDate.setDate(theoreticalStartDate.getDate() + 1);
+      // Calculate total days for the subscription period using date-fns
+      let totalDays = 0;
+      let tempDate = new Date(startDate);
+      for (let i = 0; i < months; i++) {
+        const daysInMonth = getDaysInMonth(tempDate);
+        totalDays += daysInMonth;
+        tempDate = addDays(tempDate.setDate(1), 32); // Move to next month
+        tempDate.setDate(1); // Reset to 1st of next month
+      }
       
-      const theoreticalEndDate = new Date(theoreticalStartDate);
-      theoreticalEndDate.setMonth(theoreticalEndDate.getMonth() + months);
-      theoreticalEndDate.setDate(theoreticalEndDate.getDate() - 1);
-      
-      // Calculate total days in subscription period (inclusive)
-      const diffTime = theoreticalEndDate.getTime() - theoreticalStartDate.getTime();
-      const subscriptionDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      
-      // Get overdue days
+      const subscriptionDays = totalDays;
       const overdueDays = this.getDaysOverdue();
-      
-      // Calculate remaining days after deducting overdue
       const remainingDays = Math.max(0, subscriptionDays - overdueDays);
       
-      // New expiry = today + remaining days - 1 (to account for inclusive counting)
-      const endDate = new Date(today);
-      endDate.setDate(endDate.getDate() + remainingDays - 1);
-      return endDate;
+      return addDays(today, remainingDays - 1);
     } else {
       // No subscription: Start from today
-      const startDate = new Date(today);
-      const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + months);
-      endDate.setDate(endDate.getDate() - 1);
-      return endDate;
+      const startDate = today;
+      
+      // Calculate total days for the subscription period using date-fns
+      let totalDays = 0;
+      let tempDate = new Date(startDate);
+      for (let i = 0; i < months; i++) {
+        const daysInMonth = getDaysInMonth(tempDate);
+        totalDays += daysInMonth;
+        tempDate = addDays(tempDate.setDate(1), 32); // Move to next month
+        tempDate.setDate(1); // Reset to 1st of next month
+      }
+      
+      return addDays(startDate, totalDays - 1);
     }
   }
 
@@ -1018,8 +1081,7 @@ export class LibraryGridComponent implements OnInit {
     const currentExpiry = this.getCurrentExpiryDate();
     if (!currentExpiry) return false;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
     
     return currentExpiry < today;
   }
@@ -1029,15 +1091,11 @@ export class LibraryGridComponent implements OnInit {
     const currentExpiry = this.getCurrentExpiryDate();
     if (!currentExpiry) return 0;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
     
     if (currentExpiry >= today) return 0;
     
-    const diffTime = today.getTime() - currentExpiry.getTime();
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays;
+    return differenceInDays(today, currentExpiry);
   }
 
   // Get days remaining for current subscription (returns 0 if expired)
@@ -1045,28 +1103,21 @@ export class LibraryGridComponent implements OnInit {
     const currentExpiry = this.getCurrentExpiryDate();
     if (!currentExpiry) return 0;
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
     
     if (currentExpiry < today) return 0;
     
-    const diffTime = currentExpiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays;
+    return differenceInDays(currentExpiry, today);
   }
 
   // Get subscription start date
   getSubscriptionStartDate(months: number): Date {
     const currentExpiry = this.getCurrentExpiryDate();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = startOfDay(new Date());
     
     if (currentExpiry && currentExpiry >= today) {
       // Early payment: Start from day after current expiry
-      const startDate = new Date(currentExpiry);
-      startDate.setDate(startDate.getDate() + 1);
-      return startDate;
+      return addDays(currentExpiry, 1);
     } else {
       // Overdue or no subscription: Start from today
       return today;
@@ -1104,9 +1155,9 @@ export class LibraryGridComponent implements OnInit {
         seat_no: this.selectedSeat.seat_no,
         shift_type: this.additionalFeePayment.shift_type,
         amount_paid: this.additionalFeePayment.amount_paid,
-        payment_date: validFrom.toISOString().split('T')[0],
-        valid_from: validFrom.toISOString().split('T')[0],
-        valid_until: validUntil.toISOString().split('T')[0],
+        payment_date: format(validFrom, 'yyyy-MM-dd'),
+        valid_from: format(validFrom, 'yyyy-MM-dd'),
+        valid_until: format(validUntil, 'yyyy-MM-dd'),
         payment_mode: this.additionalFeePayment.payment_mode,
         transaction_reference: this.additionalFeePayment.transaction_reference || undefined
       });

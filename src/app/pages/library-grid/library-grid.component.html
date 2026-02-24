@@ -215,6 +215,7 @@
             
             <p><strong>Seat:</strong> {{ selectedSeat?.seat_no }}</p>
             <p><strong>Joined:</strong> {{ selectedStudent.joining_date }}</p>
+            <p *ngIf="getCurrentExpiryDate()"><strong>Expiry:</strong> {{ getCurrentExpiryDate() | date:'dd MMM yyyy' }}</p>
             <p><strong>Status:</strong> <span [class]="'badge badge-' + selectedStudent.status">{{ selectedStudent.status }}</span></p>
           </div>
           <div class="profile-actions-col">
@@ -235,6 +236,9 @@
             </button>
             <button (click)="sendWhatsAppReminder()" class="btn btn-compact btn-success">
               💬 Reminder
+            </button>
+            <button (click)="viewLastReceipt()" class="btn btn-compact btn-info">
+              🧾 View Receipt
             </button>
             <button (click)="sendEmergencySOS()" class="btn btn-compact btn-warning">
               🚨 SOS
@@ -300,6 +304,9 @@
               <button (click)="sendWhatsAppReminder(selectedStudent)" class="btn btn-compact btn-success">
                 💬 Reminder
               </button>
+              <button (click)="viewLastReceiptForStudent(selectedStudent)" class="btn btn-compact btn-info">
+                🧾 Receipt
+              </button>
               <button (click)="sendEmergencySOS(selectedStudent)" class="btn btn-compact btn-warning">
                 🚨 SOS
               </button>
@@ -356,6 +363,9 @@
               </button>
               <button (click)="sendWhatsAppReminder(selectedSecondStudent)" class="btn btn-compact btn-success">
                 💬 Reminder
+              </button>
+              <button (click)="viewLastReceiptForStudent(selectedSecondStudent)" class="btn btn-compact btn-info">
+                🧾 Receipt
               </button>
               <button (click)="sendEmergencySOS(selectedSecondStudent)" class="btn btn-compact btn-warning">
                 🚨 SOS
