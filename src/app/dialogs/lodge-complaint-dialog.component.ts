@@ -120,10 +120,13 @@ import { LibraryService } from '../services/library.service';
       align-items: center;
       gap: 10px;
       color: #d32f2f;
+      margin: 0;
     }
 
     mat-dialog-content {
       padding: 20px 24px !important;
+      max-height: 70vh;
+      overflow-y: auto;
     }
 
     .info-text {
@@ -209,6 +212,61 @@ import { LibraryService } from '../services/library.service';
     button mat-icon {
       margin-right: 4px;
       font-size: 18px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .complaint-dialog {
+        min-width: 90vw;
+        max-width: 95vw;
+      }
+
+      h2[mat-dialog-title] {
+        font-size: 18px;
+      }
+
+      mat-dialog-content {
+        padding: 16px !important;
+      }
+
+      .info-text {
+        font-size: 13px;
+      }
+
+      .optional-section {
+        padding: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .complaint-dialog {
+        min-width: 95vw;
+        max-width: 98vw;
+      }
+
+      h2[mat-dialog-title] {
+        font-size: 16px;
+        gap: 8px;
+      }
+
+      h2[mat-dialog-title] mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      mat-dialog-content {
+        padding: 12px !important;
+      }
+
+      mat-dialog-actions {
+        padding: 12px !important;
+        flex-direction: column;
+      }
+
+      mat-dialog-actions button {
+        width: 100%;
+      }
     }
   `]
 })
