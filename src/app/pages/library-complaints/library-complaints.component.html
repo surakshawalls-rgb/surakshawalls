@@ -1,0 +1,217 @@
+<div class="complaints-container">
+  <div class="header">
+    <button mat-icon-button (click)="goBack()" class="back-button">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2>🚨 Library Complaints Management</h2>
+    <button mat-raised-button color="primary" (click)="loadComplaints()">
+      <mat-icon>refresh</mat-icon> Refresh
+    </button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card pending">
+      <span class="stat-value">{{ pendingComplaints.length }}</span>
+      <span class="stat-label">Pending</span>
+    </div>
+    <div class="stat-card resolved">
+      <span class="stat-value">{{ resolvedComplaints.length }}</span>
+      <span class="stat-label">Resolved</span>
+    </div>
+    <div class="stat-card dismissed">
+      <span class="stat-value">{{ dismissedComplaints.length }}</span>
+      <span class="stat-label">Dismissed</span>
+    </div>
+    <div class="stat-card total">
+      <span class="stat-value">{{ complaints.length }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="selectedTab" class="complaints-tabs">
+    <!-- Pending Complaints -->
+    <mat-tab label="⏳ Pending ({{ pendingComplaints.length }})">
+      <div class="tab-content">
+        <div *ngIf="loading" class="loading">Loading...</div>
+        <div *ngIf="!loading && pendingComplaints.length === 0" class="empty-state">
+          <mat-icon>check_circle</mat-icon>
+          <p>No pending complaints</p>
+        </div>
+        <div *ngIf="!loading && pendingComplaints.length > 0" class="complaints-grid">
+          <mat-card *ngFor="let complaint of pendingComplaints" class="complaint-card pending">
+            <mat-card-header>
+              <div class="complaint-header">
+                <div class="complaint-title">
+                  <span class="icon">{{ getComplaintTypeIcon(complaint.complaint_type) }}</span>
+                  <span class="type">{{ complaint.complaint_type }}</span>
+                </div>
+                <mat-chip [color]="getStatusColor(complaint.status)" selected>
+                  {{ complaint.status | uppercase }}
+                </mat-chip>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="complaint-info">
+                <div class="info-row">
+                  <strong>Against Seat:</strong>
+                  <span class="seat-badge">#{{ complaint.complaint_against_seat_no }}</span>
+                </div>
+                <div class="info-row" *ngIf="complaint.student_name">
+                  <strong>Student:</strong>
+                  <span>{{ complaint.student_name }} ({{ complaint.student_gender }})</span>
+                </div>
+                <div class="info-row" *ngIf="complaint.student_phone">
+                  <strong>Phone:</strong>
+                  <span>{{ complaint.student_phone }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Lodged By:</strong>
+                  <span [class.anonymous]="!complaint.lodged_by_name">
+                    {{ getLodgedByText(complaint) }}
+                  </span>
+                </div>
+                <div class="info-row">
+                  <strong>Date:</strong>
+                  <span>{{ formatDate(complaint.created_at) }}</span>
+                </div>
+              </div>
+              <div class="complaint-description">
+                <strong>Description:</strong>
+                <p>{{ complaint.description || 'No description provided' }}</p>
+              </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
+                <mat-icon>chat</mat-icon> WhatsApp
+              </button>
+              <button mat-raised-button color="primary" (click)="resolveComplaint(complaint)">
+                <mat-icon>check</mat-icon> Resolve
+              </button>
+              <button mat-raised-button color="warn" (click)="dismissComplaint(complaint)">
+                <mat-icon>close</mat-icon> Dismiss
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Resolved Complaints -->
+    <mat-tab label="✅ Resolved ({{ resolvedComplaints.length }})">
+      <div class="tab-content">
+        <div *ngIf="loading" class="loading">Loading...</div>
+        <div *ngIf="!loading && resolvedComplaints.length === 0" class="empty-state">
+          <mat-icon>info</mat-icon>
+          <p>No resolved complaints</p>
+        </div>
+        <div *ngIf="!loading && resolvedComplaints.length > 0" class="complaints-grid">
+          <mat-card *ngFor="let complaint of resolvedComplaints" class="complaint-card resolved">
+            <mat-card-header>
+              <div class="complaint-header">
+                <div class="complaint-title">
+                  <span class="icon">{{ getComplaintTypeIcon(complaint.complaint_type) }}</span>
+                  <span class="type">{{ complaint.complaint_type }}</span>
+                </div>
+                <mat-chip color="primary" selected>RESOLVED</mat-chip>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="complaint-info">
+                <div class="info-row">
+                  <strong>Against Seat:</strong>
+                  <span class="seat-badge">#{{ complaint.complaint_against_seat_no }}</span>
+                </div>
+                <div class="info-row" *ngIf="complaint.student_name">
+                  <strong>Student:</strong>
+                  <span>{{ complaint.student_name }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Lodged By:</strong>
+                  <span>{{ getLodgedByText(complaint) }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Created:</strong>
+                  <span>{{ formatDate(complaint.created_at) }}</span>
+                </div>
+                <div class="info-row" *ngIf="complaint.resolved_at">
+                  <strong>Resolved:</strong>
+                  <span>{{ formatDate(complaint.resolved_at) }}</span>
+                </div>
+              </div>
+              <div class="complaint-description">
+                <strong>Description:</strong>
+                <p>{{ complaint.description || 'No description provided' }}</p>
+              </div>
+              <div class="admin-notes" *ngIf="complaint.admin_notes">
+                <strong>Admin Notes:</strong>
+                <p>{{ complaint.admin_notes }}</p>
+              </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
+                <mat-icon>chat</mat-icon> WhatsApp
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Dismissed Complaints -->
+    <mat-tab label="❌ Dismissed ({{ dismissedComplaints.length }})">
+      <div class="tab-content">
+        <div *ngIf="loading" class="loading">Loading...</div>
+        <div *ngIf="!loading && dismissedComplaints.length === 0" class="empty-state">
+          <mat-icon>info</mat-icon>
+          <p>No dismissed complaints</p>
+        </div>
+        <div *ngIf="!loading && dismissedComplaints.length > 0" class="complaints-grid">
+          <mat-card *ngFor="let complaint of dismissedComplaints" class="complaint-card dismissed">
+            <mat-card-header>
+              <div class="complaint-header">
+                <div class="complaint-title">
+                  <span class="icon">{{ getComplaintTypeIcon(complaint.complaint_type) }}</span>
+                  <span class="type">{{ complaint.complaint_type }}</span>
+                </div>
+                <mat-chip color="accent" selected>DISMISSED</mat-chip>
+              </div>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="complaint-info">
+                <div class="info-row">
+                  <strong>Against Seat:</strong>
+                  <span class="seat-badge">#{{ complaint.complaint_against_seat_no }}</span>
+                </div>
+                <div class="info-row" *ngIf="complaint.student_name">
+                  <strong>Student:</strong>
+                  <span>{{ complaint.student_name }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Lodged By:</strong>
+                  <span>{{ getLodgedByText(complaint) }}</span>
+                </div>
+                <div class="info-row">
+                  <strong>Date:</strong>
+                  <span>{{ formatDate(complaint.created_at) }}</span>
+                </div>
+              </div>
+              <div class="complaint-description">
+                <strong>Description:</strong>
+                <p>{{ complaint.description || 'No description provided' }}</p>
+              </div>
+              <div class="admin-notes" *ngIf="complaint.admin_notes">
+                <strong>Dismissal Reason:</strong>
+                <p>{{ complaint.admin_notes }}</p>
+              </div>
+            </mat-card-content>
+            <mat-card-actions>
+              <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
+                <mat-icon>chat</mat-icon> WhatsApp
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
