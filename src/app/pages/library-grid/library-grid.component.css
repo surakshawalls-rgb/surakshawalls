@@ -85,7 +85,7 @@
 
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -100,18 +100,18 @@
 .btn-refresh,
 .btn-bulk,
 .btn-warning {
-  padding: 12px 24px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   transition: all 0.3s;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .btn-sm {
@@ -775,8 +775,8 @@
   }
 
   .btn, .btn-refresh, .btn-primary, .btn-info, .btn-bulk {
-    padding: 10px 12px;
-    font-size: 0.813rem;
+    padding: 6px 10px;
+    font-size: 0.75rem;
   }
 
   .grid-container {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -28,7 +28,8 @@ export class DigitalLibraryComponent implements OnInit {
 
   constructor(
     private digitalLibrary: DigitalLibraryService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -38,17 +39,21 @@ export class DigitalLibraryComponent implements OnInit {
   async loadData() {
     try {
       this.loading = true;
+      this.cdr.detectChanges();
       this.categories = await this.digitalLibrary.getCategories();
       this.resourceLinks = this.digitalLibrary.getOfficialResourceLinks();
+      this.cdr.detectChanges();
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
   filterResources(category: string) {
     this.selectedCategory = category;
+    this.cdr.detectChanges();
   }
 
   getFilteredResources(): ResourceLink[] {

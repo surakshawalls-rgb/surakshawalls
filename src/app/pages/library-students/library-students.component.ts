@@ -2,6 +2,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
@@ -107,7 +108,8 @@ export class LibraryStudentsComponent implements OnInit {
 
   constructor(
     private libraryService: LibraryService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {
     // Generate year ranges
     const currentYear = new Date().getFullYear();
@@ -784,5 +786,9 @@ export class LibraryStudentsComponent implements OnInit {
     const message = `Hello ${student.name}! 👋\n\nThis is a reminder from Suraksha Library 📚\n\nPlease remember to:\n✅ Maintain library discipline\n✅ Keep your seat clean\n✅ Pay fees on time\n\nThank you for being a valued member! 🙏\n\nFor queries: 8090272727`;
     const url = `https://wa.me/${student.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
+  }
+
+  goBackToGrid() {
+    this.router.navigate(['/library-grid']);
   }
 }

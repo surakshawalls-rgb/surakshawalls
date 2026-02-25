@@ -138,6 +138,11 @@ export const routes: Routes = [
     canActivate: [authGuard, libraryGuard] 
   },
   { 
+    path: 'library-complaints', 
+    loadComponent: () => import('./pages/library-complaints/library-complaints.component').then(m => m.LibraryComplaintsComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
     path: 'resources', 
     loadComponent: () => import('./pages/digital-library/digital-library.component').then(m => m.DigitalLibraryComponent),
     canActivate: [authGuard, libraryGuard] 

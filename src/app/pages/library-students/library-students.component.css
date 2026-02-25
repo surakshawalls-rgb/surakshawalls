@@ -28,6 +28,16 @@
   gap: 12px;
 }
 
+.page-title .back-button {
+  color: #667eea !important;
+  transition: all 0.3s ease;
+}
+
+.page-title .back-button:hover {
+  background-color: rgba(102, 126, 234, 0.1) !important;
+  transform: translateX(-2px);
+}
+
 .page-title mat-icon {
   font-size: 2.5rem;
   width: 2.5rem;

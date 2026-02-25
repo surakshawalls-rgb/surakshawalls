@@ -9,6 +9,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
 import { RegistrationDialogComponent, RegistrationResult } from './registration-dialog.component';
+import { LodgeComplaintDialogComponent } from '../../dialogs/lodge-complaint-dialog.component';
 import { addDays, differenceInDays, getDaysInMonth, startOfDay, format } from 'date-fns';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -1423,6 +1424,28 @@ export class LibraryGridComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
     this.cdr.detectChanges();
+  }
+
+  // ==============================
+  // COMPLAINT SYSTEM
+  // ==============================
+
+  openComplaintDialog() {
+    const dialogRef = this.dialog.open(LodgeComplaintDialogComponent, {
+      width: '600px',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.snackBar.open('✅ Complaint lodged successfully! Admin will review it.', 'Close', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      }
+    });
   }
 
   closeMyAttendanceModal() {

@@ -2,6 +2,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -81,7 +82,8 @@ export class LibraryDashboardComponent implements OnInit {
   constructor(
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   async ngOnInit() {
@@ -289,5 +291,9 @@ export class LibraryDashboardComponent implements OnInit {
     a.href = url;
     a.download = filename;
     a.click();
+  }
+
+  goBackToGrid() {
+    this.router.navigate(['/library-grid']);
   }
 }

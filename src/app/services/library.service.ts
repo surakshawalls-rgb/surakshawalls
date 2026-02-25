@@ -1199,4 +1199,122 @@ export class LibraryService {
       transaction_ref: payment.transaction_reference || 'N/A'
     };
   }
+
+  // ========================================
+  // COMPLAINT SYSTEM
+  // ========================================
+
+  async lodgeComplaint(complaintData: {
+    complaint_against_seat_no: number;
+    complaint_type: string;
+    description: string;
+    lodged_by_name?: string;
+    lodged_by_seat_no?: number;
+  }): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('library_complaints')
+        .insert([{
+          complaint_against_seat_no: complaintData.complaint_against_seat_no,
+          complaint_type: complaintData.complaint_type,
+          description: complaintData.description,
+          lodged_by_name: complaintData.lodged_by_name || 'Anonymous',
+          lodged_by_seat_no: complaintData.lodged_by_seat_no,
+          status: 'pending'
+        }]);
+
+      if (error) throw error;
+
+      console.log('[LibraryService] Complaint lodged successfully');
+      return { success: true };
+    } catch (error: any) {
+      console.error('[LibraryService] lodgeComplaint error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getAllComplaints(): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('library_complaints_with_details')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      console.error('[LibraryService] getAllComplaints error:', error);
+      return [];
+    }
+  }
+
+  async getPendingComplaints(): Promise<any[]> {
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('library_complaints_with_details')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      console.error('[LibraryService] getPendingComplaints error:', error);
+      return [];
+    }
+  }
+
+  async resolveComplaint(complaintId: string, notes?: string): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('library_complaints')
+        .update({
+          status: 'resolved',
+          resolved_at: new Date().toISOString(),
+          admin_notes: notes
+        })
+        .eq('id', complaintId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[LibraryService] resolveComplaint error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async dismissComplaint(complaintId: string, notes?: string): Promise<{success: boolean, error?: string}> {
+    try {
+      const { error } = await this.supabase.supabase
+        .from('library_complaints')
+        .update({
+          status: 'dismissed',
+          resolved_at: new Date().toISOString(),
+          admin_notes: notes
+        })
+        .eq('id', complaintId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error: any) {
+      console.error('[LibraryService] dismissComplaint error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getComplaintCountBySeat(seatNo: number): Promise<number> {
+    try {
+      const { count, error } = await this.supabase.supabase
+        .from('library_complaints')
+        .select('*', { count: 'exact', head: true })
+        .eq('complaint_against_seat_no', seatNo)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+      return count || 0;
+    } catch (error: any) {
+      console.error('[LibraryService] getComplaintCountBySeat error:', error);
+      return 0;
+    }
+  }
 }

@@ -2,6 +2,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LibraryService, LibraryExpense } from '../../services/library.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
@@ -63,7 +64,8 @@ export class LibraryExpensesComponent implements OnInit {
 
   constructor(
     private libraryService: LibraryService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   async ngOnInit() {
@@ -210,5 +212,9 @@ export class LibraryExpensesComponent implements OnInit {
     a.href = url;
     a.download = `library-expenses-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+  }
+
+  goBackToGrid() {
+    this.router.navigate(['/library-grid']);
   }
 }

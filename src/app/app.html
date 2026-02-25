@@ -116,6 +116,12 @@
               <span>Expenses</span>
             </button>
           </ng-container>
+          <ng-container *ngIf="authService.isAdmin()">
+            <button mat-menu-item routerLink="/library-complaints" routerLinkActive="active">
+              <mat-icon>warning</mat-icon>
+              <span>View Complaints</span>
+            </button>
+          </ng-container>
         </mat-menu>
       </ng-container>
     </nav>
@@ -131,8 +137,8 @@
 
     <span class="toolbar-spacer"></span>
     
-    <!-- Notification Bell -->
-    <app-notification-inbox></app-notification-inbox>
+    <!-- Notification Bell (Admin Only) -->
+    <app-notification-inbox *ngIf="authService.isAdmin()"></app-notification-inbox>
     
     <span class="user-badge">
       <mat-icon>account_circle</mat-icon>
@@ -247,6 +253,12 @@
           <button mat-menu-item routerLink="/library-expenses">
             <mat-icon>payments</mat-icon>
             <span>Expenses</span>
+          </button>
+        </ng-container>
+        <ng-container *ngIf="authService.isAdmin()">
+          <button mat-menu-item routerLink="/library-complaints">
+            <mat-icon>warning</mat-icon>
+            <span>View Complaints</span>
           </button>
         </ng-container>
       </ng-container>
