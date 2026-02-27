@@ -77,7 +77,7 @@ export class ProductionService {
         throw new Error('Failed to calculate materials');
       }
 
-      // 2. Check stock availability
+      // 2. Check stock availability (warning only, don't block)
       if (!calc.stock_check.all_available) {
         const missing: string[] = [];
         if (!calc.stock_check.cement_available) {
@@ -89,7 +89,8 @@ export class ProductionService {
         if (!calc.stock_check.sariya_available) {
           missing.push(`Sariya (need ${calc.materials.sariya}, have ${calc.current_stock.sariya})`);
         }
-        throw new Error(`Insufficient stock: ${missing.join(', ')}`);
+        console.warn(`⚠️ Stock Warning: ${missing.join(', ')}`);
+        // Continue anyway - stock can go negative
       }
 
       // 3. Calculate labor cost
