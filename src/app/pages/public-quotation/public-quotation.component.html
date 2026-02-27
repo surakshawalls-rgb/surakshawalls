@@ -86,15 +86,48 @@
             </div>
           </div>
 
+          <!-- Wall Height Selection (Boundary Wall Only) -->
+          <div class="form-section" *ngIf="productType === 'boundary-wall'">
+            <h3>Wall Height</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Select Wall Height</mat-label>
+              <mat-icon matPrefix>height</mat-icon>
+              <mat-select [(ngModel)]="wallHeight">
+                <mat-option *ngFor="let height of wallHeights" [value]="height">
+                  {{ height }} feet
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
           <!-- Add Fields Section -->
           <div class="form-section">
-            <h3>Add Your Land Fields</h3>
+            <h3>Add Your Land Measurement</h3>
+            
+            <!-- Measurement Type Toggle -->
+            <div class="measurement-type-toggle">
+              <button mat-stroked-button 
+                      [class.active]="measurementType === 'area'"
+                      (click)="measurementType = 'area'; customPerimeter = null">
+                <mat-icon>grid_on</mat-icon>
+                By Area (Biswa/Bigha)
+              </button>
+              <button mat-stroked-button 
+                      [class.active]="measurementType === 'perimeter'"
+                      (click)="measurementType = 'perimeter'; presetLandSize = '1-biswa'">
+                <mat-icon>straighten</mat-icon>
+                By Perimeter (Running Feet)
+              </button>
+            </div>
+            
             <p class="helper-text">
               <mat-icon>info</mat-icon>
-              <span>Add each field separately. You can add multiple fields if you have different plot sizes.</span>
+              <span *ngIf="measurementType === 'area'">Select land area if you know biswas/bigha. Good for square/regular plots.</span>
+              <span *ngIf="measurementType === 'perimeter'">Enter running feet directly for L-shaped, straight, or irregular land.</span>
             </p>
 
-            <div class="add-field-container">
+            <!-- Area-based Input -->
+            <div class="add-field-container" *ngIf="measurementType === 'area'">
               <mat-form-field appearance="outline" class="field-select">
                 <mat-label>Select Field Size</mat-label>
                 <mat-icon matPrefix>landscape</mat-icon>
@@ -111,6 +144,21 @@
               </button>
             </div>
 
+            <!-- Perimeter-based Input -->
+            <div class="add-field-container" *ngIf="measurementType === 'perimeter'">
+              <mat-form-field appearance="outline" class="field-select">
+                <mat-label>Enter Running Feet / Perimeter</mat-label>
+                <mat-icon matPrefix>straighten</mat-icon>
+                <input matInput type="number" [(ngModel)]="customPerimeter" min="1" placeholder="e.g., 500">
+                <span matSuffix>feet</span>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" (click)="addField()" class="add-field-btn">
+                <mat-icon>add</mat-icon>
+                Add Field
+              </button>
+            </div>
+
             <!-- Field List -->
             <div *ngIf="fields.length > 0" class="fields-list">
               <h4>Added Fields ({{ fields.length }})</h4>
@@ -118,7 +166,8 @@
                 <mat-icon class="field-icon">check_circle</mat-icon>
                 <div class="field-info">
                   <strong>{{ field.displayText }}</strong>
-                  <span>{{ field.biswa }} Biswa</span>
+                  <span *ngIf="field.measurementType === 'area'">{{ field.biswa }} Biswa ({{ field.biswa! * 1350 | number }} sq ft)</span>
+                  <span *ngIf="field.measurementType === 'perimeter'">{{ field.perimeterFeet }} Running Feet</span>
                 </div>
                 <button mat-icon-button color="warn" (click)="removeField(field.id)">
                   <mat-icon>delete</mat-icon>
@@ -126,8 +175,8 @@
               </div>
 
               <div class="total-biswa">
-                <strong>Total Land:</strong>
-                <span>{{ getTotalBiswa() }} Biswa ({{ getTotalBiswa() * 1350 | number }} sq ft)</span>
+                <strong>Total Perimeter:</strong>
+                <span>{{ getTotalPerimeter() | number }} Running Feet</span>
               </div>
             </div>
 
@@ -170,7 +219,7 @@
               </div>
             </div>
             <div class="total-summary">
-              <strong>Total:</strong> {{ quotation.totalBiswa }} Biswa ({{ quotation.totalArea | number }} sq ft)
+              <strong>Total Perimeter:</strong> {{ quotation.perimeterFeet }} feet ({{ quotation.perimeter }} m)
             </div>
           </div>
 
@@ -186,7 +235,7 @@
             <div class="spec-item" *ngIf="productType === 'boundary-wall'">
               <mat-icon>square_foot</mat-icon>
               <div>
-                <strong>Wall Area (6 ft height)</strong>
+                <strong>Wall Area ({{ quotation.wallHeight || wallHeight }} ft height)</strong>
                 <span>{{ quotation.wallArea }} sq ft</span>
               </div>
             </div>

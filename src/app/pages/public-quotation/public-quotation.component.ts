@@ -17,8 +17,10 @@ interface LandSize {
 
 interface FieldEntry {
   id: number;
-  biswa: number;
+  biswa?: number;
+  perimeterFeet?: number;
   displayText: string;
+  measurementType: 'area' | 'perimeter';
 }
 
 interface QuotationResult {
@@ -28,6 +30,7 @@ interface QuotationResult {
   totalArea: number;
   perimeter: number;
   perimeterFeet: number;
+  wallHeight?: number;
   wallArea?: number;
   // Boundary Wall
   wallRate?: number;
@@ -66,11 +69,17 @@ interface QuotationResult {
 export class PublicQuotationComponent {
   // Form inputs
   productType: 'boundary-wall' | 'barbed-fencing' = 'boundary-wall';
+  measurementType: 'area' | 'perimeter' = 'area';
   presetLandSize: string = '1-biswa';
+  customPerimeter: number | null = null;
+  wallHeight: number = 6; // Default 6 feet
   
   // Multiple fields support
   fields: FieldEntry[] = [];
   nextFieldId = 1;
+  
+  // Wall height options (for boundary wall only)
+  wallHeights: number[] = [4, 5, 6, 7, 8, 9, 10];
   
   // Calculation result
   quotation: QuotationResult | null = null;
@@ -120,14 +129,31 @@ export class PublicQuotationComponent {
   constructor(private router: Router) {}
 
   addField() {
-    const selectedSize = this.landSizes.find(size => size.label === this.presetLandSize);
-    if (selectedSize) {
-      this.fields.push({
-        id: this.nextFieldId++,
-        biswa: selectedSize.biswa,
-        displayText: selectedSize.displayText
-      });
-      this.quotation = null; // Reset quotation when fields change
+    if (this.measurementType === 'area') {
+      const selectedSize = this.landSizes.find(size => size.label === this.presetLandSize);
+      if (selectedSize) {
+        this.fields.push({
+          id: this.nextFieldId++,
+          biswa: selectedSize.biswa,
+          displayText: selectedSize.displayText,
+          measurementType: 'area'
+        });
+        this.quotation = null;
+      }
+    } else {
+      // Direct perimeter input
+      if (this.customPerimeter && this.customPerimeter > 0) {
+        this.fields.push({
+          id: this.nextFieldId++,
+          perimeterFeet: this.customPerimeter,
+          displayText: `${this.customPerimeter} Running Feet`,
+          measurementType: 'perimeter'
+        });
+        this.customPerimeter = null; // Reset input
+        this.quotation = null;
+      } else {
+        alert('Please enter running feet/perimeter');
+      }
     }
   }
 
@@ -137,7 +163,15 @@ export class PublicQuotationComponent {
   }
 
   getTotalBiswa(): number {
-    return this.fields.reduce((sum, field) => sum + field.biswa, 0);
+    return this.fields
+      .filter(f => f.biswa !== undefined)
+      .reduce((sum, field) => sum + (field.biswa || 0), 0);
+  }
+  
+  getTotalPerimeter(): number {
+    return this.fields
+      .filter(f => f.perimeterFeet !== undefined)
+      .reduce((sum, field) => sum + (field.perimeterFeet || 0), 0);
   }
 
   calculateQuotation() {
@@ -146,25 +180,30 @@ export class PublicQuotationComponent {
       return;
     }
 
-    // Get total land area in biswa
+    // Calculate total area and perimeter
     const totalBiswa = this.getTotalBiswa();
     const totalAreaSqFt = totalBiswa * this.BISWA_TO_SQFT;
     
-    // Calculate perimeter for each field and sum them
+    // Calculate total perimeter from both area-based and direct perimeter fields
     let totalPerimeterFeet = 0;
+    
+    // Add perimeter from area-based fields (assuming square)
     this.fields.forEach(field => {
-      const areaSqFt = field.biswa * this.BISWA_TO_SQFT;
-      const side = Math.sqrt(areaSqFt);
-      const perimeterFeet = 4 * side;
-      totalPerimeterFeet += perimeterFeet;
+      if (field.measurementType === 'area' && field.biswa) {
+        const areaSqFt = field.biswa * this.BISWA_TO_SQFT;
+        const side = Math.sqrt(areaSqFt);
+        const perimeterFeet = 4 * side;
+        totalPerimeterFeet += perimeterFeet;
+      } else if (field.measurementType === 'perimeter' && field.perimeterFeet) {
+        totalPerimeterFeet += field.perimeterFeet;
+      }
     });
     
     const totalPerimeterMeters = totalPerimeterFeet * 0.3048;
 
     if (this.productType === 'boundary-wall') {
-      // Boundary Wall Calculation
-      const wallHeight = 6; // Assume 6 feet height
-      const wallAreaSqFt = totalPerimeterFeet * wallHeight;
+      // Boundary Wall Calculation (use selected wall height)
+      const wallAreaSqFt = totalPerimeterFeet * this.wallHeight;
       const wallCost = Math.round(wallAreaSqFt * this.BOUNDARY_WALL_RATE);
 
       this.quotation = {
@@ -174,6 +213,7 @@ export class PublicQuotationComponent {
         totalArea: Math.round(totalAreaSqFt),
         perimeter: Math.round(totalPerimeterMeters * 10) / 10,
         perimeterFeet: Math.round(totalPerimeterFeet),
+        wallHeight: this.wallHeight,
         wallArea: Math.round(wallAreaSqFt),
         wallRate: this.BOUNDARY_WALL_RATE,
         wallCost: wallCost,
@@ -245,7 +285,7 @@ export class PublicQuotationComponent {
       itemsRows = `
         <tr>
           <td style="padding: 12px; border: 1px solid #ddd;">1</td>
-          <td style="padding: 12px; border: 1px solid #ddd;">Precast Boundary Wall (6 ft height)</td>
+          <td style="padding: 12px; border: 1px solid #ddd;">Precast Boundary Wall (${this.quotation.wallHeight || this.wallHeight} ft height)</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${this.quotation.wallArea} sq ft</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">₹${this.quotation.wallRate}</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.wallCost?.toLocaleString('en-IN')}</td>
@@ -462,8 +502,8 @@ export class PublicQuotationComponent {
               <span class="detail-value">${this.quotation.productType}</span>
             </div>
             <div class="detail-item">
-              <span class="detail-label">Total Land:</span>
-              <span class="detail-value">${this.quotation.totalBiswa} Biswa (${this.quotation.totalArea.toLocaleString('en-IN')} sq ft)</span>
+              <span class="detail-label">Total Perimeter:</span>
+              <span class="detail-value">${this.quotation.perimeterFeet} feet (${this.quotation.perimeter} m)</span>
             </div>
           </div>
 
@@ -485,7 +525,7 @@ export class PublicQuotationComponent {
               <div style="flex: 1;">
                 <div style="padding: 15px; background: #dbeafe; border-radius: 8px; border-left: 4px solid #3b82f6;">
                   ${this.productType === 'boundary-wall' 
-                    ? `<div style="margin: 8px 0;"><strong>Wall Height:</strong> 6 feet</div>
+                    ? `<div style="margin: 8px 0;"><strong>Wall Height:</strong> ${this.quotation.wallHeight || this.wallHeight} feet</div>
                        <div style="margin: 8px 0;"><strong>Wall Area:</strong> <span class="highlight">${this.quotation.wallArea} sq ft</span></div>
                        <div style="margin: 8px 0;"><strong>Rate:</strong> ₹${this.quotation.wallRate}/sq ft</div>`
                     : `<div style="margin: 8px 0;"><strong>Poles Required:</strong> <span class="highlight">${this.quotation.poles} pieces</span></div>

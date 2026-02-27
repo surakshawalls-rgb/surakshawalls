@@ -252,6 +252,73 @@
   color: #64748b;
 }
 
+/* Wall Height Selector */
+.wall-height-section {
+  margin: 20px 0;
+  padding: 16px;
+  background: #fef3c7;
+  border-radius: 12px;
+  border: 2px solid #fbbf24;
+}
+
+.wall-height-section h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #78350f;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wall-height-section mat-icon {
+  color: #f59e0b;
+  font-size: 1.3rem;
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+/* Measurement Type Toggle */
+.measurement-type-toggle {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.measurement-type-toggle button {
+  flex: 1;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.measurement-type-toggle button:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+}
+
+.measurement-type-toggle button.active {
+  border-color: #667eea;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  color: #667eea;
+}
+
+.measurement-type-toggle button mat-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 /* Add Field Section */
 .helper-text, .helper-note {
   display: flex;
