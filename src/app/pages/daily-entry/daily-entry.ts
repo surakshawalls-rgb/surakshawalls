@@ -292,6 +292,35 @@ export class UnifiedDailyEntryComponent implements OnInit {
         return;
       }
       
+      // ✅ VALIDATE STOCK AVAILABILITY
+      if (!materialCalc.stock_check.all_available) {
+        const shortages: string[] = [];
+        
+        if (!materialCalc.stock_check.cement_available) {
+          const needed = materialCalc.materials.cement;
+          const available = materialCalc.current_stock.cement;
+          const shortage = needed - available;
+          shortages.push(`Cement: Need ${needed.toFixed(2)} bags, but only ${available.toFixed(2)} bags available (Short: ${shortage.toFixed(2)} bags)`);
+        }
+        
+        if (!materialCalc.stock_check.aggregates_available) {
+          const needed = materialCalc.materials.aggregates;
+          const available = materialCalc.current_stock.aggregates;
+          const shortage = needed - available;
+          shortages.push(`Gitti (Aggregates): Need ${needed.toFixed(2)} cft, but only ${available.toFixed(2)} cft available (Short: ${shortage.toFixed(2)} cft)`);
+        }
+        
+        if (!materialCalc.stock_check.sariya_available) {
+          const needed = materialCalc.materials.sariya;
+          const available = materialCalc.current_stock.sariya;
+          const shortage = needed - available;
+          shortages.push(`Sariya (Steel): Need ${needed.toFixed(2)} kg, but only ${available.toFixed(2)} kg available (Short: ${shortage.toFixed(2)} kg)`);
+        }
+        
+        this.showError(`⚠️ Insufficient Stock:\n\n${shortages.join('\n\n')}\n\nPlease purchase materials first or reduce production quantity.`);
+        return;
+      }
+      
       this.productionItems.push({
         product_name: this.selectedProduct,
         product_variant: this.selectedProductVariant,
@@ -737,6 +766,29 @@ export class UnifiedDailyEntryComponent implements OnInit {
     try {
       // 1. Save Production Entries (if any)
       if (this.hasProduction && this.productionItems.length > 0) {
+        // Re-validate stock before saving (in case stock changed)
+        for (const prodItem of this.productionItems) {
+          const materialCalc = await this.recipeService.calculateMaterialsNeeded(
+            prodItem.product_name,
+            prodItem.product_variant,
+            prodItem.quantity
+          );
+          
+          if (!materialCalc || !materialCalc.stock_check.all_available) {
+            const shortages: string[] = [];
+            if (materialCalc && !materialCalc.stock_check.cement_available) {
+              shortages.push(`Cement: ${materialCalc.materials.cement.toFixed(2)} bags needed, ${materialCalc.current_stock.cement.toFixed(2)} available`);
+            }
+            if (materialCalc && !materialCalc.stock_check.aggregates_available) {
+              shortages.push(`Aggregates: ${materialCalc.materials.aggregates.toFixed(2)} cft needed, ${materialCalc.current_stock.aggregates.toFixed(2)} available`);
+            }
+            if (materialCalc && !materialCalc.stock_check.sariya_available) {
+              shortages.push(`Steel: ${materialCalc.materials.sariya.toFixed(2)} kg needed, ${materialCalc.current_stock.sariya.toFixed(2)} available`);
+            }
+            throw new Error(`Insufficient stock for ${prodItem.product_name}:\n${shortages.join('\n')}`);
+          }
+        }
+        
         for (const prodItem of this.productionItems) {
           const productionData: ProductionData = {
             date: this.entryDate,

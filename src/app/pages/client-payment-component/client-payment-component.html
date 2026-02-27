@@ -80,7 +80,7 @@
                 <label>Collected By</label>
                 <select [(ngModel)]="receivedBy" class="form-control">
                   <option value="">Firm Cash</option>
-                  <option *ngFor="let p of partners" [value]="p.name">{{p.name}}</option>
+                  <option *ngFor="let p of partners" [value]="p.partner_name">{{p.partner_name}}</option>
                 </select>
               </div>
 

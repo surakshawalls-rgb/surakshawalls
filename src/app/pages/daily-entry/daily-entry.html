@@ -23,9 +23,9 @@
       <span class="alert-icon"></span>
       {{ successMessage }}
     </div>
-    <div class="error-alert" *ngIf="errorMessage">
-      <span class="alert-icon"></span>
-      {{ errorMessage }}
+    <div class="error-alert" *ngIf="errorMessage" style="white-space: pre-line; text-align: left;">
+      <span class="alert-icon">⚠️</span>
+      <div style="flex: 1;">{{ errorMessage }}</div>
     </div>
   </div>
 
@@ -102,9 +102,24 @@
                 <td>{{ item.quantity }}</td>
                 <td>
                   <div class="materials-breakdown" *ngIf="item.material_calc">
-                    <span>Cement: {{ item.material_calc.materials.cement | number:'1.2-2' }} bags</span>
-                    <span>Aggregates: {{ item.material_calc.materials.aggregates | number:'1.2-2' }} cft</span>
-                    <span>Sariya: {{ item.material_calc.materials.sariya | number:'1.2-2' }} kg</span>
+                    <span [class.stock-sufficient]="item.material_calc.stock_check.cement_available" 
+                          [class.stock-insufficient]="!item.material_calc.stock_check.cement_available">
+                      <span class="stock-icon">{{ item.material_calc.stock_check.cement_available ? '✅' : '❌' }}</span>
+                      Cement: {{ item.material_calc.materials.cement | number:'1.2-2' }} bags
+                      <span class="stock-info">(Available: {{ item.material_calc.current_stock.cement | number:'1.2-2' }})</span>
+                    </span>
+                    <span [class.stock-sufficient]="item.material_calc.stock_check.aggregates_available" 
+                          [class.stock-insufficient]="!item.material_calc.stock_check.aggregates_available">
+                      <span class="stock-icon">{{ item.material_calc.stock_check.aggregates_available ? '✅' : '❌' }}</span>
+                      Aggregates: {{ item.material_calc.materials.aggregates | number:'1.2-2' }} cft
+                      <span class="stock-info">(Available: {{ item.material_calc.current_stock.aggregates | number:'1.2-2' }})</span>
+                    </span>
+                    <span [class.stock-sufficient]="item.material_calc.stock_check.sariya_available" 
+                          [class.stock-insufficient]="!item.material_calc.stock_check.sariya_available">
+                      <span class="stock-icon">{{ item.material_calc.stock_check.sariya_available ? '✅' : '❌' }}</span>
+                      Sariya: {{ item.material_calc.materials.sariya | number:'1.2-2' }} kg
+                      <span class="stock-info">(Available: {{ item.material_calc.current_stock.sariya | number:'1.2-2' }})</span>
+                    </span>
                   </div>
                 </td>
                 <td class="amount-cell">{{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }}</td>

@@ -126,7 +126,7 @@ export class ClientPaymentComponent implements OnInit {
     try {
       // Save Revenue (as a sale transaction)
       if (this.totalBill > 0) {
-        const partnerId = this.receivedBy ? this.partners.find(p => p.name === this.receivedBy)?.id : undefined;
+        const partnerId = this.receivedBy ? this.partners.find(p => p.partner_name === this.receivedBy)?.id : undefined;
         
         const saleData: SaleData = {
           date: this.date,
@@ -144,7 +144,7 @@ export class ClientPaymentComponent implements OnInit {
         await this.salesService.createSale(saleData);
       } else if (this.paidAmount > 0) {
         // Save Payment only (against existing outstanding)
-        const partnerId = this.receivedBy ? this.partners.find(p => p.name === this.receivedBy)?.id : undefined;
+        const partnerId = this.receivedBy ? this.partners.find(p => p.partner_name === this.receivedBy)?.id : undefined;
         
         const payment: ClientPaymentRecord = {
           client_id: this.selectedClientId,
