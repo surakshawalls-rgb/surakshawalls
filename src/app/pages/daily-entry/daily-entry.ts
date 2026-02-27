@@ -219,9 +219,18 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   async loadPartners() {
     try {
-      const { data, error } = await this.db.queryView('partner_master');
+      const { data, error } = await this.db.supabase
+        .from('partner_master')
+        .select('id, partner_name, share_percentage');
       if (error) throw error;
-      this.partners = data || [];
+      
+      // Map database fields to interface fields
+      this.partners = (data || []).map((p: any) => ({
+        partner_id: p.id,
+        name: p.partner_name,
+        profit_share: p.share_percentage
+      }));
+      
       if (this.partners.length > 0) {
         this.paidByPartnerId = this.partners[0].partner_id;
         this.transportPaidBy = this.partners[0].partner_id;
@@ -562,7 +571,11 @@ export class UnifiedDailyEntryComponent implements OnInit {
   }
   
   getTotalDeliveryExpenses(): number {
-    return this.deliveryExpenses.reduce((sum, de) => sum + de.amount, 0);
+    // Calculate from input fields, not from deliveryExpenses array
+    const transport = this.transportExpense || 0;
+    const snacks = this.snacksExpense || 0;
+    const other = this.otherDeliveryExpense || 0;
+    return transport + snacks + other;
   }
   
   // ========== SECTION 4: OTHER EXPENSES ==========
@@ -634,6 +647,8 @@ export class UnifiedDailyEntryComponent implements OnInit {
   }
   
   async submitDailyEntry() {
+    console.log('Submit button clicked - starting submission');
+    
     // Validation
     if (!this.entryDate) {
       this.showError('Select entry date');
@@ -658,6 +673,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
       this.addDeliveryExpense(); // Ensure delivery expenses are added
     }
     
+    console.log('Validation passed, starting save...');
     this.saving = true;
     this.errorMessage = '';
     this.successMessage = '';
@@ -764,15 +780,24 @@ export class UnifiedDailyEntryComponent implements OnInit {
       }
       
       this.successMessage = `✅ Daily entry for ${this.entryDate} saved successfully!`;
+      console.log('Daily entry saved successfully');
       
       // Reset form after 2 seconds
       setTimeout(() => {
         this.resetForm();
       }, 2000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting daily entry:', error);
-      this.errorMessage = `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      
+      // Check for Supabase lock error
+      if (error?.message?.includes('NavigatorLockAcquireTimeoutError') || 
+          error?.name === 'NavigatorLockAcquireTimeoutError') {
+        this.errorMessage = `❌ Database lock error. Please close all other tabs and try again.`;
+      } else {
+        this.errorMessage = `❌ Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`;
+      }
     } finally {
       this.saving = false;
       this.cd.detectChanges();

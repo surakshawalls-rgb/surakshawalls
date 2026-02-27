@@ -663,6 +663,11 @@
                   class="form-control"></textarea>
       </div>
 
+      <!-- Debug Info (temporary) -->
+      <div style="padding: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 12px; font-size: 12px;">
+        Debug: Loading={{ loading }}, Saving={{ saving }}, Partners loaded={{ partners.length }}
+      </div>
+
       <!-- Submit Button -->
       <div class="submit-section">
         <button (click)="submitDailyEntry()" 
