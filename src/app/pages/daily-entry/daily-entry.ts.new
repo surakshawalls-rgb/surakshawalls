@@ -5,10 +5,9 @@ import { SupabaseService } from '../../services/supabase.service';
 import { ProductionService, WorkerWage, ProductionData } from '../../services/production.service';
 import { RecipeService, MaterialCalculation } from '../../services/recipe.service';
 import { WorkerService, Worker, WAGE_RATES } from '../../services/worker.service';
-import { SalesService, SaleData } from '../../services/sales.service';
+import { SalesService, SalesData } from '../../services/sales.service';
 import { ClientService, Client } from '../../services/client.service';
 import { InventoryService } from '../../services/inventory.service';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 // ========== INTERFACES ==========
 
@@ -51,8 +50,7 @@ interface OtherExpense {
 interface YardLossItem {
   product_name: string;
   quantity: number;
-  stage: 'stacking' | 'loading' | 'transport';
-  reason: string; // Production defect, Transport damage, Loading damage, etc.
+  reason: string;
 }
 
 interface Partner {
@@ -62,11 +60,11 @@ interface Partner {
 }
 
 @Component({
-  selector: 'app-daily-entry',
+  selector: 'app-unified-daily-entry',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
-  templateUrl: './daily-entry.html',
-  styleUrls: ['./daily-entry.css']
+  imports: [CommonModule, FormsModule],
+  templateUrl: './unified-daily-entry.html',
+  styleUrls: ['./unified-daily-entry.css']
 })
 export class UnifiedDailyEntryComponent implements OnInit {
 
@@ -75,7 +73,6 @@ export class UnifiedDailyEntryComponent implements OnInit {
   notes: string = '';
   
   // ========== SECTION 1: PRODUCTION ==========
-  hasProduction: boolean = false;
   productionItems: ProductionItem[] = [];
   selectedProduct: string = '';
   selectedProductVariant: string | null = null;
@@ -102,7 +99,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   clients: Client[] = [];
   filteredClients: Client[] = [];
   clientSearchTerm: string = '';
-  showClientResults: boolean = false;
+  showClientDropdown: boolean = false;
   showQuickAddClient: boolean = false;
   newClientName: string = '';
   newClientPhone: string = '';
@@ -134,13 +131,12 @@ export class UnifiedDailyEntryComponent implements OnInit {
   expenseAmount: number = 0;
   expensePaidBy: string = '';
   
-  // ========== SECTION 5: PRODUCTION/TRANSPORT DAMAGE ==========
-  hasYardLoss: boolean = false; // Tracks if any damage occurred
-  yardLossItems: YardLossItem[] = []; // List of damaged items
+  // ========== SECTION 5: YARD LOSS ==========
+  hasYardLoss: boolean = false;
+  yardLossItems: YardLossItem[] = [];
   selectedYardLossProduct: string = '';
   yardLossQuantity: number = 0;
-  yardLossStage: 'stacking' | 'loading' | 'transport' = 'loading';
-  yardLossReason: string = ''; // e.g., "Broken during loading", "Transport damage", "Production defect"
+  yardLossReason: string = '';
   
   // ========== PARTNERS ==========
   partners: Partner[] = [];
@@ -201,7 +197,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   async loadWorkers() {
     try {
-      this.availableWorkers = await this.workerService.getAllWorkers();
+      this.availableWorkers = await this.workerService.getActiveWorkers();
       if (this.availableWorkers.length > 0) {
         this.selectedWorkerId = this.availableWorkers[0].id;
       }
@@ -221,18 +217,9 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   async loadPartners() {
     try {
-      const { data, error } = await this.db.supabase
-        .from('partner_master')
-        .select('id, partner_name, share_percentage');
+      const { data, error } = await this.db.queryView('partner_master');
       if (error) throw error;
-      
-      // Map database fields to interface fields
-      this.partners = (data || []).map((p: any) => ({
-        partner_id: p.id,
-        name: p.partner_name,
-        profit_share: p.share_percentage
-      }));
-      
+      this.partners = data || [];
       if (this.partners.length > 0) {
         this.paidByPartnerId = this.partners[0].partner_id;
         this.transportPaidBy = this.partners[0].partner_id;
@@ -287,8 +274,8 @@ export class UnifiedDailyEntryComponent implements OnInit {
       );
       
       // Check if materials are available
-      if (!materialCalc) {
-        this.showError('Failed to calculate material requirements');
+      if (!materialCalc.sufficient_stock) {
+        this.showError(`Insufficient materials: ${materialCalc.missing_materials?.join(', ')}`);
         return;
       }
       
@@ -398,10 +385,12 @@ export class UnifiedDailyEntryComponent implements OnInit {
     
     try {
       this.loading = true;
-      const result = await this.workerService.addWorker(
-        this.newWorkerName.trim(),
-        this.newWorkerPhone.trim() || undefined
-      );
+      const result = await this.workerService.addWorker({
+        name: this.newWorkerName.trim(),
+        phone: this.newWorkerPhone.trim() || undefined,
+        daily_rate: WAGE_RATES['Full Day'],
+        status: 'active'
+      });
       
       if (result.success && result.worker) {
         await this.loadWorkers();
@@ -424,32 +413,22 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   // ========== SECTION 3: SALES ==========
   
-  searchClients() {
-    // Search with or without criteria
-    if (!this.clientSearchTerm || this.clientSearchTerm.trim() === '') {
-      // Show all clients if search is empty
-      this.filteredClients = [...this.clients];
+  filterClients() {
+    if (!this.clientSearchTerm) {
+      this.filteredClients = this.clients;
     } else {
-      const term = this.clientSearchTerm.toLowerCase().trim();
+      const term = this.clientSearchTerm.toLowerCase();
       this.filteredClients = this.clients.filter(c =>
         c.client_name.toLowerCase().includes(term) ||
         (c.phone && c.phone.includes(term))
       );
     }
-    this.showClientResults = true;
   }
   
   selectClient(client: Client) {
     this.selectedClientId = client.id;
     this.clientSearchTerm = client.client_name;
-    this.showClientResults = false;
-  }
-  
-  clearClientSearch() {
-    this.clientSearchTerm = '';
-    this.selectedClientId = '';
-    this.filteredClients = [];
-    this.showClientResults = false;
+    this.showClientDropdown = false;
   }
   
   async quickAddClient() {
@@ -462,9 +441,11 @@ export class UnifiedDailyEntryComponent implements OnInit {
       this.loading = true;
       const result = await this.clientService.addClient({
         client_name: this.newClientName.trim(),
-        phone: this.newClientPhone.trim() || undefined,
-        address: this.newClientAddress.trim() || undefined,
-        credit_limit: 50000
+        contact_number: this.newClientPhone.trim() || '',
+        address: this.newClientAddress.trim() || '',
+        city: '',
+        credit_limit: 50000,
+        status: 'active'
       });
       
       if (result.success && result.client) {
@@ -583,11 +564,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   }
   
   getTotalDeliveryExpenses(): number {
-    // Calculate from input fields, not from deliveryExpenses array
-    const transport = this.transportExpense || 0;
-    const snacks = this.snacksExpense || 0;
-    const other = this.otherDeliveryExpense || 0;
-    return transport + snacks + other;
+    return this.deliveryExpenses.reduce((sum, de) => sum + de.amount, 0);
   }
   
   // ========== SECTION 4: OTHER EXPENSES ==========
@@ -622,34 +599,19 @@ export class UnifiedDailyEntryComponent implements OnInit {
   // ========== SECTION 5: YARD LOSS ==========
   
   addYardLossItem() {
-    if (!this.selectedYardLossProduct || this.yardLossQuantity <= 0 || !this.yardLossStage) {
+    if (!this.selectedYardLossProduct || this.yardLossQuantity <= 0 || !this.yardLossReason.trim()) {
       this.showError('Fill all yard loss details');
-      return;
-    }
-    
-    // Validate reason field - must be meaningful (at least 5 characters)
-    const reason = this.yardLossReason.trim();
-    if (!reason || reason.length < 5) {
-      this.showError('Please enter a detailed reason (minimum 5 characters). Example: "Broken during loading", "Crack in production"');
-      return;
-    }
-    
-    // Reject generic placeholders
-    if (/^(na|n\/a|none|nil)$/i.test(reason)) {
-      this.showError('Please provide a specific reason for damage, not "NA" or "None"');
       return;
     }
     
     this.yardLossItems.push({
       product_name: this.selectedYardLossProduct,
       quantity: this.yardLossQuantity,
-      stage: this.yardLossStage,
-      reason: reason
+      reason: this.yardLossReason.trim()
     });
     
     this.showSuccess('Yard loss item added');
     this.yardLossQuantity = 0;
-    this.yardLossStage = 'loading';
     this.yardLossReason = '';
     this.cd.detectChanges();
   }
@@ -673,38 +635,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
     return this.totalRevenue - this.getGrandTotal();
   }
   
-  // Helper: Retry operation with exponential backoff on lock errors
-  private async retryOnLockError<T>(
-    operation: () => Promise<T>, 
-    maxRetries: number = 3,
-    delay: number = 500
-  ): Promise<T> {
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        return await operation();
-      } catch (error: any) {
-        const errorString = error?.toString() || '';
-        const errorMessage = error?.message || '';
-        const isLockError = errorString.includes('NavigatorLockAcquireTimeoutError') || 
-                           errorMessage.includes('NavigatorLockAcquireTimeoutError') ||
-                           error?.name === 'NavigatorLockAcquireTimeoutError';
-        
-        if (!isLockError || i === maxRetries - 1) {
-          throw error; // Not a lock error or final retry, throw it
-        }
-        
-        // Wait before retry with exponential backoff
-        console.log(`Lock error detected, retrying in ${delay}ms... (attempt ${i + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        delay *= 2; // Double delay for next retry
-      }
-    }
-    throw new Error('Max retries exceeded');
-  }
-  
   async submitDailyEntry() {
-    console.log('Submit button clicked - starting submission');
-    
     // Validation
     if (!this.entryDate) {
       this.showError('Select entry date');
@@ -729,65 +660,54 @@ export class UnifiedDailyEntryComponent implements OnInit {
       this.addDeliveryExpense(); // Ensure delivery expenses are added
     }
     
-    console.log('Validation passed, starting save...');
     this.saving = true;
     this.errorMessage = '';
     this.successMessage = '';
     
     try {
-      // 1. Save Production Entries (if any)
-      if (this.hasProduction && this.productionItems.length > 0) {
-        for (const prodItem of this.productionItems) {
-          const productionData: ProductionData = {
-            date: this.entryDate,
-            product_name: prodItem.product_name,
-            product_variant: prodItem.product_variant,
-            success_quantity: prodItem.quantity,
-            rejected_quantity: 0,
-            workers: this.workerEntries.map(we => ({
-              worker_id: we.worker.id,
-              worker_name: we.worker.name,
-              attendance_type: we.attendance_type,
-              wage_earned: we.wage_earned,
-              paid_today: we.paid_today,
-              paid_by_partner_id: we.paid_by_partner_id
-            })),
-            is_job_work: false,
-            notes: this.notes
-          };
-          
-          // Wrap in retry logic
-          const result = await this.retryOnLockError(async () => {
-            return await this.productionService.saveProduction(productionData);
-          });
-          
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to save production');
-          }
+      // 1. Save production entries
+      for (const prodItem of this.productionItems) {
+        const productionData: ProductionData = {
+          date: this.entryDate,
+          product_name: prodItem.product_name,
+          product_variant: prodItem.product_variant,
+          success_quantity: prodItem.quantity,
+          rejected_quantity: 0,
+          workers: this.workerEntries.map(we => ({
+            worker_id: we.worker.id,
+            attendance_type: we.attendance_type,
+            wage_earned: we.wage_earned,
+            paid_today: we.paid_today,
+            paid_by_partner_id: we.paid_by_partner_id
+          })),
+          is_job_work: false,
+          notes: this.notes
+        };
+        
+        const result = await this.productionService.saveProduction(productionData);
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to save production');
         }
       }
       
       // 2. Save sales transaction
       if (this.hasSalesToday && this.salesItems.length > 0) {
         for (const salesItem of this.salesItems) {
-          const salesData: SaleData = {
+          const salesData: SalesData = {
             date: this.entryDate,
             client_id: this.selectedClientId,
             product_name: salesItem.product_name,
-            product_variant: null,
             quantity: salesItem.quantity,
-            rate_per_unit: salesItem.rate,
+            rate: salesItem.rate,
             payment_type: this.amountReceived >= this.totalRevenue ? 'full' : this.amountReceived > 0 ? 'partial' : 'credit',
-            paid_amount: this.amountReceived,
-            collected_by_partner_id: this.partners[0]?.partner_id || undefined,
-            deposited_to_firm: true
+            payment_amount: this.amountReceived,
+            delivery_status: 'delivered',
+            deposited_to_firm: true,
+            collected_by_partner_id: this.partners[0]?.partner_id || null,
+            notes: this.notes
           };
           
-          // Wrap in retry logic
-          const result = await this.retryOnLockError(async () => {
-            return await this.salesService.createSale(salesData);
-          });
-          
+          const result = await this.salesService.saveSales(salesData);
           if (!result.success) {
             throw new Error(result.error || 'Failed to save sales');
           }
@@ -795,95 +715,64 @@ export class UnifiedDailyEntryComponent implements OnInit {
         
         // Record delivery expenses in firm_cash_ledger
         for (const deliveryExpense of this.deliveryExpenses) {
-          await this.retryOnLockError(async () => {
-            const { error } = await this.db.supabase
-              .from('firm_cash_ledger')
-              .insert([{
-                date: this.entryDate,
-                type: 'payment',
-                category: 'operational',
-                amount: deliveryExpense.amount,
-                partner_id: deliveryExpense.paid_by_partner_id || null,
-                deposited_to_firm: false,
-                description: `Delivery expense - ${deliveryExpense.category}`
+          await this.db.supabase
+            .from('firm_cash_ledger')
+            .insert([{
+              transaction_date: this.entryDate,
+              transaction_type: 'expense',
+              category: `delivery_${deliveryExpense.category.toLowerCase()}`,
+              amount: deliveryExpense.amount,
+              partner_id: deliveryExpense.paid_by_partner_id,
+              description: `Delivery expense - ${deliveryExpense.category}`
             }]);
-            if (error) throw error;
-          });
         }
       }
       
       // 3. Save other expenses
       for (const expense of this.otherExpenses) {
-        await this.retryOnLockError(async () => {
-          const { error } = await this.db.supabase
-            .from('firm_cash_ledger')
-            .insert([{
-              date: this.entryDate,
-              type: 'payment',
-              category: 'operational',
-              amount: expense.amount,
-              partner_id: expense.paid_by_partner_id || null,
-              deposited_to_firm: false,
-              description: expense.description || expense.category
-            }]);
-          if (error) throw error;
-        });
+        await this.db.supabase
+          .from('firm_cash_ledger')
+          .insert([{
+            transaction_date: this.entryDate,
+            transaction_type: 'expense',
+            category: expense.category.toLowerCase(),
+            amount: expense.amount,
+            partner_id: expense.paid_by_partner_id,
+            description: expense.description || expense.category
+          }]);
       }
       
-      // 4. Save production/transport damage (yard loss)
+      // 4. Save yard loss
       if (this.hasYardLoss && this.yardLossItems.length > 0) {
         for (const lossItem of this.yardLossItems) {
-          await this.retryOnLockError(async () => {
-            const { error } = await this.db.supabase
-              .from('yard_loss')
-              .insert([{
-                date: this.entryDate,
-                product_name: lossItem.product_name,
-                product_variant: null,
-                quantity: lossItem.quantity,
-                stage: lossItem.stage,
-                reason: lossItem.reason
-              }]);
-            if (error) throw error;
-          });
+          await this.db.supabase
+            .from('yard_loss')
+            .insert([{
+              date: this.entryDate,
+              product_name: lossItem.product_name,
+              quantity: lossItem.quantity,
+              reason: lossItem.reason
+            }]);
             
           // Deduct from finished goods inventory
-          const { error: rpcError } = await this.db.supabase.rpc('increment_finished_goods', {
+          await this.db.supabase.rpc('update_finished_goods_stock', {
             p_product_name: lossItem.product_name,
-            p_product_variant: null,
-            p_quantity: -lossItem.quantity
+            p_variant: null,
+            p_quantity_change: -lossItem.quantity
           });
-          if (rpcError) throw rpcError;
         }
       }
       
       this.successMessage = `✅ Daily entry for ${this.entryDate} saved successfully!`;
-      console.log('Daily entry saved successfully');
       
       // Reset form after 2 seconds
       setTimeout(() => {
         this.resetForm();
       }, 2000);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting daily entry:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      
-      // Check for Supabase lock error
-      const errorString = error?.toString() || '';
-      const errorMessage = error?.message || '';
-      
-      if (errorString.includes('NavigatorLockAcquireTimeoutError') || 
-          errorMessage.includes('NavigatorLockAcquireTimeoutError') ||
-          error?.name === 'NavigatorLockAcquireTimeoutError') {
-        this.errorMessage = `❌ Database lock error. Please:
-1. Close all other tabs with this app
-2. Press F12 → Application → Clear storage
-3. Click "Clear site data" and refresh
-Then try again.`;
-      } else {
-        this.errorMessage = `❌ Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`;
-      }
+      this.errorMessage = `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
     } finally {
       this.saving = false;
       this.cd.detectChanges();
@@ -893,7 +782,6 @@ Then try again.`;
   resetForm() {
     this.entryDate = new Date().toISOString().split('T')[0];
     this.notes = '';
-    this.hasProduction = false;
     this.productionItems = [];
     this.productQuantity = 0;
     this.workerEntries = [];
@@ -937,35 +825,6 @@ Then try again.`;
     }, 3000);
   }
   
-  clearDatabaseLock() {
-    console.log('Clearing Supabase locks...');
-    
-    // Clear all Supabase-related items from localStorage and sessionStorage
-    const keysToRemove: string[] = [];
-    
-    // Check localStorage
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.includes('supabase')) {
-        keysToRemove.push(key);
-      }
-    }
-    
-    // Remove items
-    keysToRemove.forEach(key => {
-      console.log('Removing:', key);
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
-    });
-    
-    this.showSuccess('Database locks cleared! Please reload the page (Ctrl+R)');
-    
-    // Reload after 2 seconds
-    setTimeout(() => {
-      window.location.reload();
-    }, 2000);
-  }
-  
   getPartnerName(partnerId: string): string {
     const partner = this.partners.find(p => p.partner_id === partnerId);
     return partner ? partner.name : 'Unknown';
@@ -975,4 +834,3 @@ Then try again.`;
     return `₹${amount.toFixed(2)}`;
   }
 }
-

@@ -84,6 +84,21 @@
                 </select>
               </div>
 
+              <div class="form-field" *ngIf="receivedBy">
+                <label>Payment Deposited to Firm?</label>
+                <div style="display: flex; align-items: center; gap: 16px; padding: 8px 0;">
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" name="depositedToFirm" [value]="true" [(ngModel)]="depositedToFirm" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 600;">✅ Yes, Deposited</span>
+                  </label>
+                  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="radio" name="depositedToFirm" [value]="false" [(ngModel)]="depositedToFirm" style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-weight: 600;">⏳ Not Yet</span>
+                  </label>
+                </div>
+                <small style="color: #6b7280; font-size: 0.85rem;">Track if partner has deposited the collected amount to firm account</small>
+              </div>
+
               <div class="form-field full-width">
                 <label>Remarks / Notes</label>
                 <textarea placeholder="Optional notes" [(ngModel)]="remarks" class="form-control" rows="2"></textarea>

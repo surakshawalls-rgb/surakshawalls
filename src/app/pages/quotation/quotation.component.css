@@ -1,0 +1,429 @@
+/* Quotation Component Styles */
+
+.quotation-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #F5F5F5;
+}
+
+/* Header Section */
+.header-section {
+  background: linear-gradient(135deg, #5D4037 0%, #795548 100%);
+  color: white;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.header-section h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.header-section p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+/* Container */
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Calculator Section */
+.calculator-section {
+  padding: 2rem 0;
+}
+
+.calculator-card {
+  margin-bottom: 2rem;
+}
+
+mat-card-header {
+  background: #F5F5F5;
+  padding: 1.5rem !important;
+  border-radius: 8px 8px 0 0;
+}
+
+mat-card-title {
+  font-size: 1.8rem !important;
+  font-weight: 600 !important;
+  color: #5D4037 !important;
+  margin: 0 !important;
+}
+
+mat-card-content {
+  padding: 2rem !important;
+}
+
+/* Product Type Selection */
+.product-type-group {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.product-type-group mat-radio-button {
+  flex: 1;
+  min-width: 200px;
+  padding: 1.5rem;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.product-type-group mat-radio-button:hover {
+  border-color: #5D4037;
+  background: #FFF8E1;
+}
+
+.product-type-group mat-radio-button mat-icon {
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  color: #5D4037;
+}
+
+/* Divider */
+.divider {
+  margin: 2rem 0 !important;
+}
+
+/* Calculator Form */
+.calculator-form {
+  margin: 2rem 0;
+}
+
+.calculator-form h3 {
+  font-size: 1.5rem;
+  color: #5D4037;
+  margin-bottom: 1rem;
+}
+
+.rate-info {
+  color: #1B5E20;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: #E8F5E9;
+  border-radius: 4px;
+  border-left: 4px solid #1B5E20;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+/* Checkbox Option */
+.checkbox-option {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #FFF3E0;
+  border-radius: 4px;
+}
+
+/* Info Box */
+.info-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #E3F2FD;
+  border-radius: 8px;
+  border-left: 4px solid #1565C0;
+  margin: 1.5rem 0;
+}
+
+.info-box mat-icon {
+  color: #1565C0;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.info-box div {
+  flex: 1;
+  line-height: 1.6;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.action-buttons button {
+  padding: 0.75rem 2rem !important;
+  font-size: 1.05rem !important;
+}
+
+/* Results Card */
+.results-card {
+  background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%) !important;
+  border: 2px solid #1B5E20;
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Cost Display */
+.cost-display {
+  text-align: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.cost-label {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.cost-amount {
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #1B5E20;
+  margin: 1rem 0;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.cost-note {
+  font-size: 0.9rem;
+  color: #E65100;
+  font-style: italic;
+}
+
+/* Details Section */
+.details-section {
+  margin: 2rem 0;
+}
+
+.details-section h4 {
+  font-size: 1.3rem;
+  color: #5D4037;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.detail-value {
+  color: #1B5E20;
+  font-weight: 600;
+}
+
+/* Result Actions */
+.result-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 2rem 0;
+}
+
+.result-actions button {
+  padding: 0.75rem 1.5rem !important;
+  font-size: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Contact Info Box */
+.contact-info-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  margin-top: 2rem;
+  border: 2px solid #FFB300;
+}
+
+.contact-info-box mat-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #FFB300;
+}
+
+.contact-info-box a {
+  color: #1B5E20;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.contact-info-box a:hover {
+  text-decoration: underline;
+}
+
+/* Pricing Reference */
+.pricing-reference {
+  margin-top: 2rem;
+  background: #FFF8E1 !important;
+}
+
+.reference-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #FFF3E0;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.reference-note mat-icon {
+  color: #E65100;
+  flex-shrink: 0;
+}
+
+.chart-info {
+  padding: 1rem;
+  background: white;
+  border-radius: 4px;
+}
+
+.chart-info strong {
+  color: #5D4037;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.chart-info ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.chart-info li {
+  padding: 0.3rem 0;
+  color: #666;
+}
+
+/* Why Choose Section */
+.why-choose {
+  background: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.why-choose h2 {
+  font-size: 2.5rem;
+  color: #5D4037;
+  margin-bottom: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.feature {
+  padding: 2rem;
+  border-radius: 8px;
+  background: #F5F5F5;
+  transition: all 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  background: #E8F5E9;
+}
+
+.feature mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #1B5E20;
+  margin-bottom: 1rem;
+}
+
+.feature h3 {
+  font-size: 1.2rem;
+  color: #5D4037;
+  margin: 1rem 0 0.5rem;
+}
+
+.feature p {
+  color: #666;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-section h1 {
+    font-size: 2rem;
+  }
+
+  .product-type-group {
+    flex-direction: column;
+  }
+
+  .product-type-group mat-radio-button {
+    min-width: unset;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cost-amount {
+    font-size: 2.5rem;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .result-actions button {
+    width: 100%;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+}

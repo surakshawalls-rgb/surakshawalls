@@ -10,7 +10,20 @@ export class SupabaseService {
   constructor() {
     this.supabase = createClient(
       'https://lcwjtwidxihclizliksd.supabase.co',
-      'sb_publishable_h161nq_O9ZsC30WbVTaxNg_x9DhrYIh'
+      'sb_publishable_h161nq_O9ZsC30WbVTaxNg_x9DhrYIh',
+      {
+        auth: {
+          persistSession: false,  // Disable session persistence to avoid locks
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+          storage: undefined  // Don't use localStorage at all
+        },
+        global: {
+          headers: {
+            'x-client-info': 'suraksha-walls-web'
+          }
+        }
+      }
     );
   }
 

@@ -1,0 +1,227 @@
+<div class="library-public-page">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>📚 Suraksha Library</h1>
+      <p class="hero-subtitle">Peaceful Study Environment for Your Success</p>
+      <p class="hero-description">
+        Premium study space with digital library access, perfect for competitive exam preparation.
+      </p>
+      <div class="hero-actions">
+        <button mat-raised-button color="primary" (click)="navigateToResources()">
+          <mat-icon>import_contacts</mat-icon>
+          Browse Digital Library
+        </button>
+        <button mat-raised-button color="accent" (click)="navigateToInquiry()">
+          <mat-icon>how_to_reg</mat-icon>
+          Inquire for Membership
+        </button>
+        <button *ngIf="!isLoggedIn" mat-stroked-button (click)="goToLogin()">
+          <mat-icon>login</mat-icon>
+          Student Login
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section">
+    <div class="container">
+      <h2 class="section-title">About Our Library</h2>
+      <div class="about-content">
+        <div class="about-text">
+          <p>
+            Suraksha Library provides a serene and focused environment for students preparing for 
+            competitive exams and academic studies. Our modern facilities and extensive digital 
+            resources make learning efficient and enjoyable.
+          </p>
+          <ul class="highlights">
+            <li><mat-icon>check_circle</mat-icon> Quiet & Distraction-Free Environment</li>
+            <li><mat-icon>check_circle</mat-icon> Extensive Digital Book Collection</li>
+            <li><mat-icon>check_circle</mat-icon> Flexible Membership Plans</li>
+            <li><mat-icon>check_circle</mat-icon> Experienced Library Staff</li>
+            <li><mat-icon>check_circle</mat-icon> Study Material & Resources</li>
+          </ul>
+        </div>
+        <div class="about-image">
+          <mat-icon class="large-icon">menu_book</mat-icon>
+          <p>Your Success is Our Mission</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Facilities Section -->
+  <section class="facilities-section">
+    <div class="container">
+      <h2 class="section-title">Our Facilities</h2>
+      <p class="section-subtitle">Everything you need for focused study</p>
+      
+      <div class="facilities-grid">
+        <mat-card *ngFor="let facility of facilities" class="facility-card">
+          <mat-icon>{{ facility.icon }}</mat-icon>
+          <h3>{{ facility.title }}</h3>
+          <p>{{ facility.description }}</p>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Digital Library Preview -->
+  <section class="digital-library-section">
+    <div class="container">
+      <h2 class="section-title">📚 Digital Library</h2>
+      <p class="section-subtitle">Access thousands of books and study materials</p>
+      
+      <div class="library-preview">
+        <div class="preview-content">
+          <mat-icon class="preview-icon">library_books</mat-icon>
+          <h3>Comprehensive Collection</h3>
+          <p>Browse our extensive collection of academic books, competitive exam materials, reference guides, and more.</p>
+          
+          <div class="categories-list">
+            <div class="category-chip">📖 Competitive Exams</div>
+            <div class="category-chip">📚 Academic Books</div>
+            <div class="category-chip">📝 Reference Materials</div>
+            <div class="category-chip">📄 Previous Year Papers</div>
+            <div class="category-chip">📰 Magazines & Journals</div>
+          </div>
+
+          <button mat-raised-button color="primary" (click)="navigateToResources()">
+            <mat-icon>search</mat-icon>
+            Browse Books Now (Public Access)
+          </button>
+          
+          <p class="login-note">
+            <mat-icon>info</mat-icon>
+            *Login required to borrow books and access full features
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Membership Plans -->
+  <section class="plans-section">
+    <div class="container">
+      <h2 class="section-title">Membership Plans</h2>
+      <p class="section-subtitle">Choose the plan that fits your need</p>
+      
+      <div class="plans-grid">
+        <mat-card *ngFor="let plan of plans" class="plan-card" [class.popular]="plan.popular">
+          <div *ngIf="plan.popular" class="popular-badge">MOST POPULAR</div>
+          <mat-card-header>
+            <mat-card-title>{{ plan.name }}</mat-card-title>
+            <mat-card-subtitle>{{ plan.duration }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="price">₹{{ plan.price }}</div>
+            <ul class="features">
+              <li *ngFor="let feature of plan.features">
+                <mat-icon>check</mat-icon>
+                {{ feature }}
+              </li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-raised-button [color]="plan.popular ? 'accent' : 'primary'" (click)="navigateToInquiry()">
+              Select Plan
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <div class="trial-note">
+        <mat-icon>local_offer</mat-icon>
+        <span>First-time visitors get a <strong>FREE Trial Day Pass!</strong></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="why-section">
+    <div class="container">
+      <h2 class="section-title">Why Students Choose Us?</h2>
+      <div class="reasons-grid">
+        <div class="reason-item">
+          <mat-icon color="primary">mood</mat-icon>
+          <h3>Peaceful Environment</h3>
+          <p>Completely noise-free zone for maximum concentration</p>
+        </div>
+        <div class="reason-item">
+          <mat-icon color="primary">schedule</mat-icon>
+          <h3>Flexible Timings</h3>
+          <p>Extended hours to suit your study schedule</p>
+        </div>
+        <div class="reason-item">
+          <mat-icon color="primary">attach_money</mat-icon>
+          <h3>Affordable Pricing</h3>
+          <p>Best value for money with multiple plan options</p>
+        </div>
+        <div class="reason-item">
+          <mat-icon color="primary">location_on</mat-icon>
+          <h3>Convenient Location</h3>
+          <p>Easily accessible with parking facility</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Start Your Study Journey?</h2>
+      <p>Visit us today or book your trial session</p>
+      <div class="cta-actions">
+        <button mat-raised-button color="primary" size="large" (click)="navigateToInquiry()">
+          <mat-icon>app_registration</mat-icon>
+          Register Now
+        </button>
+        <button mat-raised-button color="accent" size="large" (click)="contactWhatsApp()">
+          <mat-icon>chat</mat-icon>
+          Chat on WhatsApp
+        </button>
+        <button mat-stroked-button (click)="callNow()">
+          <mat-icon>call</mat-icon>
+          Call: 9506629814
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Info -->
+  <section class="contact-info">
+    <div class="container">
+      <div class="info-grid">
+        <div class="info-item">
+          <mat-icon>location_on</mat-icon>
+          <div>
+            <h4>Address</h4>
+            <p>Shukulpur, Suriyawan<br>Bhadohi - 221404, UP</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>phone</mat-icon>
+          <div>
+            <h4>Phone</h4>
+            <p>+91 9506629814<br>+91 8090272727</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>access_time</mat-icon>
+          <div>
+            <h4>Timings</h4>
+            <p>Mon-Sat: 6 AM - 10 PM<br>Sunday: 6 AM - 8 PM</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>email</mat-icon>
+          <div>
+            <h4>Email</h4>
+            <p>surakshawalls&#64;gmail.com</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

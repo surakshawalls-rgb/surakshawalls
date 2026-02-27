@@ -23,6 +23,8 @@ interface PaymentDialog {
   paymentSource: 'company' | 'client_revenue';
   paymentDate: string;
   notes: string;
+  collectedBy?: string; // 'firm' or partner name
+  depositedToFirm?: boolean;
 }
 
 interface PassbookDialog {
@@ -51,6 +53,7 @@ export class ReportsDashboardComponent implements OnInit {
   // Clients data
   clientsWithOutstanding: ClientOutstanding[] = [];
   allClients: Client[] = [];
+  partners: any[] = [];
   
   // Company overview data
   companyStats = {
@@ -75,7 +78,9 @@ export class ReportsDashboardComponent implements OnInit {
     paymentAmount: 0,
     paymentSource: 'company',
     paymentDate: new Date().toISOString().split('T')[0],
-    notes: ''
+    notes: '',
+    collectedBy: 'firm',
+    depositedToFirm: true
   };
   
   passbookDialog: PassbookDialog = {
@@ -100,6 +105,7 @@ export class ReportsDashboardComponent implements OnInit {
   ) {}
   
   async ngOnInit() {
+   await this.loadPartnersList();
    await this.loadWorkersData();
   }
   
@@ -140,11 +146,28 @@ export class ReportsDashboardComponent implements OnInit {
       this.loading = true;
       this.clientsWithOutstanding = await this.clientPaymentService.getClientsWithOutstanding();
       this.allClients = await this.clientService.getAllClients();
+      if (this.partners.length === 0) {
+        await this.loadPartnersList();
+      }
     } catch (error: any) {
       this.errorMessage = 'Failed to load clients data: ' + error.message;
     } finally {
       this.loading = false;
       this.cd.detectChanges();
+    }
+  }
+
+  async loadPartnersList() {
+    try {
+      const { data, error } = await this.supabase.supabase
+        .from('partner_master')
+        .select('id, partner_name')
+        .order('partner_name');
+      
+      if (error) throw error;
+      this.partners = data || [];
+    } catch (error: any) {
+      console.error('Failed to load partners:', error);
     }
   }
   
@@ -154,7 +177,7 @@ export class ReportsDashboardComponent implements OnInit {
       const { data, error } = await this.supabase.supabase
         .from('partner_master')
         .select('*')
-        .order('name');
+        .order('partner_name');
       
       if (error) throw error;
       this.partnerInfo = data || [];
@@ -182,37 +205,40 @@ export class ReportsDashboardComponent implements OnInit {
       this.companyStats.totalWorkerOutstanding = workers.reduce((sum: number, w: any) => sum + w.outstanding, 0);
       this.companyStats.totalClientOutstanding = clients.reduce((sum: number, c: any) => sum + c.outstanding, 0);
       
-      // Material stock value
+      // Material stock value (raw_materials_master has: current_stock, unit_cost)
       this.materialStock = materials;
       this.companyStats.totalMaterialStock = materials.reduce((sum: number, m: any) => 
-        sum + (m.quantity_in_stock * (m.average_purchase_rate || 0)), 0
+        sum + ((m.current_stock || 0) * (m.unit_cost || 0)), 0
       );
       
-      // Finished stock value
+      // Finished stock value (finished_goods_inventory has: current_stock, unit_cost)
       this.finishedStock = finished;
       this.companyStats.totalFinishedStock = finished.reduce((sum: number, f: any) => 
-        sum + (f.total_quantity * (f.estimated_cost_per_unit || 100)), 0
+        sum + ((f.current_stock || 0) * (f.unit_cost || 0)), 0
       );
       
-      // Get revenue and expenses from firm_cash_ledger
+      // Get revenue and expenses from firm_cash_ledger (type: 'receipt' or 'payment')
       const { data: cashLedger } = await this.supabase.supabase
         .from('firm_cash_ledger')
-        .select('transaction_type, amount');
+        .select('type, amount');
       
       if (cashLedger) {
+        // Revenue = receipts (sales, partner contributions)
         this.companyStats.totalRevenue = cashLedger
-          .filter(t => t.transaction_type === 'CREDIT')
-          .reduce((sum, t) => sum + t.amount, 0);
+          .filter((t: any) => t.type === 'receipt')
+          .reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
         
+        // Expenses = payments (wages, withdrawals, purchases)
         this.companyStats.totalExpenses = cashLedger
-          .filter(t => t.transaction_type === 'DEBIT')
-          .reduce((sum, t) => sum + t.amount, 0);
+          .filter((t: any) => t.type === 'payment')
+          .reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
       }
       
       this.companyStats.netProfit = this.companyStats.totalRevenue - this.companyStats.totalExpenses;
       
     } catch (error: any) {
       this.errorMessage = 'Failed to load company overview: ' + error.message;
+      console.error('[ReportsDashboard] loadCompanyOverview error:', error);
     } finally {
       this.loading = false;
       this.cd.detectChanges();
@@ -247,7 +273,9 @@ export class ReportsDashboardComponent implements OnInit {
       paymentAmount: mode === 'full' ? client.outstanding : 0,
       paymentSource: 'company',
       paymentDate: new Date().toISOString().split('T')[0],
-      notes: ''
+      notes: '',
+      collectedBy: 'firm',
+      depositedToFirm: true
     };
   }
   
@@ -339,17 +367,25 @@ export class ReportsDashboardComponent implements OnInit {
   
   private async collectFromClient() {
     if (!this.paymentDialog.clientId) return;
-    
+
+    // Get partner ID if collected by partner
+    let collectedByPartnerId: string | undefined;
+    if (this.paymentDialog.collectedBy && this.paymentDialog.collectedBy !== 'firm') {
+      const partner = this.partners.find(p => p.partner_name === this.paymentDialog.collectedBy);
+      collectedByPartnerId = partner?.id;
+    }
+
     // Record client payment
     const result = await this.clientPaymentService.recordPayment({
       client_id: this.paymentDialog.clientId,
       payment_date: this.paymentDialog.paymentDate,
       amount_paid: this.paymentDialog.paymentAmount,
       payment_mode: 'cash',
-      deposited_to_firm: true,
+      collected_by_partner_id: collectedByPartnerId,
+      deposited_to_firm: this.paymentDialog.depositedToFirm ?? true,
       notes: this.paymentDialog.notes || 'Collection via Reports Dashboard'
     });
-    
+
     if (!result.success) {
       throw new Error(result.error || 'Failed to record payment');
     }

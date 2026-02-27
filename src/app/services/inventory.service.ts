@@ -291,16 +291,26 @@ export class InventoryService {
     const inventory = await this.getInventory();
     const materials = await this.getMaterialsStock();
 
+    const finishedGoodsQty = inventory.reduce((sum, item) => sum + item.current_stock, 0);
+    const finishedGoodsValue = inventory.reduce((sum, item) => 
+      sum + (item.current_stock * item.unit_cost), 0
+    );
+    const materialsValue = materials.reduce((sum, item) => 
+      sum + (item.current_stock * item.unit_cost), 0
+    );
+
     return {
-      finished_goods_value: inventory.reduce((sum, item) => 
-        sum + (item.current_stock * item.unit_cost), 0
-      ),
-      raw_materials_value: materials.reduce((sum, item) => 
-        sum + (item.current_stock * item.unit_cost), 0
-      ),
-      total_inventory_value: 
-        inventory.reduce((sum, item) => sum + (item.current_stock * item.unit_cost), 0) +
-        materials.reduce((sum, item) => sum + (item.current_stock * item.unit_cost), 0)
+      // Finished goods
+      total_finished_goods_qty: finishedGoodsQty,
+      total_finished_goods_value: finishedGoodsValue,
+      
+      // Raw materials
+      total_materials_value: materialsValue,
+      
+      // Legacy fields (for backwards compatibility)
+      finished_goods_value: finishedGoodsValue,
+      raw_materials_value: materialsValue,
+      total_inventory_value: finishedGoodsValue + materialsValue
     };
   }
 

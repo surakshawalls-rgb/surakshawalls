@@ -81,56 +81,67 @@ export class DashboardComponent implements OnInit {
     this.cd.detectChanges();
 
     try {
-      console.log('[DashboardComponent] loadDashboard - start');
-      // Load client data
-      const clients = await this.db.getClients();
-      this.clients = clients.data || [];
-      console.log('[DashboardComponent] clients ->', this.clients);
+      // Load all data in parallel for better performance
+      const [
+        clientsResult,
+        clientsDue,
+        cashBalance,
+        partnerWallets,
+        prodVsSales,
+        revenue,
+        payment,
+        labour,
+        pe,
+        inventory
+      ] = await Promise.all([
+        this.db.getClients().catch(err => { console.error('Error loading clients:', err); return { data: [] }; }),
+        this.clientDueService.getAllClientsDue().catch(err => { console.error('Error loading client dues:', err); return []; }),
+        this.companyCashService.getCurrentBalance().catch(err => { console.error('Error loading cash balance:', err); return { balance: 0, labourCost: 0, partnerExpenseCost: 0, partnerWithdrawalAmount: 0 }; }),
+        this.partnerWalletService.getAllPartnersWallet().catch(err => { console.error('Error loading partner wallets:', err); return []; }),
+        this.stockSalesService.getProductionVsSales().catch(err => { console.error('Error loading prod vs sales:', err); return { production: {}, sales: {}, remaining: {} }; }),
+        this.db.getRevenue().catch(err => { console.error('Error loading revenue:', err); return { data: [] }; }),
+        this.db.getPayments().catch(err => { console.error('Error loading payments:', err); return { data: [] }; }),
+        this.db.getLabour().catch(err => { console.error('Error loading labour:', err); return { data: [] }; }),
+        this.db.getPartnerExpense().catch(err => { console.error('Error loading partner expense:', err); return { data: [] }; }),
+        this.inventoryService.getInventory().catch(err => { console.error('Error loading inventory:', err); return []; })
+      ]);
 
-      // Load financial data from new services
-      const clientsDue = await this.clientDueService.getAllClientsDue();
-      const cashBalance = await this.companyCashService.getCurrentBalance();
-      const partnerWallets = await this.partnerWalletService.getAllPartnersWallet();
-      const prodVsSales = await this.stockSalesService.getProductionVsSales();
-
-      console.log('[DashboardComponent] clientsDue ->', clientsDue);
-      console.log('[DashboardComponent] cashBalance ->', cashBalance);
-      console.log('[DashboardComponent] partnerWallets ->', partnerWallets);
-      console.log('[DashboardComponent] prodVsSales ->', prodVsSales);
+      // Set basic client data
+      this.clients = clientsResult.data || [];
+      console.log('[Dashboard] Clients loaded:', this.clients.length);
 
       // Set new financial data
-      this.dueLedger = clientsDue;
-      this.partnerWallets = partnerWallets;
+      this.dueLedger = clientsDue as any[];
+      this.partnerWallets = partnerWallets as any[];
       this.productionVsSales = prodVsSales;
+      console.log('[Dashboard] Due Ledger:', this.dueLedger);
 
-      // Calculate totals
-      this.totalRevenue = clientsDue.reduce((sum: number, item: any) => sum + item.totalBilled, 0);
-      this.totalReceived = clientsDue.reduce((sum: number, item: any) => sum + item.totalPaid, 0);
-      this.totalDue = clientsDue.reduce((sum: number, item: any) => sum + item.due, 0);
+      // Calculate totals from new services
+      this.totalRevenue = (clientsDue as any[]).reduce((sum: number, item: any) => sum + (item.totalBilled || 0), 0);
+      this.totalReceived = (clientsDue as any[]).reduce((sum: number, item: any) => sum + (item.totalPaid || 0), 0);
+      this.totalDue = (clientsDue as any[]).reduce((sum: number, item: any) => sum + (item.due || 0), 0);
 
-      this.cashBalance = cashBalance.balance;
-      this.totalLabourCost = cashBalance.labourCost;
-      this.totalPartnerExpense = cashBalance.partnerExpenseCost;
-      this.totalPartnerWithdrawal = cashBalance.partnerWithdrawalAmount;
+      console.log('[Dashboard] Calculated Totals:', {
+        totalRevenue: this.totalRevenue,
+        totalReceived: this.totalReceived,
+        totalDue: this.totalDue
+      });
+
+      this.cashBalance = cashBalance.balance || 0;
+      this.totalLabourCost = cashBalance.labourCost || 0;
+      this.totalPartnerExpense = cashBalance.partnerExpenseCost || 0;
+      this.totalPartnerWithdrawal = cashBalance.partnerWithdrawalAmount || 0;
 
       // Calculate Profit/Loss
       this.profitLoss = this.totalReceived - (this.totalLabourCost + this.totalPartnerExpense);
 
-      // Load legacy data for backward compatibility with existing templates
-      const revenue = await this.db.getRevenue();
-      const payment = await this.db.getPayments();
-      const labour = await this.db.getLabour();
-      const pe = await this.db.getPartnerExpense();
-
-      this.revenueTotal = this.sum(revenue.data, 'total_bill');
-      this.paymentTotal = this.sum(payment.data, 'amount_paid');
+      // Legacy totals for backward compatibility
+      this.revenueTotal = this.sum(revenue.data, 'total_bill') || this.sum(revenue.data, 'bill_amount');
+      this.paymentTotal = this.sum(payment.data, 'amount_paid') || this.sum(payment.data, 'amount');
       this.labourTotal = this.sum(labour.data, 'amount');
       this.partnerExpenseTotal = this.sum(pe.data, 'amount');
 
-      // Production stock - Load from finished_goods_inventory (new system)
-      const inventory = await this.inventoryService.getInventory();
-      console.log('[DashboardComponent] inventory ->', inventory);
-
+      // Production stock from inventory
       this.production = {
         fencing_pole: 0,
         plain_plate: 0,
@@ -139,27 +150,18 @@ export class DashboardComponent implements OnInit {
         biscuit_plate: 0
       };
 
-      inventory.forEach(item => {
-        const productKey = item.product_name.toLowerCase();
-        if (productKey === 'fencing_pole') {
-          this.production.fencing_pole = item.current_stock;
-        } else if (productKey === 'plain_plate') {
-          this.production.plain_plate = item.current_stock;
-        } else if (productKey === 'jumbo_pillar') {
-          this.production.jumbo_pillar = item.current_stock;
-        } else if (productKey === 'round_plate') {
-          this.production.round_plate = item.current_stock;
-        } else if (productKey === 'biscuit_plate') {
-          this.production.biscuit_plate = item.current_stock;
+      // Map inventory to production object
+      inventory.forEach((item: any) => {
+        const productKey = item.product_name?.toLowerCase();
+        if (productKey && this.production.hasOwnProperty(productKey)) {
+          this.production[productKey] = item.current_stock || 0;
         }
       });
-
-      console.log('[DashboardComponent] production stock from inventory ->', this.production);
 
       this.loading = false;
       this.cd.detectChanges();
     } catch (error) {
-      console.error('[DashboardComponent] Error loading dashboard:', error);
+      console.error('[DashboardComponent] Critical error loading dashboard:', error);
       this.loading = false;
       this.cd.detectChanges();
     }

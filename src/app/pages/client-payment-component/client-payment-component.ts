@@ -67,6 +67,7 @@ export class ClientPaymentComponent implements OnInit {
   paidAmount = 0;
   paymentMode = 'cash';
   receivedBy = '';
+  depositedToFirm = true; // Default to deposited
   remarks = '';
   
   // Cheque/UPI details
@@ -137,7 +138,7 @@ export class ClientPaymentComponent implements OnInit {
           payment_type: this.paidAmount >= this.totalBill ? 'full' : this.paidAmount > 0 ? 'partial' : 'credit',
           paid_amount: this.paidAmount,
           collected_by_partner_id: partnerId,
-          deposited_to_firm: this.paymentMode !== 'cash',
+          deposited_to_firm: this.receivedBy ? this.depositedToFirm : true, // Use form field if partner, else true
           notes: this.remarks || undefined
         };
         await this.salesService.createSale(saleData);
@@ -153,7 +154,7 @@ export class ClientPaymentComponent implements OnInit {
           cheque_number: this.chequeNumber || undefined,
           upi_transaction_id: this.upiTransactionId || undefined,
           collected_by_partner_id: partnerId,
-          deposited_to_firm: this.paymentMode !== 'cash',
+          deposited_to_firm: this.receivedBy ? this.depositedToFirm : true, // Use form field if partner, else true
           notes: this.remarks || undefined
         };
         
@@ -199,9 +200,13 @@ export class ClientPaymentComponent implements OnInit {
     this.siteName = '';
     this.totalBill = 0;
     this.paidAmount = 0;
+    this.paymentMode = 'cash';
+    this.receivedBy = '';
+    this.depositedToFirm = true;
     this.remarks = '';
     this.chequeNumber = '';
     this.upiTransactionId = '';
+    this.selectedClientId = null;
   }
 
   async loadDueLedger() {

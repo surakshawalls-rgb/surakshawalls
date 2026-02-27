@@ -1,21 +1,15 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class PartnerWalletService {
-  private supabase: SupabaseClient;
 
-  constructor() {
-    this.supabase = createClient(
-      'https://lcwjtwidxihclizliksd.supabase.co',
-      'sb_publishable_h161nq_O9ZsC30WbVTaxNg_x9DhrYIh'
-    );
-  }
+  constructor(private supabaseService: SupabaseService) {}
 
   // Calculate wallet balance for a single partner
   async getPartnerWallet(partnerName: string) {
     // Get partner_id from partner_master
-    const { data: partnerData } = await this.supabase
+    const { data: partnerData } = await this.supabaseService.supabase
       .from('partner_master')
       .select('id')
       .eq('partner_name', partnerName)
@@ -24,6 +18,8 @@ export class PartnerWalletService {
     if (!partnerData) {
       return {
         partnerName,
+        totalCollected: 0,
+        totalDeposited: 0,
         totalExpense: 0,
         totalWithdrawal: 0,
         balance: 0,
@@ -32,9 +28,29 @@ export class PartnerWalletService {
     }
 
     const partnerId = partnerData.id;
+    console.log('[PartnerWalletService] Partner:', partnerName, 'ID:', partnerId);
 
-    // Get total contributions (money put in by partner)
-    const expensesResponse = await this.supabase
+    // Get money collected by partner from clients (from sales_transactions)
+    const collectionsResponse = await this.supabaseService.supabase
+      .from('sales_transactions')
+      .select('paid_amount, deposited_to_firm')
+      .eq('collected_by_partner_id', partnerId);
+
+    console.log('[PartnerWalletService] Collections response:', collectionsResponse);
+
+    const collections = collectionsResponse.data || [];
+    const totalCollected = collections.reduce((sum: number, c: any) => sum + (c.paid_amount || 0), 0);
+    const totalDeposited = collections
+      .filter((c: any) => c.deposited_to_firm === true)
+      .reduce((sum: number, c: any) => sum + (c.paid_amount || 0), 0);
+    
+    console.log('[PartnerWalletService]', partnerName, '- Total Collected:', totalCollected, 'Deposited:', totalDeposited);
+    
+    // Money still in partner's pocket (collected but not deposited)
+    const collectionBalance = totalCollected - totalDeposited;
+
+    // Get total contributions (money put in by partner from their own funds)
+    const expensesResponse = await this.supabaseService.supabase
       .from('firm_cash_ledger')
       .select('amount')
       .eq('partner_id', partnerId)
@@ -45,7 +61,7 @@ export class PartnerWalletService {
     const totalExpense = expenses.reduce((sum: number, e: any) => sum + (e.amount || 0), 0);
 
     // Get total withdrawals (money taken out by partner)
-    const withdrawalsResponse = await this.supabase
+    const withdrawalsResponse = await this.supabaseService.supabase
       .from('firm_cash_ledger')
       .select('amount')
       .eq('partner_id', partnerId)
@@ -55,31 +71,36 @@ export class PartnerWalletService {
     const withdrawals = withdrawalsResponse.data || [];
     const totalWithdrawal = withdrawals.reduce((sum: number, w: any) => sum + (w.amount || 0), 0);
 
-    const balance = totalExpense - totalWithdrawal;
+    // Partner Wallet = Money collected but not deposited
+    // (Contributions and withdrawals are separate - they're firm transactions)
+    const balance = collectionBalance;
 
     return {
       partnerName,
+      totalCollected,
+      totalDeposited,
       totalExpense,
       totalWithdrawal,
       balance,
-      status: balance > 0 ? 'OWED' : balance < 0 ? 'OWING' : 'SETTLED'
+      status: balance > 0 ? 'HOLDING' : 'SETTLED'
     };
   }
 
   // Get all partners' wallet balances
   async getAllPartnersWallet() {
     // Get all partners from partner_master
-    const partnersResponse = await this.supabase
+    const partnersResponse = await this.supabaseService.supabase
       .from('partner_master')
-      .select('partner_name')
+      .select('id, partner_name')
       .then(res => res.data || []);
 
-    const partnerSet = new Set<string>();
-    partnersResponse.forEach((p: any) => partnerSet.add(p.partner_name));
+    console.log('[PartnerWalletService] All partners from DB:', partnersResponse);
 
     const partnerWallets = await Promise.all(
-      Array.from(partnerSet).map(partnerName => this.getPartnerWallet(partnerName))
+      partnersResponse.map((p: any) => this.getPartnerWallet(p.partner_name))
     );
+
+    console.log('[PartnerWalletService] Calculated wallets:', partnerWallets);
 
     return partnerWallets.sort((a, b) => b.balance - a.balance);
   }
@@ -87,7 +108,7 @@ export class PartnerWalletService {
   // Get partner wallet history
   async getPartnerWalletHistory(partnerName: string) {
     // Get partner_id
-    const { data: partnerData } = await this.supabase
+    const { data: partnerData } = await this.supabaseService.supabase
       .from('partner_master')
       .select('id')
       .eq('partner_name', partnerName)
@@ -104,7 +125,7 @@ export class PartnerWalletService {
     const partnerId = partnerData.id;
 
     // Get contributions
-    const expensesResponse = await this.supabase
+    const expensesResponse = await this.supabaseService.supabase
       .from('firm_cash_ledger')
       .select('date, description, amount')
       .eq('partner_id', partnerId)
@@ -113,7 +134,7 @@ export class PartnerWalletService {
       .order('date', { ascending: false });
 
     // Get withdrawals
-    const withdrawalsResponse = await this.supabase
+    const withdrawalsResponse = await this.supabaseService.supabase
       .from('firm_cash_ledger')
       .select('date, description, amount')
       .eq('partner_id', partnerId)
@@ -152,15 +173,15 @@ export class PartnerWalletService {
   // Get partner summary for reporting
   async getPartnerSummary(from?: string, to?: string) {
     // Get all partners
-    const { data: partners } = await this.supabase
+    const { data: partners } = await this.supabaseService.supabase
       .from('partner_master')
       .select('id, partner_name');
 
     const partnerMap = new Map<string, { id: string; name: string }>();
     (partners || []).forEach(p => partnerMap.set(p.id, { id: p.id, name: p.partner_name }));
 
-    let expensesQuery = this.supabase.from('firm_cash_ledger').select('partner_id, amount').eq('category', 'partner_contribution').eq('type', 'receipt');
-    let withdrawalsQuery = this.supabase.from('firm_cash_ledger').select('partner_id, amount').eq('category', 'partner_withdrawal').eq('type', 'payment');
+    let expensesQuery = this.supabaseService.supabase.from('firm_cash_ledger').select('partner_id, amount').eq('category', 'partner_contribution').eq('type', 'receipt');
+    let withdrawalsQuery = this.supabaseService.supabase.from('firm_cash_ledger').select('partner_id, amount').eq('category', 'partner_withdrawal').eq('type', 'payment');
 
     if (from && to) {
       expensesQuery = expensesQuery.gte('date', from).lte('date', to);

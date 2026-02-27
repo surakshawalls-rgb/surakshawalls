@@ -133,15 +133,15 @@ export class ProductionService {
         },
         { 
           production_entry_id: production.id,
-          material_name: 'Aggregates', 
+          material_name: 'Gitti (Aggregates)', 
           quantity_used: calc.materials.aggregates, 
-          unit_cost: materialCosts['Aggregates']?.unit_cost || 0
+          unit_cost: materialCosts['Gitti (Aggregates)']?.unit_cost || 0
         },
         { 
           production_entry_id: production.id,
-          material_name: 'Sariya (4mm)', 
+          material_name: 'Sariya (Steel)', 
           quantity_used: calc.materials.sariya, 
-          unit_cost: materialCosts['Sariya (4mm)']?.unit_cost || 0
+          unit_cost: materialCosts['Sariya (Steel)']?.unit_cost || 0
         }
       ];
 
@@ -154,8 +154,8 @@ export class ProductionService {
       // 6. Deduct from raw materials (using database function)
       await this.deductMaterials([
         { name: 'Cement', quantity: calc.materials.cement },
-        { name: 'Aggregates', quantity: calc.materials.aggregates },
-        { name: 'Sariya (4mm)', quantity: calc.materials.sariya }
+        { name: 'Gitti (Aggregates)', quantity: calc.materials.aggregates },
+        { name: 'Sariya (Steel)', quantity: calc.materials.sariya }
       ]);
 
       // 7. Add to finished goods (only success quantity, using database function)
@@ -237,6 +237,7 @@ export class ProductionService {
         wage_earned: wageData.wage_earned,
         paid_today: wageData.paid_today || 0,
         payment_mode: wageData.paid_today > 0 ? 'cash' : 'unpaid',
+        paid_by_partner_id: wageData.paid_by_partner_id || null,
         notes: wageData.notes
       });
 
@@ -266,6 +267,7 @@ export class ProductionService {
           type: 'payment',
           amount: wageData.paid_today,
           category: 'wage',
+          partner_id: wageData.paid_by_partner_id || null,
           description: `Wage payment to ${wageData.worker_name}`,
           deposited_to_firm: false
         });
@@ -301,8 +303,8 @@ export class ProductionService {
       // 2. Restore materials
       await this.restoreMaterials([
         { name: 'Cement', quantity: production.cement_used },
-        { name: 'Aggregates', quantity: production.aggregates_used },
-        { name: 'Sariya (4mm)', quantity: production.sariya_used }
+        { name: 'Gitti (Aggregates)', quantity: production.aggregates_used },
+        { name: 'Sariya (Steel)', quantity: production.sariya_used }
       ]);
 
       // 3. Remove from finished goods (negative quantity to subtract)

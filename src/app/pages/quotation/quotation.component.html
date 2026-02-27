@@ -1,0 +1,231 @@
+<div class="quotation-container">
+  <!-- Hero Header -->
+  <div class="hero-header">
+    <mat-icon class="hero-icon">calculate</mat-icon>
+    <h1>Instant Quotation Calculator</h1>
+    <p>Get accurate cost estimates for Boundary Walls or Fencing in seconds</p>
+  </div>
+
+  <!-- Calculator Card -->
+  <mat-card class="calculator-card">
+    <mat-card-content>
+      <!-- Step 1: Choose Type -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>category</mat-icon>
+          Step 1: Choose Product Type
+        </h3>
+        <mat-radio-group [(ngModel)]="calculationType" (change)="resetCalculator()">
+          <mat-radio-button value="boundary" class="radio-option">
+            <div class="radio-content">
+              <strong>🏗️ Precast Boundary Wall</strong>
+              <span>Durable precast concrete panels - ₹85/sq ft</span>
+            </div>
+          </mat-radio-button>
+          <mat-radio-button value="fencing" class="radio-option">
+            <div class="radio-content">
+              <strong>🚧 Barbed Wire Fencing</strong>
+              <span>RCC poles with barbed wire - Economical solution</span>
+            </div>
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- Step 2: Land Size -->
+      <div class="form-section">
+        <h3>
+          <mat-icon>square_foot</mat-icon>
+          Step 2: Select Land Size
+        </h3>
+        
+        <div class="land-size-selector">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Land Size (बिस्वा/Biswa)</mat-label>
+            <mat-select [(ngModel)]="landSize">
+              <mat-option *ngFor="let size of availableLandSizes" [value]="size">
+                {{size}} biswa ({{getPerimeter(size)}} ft perimeter)
+              </mat-option>
+            </mat-select>
+            <mat-hint>Select your land size</mat-hint>
+          </mat-form-field>
+
+          <div class="info-chip">
+            <mat-icon>info</mat-icon>
+            <span><strong>Perimeter:</strong> {{getPerimeter(landSize)}} feet (approximately)</span>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- Step 3: Additional Options -->
+      <div class="form-section" *ngIf="calculationType === 'boundary'">
+        <h3>
+          <mat-icon>height</mat-icon>
+          Step 3: Select Wall Height
+        </h3>
+        
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Wall Height (फीट/Feet)</mat-label>
+          <mat-select [(ngModel)]="wallHeight">
+            <mat-option *ngFor="let height of availableHeights" [value]="height">
+              {{height}} feet
+            </mat-option>
+          </mat-select>
+          <mat-hint>Standard heights: 4-10 feet</mat-hint>
+        </mat-form-field>
+      </div>
+
+      <div class="form-section" *ngIf="calculationType === 'fencing'">
+        <h3>
+          <mat-icon>engineering</mat-icon>
+          Step 3: Fencing Details
+        </h3>
+        
+        <div class="fencing-info">
+          <div class="info-item">
+            <mat-icon>construction</mat-icon>
+            <div>
+              <strong>RCC Poles:</strong> Installed every 10 feet
+            </div>
+          </div>
+          <div class="info-item">
+            <mat-icon>settings_ethernet</mat-icon>
+            <div>
+              <strong>Barbed Wire:</strong> Multiple rows for security
+            </div>
+          </div>
+          <div class="info-item">
+            <mat-icon>verified_user</mat-icon>
+            <div>
+              <strong>Installation:</strong> Professional setup included
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- Calculate Button -->
+      <div class="action-section">
+        <button mat-raised-button color="primary" class="calculate-btn" (click)="calculate()">
+          <mat-icon>calculate</mat-icon>
+          Calculate Cost
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Results Card -->
+  <mat-card class="results-card" *ngIf="showResults">
+    <mat-card-header>
+      <mat-icon class="result-icon">receipt_long</mat-icon>
+      <mat-card-title>Your Estimated Quote</mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Total Cost Highlight -->
+      <div class="total-cost-box">
+        <div class="cost-label">Estimated Total Cost</div>
+        <div class="cost-amount">₹{{totalCost.toLocaleString('en-IN')}}</div>
+        <div class="cost-note">*Includes material, installation & labour</div>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- Cost Breakdown -->
+      <div class="details-section">
+        <h4>
+          <mat-icon>list</mat-icon>
+          Cost Breakdown:
+        </h4>
+        <div class="detail-item" *ngFor="let item of calculationDetails | keyvalue">
+          <span class="detail-label">{{ $any(item.key) }}:</span>
+          <span class="detail-value">{{ item.value }}</span>
+        </div>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- Action Buttons -->
+      <div class="result-actions">
+        <button mat-raised-button color="primary" class="action-btn" (click)="sendWhatsAppQuote()">
+          <mat-icon>whatsapp</mat-icon>
+          Send via WhatsApp
+        </button>
+        
+        <button mat-raised-button color="accent" class="action-btn" (click)="scheduleVisit()">
+          <mat-icon>event</mat-icon>
+          Schedule FREE Visit
+        </button>
+        
+        <button mat-stroked-button class="action-btn" (click)="downloadQuote()">
+          <mat-icon>download</mat-icon>
+          Download PDF
+        </button>
+
+        <button mat-stroked-button class="action-btn" (click)="resetCalculator()">
+          <mat-icon>refresh</mat-icon>
+          New Quote
+        </button>
+      </div>
+
+      <!-- Important Notes -->
+      <div class="notes-section">
+        <h4>
+          <mat-icon>info</mat-icon>
+          Important Information:
+        </h4>
+        <ul>
+          <li>✓ All prices include GST</li>
+          <li>✓ Free site visit & consultation</li>
+          <li>✓ Prices may vary based on site conditions</li>
+          <li>✓ {{ calculationType === 'boundary' ? '1 year warranty on precast panels' : 'Durable RCC poles with 5+ year life' }}</li>
+          <li>✓ Installation by experienced professionals</li>
+        </ul>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Contact Information -->
+  <mat-card class="contact-card">
+    <mat-card-content>
+      <div class="contact-info">
+        <mat-icon class="contact-icon">support_agent</mat-icon>
+        <div>
+          <h3>Need Help?</h3>
+          <p>Contact our experts for personalized guidance</p>
+          <div class="contact-buttons">
+            <button mat-raised-button color="primary" (click)="sendWhatsAppQuote()">
+              <mat-icon>phone</mat-icon>
+              9346842755 / 8090272727
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Reference Images Section -->
+  <mat-card class="info-card">
+    <mat-card-header>
+      <mat-icon>image</mat-icon>
+      <mat-card-title>Price Reference Charts</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="reference-info">
+        <p><strong>Our Pricing Formula:</strong></p>
+        <ul>
+          <li><strong>Boundary Wall:</strong> Perimeter × Height × ₹85/sq ft</li>
+          <li><strong>Fencing:</strong> Based on poles (every 10 ft) + barbed wire (₹110/kg) + labour</li>
+        </ul>
+        <p class="note">
+          <mat-icon>verified</mat-icon>
+          Transparent pricing - No hidden charges
+        </p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

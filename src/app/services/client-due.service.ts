@@ -1,20 +1,14 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class ClientDueService {
-  private supabase: SupabaseClient;
 
-  constructor() {
-    this.supabase = createClient(
-      'https://lcwjtwidxihclizliksd.supabase.co',
-      'sb_publishable_h161nq_O9ZsC30WbVTaxNg_x9DhrYIh'
-    );
-  }
+  constructor(private supabaseService: SupabaseService) {}
 
   // Add Client Bill/Invoice
   addBill(date: string, clientId: string, amount: number, description?: string) {
-    return this.supabase.from('client_bill').insert([
+    return this.supabaseService.supabase.from('client_bill').insert([
       {
         date,
         client_id: clientId,
@@ -27,7 +21,7 @@ export class ClientDueService {
 
   // Get all bills for a client
   getClientBills(clientId: string) {
-    return this.supabase
+    return this.supabaseService.supabase
       .from('client_bill')
       .select('*')
       .eq('client_id', clientId)
@@ -36,7 +30,7 @@ export class ClientDueService {
 
   // Get all bills within date range
   getBillsByDateRange(from: string, to: string) {
-    return this.supabase
+    return this.supabaseService.supabase
       .from('client_bill')
       .select('*')
       .gte('date', from)
@@ -47,32 +41,15 @@ export class ClientDueService {
 
   // Calculate due for a specific client
   async getClientDue(clientId: string) {
-    const billsResponse = await this.supabase
-      .from('client_bill')
-      .select('bill_amount')
-      .eq('client_id', clientId)
-      .eq('entry_type', 'BILL');
+    // Query from sales_transactions for actual data
+    const salesResponse = await this.supabaseService.supabase
+      .from('sales_transactions')
+      .select('total_amount, paid_amount')
+      .eq('client_id', clientId);
 
-    const bills = billsResponse.data || [];
-    const totalBilled = bills.reduce((sum: number, bill: any) => sum + (bill.bill_amount || 0), 0);
-
-    let paymentsResponse;
-    try {
-      paymentsResponse = await this.supabase
-        .from('client_payment')
-        .select('amount_paid')
-        .filter('client_id', 'eq', clientId);
-    } catch (err) {
-      console.error('[ClientDueService] getClientDue - payment query failed:', err, 'clientId:', clientId);
-      paymentsResponse = { data: [], error: err } as any;
-    }
-
-    if (paymentsResponse && paymentsResponse.error) {
-      console.warn('[ClientDueService] getClientDue - paymentsResponse.error ->', paymentsResponse.error, 'clientId:', clientId);
-    }
-
-    const payments = paymentsResponse.data || [];
-    const totalPaid = payments.reduce((sum: number, payment: any) => sum + (payment.amount_paid || 0), 0);
+    const sales = salesResponse.data || [];
+    const totalBilled = sales.reduce((sum: number, sale: any) => sum + (sale.total_amount || 0), 0);
+    const totalPaid = sales.reduce((sum: number, sale: any) => sum + (sale.paid_amount || 0), 0);
 
     return {
       clientId,
@@ -84,7 +61,7 @@ export class ClientDueService {
 
   // Get due summary for all clients
   async getAllClientsDue() {
-    const clientsResponse = await this.supabase.from('client_ledger').select('id, client_name');
+    const clientsResponse = await this.supabaseService.supabase.from('client_ledger').select('id, client_name');
     
     if (clientsResponse.error) {
       console.error('getAllClientsDue error:', clientsResponse.error);
@@ -110,10 +87,9 @@ export class ClientDueService {
 
   // Get total revenue (billed amount)
   async getTotalRevenue(from?: string, to?: string) {
-    let query = this.supabase
-      .from('client_bill')
-      .select('bill_amount')
-      .eq('entry_type', 'BILL');
+    let query = this.supabaseService.supabase
+      .from('sales_transactions')
+      .select('total_amount');
 
     if (from && to) {
       query = query.gte('date', from).lte('date', to);
@@ -126,17 +102,17 @@ export class ClientDueService {
       return 0;
     }
     
-    const bills = response.data || [];
-    const total = bills.reduce((sum: number, bill: any) => sum + (bill.bill_amount || 0), 0);
-    console.log('getTotalRevenue:', total, 'bills count:', bills.length, 'from:', from, 'to:', to);
+    const sales = response.data || [];
+    const total = sales.reduce((sum: number, sale: any) => sum + (sale.total_amount || 0), 0);
+    console.log('getTotalRevenue:', total, 'sales count:', sales.length, 'from:', from, 'to:', to);
     return total;
   }
 
   // Get total received (collected payments)
   async getTotalReceived(from?: string, to?: string) {
-    let query = this.supabase
-      .from('client_payment')
-      .select('amount_paid');
+    let query = this.supabaseService.supabase
+      .from('sales_transactions')
+      .select('paid_amount');
 
     if (from && to) {
       query = query.gte('date', from).lte('date', to);
@@ -149,9 +125,9 @@ export class ClientDueService {
       return 0;
     }
     
-    const payments = response.data || [];
-    const total = payments.reduce((sum: number, payment: any) => sum + (payment.amount_paid || 0), 0);
-    console.log('getTotalReceived:', total, 'payments count:', payments.length, 'from:', from, 'to:', to);
+    const sales = response.data || [];
+    const total = sales.reduce((sum: number, sale: any) => sum + (sale.paid_amount || 0), 0);
+    console.log('getTotalReceived:', total, 'sales count:', sales.length, 'from:', from, 'to:', to);
     return total;
   }
 

@@ -10,7 +10,7 @@ export class PartnerService {
     const { data, error } = await this.supabase.supabase
       .from('partner_master')
       .select('*')
-      .order('name');
+      .order('partner_name');
 
     if (error) {
       console.error('[PartnerService] getAllPartners error:', error);

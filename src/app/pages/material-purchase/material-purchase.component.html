@@ -17,6 +17,10 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
 
 <div style="min-height: 100vh; background: linear-gradient(135deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 75%, #667eea 100%); background-size: 400% 400%; animation: gradientFlow 15s ease infinite; padding: 24px;">
@@ -105,6 +109,80 @@
                  onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
                  onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
         </div>
+      </div>
+
+      <!-- Vendor & Invoice -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
+            <span style="color: #6366f1;">🏪</span> Vendor Name
+          </label>
+          <input type="text" [(ngModel)]="vendorName" placeholder="Vendor name (optional)" 
+                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
+            <span style="color: #ec4899;">📄</span> Invoice Number
+          </label>
+          <input type="text" [(ngModel)]="invoiceNumber" placeholder="Invoice # (optional)" 
+                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
+                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        </div>
+      </div>
+
+      <!-- Payment Source -->
+      <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 2px solid rgba(255,255,255,0.3);">
+        <label style="color: white; font-weight: 700; font-size: 1.1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+          <span style="color: #fbbf24;">💳</span> Payment Source <span style="color: #ef4444;">*</span>
+        </label>
+        <div style="display: flex; gap: 24px;">
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 12px; flex: 1; transition: all 0.3s ease; border: 2px solid transparent;"
+                 [style.background]="paidFrom === 'office_cash' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)'"
+                 [style.borderColor]="paidFrom === 'office_cash' ? 'rgba(16, 185, 129, 0.5)' : 'transparent'"
+                 onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+                 onmouseout="this.style.background=this.style.borderColor.includes('129') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)'">
+            <input type="radio" name="paidFrom" value="office_cash" [(ngModel)]="paidFrom" 
+                   style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
+            <span style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">🏢 Office Cash</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 12px; flex: 1; transition: all 0.3s ease; border: 2px solid transparent;"
+                 [style.background]="paidFrom === 'partner_pocket' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.1)'"
+                 [style.borderColor]="paidFrom === 'partner_pocket' ? 'rgba(59, 130, 246, 0.5)' : 'transparent'"
+                 onmouseover="this.style.background='rgba(255,255,255,0.15)'"
+                 onmouseout="this.style.background=this.style.borderColor.includes('246') ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.1)'">
+            <input type="radio" name="paidFrom" value="partner_pocket" [(ngModel)]="paidFrom" 
+                   style="width: 20px; height: 20px; cursor: pointer; accent-color: #3b82f6;">
+            <span style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">👤 Partner Pocket</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Partner Selection (only if paid from partner pocket) -->
+      <div *ngIf="paidFrom === 'partner_pocket'" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.05)); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 2px solid rgba(59, 130, 246, 0.3); animation: slideDown 0.3s ease;">
+        <label style="color: white; font-weight: 700; font-size: 1.1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <span style="color: #60a5fa;">👤</span> Which Partner? <span style="color: #ef4444;">*</span>
+        </label>
+        <select [(ngModel)]="partnerId" 
+                style="width: 100%; padding: 16px 20px; border: 2px solid rgba(255,255,255,0.4); border-radius: 12px; background: rgba(255,255,255,0.95); font-size: 1rem; cursor: pointer; transition: all 0.3s ease; font-weight: 600;"
+                onfocus="this.style.borderColor='rgba(59, 130, 246, 0.8)'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.2)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.4)'; this.style.boxShadow='none'">
+          <option value="">-- Select Partner --</option>
+          <option *ngFor="let partner of partners" [value]="partner.id">{{ partner.partner_name }}</option>
+        </select>
+      </div>
+
+      <!-- Notes -->
+      <div style="margin-bottom: 24px;">
+        <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+          <span style="color: #a78bfa;">📝</span> Notes
+        </label>
+        <textarea [(ngModel)]="notes" placeholder="Additional notes (optional)" rows="3"
+                  style="width: 100%; padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease; resize: vertical; font-family: inherit;"
+                  onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
+                  onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'"></textarea>
       </div>
 
       <!-- Total Amount Display -->

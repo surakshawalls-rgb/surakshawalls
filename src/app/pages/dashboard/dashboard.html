@@ -44,15 +44,15 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
           <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
             <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px;">Total Revenue</div>
-            <div style="font-size: 1.8rem; font-weight: 700;">₹{{revenueTotal | number}}</div>
+            <div style="font-size: 1.8rem; font-weight: 700;">₹{{totalRevenue | number}}</div>
           </div>
           <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
             <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px;">Total Received</div>
-            <div style="font-size: 1.8rem; font-weight: 700;">₹{{paymentTotal | number}}</div>
+            <div style="font-size: 1.8rem; font-weight: 700;">₹{{totalReceived | number}}</div>
           </div>
           <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; text-align: center; backdrop-filter: blur(10px);">
             <div style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 8px;">Total Due</div>
-            <div style="font-size: 1.8rem; font-weight: 700;">₹{{(revenueTotal - paymentTotal) | number}}</div>
+            <div style="font-size: 1.8rem; font-weight: 700;">₹{{totalDue | number}}</div>
           </div>
         </div>
       </div>

@@ -149,14 +149,14 @@ export class RecipeService {
 
       // 4. Calculate costs
       const cementCost = cement * (materialCosts['Cement']?.unit_cost || 0);
-      const aggregatesCost = aggregates * (materialCosts['Aggregates']?.unit_cost || 0);
-      const sariyaCost = sariya * (materialCosts['Sariya (4mm)']?.unit_cost || 0);
+      const aggregatesCost = aggregates * (materialCosts['Gitti (Aggregates)']?.unit_cost || 0);
+      const sariyaCost = sariya * (materialCosts['Sariya (Steel)']?.unit_cost || 0);
       const totalCost = cementCost + aggregatesCost + sariyaCost;
 
       // 5. Check stock availability
       const cementStock = materialCosts['Cement']?.current_stock || 0;
-      const aggregatesStock = materialCosts['Aggregates']?.current_stock || 0;
-      const sariyaStock = materialCosts['Sariya (4mm)']?.current_stock || 0;
+      const aggregatesStock = materialCosts['Gitti (Aggregates)']?.current_stock || 0;
+      const sariyaStock = materialCosts['Sariya (Steel)']?.current_stock || 0;
 
       const cementAvailable = cementStock >= cement;
       const aggregatesAvailable = aggregatesStock >= aggregates;

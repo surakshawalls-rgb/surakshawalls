@@ -47,7 +47,7 @@ export class SalesService {
    */
   async createSale(saleData: SaleData): Promise<{success: boolean, sale?: SaleTransaction, error?: string}> {
     try {
-      // 1. Insert sale transaction
+      // 1. Insert sale transaction (total_amount is auto-calculated by database)
       const { data: sale, error: saleError } = await this.supabase.supabase
         .from('sales_transactions')
         .insert({

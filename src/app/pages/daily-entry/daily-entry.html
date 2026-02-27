@@ -270,24 +270,64 @@
         <!-- Client Selection -->
         <div class="form-grid">
           <div class="form-group col-span-2">
-            <label>Client</label>
+            <label>Client Search</label>
             <div class="input-with-button">
               <input type="text" 
                      [(ngModel)]="clientSearchTerm" 
-                     (focus)="showClientDropdown = true"
-                     (input)="filterClients()"
-                     placeholder="Search client by name or phone"
+                     (keyup.enter)="searchClients()"
+                     placeholder="Enter name or phone (or leave empty for all)"
                      class="form-control">
+              <button (click)="searchClients()" class="btn btn-sm btn-primary" title="Search Clients">
+                <span>🔍 Search</span>
+              </button>
+              <button (click)="clearClientSearch()" 
+                      *ngIf="selectedClientId"
+                      class="btn btn-sm btn-secondary" 
+                      title="Clear Selection">
+                <span>✖ Clear</span>
+              </button>
               <button (click)="showQuickAddClient = true" class="btn btn-sm btn-secondary" title="Quick Add Client">
                 <span>+ New</span>
               </button>
             </div>
-            <div class="dropdown-list" *ngIf="showClientDropdown && filteredClients.length > 0">
-              <div *ngFor="let client of filteredClients" 
-                   (click)="selectClient(client)"
-                   class="dropdown-item">
-                <strong>{{ client.client_name }}</strong>
-                <small>{{ client.phone }}</small>
+            
+            <!-- Selected Client Display -->
+            <div *ngIf="selectedClientId && !showClientResults" class="selected-client">
+              <strong>Selected:</strong> {{ clientSearchTerm }}
+            </div>
+            
+            <!-- Search Results Table -->
+            <div *ngIf="showClientResults" class="client-results-container">
+              <div class="client-results-header">
+                <strong>Search Results ({{ filteredClients.length }})</strong>
+                <button (click)="showClientResults = false" class="btn-close">✖</button>
+              </div>
+              <div class="client-results-table">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Phone</th>
+                      <th>Address</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let client of filteredClients">
+                      <td><strong>{{ client.client_name }}</strong></td>
+                      <td>{{ client.phone || '-' }}</td>
+                      <td>{{ client.address || '-' }}</td>
+                      <td>
+                        <button (click)="selectClient(client)" class="btn btn-xs btn-primary">
+                          Select
+                        </button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="filteredClients.length === 0">
+                      <td colspan="4" style="text-align: center; color: #999;">No clients found</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -562,15 +602,30 @@
             <input type="number" [(ngModel)]="yardLossQuantity" min="1" placeholder="0" class="form-control">
           </div>
 
-          <div class="form-group col-span-2">
-            <label>Reason (Production issue / Loading / Transport / Other)</label>
-            <input type="text" [(ngModel)]="yardLossReason" placeholder="e.g., Broken during loading, Transport damage, Production defect" class="form-control">
+          <div class="form-group">
+            <label>Damage Stage <span class="required">*</span></label>
+            <select [(ngModel)]="yardLossStage" class="form-control">
+              <option value="stacking">🏗️ Stacking (Production Area)</option>
+              <option value="loading">📦 Loading (Yard to Vehicle)</option>
+              <option value="transport">🚛 Transport (In Transit)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Reason / Description <span class="required">*</span></label>
+            <input type="text" 
+                   [(ngModel)]="yardLossReason" 
+                   placeholder="e.g., Broken during loading, Crack found, Transport damage to corner" 
+                   class="form-control"
+                   minlength="5"
+                   maxlength="200">
+            <small style="color: #666; font-size: 0.85em;">Enter detailed reason (minimum 5 characters)</small>
           </div>
 
           <div class="form-group">
             <label>&nbsp;</label>
             <button (click)="addYardLossItem()" 
-                    [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossReason"
+                    [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossStage || !yardLossReason"
                     class="btn btn-primary">
               ⚠️ Add Damaged Item
             </button>
@@ -583,8 +638,9 @@
             <thead>
               <tr>
                 <th>Product</th>
-                <th>Quantity Damaged</th>
-                <th>Reason / Type of Damage</th>
+                <th>Quantity</th>
+                <th>Stage</th>
+                <th>Reason</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -592,6 +648,11 @@
               <tr *ngFor="let item of yardLossItems; let i = index">
                 <td><strong>{{ item.product_name }}</strong></td>
                 <td><span class="badge badge-danger">{{ item.quantity }}</span></td>
+                <td>
+                  <span *ngIf="item.stage === 'stacking'">🏗️ Stacking</span>
+                  <span *ngIf="item.stage === 'loading'">📦 Loading</span>
+                  <span *ngIf="item.stage === 'transport'">🚛 Transport</span>
+                </td>
                 <td>{{ item.reason }}</td>
                 <td>
                   <button (click)="removeYardLossItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
@@ -663,10 +724,6 @@
                   class="form-control"></textarea>
       </div>
 
-      <!-- Debug Info (temporary) -->
-      <div style="padding: 8px; background: #f0f0f0; border-radius: 4px; margin-bottom: 12px; font-size: 12px;">
-        Debug: Loading={{ loading }}, Saving={{ saving }}, Partners loaded={{ partners.length }}
-      </div>
 
       <!-- Submit Button -->
       <div class="submit-section">

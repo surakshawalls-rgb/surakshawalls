@@ -1,0 +1,195 @@
+<div class="walls-page">
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>🧱 Suraksha Walls</h1>
+      <p class="hero-subtitle">Stronger Than Brick | Faster Than Traditional</p>
+      <p class="hero-description">
+        Professional boundary wall and fencing solutions for farms, industries, homes, and institutions.
+      </p>
+      <div class="hero-actions">
+        <button mat-raised-button color="primary" (click)="navigateToQuotation()">
+          <mat-icon>calculate</mat-icon>
+          Get Instant Quote
+        </button>
+        <button mat-raised-button color="accent" (click)="contactWhatsApp()">
+          <mat-icon>phone</mat-icon>
+          WhatsApp Us
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section class="products-section">
+    <div class="container">
+      <h2 class="section-title">Our Products</h2>
+      <p class="section-subtitle">Quality construction materials for every need</p>
+      
+      <div class="products-grid">
+        <mat-card *ngFor="let product of products" class="product-card">
+          <mat-card-header>
+            <mat-card-title>{{ product.name }}</mat-card-title>
+            <mat-card-subtitle class="price">{{ product.price }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="description">{{ product.description }}</p>
+            <ul class="features-list">
+              <li *ngFor="let feature of product.features">
+                <mat-icon>check_circle</mat-icon>
+                {{ feature }}
+              </li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-raised-button color="primary" (click)="navigateToQuotation()">Get Quote</button>
+            <button mat-button (click)="contactWhatsApp()">Inquire</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why Precast Section -->
+  <section class="why-precast">
+    <div class="container">
+      <h2 class="section-title">Why Choose Precast Walls?</h2>
+      <div class="comparison-grid">
+        <div class="comparison-item">
+          <mat-icon color="primary">schedule</mat-icon>
+          <h3>10X Faster</h3>
+          <p>Installation in 48 hours vs 2 weeks for brick walls</p>
+        </div>
+        <div class="comparison-item">
+          <mat-icon color="primary">attach_money</mat-icon>
+          <h3>Cost Effective</h3>
+          <p>Save 20-30% on labor and construction time</p>
+        </div>
+        <div class="comparison-item">
+          <mat-icon color="primary">security</mat-icon>
+          <h3>3X Stronger</h3>
+          <p>Reinforced concrete withstands harsh weather</p>
+        </div>
+        <div class="comparison-item">
+          <mat-icon color="primary">eco</mat-icon>
+          <h3>Eco-Friendly</h3>
+          <p>Less waste, sustainable materials</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fencing Solutions -->
+  <section class="fencing-section">
+    <div class="container">
+      <h2 class="section-title">Complete Fencing Solutions</h2>
+      <p class="section-subtitle">Beyond walls - complete boundary protection</p>
+      
+      <div class="fencing-grid">
+        <mat-card class="fencing-card">
+          <mat-icon>fence</mat-icon>
+          <h3>Chain Link Fencing</h3>
+          <p>Durable and affordable fencing for large areas</p>
+        </mat-card>
+        <mat-card class="fencing-card">
+          <mat-icon>grade</mat-icon>
+          <h3>Barbed Wire</h3>
+          <p>Enhanced security for farms and properties</p>
+        </mat-card>
+        <mat-card class="fencing-card">
+          <mat-icon>bolt</mat-icon>
+          <h3>Electric Fencing</h3>
+          <p>Advanced security with solar/electric options</p>
+        </mat-card>
+        <mat-card class="fencing-card">
+          <mat-icon>door_front</mat-icon>
+          <h3>Smart Gates</h3>
+          <p>Automated entry solutions</p>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service Areas -->
+  <section class="service-areas">
+    <div class="container">
+      <h2 class="section-title">We Serve</h2>
+      <div class="areas-grid">
+        <div class="area-item">
+          <mat-icon>agriculture</mat-icon>
+          <h3>Farms & Agriculture</h3>
+        </div>
+        <div class="area-item">
+          <mat-icon>factory</mat-icon>
+          <h3>Industries</h3>
+        </div>
+        <div class="area-item">
+          <mat-icon>home</mat-icon>
+          <h3>Homes & Villas</h3>
+        </div>
+        <div class="area-item">
+          <mat-icon>apartment</mat-icon>
+          <h3>Institutions</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Build Your Boundary Wall?</h2>
+      <p>Get a free estimate and site visit</p>
+      <div class="cta-actions">
+        <button mat-raised-button color="primary" size="large" (click)="navigateToQuotation()">
+          <mat-icon>calculate</mat-icon>
+          Calculate Cost Online
+        </button>
+        <button mat-raised-button color="accent" size="large" (click)="contactWhatsApp()">
+          <mat-icon>chat</mat-icon>
+          Chat on WhatsApp
+        </button>
+        <button mat-stroked-button (click)="callNow()">
+          <mat-icon>call</mat-icon>
+          Call: 9346842755
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Info -->
+  <section class="contact-info">
+    <div class="container">
+      <div class="info-grid">
+        <div class="info-item">
+          <mat-icon>location_on</mat-icon>
+          <div>
+            <h4>Address</h4>
+            <p>Shukulpur, Suriyawan<br>Bhadohi - 221404, UP</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>phone</mat-icon>
+          <div>
+            <h4>Phone</h4>
+            <p>+91 9346842755</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>email</mat-icon>
+          <div>
+            <h4>Email</h4>
+            <p>surakshawalls&#64;gmail.com</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>star</mat-icon>
+          <div>
+            <h4>Rating</h4>
+            <p>⭐⭐⭐⭐⭐ 5.0 Google Reviews</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
