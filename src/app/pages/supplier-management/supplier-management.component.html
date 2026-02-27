@@ -1,0 +1,593 @@
+<app-breadcrumb></app-breadcrumb>
+
+<div class="supplier-management-container">
+  <div class="header">
+    <h1><mat-icon>inventory</mat-icon> Supplier Management</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="openSupplierForm()">
+        <mat-icon>add</mat-icon> Add Supplier
+      </button>
+      <button mat-raised-button color="accent" (click)="openPOForm()">
+        <mat-icon>shopping_cart</mat-icon> Create PO
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards" *ngIf="supplierSummary">
+    <mat-card class="summary-card">
+      <mat-icon color="primary">groups</mat-icon>
+      <div class="summary-content">
+        <h3>{{supplierSummary.total_suppliers}}</h3>
+        <p>Total Suppliers</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-icon color="accent">shopping_bag</mat-icon>
+      <div class="summary-content">
+        <h3>₹{{supplierSummary.total_purchases | number:'1.0-0'}}</h3>
+        <p>Total Purchases</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-icon color="warn">account_balance_wallet</mat-icon>
+      <div class="summary-content">
+        <h3>₹{{supplierSummary.total_outstanding | number:'1.0-0'}}</h3>
+        <p>Outstanding</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <mat-icon style="color: #4CAF50">paid</mat-icon>
+      <div class="summary-content">
+        <h3>₹{{supplierSummary.total_paid | number:'1.0-0'}}</h3>
+        <p>Total Paid</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="tabs">
+    
+    <!-- TAB 1: Suppliers -->
+    <mat-tab label="Suppliers">
+      <ng-template mat-tab-label>
+        <mat-icon>business</mat-icon> Suppliers
+      </ng-template>
+      
+      <div class="tab-content">
+        <mat-card>
+          <mat-card-content>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Supplier Name</th>
+                  <th>Company</th>
+                  <th>Phone</th>
+                  <th>City</th>
+                  <th>Outstanding</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let supplier of suppliers">
+                  <td><strong>{{supplier.supplier_name}}</strong></td>
+                  <td>{{supplier.company_name || '-'}}</td>
+                  <td>{{supplier.phone}}</td>
+                  <td>{{supplier.city || '-'}}</td>
+                  <td class="amount-col">₹{{supplier.outstanding | number:'1.0-0'}}</td>
+                  <td>
+                    <mat-chip [color]="supplier.active ? 'primary' : 'warn'">
+                      {{supplier.active ? 'Active' : 'Inactive'}}
+                    </mat-chip>
+                  </td>
+                  <td>
+                    <button mat-icon-button color="primary" (click)="editSupplier(supplier)" matTooltip="Edit">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="accent" (click)="viewSupplierLedger(supplier.id)" matTooltip="View Ledger">
+                      <mat-icon>account_balance</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteSupplier(supplier.id)" matTooltip="Delete">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- TAB 2: Purchase Orders -->
+    <mat-tab label="Purchase Orders">
+      <ng-template mat-tab-label>
+        <mat-icon>shopping_cart</mat-icon> Purchase Orders
+      </ng-template>
+      
+      <div class="tab-content">
+        <mat-card>
+          <mat-card-content>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>PO Number</th>
+                  <th>Supplier</th>
+                  <th>Order Date</th>
+                  <th>Expected Delivery</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let po of purchaseOrders">
+                  <td><strong>{{po.po_number}}</strong></td>
+                  <td>{{getSupplierName(po.supplier_id)}}</td>
+                  <td>{{formatDateToDDMMYYYY(po.order_date)}}</td>
+                  <td>{{po.expected_delivery_date ? formatDateToDDMMYYYY(po.expected_delivery_date) : '-'}}</td>
+                  <td class="amount-col">₹{{po.total_amount | number:'1.0-0'}}</td>
+                  <td>
+                    <mat-chip [color]="getStatusColor(po.status)">
+                      <mat-icon [inline]="true">{{getStatusIcon(po.status)}}</mat-icon>
+                      {{po.status.toUpperCase()}}
+                    </mat-chip>
+                  </td>
+                  <td>
+                    <button mat-icon-button color="primary" *ngIf="po.status === 'pending'" 
+                            (click)="updatePOStatus(po.id, 'approved')" matTooltip="Approve">
+                      <mat-icon>check_circle</mat-icon>
+                    </button>
+                    <button mat-icon-button color="accent" *ngIf="po.status === 'approved'" 
+                            (click)="updatePOStatus(po.id, 'delivered')" matTooltip="Mark Delivered">
+                      <mat-icon>local_shipping</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" *ngIf="po.status === 'pending'" 
+                            (click)="updatePOStatus(po.id, 'cancelled')" matTooltip="Cancel">
+                      <mat-icon>cancel</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- TAB 3: Payments -->
+    <mat-tab label="Payments">
+      <ng-template mat-tab-label>
+        <mat-icon>payments</mat-icon> Payments
+      </ng-template>
+      
+      <div class="tab-content">
+        <div class="tab-header">
+          <button mat-raised-button color="primary" (click)="openPaymentForm()">
+            <mat-icon>add</mat-icon> Record Payment
+          </button>
+          <button mat-raised-button color="accent" (click)="openInvoiceForm()">
+            <mat-icon>receipt</mat-icon> Add Invoice
+          </button>
+        </div>
+        
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Suppliers with Outstanding Balance</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Supplier</th>
+                  <th>Company</th>
+                  <th>Phone</th>
+                  <th>Total Purchases</th>
+                  <th>Total Paid</th>
+                  <th>Outstanding</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let supplier of suppliers" [class.has-outstanding]="supplier.outstanding > 0">
+                  <td><strong>{{supplier.supplier_name}}</strong></td>
+                  <td>{{supplier.company_name || '-'}}</td>
+                  <td>{{supplier.phone}}</td>
+                  <td class="amount-col">₹{{supplier.total_purchases | number:'1.0-0'}}</td>
+                  <td class="amount-col">₹{{supplier.total_paid | number:'1.0-0'}}</td>
+                  <td class="amount-col outstanding-amount">
+                    <strong>₹{{supplier.outstanding | number:'1.0-0'}}</strong>
+                  </td>
+                  <td>
+                    <button mat-raised-button color="primary" size="small" *ngIf="supplier.outstanding > 0"
+                            (click)="openPaymentFormForSupplier(supplier)">
+                      <mat-icon>payment</mat-icon> Pay
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- TAB 4: Ledger -->
+    <mat-tab label="Ledger">
+      <ng-template mat-tab-label>
+        <mat-icon>account_balance</mat-icon> Ledger
+      </ng-template>
+      
+      <div class="tab-content">
+        <mat-card>
+          <mat-card-content>
+            <div class="form-field">
+              <label>Select Supplier</label>
+              <select [(ngModel)]="selectedSupplierForLedger" 
+                      (change)="selectedSupplierForLedger && loadSupplierLedger(selectedSupplierForLedger)"
+                      class="form-control">
+                <option [ngValue]="null">-- Select Supplier --</option>
+                <option *ngFor="let s of suppliers" [value]="s.id">{{s.supplier_name}}</option>
+              </select>
+            </div>
+
+            <div *ngIf="supplierLedger.length > 0" class="ledger-section">
+              <h3>Ledger for {{getLedgerSupplierName()}}</h3>
+              
+              <table class="data-table ledger-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Reference</th>
+                    <th>Description</th>
+                    <th class="amount-col">Debit (₹)</th>
+                    <th class="amount-col">Credit (₹)</th>
+                    <th class="amount-col">Balance (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let entry of supplierLedger" [class.balance-row]="entry.transaction_type === 'Opening Balance'">
+                    <td>{{entry.transaction_date === '2000-01-01' ? '-' : formatDateToDDMMYYYY(entry.transaction_date)}}</td>
+                    <td><strong>{{entry.transaction_type}}</strong></td>
+                    <td>{{entry.reference_number || '-'}}</td>
+                    <td>{{entry.description}}</td>
+                    <td class="amount-col debit">{{entry.debit_amount > 0 ? (entry.debit_amount | number:'1.2-2') : '-'}}</td>
+                    <td class="amount-col credit">{{entry.credit_amount > 0 ? (entry.credit_amount | number:'1.2-2') : '-'}}</td>
+                    <td class="amount-col balance" [class.negative]="entry.balance < 0">
+                      <strong>{{entry.balance | number:'1.2-2'}}</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="!selectedSupplierForLedger" class="no-data">
+              <mat-icon>info</mat-icon>
+              <p>Please select a supplier to view ledger</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>
+
+<!-- SUPPLIER FORM DIALOG -->
+<div *ngIf="showSupplierForm" class="dialog-overlay" (click)="cancelSupplierForm()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>{{editingSupplierId ? 'Edit' : 'Add'}} Supplier</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Supplier Name *</label>
+        <input [(ngModel)]="supplierForm.supplier_name" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Company Name</label>
+        <input [(ngModel)]="supplierForm.company_name" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Phone *</label>
+        <input [(ngModel)]="supplierForm.phone" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="supplierForm.email" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>GSTIN</label>
+        <input [(ngModel)]="supplierForm.gstin" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>City</label>
+        <input [(ngModel)]="supplierForm.city" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>State</label>
+        <input [(ngModel)]="supplierForm.state" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Opening Balance (₹)</label>
+        <input type="number" [(ngModel)]="supplierForm.opening_balance" class="form-control">
+      </div>
+
+      <div class="form-field full-width">
+        <label>Address</label>
+        <textarea [(ngModel)]="supplierForm.address" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="saveSupplier()" [disabled]="loading">
+        <mat-icon>save</mat-icon> Save
+      </button>
+      <button mat-button (click)="cancelSupplierForm()" [disabled]="loading">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PO FORM DIALOG -->
+<div *ngIf="showPOForm" class="dialog-overlay" (click)="cancelPOForm()">
+  <div class="dialog-content large" (click)="$event.stopPropagation()">
+    <h2>Create Purchase Order</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Supplier *</label>
+        <select [(ngModel)]="poForm.supplier_id" class="form-control">
+          <option value="">-- Select --</option>
+          <option *ngFor="let s of suppliers" [value]="s.id">{{s.supplier_name}}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Order Date</label>
+        <input type="date" [(ngModel)]="poForm.order_date" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Expected Delivery</label>
+        <input type="date" [(ngModel)]="poForm.expected_delivery_date" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Payment Terms</label>
+        <input [(ngModel)]="poForm.payment_terms" placeholder="e.g., 30 days" class="form-control">
+      </div>
+    </div>
+
+    <h3 style="margin-top: 20px;">Add Items</h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Material Name *</label>
+        <input [(ngModel)]="currentPOItem.material_name" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Category</label>
+        <input [(ngModel)]="currentPOItem.material_category" placeholder="Cement, Sand, etc." class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Quantity *</label>
+        <input type="number" [(ngModel)]="currentPOItem.quantity" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Unit</label>
+        <select [(ngModel)]="currentPOItem.unit" class="form-control">
+          <option value="kg">Kg</option>
+          <option value="ton">Ton</option>
+          <option value="bag">Bag</option>
+          <option value="liter">Liter</option>
+          <option value="cubic_feet">Cubic Feet</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Rate per Unit (₹)</label>
+        <input type="number" [(ngModel)]="currentPOItem.rate_per_unit" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>GST %</label>
+        <input type="number" [(ngModel)]="currentPOItem.gst_percentage" class="form-control">
+      </div>
+    </div>
+
+    <button mat-raised-button color="accent" (click)="addPOItem()" style="margin: 10px 0;">
+      <mat-icon>add</mat-icon> Add Item
+    </button>
+
+    <table class="data-table" *ngIf="poForm.items.length > 0">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Quantity</th>
+          <th>Rate</th>
+          <th>Amount</th>
+          <th>GST</th>
+          <th>Total</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of poForm.items; let i = index">
+          <td>{{item.material_name}}</td>
+          <td>{{item.quantity}} {{item.unit}}</td>
+          <td>₹{{item.rate_per_unit}}</td>
+          <td>₹{{item.quantity * item.rate_per_unit | number:'1.0-0'}}</td>
+          <td>{{item.gst_percentage}}%</td>
+          <td>₹{{(item.quantity * item.rate_per_unit * (1 + item.gst_percentage/100)) | number:'1.0-0'}}</td>
+          <td>
+            <button mat-icon-button color="warn" (click)="removePOItem(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5" style="text-align: right;"><strong>Total:</strong></td>
+          <td colspan="2"><strong>₹{{calculatePOTotal() | number:'1.0-0'}}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="savePurchaseOrder()" [disabled]="loading">
+        <mat-icon>save</mat-icon> Create PO
+      </button>
+      <button mat-button (click)="cancelPOForm()" [disabled]="loading">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT FORM DIALOG -->
+<div *ngIf="showPaymentForm" class="dialog-overlay" (click)="cancelPaymentForm()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Record Payment to Supplier</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Supplier *</label>
+        <select [(ngModel)]="paymentForm.supplier_id" class="form-control">
+          <option value="">-- Select --</option>
+          <option *ngFor="let s of suppliers" [value]="s.id">
+            {{s.supplier_name}} (₹{{s.outstanding | number:'1.0-0'}})
+          </option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Payment Date</label>
+        <input type="date" [(ngModel)]="paymentForm.payment_date" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Amount *</label>
+        <input type="number" [(ngModel)]="paymentForm.amount_paid" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Payment Mode</label>
+        <select [(ngModel)]="paymentForm.payment_mode" class="form-control">
+          <option value="cash">Cash</option>
+          <option value="upi">UPI</option>
+          <option value="cheque">Cheque</option>
+          <option value="bank_transfer">Bank Transfer</option>
+          <option value="rtgs">RTGS</option>
+          <option value="neft">NEFT</option>
+        </select>
+      </div>
+
+      <div class="form-field" *ngIf="paymentForm.payment_mode === 'cheque'">
+        <label>Cheque Number</label>
+        <input [(ngModel)]="paymentForm.cheque_number" class="form-control">
+      </div>
+
+      <div class="form-field" *ngIf="paymentForm.payment_mode !== 'cash' && paymentForm.payment_mode !== 'cheque'">
+        <label>Transaction ID</label>
+        <input [(ngModel)]="paymentForm.transaction_id" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Paid By</label>
+        <select [(ngModel)]="paymentForm.paid_by_partner_id" class="form-control">
+          <option value="">Firm Cash</option>
+          <option *ngFor="let p of partners" [value]="p.id">{{p.name}}</option>
+        </select>
+      </div>
+
+      <div class="form-field full-width">
+        <label>Notes</label>
+        <textarea [(ngModel)]="paymentForm.notes" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="savePayment()" [disabled]="loading">
+        <mat-icon>save</mat-icon> Record Payment
+      </button>
+      <button mat-button (click)="cancelPaymentForm()" [disabled]="loading">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- INVOICE FORM DIALOG -->
+<div *ngIf="showInvoiceForm" class="dialog-overlay" (click)="cancelInvoiceForm()">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Add Supplier Invoice</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Supplier *</label>
+        <select [(ngModel)]="invoiceForm.supplier_id" class="form-control">
+          <option value="">-- Select --</option>
+          <option *ngFor="let s of suppliers" [value]="s.id">{{s.supplier_name}}</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Invoice Number *</label>
+        <input [(ngModel)]="invoiceForm.invoice_number" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Invoice Date</label>
+        <input type="date" [(ngModel)]="invoiceForm.invoice_date" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Due Date</label>
+        <input type="date" [(ngModel)]="invoiceForm.due_date" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>Subtotal (₹) *</label>
+        <input type="number" [(ngModel)]="invoiceForm.subtotal" (change)="calculateInvoiceTotal()" class="form-control">
+      </div>
+
+      <div class="form-field">
+        <label>GST Amount (₹)</label>
+        <input type="number" [(ngModel)]="invoiceForm.gst_amount" (change)="calculateInvoiceTotal()" class="form-control">
+      </div>
+
+      <div class="form-field full-width">
+        <label><strong>Total Amount: ₹{{invoiceForm.total_amount | number:'1.2-2'}}</strong></label>
+      </div>
+
+      <div class="form-field full-width">
+        <label>Notes</label>
+        <textarea [(ngModel)]="invoiceForm.notes" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="saveInvoice()" [disabled]="loading">
+        <mat-icon>save</mat-icon> Save Invoice
+      </button>
+      <button mat-button (click)="cancelInvoiceForm()" [disabled]="loading">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loader -->
+<div *ngIf="loading" class="loader-overlay">
+  <div class="loader-box">
+    <mat-icon class="spin">refresh</mat-icon>
+    <p>Loading...</p>
+  </div>
+</div>

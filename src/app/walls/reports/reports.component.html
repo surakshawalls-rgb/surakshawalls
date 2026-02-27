@@ -1,0 +1,179 @@
+<app-breadcrumb></app-breadcrumb>
+
+<div class="reports-container">
+  <div class="header">
+    <h1><mat-icon>assessment</mat-icon> Walls Module Reports</h1>
+    <div class="actions">
+      <button mat-raised-button color="accent" (click)="exportToExcel()">
+        <mat-icon>file_download</mat-icon> Export to Excel
+      </button>
+      <button mat-raised-button (click)="print()">
+        <mat-icon>print</mat-icon> Print
+      </button>
+    </div>
+  </div>
+
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="date-filter">
+        <div>
+          <label>Start Date:</label>
+          <input type="date" [(ngModel)]="startDate" (change)="loadAllReports()">
+        </div>
+        <div>
+          <label>End Date:</label>
+          <input type="date" [(ngModel)]="endDate" (change)="loadAllReports()">
+        </div>
+        <button mat-raised-button color="primary" (click)="loadAllReports()">
+          <mat-icon>refresh</mat-icon> Refresh
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-tab-group class="report-tabs">
+    
+    <!-- Production Report -->
+    <mat-tab label="Production">
+      <ng-template mat-tab-label>
+        <mat-icon>factory</mat-icon> Production
+      </ng-template>
+      <div class="tab-content">
+        <mat-card *ngIf="productionReport">
+          <mat-card-header>
+            <mat-card-title>Production Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <h3>{{productionReport.totalQuantity || 0}}</h3>
+                <p>Total Units Produced</p>
+              </div>
+              <div class="summary-item">
+                <h3>{{productionReport.totalProducts || 0}}</h3>
+                <p>Product Types</p>
+              </div>
+              <div class="summary-item">
+                <h3>{{productionReport.totalDays || 0}}</h3>
+                <p>Production Days</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Sales Report -->
+    <mat-tab label="Sales">
+      <ng-template mat-tab-label>
+        <mat-icon>point_of_sale</mat-icon> Sales
+      </ng-template>
+      <div class="tab-content">
+        <mat-card *ngIf="salesReport">
+          <mat-card-header>
+            <mat-card-title>Sales Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <h3>₹{{salesReport.totalRevenue | number:'1.0-0'}}</h3>
+                <p>Total Revenue</p>
+              </div>
+              <div class="summary-item">
+                <h3>₹{{salesReport.totalCollected | number:'1.0-0'}}</h3>
+                <p>Total Collected</p>
+              </div>
+              <div class="summary-item">
+                <h3>₹{{salesReport.totalOutstanding | number:'1.0-0'}}</h3>
+                <p>Outstanding</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Labour Report -->
+    <mat-tab label="Labour">
+      <ng-template mat-tab-label>
+        <mat-icon>groups</mat-icon> Labour
+      </ng-template>
+      <div class="tab-content">
+        <mat-card *ngIf="labourReport">
+          <mat-card-header>
+            <mat-card-title>Labour Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <h3>₹{{labourReport.totalWages | number:'1.0-0'}}</h3>
+                <p>Total Wages</p>
+              </div>
+              <div class="summary-item">
+                <h3>₹{{labourReport.totalPaid | number:'1.0-0'}}</h3>
+                <p>Total Paid</p>
+              </div>
+              <div class="summary-item">
+                <h3>₹{{labourReport.totalOutstanding | number:'1.0-0'}}</h3>
+                <p>Outstanding</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Inventory Report -->
+    <mat-tab label="Inventory">
+      <ng-template mat-tab-label>
+        <mat-icon>inventory_2</mat-icon> Inventory
+      </ng-template>
+      <div class="tab-content">
+        <mat-card *ngIf="inventoryReport">
+          <mat-card-header>
+            <mat-card-title>Inventory Status</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="placeholder">Detailed inventory report will be displayed here</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Financial Report -->
+    <mat-tab label="Financial">
+      <ng-template mat-tab-label>
+        <mat-icon>account_balance</mat-icon> Financial
+      </ng-template>
+      <div class="tab-content">
+        <mat-card *ngIf="financialReport">
+          <mat-card-header>
+            <mat-card-title>Financial Summary</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <h3>₹{{financialReport.totalRevenue | number:'1.0-0'}}</h3>
+                <p>Total Revenue</p>
+              </div>
+              <div class="summary-item">
+                <h3>₹{{financialReport.totalExpenses | number:'1.0-0'}}</h3>
+                <p>Total Expenses</p>
+              </div>
+              <div class="summary-item">
+                <h3>₹{{financialReport.netProfit | number:'1.0-0'}}</h3>
+                <p>Net Profit</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
+  <div *ngIf="loading" class="loader">
+    <mat-icon class="spin">refresh</mat-icon>
+    <p>Loading reports...</p>
+  </div>
+</div>

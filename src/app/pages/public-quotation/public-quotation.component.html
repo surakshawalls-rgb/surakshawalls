@@ -1,0 +1,281 @@
+<div class="quotation-page">
+  <!-- Animated Background -->
+  <div class="animated-background"></div>
+
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <div class="container">
+      <button mat-icon-button class="back-button" (click)="goHome()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      
+      <h1 class="hero-title">
+        <mat-icon class="hero-icon">calculate</mat-icon>
+        Instant Quotation Calculator
+      </h1>
+      <p class="hero-subtitle">Get accurate cost estimates for your boundary wall or fencing project in seconds</p>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <mat-icon>speed</mat-icon>
+          <div class="feature-text">
+            <strong>Instant Results</strong>
+            <span>Calculate in seconds</span>
+          </div>
+        </div>
+        <div class="feature-card">
+          <mat-icon>verified</mat-icon>
+          <div class="feature-text">
+            <strong>Accurate Pricing</strong>
+            <span>Market-based rates</span>
+          </div>
+        </div>
+        <div class="feature-card">
+          <mat-icon>picture_as_pdf</mat-icon>
+          <div class="feature-text">
+            <strong>PDF Download</strong>
+            <span>Professional quotation</span>
+          </div>
+        </div>
+      </div>
+
+      <button mat-raised-button color="primary" class="cta-button" (click)="scrollToCalculator()">
+        <mat-icon>arrow_downward</mat-icon>
+        Calculate Your Quote
+      </button>
+    </div>
+  </div>
+
+  <!-- Calculator Section -->
+  <div class="calculator-section" id="calculator-section">
+    <div class="container">
+      <mat-card class="calculator-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>calculate</mat-icon>
+            Quotation Calculator
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Product Type Selection -->
+          <div class="form-section">
+            <h3>Select Product</h3>
+            <div class="product-selector">
+              <div class="product-option" 
+                   [class.selected]="productType === 'boundary-wall'"
+                   (click)="productType = 'boundary-wall'; fields = []; quotation = null">
+                <div class="product-icon">🏗️</div>
+                <div class="product-details">
+                  <strong>Boundary Wall</strong>
+                  <span>₹85/sq ft (All inclusive)</span>
+                </div>
+                <mat-icon>{{ productType === 'boundary-wall' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+              </div>
+
+              <div class="product-option" 
+                   [class.selected]="productType === 'barbed-fencing'"
+                   (click)="productType = 'barbed-fencing'; fields = []; quotation = null">
+                <div class="product-icon">🚧</div>
+                <div class="product-details">
+                  <strong>Barbed Fencing</strong>
+                  <span>₹300/pole + Wire</span>
+                </div>
+                <mat-icon>{{ productType === 'barbed-fencing' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Fields Section -->
+          <div class="form-section">
+            <h3>Add Your Land Fields</h3>
+            <p class="helper-text">
+              <mat-icon>info</mat-icon>
+              <span>Add each field separately. You can add multiple fields if you have different plot sizes.</span>
+            </p>
+
+            <div class="add-field-container">
+              <mat-form-field appearance="outline" class="field-select">
+                <mat-label>Select Field Size</mat-label>
+                <mat-icon matPrefix>landscape</mat-icon>
+                <mat-select [(ngModel)]="presetLandSize">
+                  <mat-option *ngFor="let size of landSizes" [value]="size.label">
+                    {{ size.displayText }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <button mat-raised-button color="primary" (click)="addField()" class="add-field-btn">
+                <mat-icon>add</mat-icon>
+                Add Field
+              </button>
+            </div>
+
+            <!-- Field List -->
+            <div *ngIf="fields.length > 0" class="fields-list">
+              <h4>Added Fields ({{ fields.length }})</h4>
+              <div class="field-item" *ngFor="let field of fields">
+                <mat-icon class="field-icon">check_circle</mat-icon>
+                <div class="field-info">
+                  <strong>{{ field.displayText }}</strong>
+                  <span>{{ field.biswa }} Biswa</span>
+                </div>
+                <button mat-icon-button color="warn" (click)="removeField(field.id)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+
+              <div class="total-biswa">
+                <strong>Total Land:</strong>
+                <span>{{ getTotalBiswa() }} Biswa ({{ getTotalBiswa() * 1350 | number }} sq ft)</span>
+              </div>
+            </div>
+
+            <!-- Helper Text -->
+            <div class="helper-note">
+              <mat-icon>info</mat-icon>
+              <span>In UP Bhadohi: 1 Biswa ≈ 1,350 sq ft | 1 Bigha = 20 Biswa</span>
+            </div>
+          </div>
+
+          <!-- Calculate Button -->
+          <div class="action-section">
+            <button mat-raised-button color="primary" class="calculate-button" 
+                    (click)="calculateQuotation()"
+                    [disabled]="fields.length === 0">
+              <mat-icon>calculate</mat-icon>
+              Calculate Quotation
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Quotation Result -->
+      <mat-card class="result-card" *ngIf="quotation">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>receipt_long</mat-icon>
+            Quotation Summary
+          </mat-card-title>
+        </mat-card-header>
+
+        <mat-card-content>
+          <!-- Fields Summary -->
+          <div class="fields-summary">
+            <h4>Fields Included</h4>
+            <div class="field-summary-list">
+              <div *ngFor="let field of quotation.fields; let i = index" class="field-summary-item">
+                <span class="field-number">Field {{ i + 1 }}</span>
+                <span class="field-name">{{ field.displayText }}</span>
+              </div>
+            </div>
+            <div class="total-summary">
+              <strong>Total:</strong> {{ quotation.totalBiswa }} Biswa ({{ quotation.totalArea | number }} sq ft)
+            </div>
+          </div>
+
+          <!-- Product Specs -->
+          <div class="specs-section">
+            <div class="spec-item">
+              <mat-icon>straighten</mat-icon>
+              <div>
+                <strong>Total Perimeter</strong>
+                <span>{{ quotation.perimeterFeet }} feet ({{ quotation.perimeter }} m)</span>
+              </div>
+            </div>
+            <div class="spec-item" *ngIf="productType === 'boundary-wall'">
+              <mat-icon>square_foot</mat-icon>
+              <div>
+                <strong>Wall Area (6 ft height)</strong>
+                <span>{{ quotation.wallArea }} sq ft</span>
+              </div>
+            </div>
+            <div class="spec-item" *ngIf="productType === 'barbed-fencing'">
+              <mat-icon>foundation</mat-icon>
+              <div>
+                <strong>Poles Required</strong>
+                <span>{{ quotation.poles }} pieces (10 ft spacing)</span>
+              </div>
+            </div>
+            <div class="spec-item" *ngIf="productType === 'barbed-fencing'">
+              <mat-icon>trending_flat</mat-icon>
+              <div>
+                <strong>Barbed Wire</strong>
+                <span>{{ quotation.wireWeight }} kg (3 rows)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost Breakdown -->
+          <div class="cost-section">
+            <h4>Cost Breakdown</h4>
+            
+            <div *ngIf="productType === 'boundary-wall'">
+              <div class="cost-item">
+                <span>Wall @ ₹{{ quotation.wallRate }}/sq ft × {{ quotation.wallArea }} sq ft</span>
+                <strong>₹{{ quotation.wallCost?.toLocaleString('en-IN') }}</strong>
+              </div>
+              <div class="cost-note">Includes: Material + Labour + Transportation</div>
+            </div>
+
+            <div *ngIf="productType === 'barbed-fencing'">
+              <div class="cost-item">
+                <span>RCC Poles ({{ quotation.poles }} pcs × ₹{{ quotation.poleRate }})</span>
+                <strong>₹{{ quotation.poleCost?.toLocaleString('en-IN') }}</strong>
+              </div>
+              <div class="cost-item">
+                <span>Barbed Wire ({{ quotation.wireWeight }} kg × ₹{{ quotation.wireRate }})</span>
+                <strong>₹{{ quotation.wireCost?.toLocaleString('en-IN') }}</strong>
+              </div>
+              <div class="cost-item subtotal">
+                <span>Material Cost</span>
+                <strong>₹{{ quotation.materialCost.toLocaleString('en-IN') }}</strong>
+              </div>
+              <div class="cost-item labour">
+                <span>Labour ({{ quotation.labourDays }} days × ₹{{ quotation.labourRate }})</span>
+                <strong>₹{{ quotation.labourCost?.toLocaleString('en-IN') }}</strong>
+              </div>
+              <div class="cost-note">Labour charged separately</div>
+            </div>
+          </div>
+
+          <!-- Total Cost -->
+          <div class="total-cost">
+            <span>TOTAL ESTIMATED COST</span>
+            <strong>₹{{ quotation.totalCost.toLocaleString('en-IN') }}</strong>
+          </div>
+
+          <!-- Disclaimer -->
+          <div class="disclaimer-box">
+            <mat-icon>warning</mat-icon>
+            <div>
+              <strong>Important:</strong> This is an approximate estimate. Final prices may vary based on site conditions, 
+              distance, accessibility, and current market rates. For accurate pricing, please contact us for a site visit.
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="result-actions">
+            <button mat-raised-button color="primary" (click)="generatePDF()">
+              <mat-icon>picture_as_pdf</mat-icon>
+              Download PDF
+            </button>
+            <button mat-stroked-button (click)="fields = []; quotation = null">
+              <mat-icon>refresh</mat-icon>
+              New Quotation
+            </button>
+          </div>
+
+          <!-- Contact -->
+          <div class="contact-box">
+            <mat-icon>phone</mat-icon>
+            <div>
+              <strong>For Site Visit & Accurate Quote:</strong>
+              <p><a href="tel:+919506629814">9506629814</a> | <a href="tel:+918090272727">8090272727</a></p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,236 @@
+<app-breadcrumb></app-breadcrumb>
+
+<div class="masters-container">
+  <div class="header">
+    <h1><mat-icon>settings</mat-icon> Master Data Management</h1>
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeTab" class="tabs">
+    
+    <!-- Product Master -->
+    <mat-tab label="Product Master">
+      <ng-template mat-tab-label>
+        <mat-icon>category</mat-icon> Products
+      </ng-template>
+      
+      <div class="tab-content">
+        <button mat-raised-button color="primary" (click)="openProductForm()">
+          <mat-icon>add</mat-icon> Add Product
+        </button>
+
+        <mat-card style="margin-top: 20px;">
+          <mat-card-header>
+            <mat-card-title>Product Master</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="placeholder">Product master data will be displayed here. This feature allows you to define all products manufactured at Suraksha Walls with their specifications and default pricing.</p>
+            <p class="info">Examples: 8ft Wall, 10ft Wall, 15ft Wall, Compound Wall Panels, etc.</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Material Master -->
+    <mat-tab label="Material Master">
+      <ng-template mat-tab-label>
+        <mat-icon>inventory_2</mat-icon> Materials
+      </ng-template>
+      
+      <div class="tab-content">
+        <button mat-raised-button color="primary" (click)="openMaterialForm()">
+          <mat-icon>add</mat-icon> Add Material
+        </button>
+
+        <mat-card style="margin-top: 20px;">
+          <mat-card-header>
+            <mat-card-title>Raw Material Master</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="placeholder">Raw material master data will be displayed here. Define all materials used in production with current rates.</p>
+            <p class="info">Examples: Cement, Sand, Aggregate, Chemical Admixtures, Steel Wire, etc.</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Rate Card -->
+    <mat-tab label="Rate Card">
+      <ng-template mat-tab-label>
+        <mat-icon>price_check</mat-icon> Rate Card
+      </ng-template>
+      
+      <div class="tab-content">
+        <button mat-raised-button color="primary" (click)="openRateCardForm()">
+          <mat-icon>add</mat-icon> Add Rate
+        </button>
+
+        <mat-card style="margin-top: 20px;">
+          <mat-card-header>
+            <mat-card-title>Product Rate Card</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="placeholder">Product rate card will be displayed here. Manage selling prices for different products and variants with effective dates.</p>
+            <p class="info">This allows you to maintain historical pricing and schedule future price changes.</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Settings -->
+    <mat-tab label="Settings">
+      <ng-template mat-tab-label>
+        <mat-icon>settings</mat-icon> Settings
+      </ng-template>
+      
+      <div class="tab-content">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Module Settings</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="placeholder">Module configuration and settings will be available here.</p>
+            <ul class="info-list">
+              <li>Default GST rates</li>
+              <li>Measurement units</li>
+              <li>Product categories</li>
+              <li>Material categories</li>
+              <li>Approval workflows</li>
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>
+
+<!-- Product Form Dialog -->
+<div *ngIf="showProductForm" class="dialog-overlay" (click)="showProductForm = false">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Add Product</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Product Name *</label>
+        <input [(ngModel)]="productForm.product_name" class="form-control" placeholder="e.g., 8ft Wall">
+      </div>
+
+      <div class="form-field">
+        <label>Category</label>
+        <select [(ngModel)]="productForm.category" class="form-control">
+          <option value="concrete">Concrete Wall</option>
+          <option value="compound">Compound Wall</option>
+          <option value="panel">Panel</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+
+      <div class="form-field full-width">
+        <label>Specifications</label>
+        <textarea [(ngModel)]="productForm.specifications" class="form-control" rows="3" placeholder="Dimensions, weight, etc."></textarea>
+      </div>
+
+      <div class="form-field">
+        <label>Default Rate (₹)</label>
+        <input type="number" [(ngModel)]="productForm.default_rate" class="form-control" placeholder="0">
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="saveProduct()">
+        <mat-icon>save</mat-icon> Save
+      </button>
+      <button mat-button (click)="showProductForm = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Material Form Dialog -->
+<div *ngIf="showMaterialForm" class="dialog-overlay" (click)="showMaterialForm = false">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Add Material</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Material Name *</label>
+        <input [(ngModel)]="materialForm.material_name" class="form-control" placeholder="e.g., Portland Cement">
+      </div>
+
+      <div class="form-field">
+        <label>Category</label>
+        <select [(ngModel)]="materialForm.category" class="form-control">
+          <option value="cement">Cement</option>
+          <option value="sand">Sand</option>
+          <option value="aggregate">Aggregate</option>
+          <option value="chemical">Chemical</option>
+          <option value="steel">Steel</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Unit</label>
+        <select [(ngModel)]="materialForm.unit" class="form-control">
+          <option value="kg">Kg</option>
+          <option value="ton">Ton</option>
+          <option value="bag">Bag</option>
+          <option value="liter">Liter</option>
+          <option value="cubic_feet">Cubic Feet</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Current Rate (₹)</label>
+        <input type="number" [(ngModel)]="materialForm.current_rate" class="form-control" placeholder="0">
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="saveMaterial()">
+        <mat-icon>save</mat-icon> Save
+      </button>
+      <button mat-button (click)="showMaterialForm = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rate Card Form Dialog -->
+<div *ngIf="showRateCardForm" class="dialog-overlay" (click)="showRateCardForm = false">
+  <div class="dialog-content" (click)="$event.stopPropagation()">
+    <h2>Add Rate Card</h2>
+    
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Product Name *</label>
+        <input [(ngModel)]="rateCardForm.product_name" class="form-control" placeholder="8ft Wall">
+      </div>
+
+      <div class="form-field">
+        <label>Variant</label>
+        <input [(ngModel)]="rateCardForm.variant" class="form-control" placeholder="Standard, Premium, etc.">
+      </div>
+
+      <div class="form-field">
+        <label>Rate (₹) *</label>
+        <input type="number" [(ngModel)]="rateCardForm.rate" class="form-control" placeholder="0">
+      </div>
+
+      <div class="form-field">
+        <label>Effective From</label>
+        <input type="date" [(ngModel)]="rateCardForm.effective_from" class="form-control">
+      </div>
+    </div>
+
+    <div class="dialog-actions">
+      <button mat-raised-button color="primary" (click)="saveRateCard()">
+        <mat-icon>save</mat-icon> Save
+      </button>
+      <button mat-button (click)="showRateCardForm = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loader">
+  <mat-icon class="spin">refresh</mat-icon>
+  <p>Loading...</p>
+</div>

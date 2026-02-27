@@ -1,0 +1,153 @@
+<div class="public-resources-page">
+  <!-- Header -->
+  <section class="header-section">
+    <div class="container">
+      <h1>📚 Digital Library - Browse Collection</h1>
+      <p>Explore our extensive collection of books and study materials</p>
+      <div class="header-actions">
+        <button mat-stroked-button routerLink="/library">
+          <mat-icon>arrow_back</mat-icon>
+          Back to Library Info
+        </button>
+        <button mat-raised-button color="primary" (click)="goToLogin()">
+          <mat-icon>login</mat-icon>
+          Login to Borrow
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Info Banner -->
+  <section class="info-banner">
+    <div class="container">
+      <div class="banner-content">
+        <mat-icon>info</mat-icon>
+        <div>
+          <strong>Public Acces Mode:</strong> You can browse our collection, but login is required to borrow books,
+          download materials, or access full features. <a (click)="inquireForMembership()">Register for membership →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search & Filter Section -->
+  <section class="search-section">
+    <div class="container">
+      <div class="search-controls">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search books, authors, topics...</mat-label>
+          <input matInput [(ngModel)]="searchTerm" (ngModelChange)="filterBooks()" placeholder="Type to search">
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+
+        <div class="category-filters">
+          <mat-chip-listbox>
+            <mat-chip-option 
+              *ngFor="let category of categories" 
+              [selected]="selectedCategory === category.value"
+              (click)="selectCategory(category.value)">
+              {{ category.label }}
+            </mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </div>
+
+      <div class="results-count">
+        <p>Showing {{ filteredBooks.length }} of {{ books.length }} books</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Books Grid -->
+  <section class="books-section">
+    <div class="container">
+      <div class="books-grid" *ngIf="filteredBooks.length > 0">
+        <mat-card *ngFor="let book of filteredBooks" class="book-card">
+          <div class="book-cover">
+            <mat-icon class="book-icon">menu_book</mat-icon>
+            <div class="availability-badge" [class.unavailable]="!book.available">
+              {{ book.available ? '✓ Available' : '✗ Out' }}
+            </div>
+          </div>
+          
+          <mat-card-header>
+            <mat-card-title>{{ book.title }}</mat-card-title>
+            <mat-card-subtitle>by {{ book.author }}</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <p class="description">{{ book.description }}</p>
+            <div class="category-tag">{{ book.category | titlecase }}</div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button (click)="goToLogin()" [disabled]="!book.available">
+              <mat-icon>download</mat-icon>
+              Login to Borrow
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+
+      <!-- No Results -->
+      <div *ngIf="filteredBooks.length === 0" class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <h3>No books found</h3>
+        <p>Try adjusting your search or filter criteria</p>
+        <button mat-button color="primary" (click)="selectCategory('all'); searchTerm = ''; filterBooks()">
+          Clear Filters
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <mat-icon>lock_open</mat-icon>
+        <h2>Want Full Access?</h2>
+        <p>Register for library membership to borrow books, download materials, and access premium features</p>
+        <div class="cta-actions">
+          <button mat-raised-button color="primary" (click)="inquireForMembership()">
+            <mat-icon>how_to_reg</mat-icon>
+            Register Now
+          </button>
+          <button mat-raised-button color="accent" (click)="goToLogin()">
+            <mat-icon>login</mat-icon>
+            Already a Member? Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="features-section">
+    <div class="container">
+      <h2>What You Get With Membership:</h2>
+      <div class="features-grid">
+        <div class="feature-item">
+          <mat-icon>download</mat-icon>
+          <h3>Borrow Books</h3>
+          <p>Take books home or download digital copies</p>
+        </div>
+        <div class="feature-item">
+          <mat-icon>folder</mat-icon>
+          <h3>Study Materials</h3>
+          <p>Access premium study resources and notes</p>
+        </div>
+        <div class="feature-item">
+          <mat-icon>event_seat</mat-icon>
+          <h3>Reading Space</h3>
+          <p>Quiet study area with comfortable seating</p>
+        </div>
+        <div class="feature-item">
+          <mat-icon>support_agent</mat-icon>
+          <h3>Expert Guidance</h3>
+          <p>Get help from our experienced library staff</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,368 @@
+/* Public Resources Component Styles */
+
+.public-resources-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #F5F5F5;
+}
+
+/* Header Section */
+.header-section {
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+  color: white;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.header-section h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.header-section p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.95;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Info Banner */
+.info-banner {
+  background: #FFF3E0;
+  border-bottom: 3px solid #FFB300;
+  padding: 1.5rem 0;
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.banner-content mat-icon {
+  color: #E65100;
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.banner-content a {
+  color: #1565C0;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+/* Search Section */
+.search-section {
+  background: white;
+  padding: 2rem 0;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.search-controls {
+  margin-bottom: 1.5rem;
+}
+
+.search-field {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 1.5rem;
+}
+
+.category-filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+mat-chip-listbox {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+mat-chip-option {
+  cursor: pointer;
+}
+
+.results-count {
+  text-align: center;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Books Section */
+.books-section {
+  padding: 3rem 0;
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.book-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.book-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+}
+
+.book-cover {
+  position: relative;
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  padding: 2rem;
+  text-align: center;
+  border-radius: 8px 8px 0 0;
+  margin: -16px -16px 1rem;
+}
+
+.book-icon {
+  font-size: 80px !important;
+  width: 80px !important;
+  height: 80px !important;
+  color: #1565C0;
+}
+
+.availability-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  background: #1B5E20;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.availability-badge.unavailable {
+  background: #C62828;
+}
+
+mat-card-title {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  line-height: 1.4 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+mat-card-subtitle {
+  font-size: 0.95rem !important;
+  color: #666 !important;
+  margin-bottom: 1rem !important;
+}
+
+.description {
+  color: #777;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.category-tag {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: #E8F5E9;
+  color: #1B5E20;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+mat-card-actions {
+  padding: 1rem !important;
+  display: flex;
+  justify-content: center;
+}
+
+mat-card-actions button {
+  width: 100%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 8px;
+}
+
+.no-results mat-icon {
+  font-size: 80px !important;
+  width: 80px !important;
+  height: 80px !important;
+  color: #BDBDBD;
+  margin-bottom: 1rem;
+}
+
+.no-results h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin: 1rem 0 0.5rem;
+}
+
+.no-results p {
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+  color: white;
+  padding: 4rem 0;
+}
+
+.cta-content {
+  text-align: center;
+}
+
+.cta-content mat-icon {
+  font-size: 64px !important;
+  width: 64px !important;
+  height: 64px !important;
+  color: #FFD54F;
+  margin-bottom: 1rem;
+}
+
+.cta-content h2 {
+  font-size: 2.5rem;
+  margin: 1rem 0;
+}
+
+.cta-content p {
+  font-size: 1.2rem;
+  margin: 1rem 0 2rem;
+  opacity: 0.95;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-actions button {
+  padding: 0.75rem 2rem !important;
+  font-size: 1.05rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Features Section */
+.features-section {
+  background: white;
+  padding: 4rem 0;
+}
+
+.features-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #1565C0;
+  margin-bottom: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.feature-item {
+  text-align: center;
+  padding: 2rem;
+  background: #F5F5F5;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: #E3F2FD;
+  transform: scale(1.05);
+}
+
+.feature-item mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #1565C0;
+  margin-bottom: 1rem;
+}
+
+.feature-item h3 {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0.5rem 0;
+}
+
+.feature-item p {
+  color: #666;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-section h1 {
+    font-size: 2rem;
+  }
+
+  .books-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-field {
+    max-width: none;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+  }
+
+  .cta-actions button {
+    width: 100%;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding: 1rem;
+  }
+}
