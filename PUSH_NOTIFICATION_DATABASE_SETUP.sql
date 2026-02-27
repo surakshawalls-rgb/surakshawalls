@@ -156,12 +156,12 @@ BEGIN
     PERFORM queue_push_notification(
       'material_purchase',
       '🛒 Material Purchase',
-      NEW.material_name || ' - ₹' || (NEW.quantity * NEW.unit_price),
+      NEW.material_name || ' - ₹' || (NEW.quantity * NEW.unit_cost),
       jsonb_build_object(
         'entry_id', NEW.id,
         'material_name', NEW.material_name,
         'quantity', NEW.quantity,
-        'amount', (NEW.quantity * NEW.unit_price)
+        'amount', (NEW.quantity * NEW.unit_cost)
       )
     );
   END IF;

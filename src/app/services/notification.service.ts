@@ -89,7 +89,7 @@ export class NotificationService {
     // Listen to material purchases (INSERT, UPDATE, DELETE)
     this.subscribeToTable('raw_materials_purchase', (payload) => {
       const data = payload.new || payload.old as any;
-      const totalAmount = (data.quantity * data.unit_price).toLocaleString('en-IN');
+      const totalAmount = (data.quantity * data.unit_cost).toLocaleString('en-IN');
       if (payload.eventType === 'INSERT') {
         this.showNotification('🛒 Material Purchase', `${data.material_name} - ₹${totalAmount}`, 'success');
       } else if (payload.eventType === 'UPDATE') {
