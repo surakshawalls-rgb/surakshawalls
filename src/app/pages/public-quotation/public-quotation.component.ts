@@ -479,9 +479,9 @@ export class PublicQuotationComponent {
           <div class="brand-logo">🛡️ SURAKSHA WALLS</div>
           <div class="brand-tagline">Precast Boundary Wall | RCC Walls & Fencing Experts in Bhadohi</div>
           <div class="contact-info">
-            <div>📱 <strong>9506629814</strong> | <strong>8090272727</strong></div>
+            <div>📱 <strong>8090272727</strong> | <strong>9506629814</strong></div>
             <div>🌐 www.surakshawalls.shop | www.surakshawalls.space</div>
-            <div>📍 Mahajuda, Bhadohi, Uttar Pradesh - 221401</div>
+            <div>📍 Mahajuda, Bhadohi, Uttar Pradesh - 221404</div>
           </div>
         </div>
 
@@ -587,7 +587,7 @@ export class PublicQuotationComponent {
             </ul>
             <p style="color: #78350f; margin: 8px 0; line-height: 1.6;">
               <strong>For accurate pricing,</strong> we recommend a site visit and detailed measurement. 
-              Please contact us at <strong>9506629814</strong> or <strong>8090272727</strong> to schedule a visit.
+              Please contact us at <strong>8090272727</strong> or <strong>9506629814</strong> to schedule a visit.
             </p>
           </div>
 
@@ -615,7 +615,7 @@ export class PublicQuotationComponent {
 
         <div class="footer">
           <p style="margin: 5px 0; font-size: 16px; font-weight: bold; color: #1e3a8a;">Thank you for considering Suraksha Walls!</p>
-          <p style="margin: 5px 0; color: #666;">For any queries or site visit, please contact: <strong>9506629814</strong> | <strong>8090272727</strong></p>
+          <p style="margin: 5px 0; color: #666;">For any queries or site visit, please contact: <strong>8090272727</strong> | <strong>9506629814</strong></p>
           <p style="margin: 15px 0 5px 0; font-size: 12px; color: #999;">This is a computer-generated quotation and does not require signature.</p>
           <p style="margin: 5px 0; font-size: 12px; color: #999;">Suraksha Walls - Your Trusted Partner for Boundary Solutions in Bhadohi</p>
         </div>
