@@ -8,6 +8,7 @@ import { ClientPaymentService, ClientOutstanding } from '../../services/client-p
 import { LaborPaymentService, WorkerOutstanding, WageEntryWithPayments, WagePayment } from '../../services/labor-payment.service';
 import { InventoryService } from '../../services/inventory.service';
 import { SupabaseService } from '../../services/supabase.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 interface PaymentDialog {
   show: boolean;
@@ -34,7 +35,7 @@ interface PassbookDialog {
 @Component({
   selector: 'app-reports-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent],
   templateUrl: './reports-dashboard.component.html',
   styleUrls: ['./reports-dashboard.component.css']
 })
@@ -151,7 +152,7 @@ export class ReportsDashboardComponent implements OnInit {
     try {
       this.loading = true;
       const { data, error } = await this.supabase.supabase
-        .from('partners')
+        .from('partner_master')
         .select('*')
         .order('name');
       

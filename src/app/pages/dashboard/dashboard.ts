@@ -6,11 +6,12 @@ import { CompanyCashService } from '../../services/company-cash.service';
 import { PartnerWalletService } from '../../services/partner-wallet.service';
 import { StockSalesService } from '../../services/stock-sales.service';
 import { InventoryService } from '../../services/inventory.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, BreadcrumbComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })

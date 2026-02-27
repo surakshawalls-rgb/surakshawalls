@@ -13,6 +13,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { LibraryService } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 interface DashboardStats {
   totalSeats: number;
@@ -39,7 +40,8 @@ interface DashboardStats {
     MatChipsModule,
     MatTooltipModule,
     MatProgressBarModule,
-    MatBadgeModule
+    MatBadgeModule,
+    BreadcrumbComponent
   ],
   templateUrl: './library-dashboard.component.html',
   styleUrls: ['./library-dashboard.component.css']

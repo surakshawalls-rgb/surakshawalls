@@ -58,8 +58,8 @@ export class ClientPaymentService {
           date,
           client_id,
           total_amount,
-          payment_amount,
-          clients_master!inner(id, client_name, phone)
+          paid_amount,
+          client_ledger!inner(id, client_name, phone)
         `)
         .order('date', { ascending: false });
 
@@ -78,7 +78,7 @@ export class ClientPaymentService {
 
       sales?.forEach((sale: any) => {
         const clientId = sale.client_id;
-        const client = sale.clients_master;
+        const client = sale.client_ledger;
 
         if (!clientMap.has(clientId)) {
           clientMap.set(clientId, {
@@ -95,11 +95,11 @@ export class ClientPaymentService {
         // Calculate payments for this sale
         const salePayments = payments?.filter((p: any) => p.sales_transaction_id === sale.id) || [];
         const totalPaidLater = salePayments.reduce((sum: number, p: any) => sum + p.amount_paid, 0);
-        const currentOutstanding = sale.total_amount - sale.payment_amount - totalPaidLater;
+        const currentOutstanding = sale.total_amount - sale.paid_amount - totalPaidLater;
 
         const clientData = clientMap.get(clientId)!;
         clientData.total_sales += sale.total_amount;
-        clientData.total_paid += sale.payment_amount + totalPaidLater;
+        clientData.total_paid += sale.paid_amount + totalPaidLater;
         clientData.outstanding += currentOutstanding;
 
         if (currentOutstanding > 0) {
@@ -109,7 +109,7 @@ export class ClientPaymentService {
             client_id: clientId,
             client_name: client.client_name,
             total_amount: sale.total_amount,
-            paid_initially: sale.payment_amount,
+            paid_initially: sale.paid_amount,
             total_paid_later: totalPaidLater,
             current_outstanding: currentOutstanding,
             payment_history: salePayments
@@ -134,7 +134,7 @@ export class ClientPaymentService {
       if (payment.sales_transaction_id) {
         const { data: sale, error: saleError } = await this.supabase.supabase
           .from('sales_transactions')
-          .select('id, total_amount, payment_amount, client_id')
+          .select('id, total_amount, paid_amount, client_id')
           .eq('id', payment.sales_transaction_id)
           .single();
 
@@ -147,7 +147,7 @@ export class ClientPaymentService {
           .eq('sales_transaction_id', payment.sales_transaction_id);
 
         const totalPaidLater = existingPayments?.reduce((sum: number, p: any) => sum + p.amount_paid, 0) || 0;
-        const currentOutstanding = sale.total_amount - sale.payment_amount - totalPaidLater;
+        const currentOutstanding = sale.total_amount - sale.paid_amount - totalPaidLater;
 
         if (payment.amount_paid > currentOutstanding) {
           return {
@@ -177,14 +177,14 @@ export class ClientPaymentService {
 
       // Update client outstanding
       const { data: client } = await this.supabase.supabase
-        .from('clients_master')
+        .from('client_ledger')
         .select('outstanding')
         .eq('id', payment.client_id)
         .single();
 
       if (client) {
         await this.supabase.supabase
-          .from('clients_master')
+          .from('client_ledger')
           .update({ outstanding: Math.max(0, client.outstanding - payment.amount_paid) })
           .eq('id', payment.client_id);
       }
@@ -246,7 +246,7 @@ export class ClientPaymentService {
         .from('client_payments')
         .select(`
           *,
-          sales_transactions(date, total_amount, payment_amount),
+          sales_transactions(date, total_amount, paid_amount),
           partner_master(name)
         `)
         .eq('client_id', clientId)
@@ -276,7 +276,7 @@ export class ClientPaymentService {
       // Get current outstanding
       const { data: sale } = await this.supabase.supabase
         .from('sales_transactions')
-        .select('total_amount, payment_amount')
+        .select('total_amount, paid_amount')
         .eq('id', salesTransactionId)
         .single();
 
@@ -290,7 +290,7 @@ export class ClientPaymentService {
         .eq('sales_transaction_id', salesTransactionId);
 
       const totalPaidLater = existingPayments?.reduce((sum: number, p: any) => sum + p.amount_paid, 0) || 0;
-      const outstanding = sale.total_amount - sale.payment_amount - totalPaidLater;
+      const outstanding = sale.total_amount - sale.paid_amount - totalPaidLater;
 
       if (outstanding <= 0) {
         return { success: false, error: 'No outstanding amount' };
@@ -327,7 +327,7 @@ export class ClientPaymentService {
     try {
       const { data: sales } = await this.supabase.supabase
         .from('sales_transactions')
-        .select('total_amount, payment_amount')
+        .select('total_amount, paid_amount')
         .eq('client_id', clientId);
 
       const { data: payments } = await this.supabase.supabase
@@ -336,7 +336,7 @@ export class ClientPaymentService {
         .eq('client_id', clientId);
 
       const totalSales = sales?.reduce((sum, s) => sum + s.total_amount, 0) || 0;
-      const paidAtSale = sales?.reduce((sum, s) => sum + s.payment_amount, 0) || 0;
+      const paidAtSale = sales?.reduce((sum, s) => sum + s.paid_amount, 0) || 0;
       const paidLater = payments?.reduce((sum, p) => sum + p.amount_paid, 0) || 0;
 
       return {

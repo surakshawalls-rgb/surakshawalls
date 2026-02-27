@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { LaborPaymentService, WorkerOutstanding, WagePayment, WageEntryWithPayments } from '../../services/labor-payment.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 interface Labour {
   labour_id: string;
@@ -30,7 +31,7 @@ interface PaymentRecord {
 @Component({
   selector: 'app-labour-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent],
   templateUrl: './labour-ledger.html',
   styleUrls: ['./labour-ledger.css']
 })
@@ -104,9 +105,24 @@ export class LabourLedgerComponent implements OnInit {
 
   async loadLabours() {
     try {
-      const { data, error } = await this.db.queryView('labour_ledger');
+      const { data, error } = await this.db.supabase
+        .from('workers_master')
+        .select('id, name, phone, total_earned, total_paid, cumulative_balance, active')
+        .eq('active', true)
+        .order('name');
+        
       if (error) throw error;
-      this.labourList = data || [];
+      
+      this.labourList = (data || []).map((worker: any) => ({
+        labour_id: worker.id,
+        name: worker.name,
+        phone: worker.phone || '',
+        total_earned: worker.total_earned || 0,
+        total_paid: worker.total_paid || 0,
+        due_amount: worker.cumulative_balance || 0,
+        status: worker.cumulative_balance > 0 ? 'pending' : 'cleared'
+      }));
+      
       this.cd.detectChanges();
     } catch (error) {
       console.error('Error loading labour ledger:', error);

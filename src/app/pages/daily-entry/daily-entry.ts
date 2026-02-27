@@ -8,6 +8,7 @@ import { WorkerService, Worker, WAGE_RATES } from '../../services/worker.service
 import { SalesService, SaleData } from '../../services/sales.service';
 import { ClientService, Client } from '../../services/client.service';
 import { InventoryService } from '../../services/inventory.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 // ========== INTERFACES ==========
 
@@ -50,7 +51,7 @@ interface OtherExpense {
 interface YardLossItem {
   product_name: string;
   quantity: number;
-  reason: string;
+  reason: string; // Production defect, Transport damage, Loading damage, etc.
 }
 
 interface Partner {
@@ -62,7 +63,7 @@ interface Partner {
 @Component({
   selector: 'app-daily-entry',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent],
   templateUrl: './daily-entry.html',
   styleUrls: ['./daily-entry.css']
 })
@@ -132,12 +133,12 @@ export class UnifiedDailyEntryComponent implements OnInit {
   expenseAmount: number = 0;
   expensePaidBy: string = '';
   
-  // ========== SECTION 5: YARD LOSS ==========
-  hasYardLoss: boolean = false;
-  yardLossItems: YardLossItem[] = [];
+  // ========== SECTION 5: PRODUCTION/TRANSPORT DAMAGE ==========
+  hasYardLoss: boolean = false; // Tracks if any damage occurred
+  yardLossItems: YardLossItem[] = []; // List of damaged items
   selectedYardLossProduct: string = '';
   yardLossQuantity: number = 0;
-  yardLossReason: string = '';
+  yardLossReason: string = ''; // e.g., "Broken during loading", "Transport damage", "Production defect"
   
   // ========== PARTNERS ==========
   partners: Partner[] = [];
@@ -741,7 +742,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
           }]);
       }
       
-      // 4. Save yard loss
+      // 4. Save production/transport damage (yard loss)
       if (this.hasYardLoss && this.yardLossItems.length > 0) {
         for (const lossItem of this.yardLossItems) {
           await this.db.supabase
@@ -750,7 +751,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
               date: this.entryDate,
               product_name: lossItem.product_name,
               quantity: lossItem.quantity,
-              reason: lossItem.reason
+              reason: lossItem.reason // Production defect, transport damage, loading damage, etc.
             }]);
             
           // Deduct from finished goods inventory

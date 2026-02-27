@@ -1,4 +1,5 @@
-﻿<div class="unified-daily-entry-container">
+﻿<app-breadcrumb></app-breadcrumb>
+<div class="unified-daily-entry-container">
   
   <!-- HEADER -->
   <div class="page-header">
@@ -8,7 +9,7 @@
           <span class="icon"></span>
           Unified Daily Entry
         </h1>
-        <p class="page-subtitle">Complete daily operations: Production  Labor  Sales  Expenses  Yard Loss</p>
+        <p class="page-subtitle">Complete daily operations: Production • Labor • Sales • Expenses • Production/Transport Damage</p>
       </div>
       <div class="header-right">
         <input type="date" [(ngModel)]="entryDate" class="date-picker">
@@ -530,24 +531,24 @@
       </div>
     </div>
 
-    <!-- ========== SECTION 5: YARD LOSS ========== -->
+    <!-- ========== SECTION 5: PRODUCTION DAMAGE / TRANSPORT DAMAGE ========== -->
     <div class="section-card">
       <div class="section-header loss-header">
         <div class="section-title">
-          <span class="section-icon"></span>
-          <h2>Yard Loss</h2>
+          <span class="section-icon">⚠️</span>
+          <h2>Production Damage / Transport Damage</h2>
         </div>
         <label class="toggle-switch">
           <input type="checkbox" [(ngModel)]="hasYardLoss">
           <span class="toggle-slider"></span>
-          <span class="toggle-label">Damaged Items?</span>
+          <span class="toggle-label">Any Damage Today?</span>
         </label>
       </div>
 
       <div class="section-body" *ngIf="hasYardLoss">
         <div class="form-grid">
           <div class="form-group">
-            <label>Product</label>
+            <label>Product Damaged</label>
             <select [(ngModel)]="selectedYardLossProduct" class="form-control">
               <option value="">Select Product</option>
               <option *ngFor="let prod of products" [value]="prod.product_name">
@@ -562,8 +563,8 @@
           </div>
 
           <div class="form-group col-span-2">
-            <label>Reason</label>
-            <input type="text" [(ngModel)]="yardLossReason" placeholder="Enter reason for damage" class="form-control">
+            <label>Reason (Production issue / Loading / Transport / Other)</label>
+            <input type="text" [(ngModel)]="yardLossReason" placeholder="e.g., Broken during loading, Transport damage, Production defect" class="form-control">
           </div>
 
           <div class="form-group">
@@ -571,26 +572,26 @@
             <button (click)="addYardLossItem()" 
                     [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossReason"
                     class="btn btn-primary">
-              + Add Loss
+              ⚠️ Add Damaged Item
             </button>
           </div>
         </div>
 
-        <!-- Yard Loss Table -->
+        <!-- Damage Items Table -->
         <div class="data-table" *ngIf="yardLossItems.length > 0">
           <table>
             <thead>
               <tr>
                 <th>Product</th>
-                <th>Quantity</th>
-                <th>Reason</th>
+                <th>Quantity Damaged</th>
+                <th>Reason / Type of Damage</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of yardLossItems; let i = index">
                 <td><strong>{{ item.product_name }}</strong></td>
-                <td>{{ item.quantity }}</td>
+                <td><span class="badge badge-danger">{{ item.quantity }}</span></td>
                 <td>{{ item.reason }}</td>
                 <td>
                   <button (click)="removeYardLossItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
@@ -602,8 +603,8 @@
       </div>
 
       <div class="empty-state" *ngIf="!hasYardLoss">
-        <span class="empty-icon"></span>
-        <p>No yard loss today</p>
+        <span class="empty-icon">✅</span>
+        <p>No damage or loss today</p>
       </div>
     </div>
 

@@ -13,6 +13,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/library.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-library-students',
@@ -28,7 +29,8 @@ import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/libr
     MatIconModule,
     MatCardModule,
     MatChipsModule,
-    MatProgressBarModule
+    MatProgressBarModule,
+    BreadcrumbComponent
   ],
   templateUrl: './library-students.component.html',
   styleUrls: ['./library-students.component.css']

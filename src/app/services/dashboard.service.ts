@@ -14,7 +14,7 @@ export class DashboardService {
   }
 
   async getClients() {
-    const res = await this.supabase.from('clients').select('id,client_name');
+    const res = await this.supabase.from('client_ledger').select('id,client_name');
     console.log('[DashboardService] getClients ->', res);
     return res;
   }

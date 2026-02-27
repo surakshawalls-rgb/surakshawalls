@@ -14,11 +14,12 @@ import { addDays, differenceInDays, getDaysInMonth, startOfDay, format } from 'd
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-library-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule, MatSnackBarModule, MatBadgeModule, MatDatepickerModule, MatNativeDateModule],
+  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule, MatSnackBarModule, MatBadgeModule, MatDatepickerModule, MatNativeDateModule, BreadcrumbComponent],
   providers: [MatDatepickerModule, MatNativeDateModule],
   templateUrl: './library-grid.component.html',
   styleUrls: ['./library-grid.component.css']

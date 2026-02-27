@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ClientService, Client, ClientStatement } from '../../services/client.service';
 import { ClientPaymentService, ClientOutstanding, ClientPaymentRecord, SalesTransactionWithPayments } from '../../services/client-payment.service';
+import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-client-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent],
   templateUrl: './client-ledger.component.html',
   styleUrls: ['./client-ledger.component.css']
 })

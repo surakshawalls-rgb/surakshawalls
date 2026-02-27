@@ -164,6 +164,6 @@ export class ManageProductsComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/admin-manage']);
+    this.router.navigate(['/dashboard']);
   }
 }

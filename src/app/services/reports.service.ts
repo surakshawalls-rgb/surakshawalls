@@ -203,5 +203,148 @@ export class ReportsService {
       }
     };
   }
+
+  // Walls Module - Production Report
+  async getProductionReport(startDate: string, endDate: string) {
+    // TODO: Implement production report logic - query production_log table
+    // Sample structure for walls production data
+    return {
+      period: { startDate, endDate },
+      totalWalls: 0,
+      totalSqft: 0,
+      byProductType: [],
+      dailyProduction: [],
+      qualityMetrics: {
+        accepted: 0,
+        rejected: 0,
+        rework: 0
+      }
+    };
+  }
+
+  // Walls Module - Sales Report
+  async getSalesReport(startDate: string, endDate: string) {
+    // TODO: Implement sales report logic - query sales & revenue tables
+    // Sample structure for walls sales data
+    return {
+      period: { startDate, endDate },
+      totalRevenue: 0,
+      totalOrders: 0,
+      averageOrderValue: 0,
+      byClient: [],
+      byProductType: [],
+      paymentStatus: {
+        paid: 0,
+        pending: 0,
+        overdue: 0
+      }
+    };
+  }
+
+  // Walls Module - Labour Report
+  async getLabourReport(startDate: string, endDate: string) {
+    // Query existing labour table
+    try {
+      const { data, error } = await this.supabase
+        .from('labour')
+        .select('*')
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+
+      const totalAmount = data?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
+      const totalDays = data?.length || 0;
+
+      return {
+        period: { startDate, endDate },
+        totalAmount,
+        totalDays,
+        averagePerDay: totalDays > 0 ? (totalAmount / totalDays) : 0,
+        transactions: data || [],
+        byWorker: this.groupLabourByWorker(data || [])
+      };
+    } catch (error) {
+      console.error('[ReportsService] Labour report error:', error);
+      return {
+        period: { startDate, endDate },
+        totalAmount: 0,
+        totalDays: 0,
+        averagePerDay: 0,
+        transactions: [],
+        byWorker: []
+      };
+    }
+  }
+
+  // Walls Module - Inventory Report
+  async getInventoryReport() {
+    // TODO: Implement inventory report logic - query material_inventory table
+    // Sample structure for walls inventory data
+    return {
+      materials: [],
+      lowStockItems: [],
+      totalValue: 0,
+      byCategory: [],
+      reorderSuggestions: []
+    };
+  }
+
+  // Walls Module - Financial Report
+  async getFinancialReport(startDate: string, endDate: string) {
+    // Reuse comprehensive report for financial data
+    try {
+      const data = await this.getComprehensiveReport(startDate, endDate);
+      return {
+        period: { startDate, endDate },
+        revenue: data.summary?.totalRevenue || 0,
+        totalReceived: data.summary?.totalReceived || 0,
+        expenses: {
+          labour: data.financial?.labour?.total || 0,
+          total: data.summary?.totalExpenses || 0
+        },
+        profitLoss: {
+          amount: data.summary?.profitLoss || 0,
+          margin: data.summary?.profitMargin || 0
+        },
+        outstanding: data.summary?.totalDue || 0
+      };
+    } catch (error) {
+      console.error('[ReportsService] Financial report error:', error);
+      return {
+        period: { startDate, endDate },
+        revenue: 0,
+        totalReceived: 0,
+        expenses: { labour: 0, total: 0 },
+        profitLoss: { amount: 0, margin: 0 },
+        outstanding: 0
+      };
+    }
+  }
+
+  // Helper method for labour grouping
+  private groupLabourByWorker(labourData: any[]): any[] {
+    const grouped = new Map();
+    
+    labourData.forEach(item => {
+      const workerName = item.worker_name || 'Unknown';
+      if (!grouped.has(workerName)) {
+        grouped.set(workerName, {
+          name: workerName,
+          totalAmount: 0,
+          days: 0,
+          transactions: []
+        });
+      }
+      
+      const worker = grouped.get(workerName);
+      worker.totalAmount += item.amount || 0;
+      worker.days += 1;
+      worker.transactions.push(item);
+    });
+    
+    return Array.from(grouped.values());
+  }
 }
 

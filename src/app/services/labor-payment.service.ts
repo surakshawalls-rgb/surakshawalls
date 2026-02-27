@@ -44,81 +44,72 @@ export class LaborPaymentService {
   constructor(private supabase: SupabaseService) {}
 
   /**
-   * Get all workers with outstanding wages
+   * Get all workers with outstanding wages (using wage_payments table)
    */
   async getWorkersWithOutstanding(): Promise<WorkerOutstanding[]> {
     try {
-      // Get all wage entries with outstanding
+      // Get workers from workers_master with cumulative balance
+      const { data: workers, error: workersError } = await this.supabase.supabase
+        .from('workers_master')
+        .select('id, name, phone, cumulative_balance')
+        .eq('active', true)
+        .gt('cumulative_balance', 0)
+        .order('cumulative_balance', { ascending: false });
+
+      if (workersError) throw workersError;
+
+      if (!workers || workers.length === 0) {
+        return [];
+      }
+
+      // Get wage entries for these workers
+      const workerIds = workers.map((w: any) => w.id);
       const { data: wageEntries, error: wageError } = await this.supabase.supabase
         .from('wage_entries')
-        .select(`
-          id,
-          date,
-          worker_id,
-          attendance_type,
-          wage_earned,
-          paid_today,
-          workers_master!inner(id, name, phone)
-        `)
-        .order('date', { ascending: false });
+        .select('id, date, worker_id, attendance_type, wage_earned, paid_today')
+        .in('worker_id', workerIds)
+        .order('date', { ascending: false});
 
       if (wageError) throw wageError;
 
-      // Get all subsequent payments
-      const { data: payments, error: paymentsError } = await this.supabase.supabase
+      // Get all wage payments for these workers
+      const { data: wagePayments, error: paymentsError } = await this.supabase.supabase
         .from('wage_payments')
         .select('*')
-        .order('payment_date', { ascending: false });
+        .in('worker_id', workerIds);
 
       if (paymentsError) throw paymentsError;
 
-      // Group by worker
-      const workerMap = new Map<string, WorkerOutstanding>();
-
-      wageEntries?.forEach((entry: any) => {
-        const workerId = entry.worker_id;
-        const worker = entry.workers_master;
-
-        if (!workerMap.has(workerId)) {
-          workerMap.set(workerId, {
-            worker_id: workerId,
-            worker_name: worker.name,
-            phone: worker.phone,
-            total_earned: 0,
-            total_paid: 0,
-            outstanding: 0,
-            wage_entries: []
-          });
-        }
-
-        // Calculate payments for this wage entry
-        const entryPayments = payments?.filter((p: any) => p.wage_entry_id === entry.id) || [];
-        const totalPaidLater = entryPayments.reduce((sum: number, p: any) => sum + p.amount_paid, 0);
-        const currentOutstanding = entry.wage_earned - entry.paid_today - totalPaidLater;
-
-        const workerData = workerMap.get(workerId)!;
-        workerData.total_earned += entry.wage_earned;
-        workerData.total_paid += entry.paid_today + totalPaidLater;
-        workerData.outstanding += currentOutstanding;
-
-        if (currentOutstanding > 0) {
-          workerData.wage_entries.push({
-            wage_entry_id: entry.id,
-            work_date: entry.date,
-            worker_id: workerId,
-            worker_name: worker.name,
-            attendance_type: entry.attendance_type,
-            wage_earned: entry.wage_earned,
-            paid_initially: entry.paid_today,
-            total_paid_later: totalPaidLater,
-            current_outstanding: currentOutstanding,
-            payment_history: entryPayments
-          });
-        }
+      // Build worker outstanding list
+      return workers.map((worker: any) => {
+        const workerWageEntries = wageEntries?.filter((e: any) => e.worker_id === worker.id) || [];
+        
+        return {
+          worker_id: worker.id,
+          worker_name: worker.name,
+          phone: worker.phone || '',
+          total_earned: workerWageEntries.reduce((sum: number, e: any) => sum + (e.wage_earned || 0), 0),
+          total_paid: workerWageEntries.reduce((sum: number, e: any) => sum + (e.paid_today || 0), 0),
+          outstanding: worker.cumulative_balance,
+          wage_entries: workerWageEntries.map((entry: any) => {
+            const entryPayments = wagePayments?.filter((p: any) => p.wage_entry_id === entry.id) || [];
+            const totalPaidLater = entryPayments.reduce((sum: number, p: any) => sum + p.amount_paid, 0);
+            
+            return {
+              wage_entry_id: entry.id,
+              work_date: entry.date,
+              worker_id: worker.id,
+              worker_name: worker.name,
+              attendance_type: entry.attendance_type || 'Full Day',
+              wage_earned: entry.wage_earned || 0,
+              paid_initially: entry.paid_today || 0,
+              total_paid_later: totalPaidLater,
+              current_outstanding: (entry.wage_earned || 0) - (entry.paid_today || 0) - totalPaidLater,
+              payment_history: entryPayments
+            };
+          })
+        };
       });
-
-      // Filter only workers with outstanding
-      return Array.from(workerMap.values()).filter(w => w.outstanding > 0);
     } catch (error) {
       console.error('Error getting workers with outstanding:', error);
       throw error;
@@ -126,89 +117,53 @@ export class LaborPaymentService {
   }
 
   /**
-   * Record a payment for a wage entry
+   * Record a payment for a wage entry (using wage_payments table)
    */
   async recordPayment(payment: WagePayment): Promise<{ success: boolean; error?: string }> {
     try {
-      // Get the wage entry to validate
-      const { data: wageEntry, error: wageError } = await this.supabase.supabase
-        .from('wage_entries')
-        .select('id, wage_earned, paid_today, worker_id')
-        .eq('id', payment.wage_entry_id)
+      // Get worker's current balance
+      const { data: worker, error: workerError } = await this.supabase.supabase
+        .from('workers_master')
+        .select('cumulative_balance')
+        .eq('id', payment.worker_id)
         .single();
 
-      if (wageError) throw wageError;
+      if (workerError) throw workerError;
 
-      // Calculate current outstanding
-      const { data: existingPayments } = await this.supabase.supabase
-        .from('wage_payments')
-        .select('amount_paid')
-        .eq('wage_entry_id', payment.wage_entry_id);
-
-      const totalPaidLater = existingPayments?.reduce((sum: number, p: any) => sum + p.amount_paid, 0) || 0;
-      const currentOutstanding = wageEntry.wage_earned - wageEntry.paid_today - totalPaidLater;
-
-      if (payment.amount_paid > currentOutstanding) {
+      if (payment.amount_paid > worker.cumulative_balance) {
         return {
           success: false,
-          error: `Payment amount ₹${payment.amount_paid} exceeds outstanding ₹${currentOutstanding}`
+          error: `Payment amount ₹${payment.amount_paid} exceeds outstanding ₹${worker.cumulative_balance}`
         };
       }
 
-      // Insert payment record
+      // Insert into wage_payments table
       const { error: insertError } = await this.supabase.supabase
         .from('wage_payments')
         .insert([{
           wage_entry_id: payment.wage_entry_id,
-          worker_id: wageEntry.worker_id,
+          worker_id: payment.worker_id,
           payment_date: payment.payment_date,
           amount_paid: payment.amount_paid,
-          paid_by_partner_id: payment.paid_by_partner_id || null,
+          paid_by_partner_id: payment.paid_by_partner_id,
           payment_mode: payment.payment_mode,
           notes: payment.notes
         }]);
 
       if (insertError) throw insertError;
 
-      // Update worker cumulative balance
-      const { error: updateError } = await this.supabase.supabase.rpc(
-        'update_worker_balance',
-        {
-          p_worker_id: wageEntry.worker_id,
-          p_amount: -payment.amount_paid  // Negative because we're reducing debt
-        }
-      );
-
-      // If RPC doesn't exist, update manually
-      if (updateError) {
-        const { data: worker } = await this.supabase.supabase
-          .from('workers_master')
-          .select('cumulative_balance')
-          .eq('id', wageEntry.worker_id)
-          .single();
-
-        if (worker) {
-          await this.supabase.supabase
-            .from('workers_master')
-            .update({ cumulative_balance: worker.cumulative_balance - payment.amount_paid })
-            .eq('id', wageEntry.worker_id);
-        }
+      // Record in firm_cash_ledger if paid from firm cash
+      if (!payment.paid_by_partner_id) {
+        await this.supabase.supabase
+          .from('firm_cash_ledger')
+          .insert([{
+            date: payment.payment_date,
+            type: 'payment',
+            amount: payment.amount_paid,
+            category: 'wage_payment',
+            description: `Wage payment${payment.notes ? ' - ' + payment.notes : ''}`
+          }]);
       }
-
-      // Record in firm_cash_ledger
-      const paidByName = payment.paid_by_partner_id ? 
-        await this.getPartnerName(payment.paid_by_partner_id) : 'Firm Cash';
-
-      await this.supabase.supabase
-        .from('firm_cash_ledger')
-        .insert([{
-          transaction_date: payment.payment_date,
-          transaction_type: 'expense',
-          category: 'labor_wage_payment',
-          amount: payment.amount_paid,
-          partner_id: payment.paid_by_partner_id || null,
-          description: `Wage payment to worker (${paidByName})${payment.notes ? ' - ' + payment.notes : ''}`
-        }]);
 
       return { success: true };
     } catch (error) {
@@ -227,10 +182,7 @@ export class LaborPaymentService {
     try {
       const { data, error } = await this.supabase.supabase
         .from('wage_payments')
-        .select(`
-          *,
-          partner_master(name)
-        `)
+        .select('*')
         .eq('wage_entry_id', wageEntryId)
         .order('payment_date', { ascending: false });
 
@@ -250,11 +202,7 @@ export class LaborPaymentService {
     try {
       const { data, error } = await this.supabase.supabase
         .from('wage_payments')
-        .select(`
-          *,
-          wage_entries(date, attendance_type, wage_earned, paid_today),
-          partner_master(name)
-        `)
+        .select('*')
         .eq('worker_id', workerId)
         .order('payment_date', { ascending: false });
 
@@ -268,47 +216,35 @@ export class LaborPaymentService {
   }
 
   /**
-   * Clear all outstanding for a wage entry
+   * Clear all outstanding for a worker
    */
   async clearOutstanding(
-    wageEntryId: string,
+    workerId: string,
     paidByPartnerId: string | null,
     paymentDate: string,
     notes?: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Get current outstanding
-      const { data: wageEntry } = await this.supabase.supabase
-        .from('wage_entries')
-        .select('wage_earned, paid_today, worker_id')
-        .eq('id', wageEntryId)
+      // Get worker's current balance
+      const { data: worker } = await this.supabase.supabase
+        .from('workers_master')
+        .select('cumulative_balance')
+        .eq('id', workerId)
         .single();
 
-      if (!wageEntry) {
-        return { success: false, error: 'Wage entry not found' };
-      }
-
-      const { data: existingPayments } = await this.supabase.supabase
-        .from('wage_payments')
-        .select('amount_paid')
-        .eq('wage_entry_id', wageEntryId);
-
-      const totalPaidLater = existingPayments?.reduce((sum: number, p: any) => sum + p.amount_paid, 0) || 0;
-      const outstanding = wageEntry.wage_earned - wageEntry.paid_today - totalPaidLater;
-
-      if (outstanding <= 0) {
+      if (!worker || worker.cumulative_balance <= 0) {
         return { success: false, error: 'No outstanding amount' };
       }
 
       // Record full payment
       return await this.recordPayment({
-        wage_entry_id: wageEntryId,
-        worker_id: wageEntry.worker_id,
+        wage_entry_id: '', // Not needed in simplified version
+        worker_id: workerId,
         payment_date: paymentDate,
-        amount_paid: outstanding,
+        amount_paid: worker.cumulative_balance,
         paid_by_partner_id: paidByPartnerId || undefined,
         payment_mode: 'cash',
-        notes: notes || 'Full outstanding cleared'
+        notes: notes || 'All outstanding cleared'
       });
     } catch (error) {
       console.error('Error clearing outstanding:', error);
@@ -327,7 +263,7 @@ export class LaborPaymentService {
       const { data } = await this.supabase.supabase
         .from('partner_master')
         .select('name')
-        .eq('partner_id', partnerId)
+        .eq('id', partnerId)
         .single();
 
       return data?.name || 'Unknown Partner';

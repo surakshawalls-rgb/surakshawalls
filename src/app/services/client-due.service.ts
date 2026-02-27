@@ -84,7 +84,7 @@ export class ClientDueService {
 
   // Get due summary for all clients
   async getAllClientsDue() {
-    const clientsResponse = await this.supabase.from('clients').select('id, client_name');
+    const clientsResponse = await this.supabase.from('client_ledger').select('id, client_name');
     
     if (clientsResponse.error) {
       console.error('getAllClientsDue error:', clientsResponse.error);

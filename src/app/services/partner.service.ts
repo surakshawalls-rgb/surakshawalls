@@ -6,6 +6,20 @@ export class PartnerService {
 
   constructor(private supabase: SupabaseService) {}
 
+  async getAllPartners() {
+    const { data, error } = await this.supabase.supabase
+      .from('partner_master')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('[PartnerService] getAllPartners error:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
   insertExpense(date: string, partner_id: string, title: string, amount: number, category: string, description?: string) {
     // Record partner contribution in firm_cash_ledger
     return this.supabase.supabase.from('firm_cash_ledger').insert([{

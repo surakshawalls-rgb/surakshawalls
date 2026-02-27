@@ -1,60 +1,294 @@
-<div class="client-container">
+<app-breadcrumb></app-breadcrumb>
 
-  <div class="top-bar">
-    <h2>💰 Client Payment & Due</h2>
-    <button class="refresh-btn" (click)="loadDueLedger()">🔄 Refresh</button>
+<div class="client-payment-container">
+  <div class="header">
+    <h1><mat-icon>payments</mat-icon> Client Payment Management</h1>
+    <button mat-raised-button color="primary" (click)="loadDueLedger(); loadOverdueClients()">
+      <mat-icon>refresh</mat-icon> Refresh
+    </button>
   </div>
 
-  <!-- Entry Form -->
-  <div class="card">
-    <h3>Add Client Revenue / Payment</h3>
+  <mat-tab-group [(selectedIndex)]="activeTab" class="payment-tabs">
+    
+    <!-- TAB 1: Collect Payment -->
+    <mat-tab label="Collect Payment">
+      <ng-template mat-tab-label>
+        <mat-icon>add_circle</mat-icon> Collect Payment
+      </ng-template>
+      
+      <div class="tab-content">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>💰 Record Client Payment</mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="form-grid">
+              <div class="form-field">
+                <label>Date</label>
+                <input type="date" [(ngModel)]="date" class="form-control">
+              </div>
 
-    <label>Date</label>
-    <input type="date" [(ngModel)]="date">
+              <div class="form-field full-width">
+                <label>Select Client *</label>
+                <select [(ngModel)]="selectedClientId" class="form-control">
+                  <option [ngValue]="null">-- Select Client --</option>
+                  <option *ngFor="let c of clients" [value]="c.id">
+                    {{c.client_name}} 
+                    <span *ngIf="dueLedger[c.id] > 0" class="outstanding">(Outstanding: ₹{{dueLedger[c.id] | number:'1.0-0'}})</span>
+                  </option>
+                </select>
+              </div>
 
-    <select [(ngModel)]="selectedClientId">
-      <option [ngValue]="null">Select Client</option>
-      <option *ngFor="let c of clients" [value]="c.id">
-        {{c.client_name}} - {{c.site_name}}
-      </option>
-    </select>
+              <div class="form-field">
+                <label>Site/Project Name</label>
+                <input type="text" placeholder="e.g., Construction Project" [(ngModel)]="siteName" class="form-control">
+              </div>
 
-    <input placeholder="Site Name" [(ngModel)]="siteName">
-    <input type="number" placeholder="Total Bill ₹" [(ngModel)]="totalBill">
-    <input type="number" placeholder="Paid Now ₹" [(ngModel)]="paidAmount">
+              <div class="form-field">
+                <label>Total Bill Amount (₹)</label>
+                <input type="number" placeholder="0" [(ngModel)]="totalBill" class="form-control">
+                <small>Leave 0 if only recording payment against old dues</small>
+              </div>
 
-    <select [(ngModel)]="paymentMode">
-      <option>Cash</option>
-      <option>UPI</option>
-      <option>Bank</option>
-    </select>
+              <div class="form-field">
+                <label>Amount Paid Now (₹) *</label>
+                <input type="number" placeholder="0" [(ngModel)]="paidAmount" class="form-control">
+              </div>
 
-    <input placeholder="Collected By" [(ngModel)]="receivedBy">
-    <input placeholder="Remarks" [(ngModel)]="remarks">
+              <div class="form-field">
+                <label>Payment Mode *</label>
+                <select [(ngModel)]="paymentMode" class="form-control">
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI / Online</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                </select>
+              </div>
 
-    <button class="save-btn" (click)="saveRevenue()">💾 Save</button>
-  </div>
+              <div class="form-field" *ngIf="paymentMode === 'cheque'">
+                <label>Cheque Number</label>
+                <input type="text" placeholder="Cheque No." [(ngModel)]="chequeNumber" class="form-control">
+              </div>
 
-  <!-- Due Ledger -->
-  <div class="card">
-    <h3>📒 Client Due Ledger</h3>
+              <div class="form-field" *ngIf="paymentMode === 'upi'">
+                <label>UPI Transaction ID</label>
+                <input type="text" placeholder="Transaction ID" [(ngModel)]="upiTransactionId" class="form-control">
+              </div>
 
-    <table class="client-table">
-      <tr>
-        <th>Client</th>
-        <th>Due Amount</th>
-      </tr>
+              <div class="form-field">
+                <label>Collected By</label>
+                <select [(ngModel)]="receivedBy" class="form-control">
+                  <option value="">Firm Cash</option>
+                  <option *ngFor="let p of partners" [value]="p.name">{{p.name}}</option>
+                </select>
+              </div>
 
-      <tr *ngFor="let c of clients">
-        <td>{{c.client_name}}</td>
-        <td class="due">₹{{dueLedger[c.id] || 0}}</td>
-      </tr>
-    </table>
-  </div>
+              <div class="form-field full-width">
+                <label>Remarks / Notes</label>
+                <textarea placeholder="Optional notes" [(ngModel)]="remarks" class="form-control" rows="2"></textarea>
+              </div>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-raised-button color="primary" (click)="saveRevenue()" [disabled]="loading">
+              <mat-icon>save</mat-icon> Save Payment
+            </button>
+            <button mat-button (click)="resetForm()" [disabled]="loading">
+              <mat-icon>clear</mat-icon> Clear
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </mat-tab>
 
+    <!-- TAB 2: Outstanding & Reminders -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon [matBadge]="overdueClients.length" matBadgeColor="warn">notifications</mat-icon> Outstanding
+      </ng-template>
+      
+      <div class="tab-content">
+        <!-- Overdue Clients Section -->
+        <mat-card class="overdue-card" *ngIf="overdueClients.length > 0">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon color="warn">warning</mat-icon> Overdue Clients ({{overdueClients.length}})
+            </mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Phone</th>
+                  <th>Outstanding</th>
+                  <th>Last Purchase</th>
+                  <th>Days Overdue</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let client of overdueClients">
+                  <td><strong>{{client.client_name}}</strong></td>
+                  <td>{{client.phone || 'N/A'}}</td>
+                  <td class="amount-col">₹{{client.outstanding | number:'1.0-0'}}</td>
+                  <td>{{formatDateToDDMMYYYY(client.last_purchase_date)}}</td>
+                  <td>
+                    <mat-chip color="warn">{{getDaysOverdue(client.last_purchase_date)}} days</mat-chip>
+                  </td>
+                  <td>
+                    <button mat-icon-button color="primary" (click)="sendPaymentReminder(client.id)" 
+                            matTooltip="Send Reminder">
+                      <mat-icon>notifications_active</mat-icon>
+                    </button>
+                    <button mat-icon-button color="accent" (click)="loadPaymentHistory(client.id); activeTab = 2"
+                            matTooltip="View History">
+                      <mat-icon>history</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- All Clients with Outstanding -->
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>account_balance_wallet</mat-icon> All Clients - Outstanding Balance
+            </mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Client Name</th>
+                  <th>Phone</th>
+                  <th>Total Billed</th>
+                  <th>Total Paid</th>
+                  <th>Outstanding</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let client of clients" [class.has-outstanding]="dueLedger[client.id] > 0">
+                  <td><strong>{{client.client_name}}</strong></td>
+                  <td>{{client.phone || 'N/A'}}</td>
+                  <td class="amount-col">₹{{client.total_billed | number:'1.0-0'}}</td>
+                  <td class="amount-col">₹{{client.total_paid | number:'1.0-0'}}</td>
+                  <td class="amount-col outstanding-amount">
+                    <strong>₹{{dueLedger[client.id] || 0 | number:'1.0-0'}}</strong>
+                  </td>
+                  <td>
+                    <button mat-icon-button color="primary" *ngIf="dueLedger[client.id] > 0"
+                            (click)="sendPaymentReminder(client.id)" matTooltip="Send Reminder">
+                      <mat-icon>send</mat-icon>
+                    </button>
+                    <button mat-icon-button color="accent" (click)="loadPaymentHistory(client.id); activeTab = 2"
+                            matTooltip="View History">
+                      <mat-icon>history</mat-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- TAB 3: Payment History -->
+    <mat-tab label="Payment History">
+      <ng-template mat-tab-label>
+        <mat-icon>history</mat-icon> Payment History
+      </ng-template>
+      
+      <div class="tab-content">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>receipt_long</mat-icon> Payment History
+            </mat-card-title>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="form-field">
+              <label>Select Client</label>
+              <select [(ngModel)]="selectedClientForHistory" 
+                      (change)="selectedClientForHistory && loadPaymentHistory(selectedClientForHistory)"
+                      class="form-control">
+                <option [ngValue]="null">-- Select Client --</option>
+                <option *ngFor="let c of clients" [value]="c.id">{{c.client_name}}</option>
+              </select>
+            </div>
+
+            <div *ngIf="paymentHistory.length > 0" class="history-section">
+              <h3>Payments for {{getClientNameForHistory()}}</h3>
+              
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Mode</th>
+                    <th>Collected By</th>
+                    <th>Deposited To</th>
+                    <th>Notes</th>
+                    <th>Receipt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let payment of paymentHistory">
+                    <td>{{formatDateToDDMMYYYY(payment.payment_date)}}</td>
+                    <td class="amount-col"><strong>₹{{payment.amount_paid | number:'1.0-0'}}</strong></td>
+                    <td>
+                      <mat-icon [inline]="true">{{getPaymentModeIcon(payment.payment_mode)}}</mat-icon>
+                      {{payment.payment_mode.toUpperCase()}}
+                    </td>
+                    <td>{{payment.partner_name || 'Firm'}}</td>
+                    <td>
+                      <mat-chip [color]="payment.deposited_to_firm ? 'primary' : 'accent'" class="small-chip">
+                        {{payment.deposited_to_firm ? 'Firm' : 'Partner'}}
+                      </mat-chip>
+                    </td>
+                    <td>{{payment.notes || '-'}}</td>
+                    <td>
+                      <button mat-icon-button color="primary" (click)="prepareReceiptForPayment(payment)"
+                              matTooltip="Print Receipt">
+                        <mat-icon>print</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="selectedClientForHistory && paymentHistory.length === 0 && !loading" class="no-data">
+              <mat-icon>info</mat-icon>
+              <p>No payment history found for this client</p>
+            </div>
+
+            <div *ngIf="!selectedClientForHistory" class="no-data">
+              <mat-icon>info</mat-icon>
+              <p>Please select a client to view payment history</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
 </div>
 
 <!-- Loader -->
 <div *ngIf="loading" class="loader-overlay">
-  <div class="loader-box">⏳ Saving...</div>
+  <div class="loader-box">
+    <mat-icon class="spin">refresh</mat-icon>
+    <p>Loading...</p>
+  </div>
 </div>
