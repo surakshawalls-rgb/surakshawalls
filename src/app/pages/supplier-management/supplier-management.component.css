@@ -348,7 +348,8 @@
   }
 
   .summary-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .form-grid {
@@ -360,9 +361,14 @@
   }
 
   .data-table {
-    font-size: 12px;
+    font-size: 13px;
     display: block;
     overflow-x: auto;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
   }
 
   .dialog-content {
@@ -370,3 +376,59 @@
     max-width: 95%;
   }
 }
+
+@media (max-width: 480px) {
+  .supplier-management-container {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 14px;
+  }
+
+  .header h1 {
+    font-size: 18px;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  .card-title {
+    font-size: 12px;
+  }
+
+  .card-value {
+    font-size: 20px;
+  }
+
+  .tab-button {
+    font-size: 12px;
+    padding: 10px 14px;
+  }
+
+  .search-box {
+    font-size: 14px;
+  }
+
+  .data-table {
+    font-size: 12px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 8px 10px;
+  }
+
+  .action-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .dialog-content {
+    padding: 16px;

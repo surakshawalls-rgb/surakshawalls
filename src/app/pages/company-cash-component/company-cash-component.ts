@@ -14,6 +14,7 @@ import { formatDateToDDMMYYYY } from '../../services/date-formatter';
 export class CompanyCashComponent implements OnInit {
 
   loading = false;
+  Math = Math; // Expose Math to template
 
   // Current Balance
   currentBalance: any = {
@@ -35,8 +36,19 @@ export class CompanyCashComponent implements OnInit {
 
   // Cash Ledger
   cashLedger: any[] = [];
+  filteredLedger: any[] = [];
+  paginatedLedger: any[] = [];
   fromDate = '';
   toDate = new Date().toISOString().split('T')[0];
+  
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
+  
+  // Filters
+  searchTerm = '';
+  filterType: 'all' | 'receipt' | 'payment' = 'all';
 
   constructor(
     private companyCashService: CompanyCashService,
@@ -71,6 +83,7 @@ export class CompanyCashComponent implements OnInit {
         display_category: this.formatCategory(entry.category)
       }));
       console.log('Loaded ledger entries:', this.cashLedger);
+      this.applyFilters();
     } catch (error) {
       console.error('Error loading cash ledger:', error);
     }
@@ -132,6 +145,106 @@ export class CompanyCashComponent implements OnInit {
 
   async filterByDateRange() {
     await this.loadCashLedger();
+  }
+
+  applyFilters() {
+    let filtered = [...this.cashLedger];
+    
+    // Filter by type
+    if (this.filterType !== 'all') {
+      filtered = filtered.filter(entry => entry.type === this.filterType);
+    }
+    
+    // Filter by search term
+    if (this.searchTerm.trim()) {
+      const search = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(entry =>
+        entry.description?.toLowerCase().includes(search) ||
+        entry.display_category?.toLowerCase().includes(search)
+      );
+    }
+    
+    this.filteredLedger = filtered;
+    this.totalPages = Math.ceil(this.filteredLedger.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.updatePaginatedData();
+  }
+  
+  updatePaginatedData() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    this.paginatedLedger = this.filteredLedger.slice(start, end);
+    this.cd.detectChanges();
+  }
+  
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePaginatedData();
+  }
+  
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePaginatedData();
+    }
+  }
+  
+  nextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePaginatedData();
+    }
+  }
+  
+  changeItemsPerPage(items: number) {
+    this.itemsPerPage = items;
+    this.totalPages = Math.ceil(this.filteredLedger.length / this.itemsPerPage);
+    this.currentPage = 1;
+    this.updatePaginatedData();
+  }
+  
+  onSearchChange() {
+    this.applyFilters();
+  }
+  
+  onFilterTypeChange() {
+    this.applyFilters();
+  }
+  
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxVisible = 5;
+    
+    if (this.totalPages <= maxVisible) {
+      for (let i = 1; i <= this.totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (this.currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push(-1); // Ellipsis
+        pages.push(this.totalPages);
+      } else if (this.currentPage >= this.totalPages - 2) {
+        pages.push(1);
+        pages.push(-1); // Ellipsis
+        for (let i = this.totalPages - 3; i <= this.totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push(-1); // Ellipsis
+        for (let i = this.currentPage - 1; i <= this.currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push(-1); // Ellipsis
+        pages.push(this.totalPages);
+      }
+    }
+    
+    return pages;
   }
 
   getStatusColor(type: string): string {

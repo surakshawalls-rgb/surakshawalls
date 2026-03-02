@@ -1,5 +1,17 @@
 .notification-button {
   position: relative;
+  transition: transform 0.2s ease;
+}
+
+.notification-button:hover {
+  transform: scale(1.05);
+}
+
+.notification-button mat-icon {
+  color: #667eea;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .notification-menu {

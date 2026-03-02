@@ -504,17 +504,13 @@ export class LibraryGridComponent implements OnInit {
       return { value: '', color: undefined, hidden: true };
     }
     
-    // Check attendance status
-    const attendance = this.getStudentAttendanceStatus(studentId);
-    if (attendance?.check_in_time && !attendance?.check_out_time) {
-      // Checked in (present)
-      return { value: '🟢', color: 'primary', hidden: false };
-    } else if (attendance?.check_out_time) {
-      // Checked out
-      return { value: '🔴', color: 'warn', hidden: false };
+    // Verify that student object exists (not just ID)
+    const hasValidStudent = seat.full_time_student || seat.first_half_student || seat.second_half_student;
+    if (!hasValidStudent) {
+      return { value: '', color: undefined, hidden: true };
     }
     
-    // No attendance today - show days remaining
+    // ONLY show days remaining in badge (not attendance)
     const expiryDate = seat.full_time_expiry || seat.first_half_expiry || seat.second_half_expiry;
     const days = this.getDaysRemainingNumber(expiryDate);
     
@@ -523,6 +519,30 @@ export class LibraryGridComponent implements OnInit {
       color: this.getBadgeColor(days),
       hidden: days === null
     };
+  }
+
+  // Get check-in time for seat (for display on card)
+  getCheckInTime(seat: LibrarySeat): string {
+    const studentId = seat.full_time_student_id || seat.first_half_student_id || seat.second_half_student_id;
+    if (!studentId) return '';
+    
+    const attendance = this.getStudentAttendanceStatus(studentId);
+    if (attendance?.check_in_time) {
+      return attendance.check_in_time.substring(0, 5); // HH:MM
+    }
+    return '';
+  }
+
+  // Get check-out time for seat (for display on card)
+  getCheckOutTime(seat: LibrarySeat): string {
+    const studentId = seat.full_time_student_id || seat.first_half_student_id || seat.second_half_student_id;
+    if (!studentId) return '';
+    
+    const attendance = this.getStudentAttendanceStatus(studentId);
+    if (attendance?.check_out_time) {
+      return attendance.check_out_time.substring(0, 5); // HH:MM
+    }
+    return '';
   }
 
   getSeatTooltip(seat: LibrarySeat): string {

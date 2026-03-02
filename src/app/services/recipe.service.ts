@@ -36,6 +36,8 @@ export interface MaterialCalculation {
     aggregates_cost: number;
     sariya_cost: number;
     total_cost: number;
+    labor_cost: number;
+    total_cost_with_labor: number;
   };
   cost_per_unit: number;
   stock_check: {
@@ -55,6 +57,20 @@ export interface MaterialCalculation {
 export class RecipeService {
 
   constructor(private supabase: SupabaseService) {}
+
+  /**
+   * Get labor cost per piece based on product name
+   */
+  private getLabourCostPerPiece(productName: string): number {
+    const labourRates: { [key: string]: number } = {
+      'BISCUIT_PLATE': 35,
+      'PLAIN_PLATE': 35,
+      'ROUND_PLATE': 35,
+      'FENCING_POLE': 35,
+      'JUMBO_PILLAR': 55
+    };
+    return labourRates[productName] || 35; // Default to 35 if not found
+  }
 
   /**
    * Get all active recipes
@@ -151,9 +167,14 @@ export class RecipeService {
       const cementCost = cement * (materialCosts['Cement']?.unit_cost || 0);
       const aggregatesCost = aggregates * (materialCosts['Gitti (Aggregates)']?.unit_cost || 0);
       const sariyaCost = sariya * (materialCosts['Sariya (Steel)']?.unit_cost || 0);
-      const totalCost = cementCost + aggregatesCost + sariyaCost;
+      const totalMaterialCost = cementCost + aggregatesCost + sariyaCost;
+      
+      // 5. Calculate labor cost
+      const labourCostPerPiece = this.getLabourCostPerPiece(productName);
+      const totalLabourCost = labourCostPerPiece * quantity;
+      const totalCostWithLabour = totalMaterialCost + totalLabourCost;
 
-      // 5. Check stock availability
+      // 6. Check stock availability
       const cementStock = materialCosts['Cement']?.current_stock || 0;
       const aggregatesStock = materialCosts['Gitti (Aggregates)']?.current_stock || 0;
       const sariyaStock = materialCosts['Sariya (Steel)']?.current_stock || 0;
@@ -175,9 +196,11 @@ export class RecipeService {
           cement_cost: cementCost,
           aggregates_cost: aggregatesCost,
           sariya_cost: sariyaCost,
-          total_cost: totalCost
+          total_cost: totalMaterialCost,
+          labor_cost: totalLabourCost,
+          total_cost_with_labor: totalCostWithLabour
         },
-        cost_per_unit: totalCost / quantity,
+        cost_per_unit: totalCostWithLabour / quantity,
         stock_check: {
           cement_available: cementAvailable,
           aggregates_available: aggregatesAvailable,

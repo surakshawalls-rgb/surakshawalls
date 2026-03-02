@@ -104,31 +104,74 @@
   <div class="card">
     <div class="card-header">
       <h3 class="card-title">📋 Transaction History</h3>
+      <div class="header-actions">
+        <span class="entries-count">{{filteredLedger.length}} entries</span>
+      </div>
     </div>
     
     <!-- Filters -->
     <div class="card-body">
       <div class="filter-bar">
         <div class="filter-group">
+          <label class="filter-label">Search</label>
+          <input 
+            type="text" 
+            class="filter-input" 
+            [(ngModel)]="searchTerm" 
+            (ngModelChange)="onSearchChange()"
+            placeholder="Search by description or category..." 
+          />
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Type</label>
+          <select class="filter-input" [(ngModel)]="filterType" (ngModelChange)="onFilterTypeChange()">
+            <option value="all">All Transactions</option>
+            <option value="receipt">💰 Income Only</option>
+            <option value="payment">💸 Expense Only</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
           <label class="filter-label">From Date</label>
           <input type="date" class="filter-input" [(ngModel)]="fromDate" />
         </div>
+        
         <div class="filter-group">
           <label class="filter-label">To Date</label>
           <input type="date" class="filter-input" [(ngModel)]="toDate" />
         </div>
+        
         <button class="btn-filter" (click)="filterByDateRange()" [disabled]="loading">
-          🔍 Apply Filter
+          🔍 Apply Date Filter
         </button>
+      </div>
+      
+      <!-- Items per page selector -->
+      <div class="pagination-controls-top">
+        <div class="items-per-page">
+          <label>Show:</label>
+          <select [(ngModel)]="itemsPerPage" (ngModelChange)="changeItemsPerPage($event)" class="items-select">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+          <span>entries per page</span>
+        </div>
+        <div class="showing-info">
+          Showing {{((currentPage - 1) * itemsPerPage) + 1}} to {{Math.min(currentPage * itemsPerPage, filteredLedger.length)}} of {{filteredLedger.length}} entries
+        </div>
       </div>
     </div>
 
     <!-- Transaction Table -->
     <div class="table-container">
-      <div *ngIf="cashLedger && cashLedger.length > 0; else noLedger">
+      <div *ngIf="paginatedLedger && paginatedLedger.length > 0; else noLedger">
         <table class="data-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>Date</th>
               <th>Category</th>
               <th>Description</th>
@@ -137,7 +180,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let entry of cashLedger" class="table-row">
+            <tr *ngFor="let entry of paginatedLedger; let i = index" class="table-row">
+              <td class="index-cell">{{((currentPage - 1) * itemsPerPage) + i + 1}}</td>
               <td class="date-cell">{{formatDateToDDMMYYYY(entry.date)}}</td>
               <td>
                 <span class="category-badge">{{entry.display_category}}</span>
@@ -157,12 +201,44 @@
             </tr>
           </tbody>
         </table>
+        
+        <!-- Pagination -->
+        <div class="pagination-container" *ngIf="totalPages > 1">
+          <button 
+            class="pagination-btn" 
+            (click)="previousPage()" 
+            [disabled]="currentPage === 1"
+          >
+            ← Previous
+          </button>
+          
+          <div class="page-numbers">
+            <button 
+              *ngFor="let page of getPageNumbers()" 
+              class="page-btn" 
+              [class.active]="page === currentPage"
+              [class.ellipsis]="page === -1"
+              (click)="page !== -1 && goToPage(page)"
+              [disabled]="page === -1"
+            >
+              {{page === -1 ? '...' : page}}
+            </button>
+          </div>
+          
+          <button 
+            class="pagination-btn" 
+            (click)="nextPage()" 
+            [disabled]="currentPage === totalPages"
+          >
+            Next →
+          </button>
+        </div>
       </div>
       <ng-template #noLedger>
         <div class="empty-state">
           <div class="empty-icon">📭</div>
           <p class="empty-text">No transactions found</p>
-          <p class="empty-subtext">Try adjusting your date filter or add your first entry</p>
+          <p class="empty-subtext">Try adjusting your filters or add your first entry</p>
         </div>
       </ng-template>
     </div>

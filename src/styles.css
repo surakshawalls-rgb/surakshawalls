@@ -1307,3 +1307,103 @@ a:hover {
 .mat-button-toggle-group.shift-type-toggle .mat-button-toggle-checked .mat-button-toggle-label-content {
   box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
 }
+/* ===== GLOBAL MOBILE-FRIENDLY ENHANCEMENTS ===== */
+
+/* Smooth scrolling and better touch handling */
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Better box model */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Improve touch scrolling on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent horizontal scroll on small screens */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Ensure all images are responsive */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Better button and input touch targets */
+button,
+input,
+select,
+textarea,
+a {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap to zoom on buttons and links */
+button,
+a {
+  touch-action: manipulation;
+}
+
+/* Make tables scroll horizontally on mobile */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Minimum touch target size */
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Better form controls on mobile */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+
+  /* Hide overflow text with ellipsis */
+  .text-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mat-mdc-dialog-container {
+    max-height: 90vh !important;
+    overflow-y: auto;
+  }
+}
+
+/* High-DPI screen optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  img,
+  .icon {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}

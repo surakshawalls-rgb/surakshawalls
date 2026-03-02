@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Firebase Cloud Messaging Configuration -->
+    <string name="default_web_client_id" translatable="false">663636109498-c37m3v5vqjsacec5rbo2jfqv3u5fmgkl.apps.googleusercontent.com</string>
+    <string name="fcm_fallback_notification_channel_label" translatable="false">Miscellaneous</string>
+    <string name="firebase_database_url" translatable="false">https://suraksha-report-default-rtdb.firebaseio.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">663636109498</string>
+    <string name="google_api_key" translatable="false">AIzaSyDCMS0oYQ51_dqqAvEk3WsKApcOeTdPIiA</string>
+    <string name="google_app_id" translatable="false">1:663636109498:android:ebd3b6ed7ad2c644c0ba83</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDCMS0oYQ51_dqqAvEk3WsKApcOeTdPIiA</string>
+    <string name="google_storage_bucket" translatable="false">suraksha-report.firebasestorage.app</string>
+    <string name="project_id" translatable="false">suraksha-report</string>
+</resources>

@@ -145,6 +145,14 @@
         <input type="checkbox" [checked]="isSeatSelected(seat.seat_no)" (click)="$event.stopPropagation()">
       </div>
 
+      <!-- Attendance Indicators (Left & Right) -->
+      <div class="attendance-left" *ngIf="getCheckInTime(seat)">
+        🟢<br>{{ getCheckInTime(seat) }}
+      </div>
+      <div class="attendance-right" *ngIf="getCheckOutTime(seat)">
+        🔴<br>{{ getCheckOutTime(seat) }}
+      </div>
+
       <!-- FREE SEAT -->
       <ng-container *ngIf="!seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id">
         <div class="seat-status-top">Free</div>
