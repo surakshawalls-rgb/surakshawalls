@@ -147,7 +147,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 20px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .form-field {
@@ -231,7 +231,7 @@
 .filter-bar {
   display: flex;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
   flex-wrap: wrap;
   padding-bottom: 20px;
   border-bottom: 1px solid var(--border-color);
