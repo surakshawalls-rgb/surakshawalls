@@ -76,8 +76,13 @@ export class AppComponent implements OnInit {
     return this.authService.currentUserValue;
   }
 
+  public isLabourStaff(): boolean {
+    return this.authService.isLabourStaff();
+  }
+
   public hasManufacturingAccess(): boolean {
-    return this.authService.hasAccess('manufacturing');
+    // Labour staff should NOT see full manufacturing menu
+    return this.authService.hasAccess('manufacturing') && !this.isLabourStaff();
   }
 
   public hasLibraryAccess(): boolean {

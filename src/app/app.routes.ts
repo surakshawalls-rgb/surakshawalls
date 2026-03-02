@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, loginGuard, manufacturingGuard, libraryGuard, adminGuard } from './guards/auth.guard';
+import { authGuard, loginGuard, manufacturingGuard, libraryGuard, adminGuard, dailyEntryOnlyGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   // 🌐 PUBLIC ROUTES - NO AUTHENTICATION REQUIRED
@@ -37,41 +37,46 @@ export const routes: Routes = [
 
   // 📊 REPORTS & LEDGERS
   { 
+    path: 'pending-approvals', 
+    loadComponent: () => import('./pages/pending-approvals/pending-approvals').then(m => m.PendingApprovalsComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
     path: 'client-ledger', 
     loadComponent: () => import('./pages/client-ledger/client-ledger.component').then(m => m.ClientLedgerComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'labour-ledger', 
     loadComponent: () => import('./pages/labour-ledger/labour-ledger').then(m => m.LabourLedgerComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'reports-dashboard', 
     loadComponent: () => import('./pages/reports-dashboard/reports-dashboard.component').then(m => m.ReportsDashboardComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
 
   // 🏭 MANAGEMENT & OPERATIONS
   { 
     path: 'worker-management', 
     loadComponent: () => import('./pages/worker-management/worker-management.component').then(m => m.WorkerManagementComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'material-purchase', 
     loadComponent: () => import('./pages/material-purchase/material-purchase.component').then(m => m.MaterialPurchaseComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'inventory', 
     loadComponent: () => import('./pages/inventory-view/inventory-view.component').then(m => m.InventoryViewComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'stock-audit', 
     loadComponent: () => import('./pages/stock-audit/stock-audit.component').then(m => m.StockAuditComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
 
   // DEPRECATED - Use daily-entry instead
@@ -95,7 +100,7 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
 
   // 📚 LIBRARY MANAGEMENT SYSTEM (Lazy Loaded)
@@ -139,74 +144,74 @@ export const routes: Routes = [
   { 
     path: 'walls/home', 
     loadComponent: () => import('./walls/walls-home.component').then(m => m.WallsHomeComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'walls/dashboard', 
     loadComponent: () => import('./walls/dashboard/walls-dashboard.component').then(m => m.WallsDashboardComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   
   // Production Module Routes
   { 
     path: 'walls/production', 
     loadComponent: () => import('./walls/production/production.component').then(m => m.ProductionComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'walls/production/entry', 
     loadComponent: () => import('./walls/production/production-entry.component').then(m => m.ProductionEntryComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   
   // Sales Module Routes
   { 
     path: 'walls/sales', 
     loadComponent: () => import('./walls/sales/sales.component').then(m => m.SalesComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'walls/sales/entry', 
     loadComponent: () => import('./walls/sales/sales-entry.component').then(m => m.SalesEntryComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   
   // Stock Module Routes
   { 
     path: 'walls/stock', 
     loadComponent: () => import('./walls/stock/stock.component').then(m => m.StockComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'walls/stock/raw-materials', 
     loadComponent: () => import('./walls/stock/raw-materials.component').then(m => m.RawMaterialsComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   
   // Labour Module Routes
   { 
     path: 'walls/labour', 
     loadComponent: () => import('./walls/labour/labour.component').then(m => m.LabourComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'walls/labour/wages', 
     loadComponent: () => import('./walls/labour/wage-payment.component').then(m => m.WagePaymentComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   
   // Reports Module Routes
   { 
     path: 'walls/reports', 
     loadComponent: () => import('./walls/reports/reports.component').then(m => m.ReportsComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   
   // Masters Module Routes
   { 
     path: 'walls/masters', 
     loadComponent: () => import('./walls/masters/masters.component').then(m => m.MastersComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
 
 
@@ -214,28 +219,28 @@ export const routes: Routes = [
   { 
     path: 'client-payment', 
     loadComponent: () => import('./pages/client-payment-component/client-payment-component').then(m => m.ClientPaymentComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'supplier-management', 
     loadComponent: () => import('./pages/supplier-management/supplier-management.component').then(m => m.SupplierManagementComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   // �🤝 PARTNER ROUTES (Admin only)
   { 
     path: 'partner-dashboard', 
     loadComponent: () => import('./pages/partner-dashboard/partner-dashboard').then(m => m.PartnerDashboardComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'company-cash', 
     loadComponent: () => import('./pages/company-cash-component/company-cash-component').then(m => m.CompanyCashComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   },
   { 
     path: 'partner', 
     loadComponent: () => import('./pages/partner/partner').then(m => m.PartnerComponent),
-    canActivate: [authGuard, manufacturingGuard] 
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
   }
 
   // DEPRECATED - Replaced by unified-daily-entry

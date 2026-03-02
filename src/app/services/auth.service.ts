@@ -7,7 +7,7 @@ import { SupabaseService } from './supabase.service';
 export interface User {
   id: string;
   email: string;
-  role: 'su' | 'admin' | 'editor' | 'library_manager' | 'library_viewer' | 'viewer';
+  role: 'su' | 'admin' | 'editor' | 'library_manager' | 'library_viewer' | 'viewer' | 'labour_staff';
   full_name: string;
   can_delete: boolean;
   modules: string[]; // ['library', 'manufacturing']
@@ -153,5 +153,9 @@ export class AuthService {
 
   isViewer(): boolean {
     return this.currentUserValue?.role === 'viewer';
+  }
+
+  isLabourStaff(): boolean {
+    return this.currentUserValue?.role === 'labour_staff';
   }
 }

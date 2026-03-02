@@ -348,7 +348,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   getTotalProductionCost(): number {
     return this.productionItems.reduce((sum, item) => 
-      sum + (item.material_calc?.costs.total_cost_with_labor || 0), 0
+      sum + (item.material_calc?.costs.total_cost || 0), 0
     );
   }
   

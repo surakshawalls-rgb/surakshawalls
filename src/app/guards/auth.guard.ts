@@ -34,6 +34,12 @@ export const manufacturingGuard = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
+  // Labour staff can ONLY access /daily-entry
+  if (authService.isLabourStaff()) {
+    return true; // They're already restricted by dailyEntryOnlyGuard
+  }
+
+  // Allow other users with manufacturing access
   if (authService.hasAccess('manufacturing')) {
     return true;
   }
@@ -41,6 +47,21 @@ export const manufacturingGuard = () => {
   // Redirect to library grid if user only has library access
   router.navigate(['/library-grid']);
   return false;
+};
+
+// Labour Staff Guard: Only allows /daily-entry access
+export const dailyEntryOnlyGuard = () => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  // If labour staff, redirect to daily-entry
+  if (authService.isLabourStaff()) {
+    router.navigate(['/daily-entry']);
+    return false;
+  }
+
+  // Allow all other users
+  return true;
 };
 
 export const libraryGuard = () => {

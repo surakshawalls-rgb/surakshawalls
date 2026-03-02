@@ -124,8 +124,8 @@
                 </td>
                 <td class="amount-cell">
                   <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <span style="font-weight: 700; color: #2e7d32;">{{ formatCurrency((item.material_calc?.costs?.total_cost_with_labor) || 0) }}</span>
-                    <span style="font-size: 0.75rem; color: #757575;">Material: {{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }} + Labour: {{ formatCurrency((item.material_calc?.costs?.labor_cost) || 0) }}</span>
+                    <span style="font-weight: 700; color: #2e7d32;">{{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }}</span>
+                    <span style="font-size: 0.75rem; color: #757575;">Material Cost</span>
                   </div>
                 </td>
                 <td>
@@ -135,7 +135,7 @@
             </tbody>
             <tfoot>
               <tr class="total-row">
-                <td colspan="4" class="text-right"><strong>Total Production Cost (Material + Labour):</strong></td>
+                <td colspan="4" class="text-right"><strong>Total Material Cost:</strong></td>
                 <td class="amount-cell"><strong>{{ formatCurrency(getTotalProductionCost()) }}</strong></td>
                 <td></td>
               </tr>
