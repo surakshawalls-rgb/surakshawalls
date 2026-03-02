@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { AuthService } from '../../services/auth.service';
 import { ProductionService, WorkerWage, ProductionData } from '../../services/production.service';
 import { RecipeService, MaterialCalculation } from '../../services/recipe.service';
 import { WorkerService, Worker, WAGE_RATES } from '../../services/worker.service';
@@ -153,6 +154,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   constructor(
     private db: SupabaseService,
+    private authService: AuthService,
     private productionService: ProductionService,
     private recipeService: RecipeService,
     private workerService: WorkerService,
@@ -341,11 +343,12 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   removeProductionItem(index: number) {
     this.productionItems.splice(index, 1);
+    this.cd.detectChanges();
   }
   
   getTotalProductionCost(): number {
     return this.productionItems.reduce((sum, item) => 
-      sum + (item.material_calc?.costs.total_cost || 0), 0
+      sum + (item.material_calc?.costs.total_cost_with_labor || 0), 0
     );
   }
   
@@ -409,6 +412,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   removeWorkerEntry(index: number) {
     this.workerEntries.splice(index, 1);
+    this.cd.detectChanges();
   }
   
   getTotalLaborCost(): number {
@@ -560,6 +564,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   removeSalesItem(index: number) {
     this.salesItems.splice(index, 1);
     this.calculateRevenue();
+    this.cd.detectChanges();
   }
   
   calculateRevenue() {
@@ -642,6 +647,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   removeOtherExpense(index: number) {
     this.otherExpenses.splice(index, 1);
+    this.cd.detectChanges();
   }
   
   getTotalOtherExpenses(): number {
@@ -685,6 +691,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   removeYardLossItem(index: number) {
     this.yardLossItems.splice(index, 1);
+    this.cd.detectChanges();
   }
   
   // ========== SUMMARY & SUBMIT ==========
@@ -733,6 +740,11 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   async submitDailyEntry() {
     console.log('Submit button clicked - starting submission');
+    
+    // Check if labour staff - use approval workflow
+    if (this.isLabourStaff()) {
+      return this.submitForApproval();
+    }
     
     // Validation
     if (!this.entryDate) {
@@ -942,6 +954,91 @@ Then try again.`;
     }
   }
   
+  // ========== LABOUR STAFF APPROVAL WORKFLOW ==========
+  
+  async submitForApproval() {
+    console.log('Labour staff submitting for approval');
+    
+    // Validation
+    if (!this.entryDate) {
+      this.showError('Select entry date');
+      return;
+    }
+    
+    if (this.productionItems.length === 0 && this.workerEntries.length === 0) {
+      this.showError('Add at least production or labor entry');
+      return;
+    }
+    
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    
+    try {
+      const currentUser = this.authService.currentUserValue;
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Prepare production data with ALL details needed for real save
+      const productionData = this.productionItems.map(item => ({
+        product_name: item.product_name,
+        product_variant: item.product_variant || null,
+        quantity: item.quantity,
+        rejected_quantity: 0,
+        cement_used: item.material_calc?.materials.cement || 0,
+        aggregates_used: item.material_calc?.materials.aggregates || 0,
+        sariya_used: item.material_calc?.materials.sariya || 0,
+        total_material_cost: item.material_calc?.costs.total_cost || 0,
+        is_job_work: false
+      }));
+      
+      // Prepare labor data with ALL worker details
+      const laborData = this.workerEntries.map(worker => ({
+        worker_id: worker.worker.id,
+        worker_name: worker.worker.name,
+        attendance_type: worker.attendance_type,
+        wage_earned: worker.wage_earned,
+        paid_today: worker.paid_today || 0,
+        paid_by_partner_id: worker.paid_by_partner_id || null
+      }));
+      
+      // Insert into pending_daily_entries
+      const { data, error } = await this.db.supabase
+        .from('pending_daily_entries')
+        .insert([{
+          submitted_by: currentUser.id,
+          submitted_by_name: currentUser.full_name || currentUser.email || 'Unknown',
+          entry_date: this.entryDate,
+          production_data: productionData,
+          labor_data: laborData,
+          notes: this.notes || null,
+          status: 'pending'
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      this.successMessage = `✅ Entry submitted for admin approval! Entry Date: ${this.entryDate}`;
+      console.log('Entry submitted for approval:', data);
+      
+      // Reset form after 2 seconds
+      setTimeout(() => {
+        this.resetForm();
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error('Error submitting for approval:', error);
+      this.errorMessage = `❌ Error: ${error.message || 'Failed to submit'}`;
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+  
   resetForm() {
     this.entryDate = new Date().toISOString().split('T')[0];
     this.notes = '';
@@ -1025,6 +1122,11 @@ Then try again.`;
   
   formatCurrency(amount: number): string {
     return `₹${amount.toFixed(2)}`;
+  }
+  
+  // Check if current user is labour staff
+  isLabourStaff(): boolean {
+    return this.authService.isLabourStaff();
   }
 }
 

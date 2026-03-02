@@ -91,7 +91,7 @@
                 <th>Variant</th>
                 <th>Quantity</th>
                 <th>Materials Needed</th>
-                <th>Cost</th>
+                <th>Total Cost</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -122,7 +122,12 @@
                     </span>
                   </div>
                 </td>
-                <td class="amount-cell">{{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }}</td>
+                <td class="amount-cell">
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-weight: 700; color: #2e7d32;">{{ formatCurrency((item.material_calc?.costs?.total_cost_with_labor) || 0) }}</span>
+                    <span style="font-size: 0.75rem; color: #757575;">Material: {{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }} + Labour: {{ formatCurrency((item.material_calc?.costs?.labor_cost) || 0) }}</span>
+                  </div>
+                </td>
                 <td>
                   <button (click)="removeProductionItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
                 </td>
@@ -130,7 +135,7 @@
             </tbody>
             <tfoot>
               <tr class="total-row">
-                <td colspan="4" class="text-right"><strong>Total Material Cost:</strong></td>
+                <td colspan="4" class="text-right"><strong>Total Production Cost (Material + Labour):</strong></td>
                 <td class="amount-cell"><strong>{{ formatCurrency(getTotalProductionCost()) }}</strong></td>
                 <td></td>
               </tr>
@@ -268,7 +273,7 @@
     </div>
 
     <!-- ========== SECTION 3: SALES ========== -->
-    <div class="section-card">
+    <div class="section-card" *ngIf="!isLabourStaff()">
       <div class="section-header sales-header">
         <div class="section-title">
           <span class="section-icon"></span>
@@ -493,7 +498,7 @@
     </div>
 
     <!-- ========== SECTION 4: OTHER EXPENSES ========== -->
-    <div class="section-card">
+    <div class="section-card" *ngIf="!isLabourStaff()">
       <div class="section-header expenses-header">
         <div class="section-title">
           <span class="section-icon"></span>
@@ -587,7 +592,7 @@
     </div>
 
     <!-- ========== SECTION 5: PRODUCTION DAMAGE / TRANSPORT DAMAGE ========== -->
-    <div class="section-card">
+    <div class="section-card" *ngIf="!isLabourStaff()">
       <div class="section-header loss-header">
         <div class="section-title">
           <span class="section-icon">⚠️</span>
@@ -684,8 +689,36 @@
       </div>
     </div>
 
+    <!-- ========== LABOUR STAFF SUBMIT SECTION ========== -->
+    <div class="summary-card" *ngIf="isLabourStaff()">
+      <h2 class="summary-title">
+        <span class="summary-icon">💾</span>
+        Submit Entry
+      </h2>
+
+      <!-- Notes -->
+      <div class="notes-section">
+        <label>Notes (Optional)</label>
+        <textarea [(ngModel)]="notes" 
+                  rows="3" 
+                  placeholder="Add any additional notes for today's entry..."
+                  class="form-control"></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="submit-section">
+        <button (click)="submitDailyEntry()" 
+                [disabled]="saving || loading"
+                class="btn btn-submit">
+          <span *ngIf="!saving">💾 Submit Daily Entry</span>
+          <span *ngIf="saving">⏳ Saving...</span>
+        </button>
+        <p class="submit-hint">Production and Labor data will be saved.</p>
+      </div>
+    </div>
+
     <!-- ========== SECTION 6: SUMMARY & SUBMIT ========== -->
-    <div class="summary-card">
+    <div class="summary-card" *ngIf="!isLabourStaff()">
       <h2 class="summary-title">
         <span class="summary-icon"></span>
         Daily Summary

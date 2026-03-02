@@ -1,0 +1,252 @@
+<div class="pending-approvals-container">
+  <div class="page-header">
+    <div>
+      <h1>📋 Pending Approvals</h1>
+      <p class="subtitle">Review labour staff submissions</p>
+    </div>
+    <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
+      🔄 Refresh
+    </button>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button 
+      [class.active]="filterStatus === 'all'"
+      (click)="setFilter('all')"
+      class="tab-button">
+      All ({{ entries.length }})
+    </button>
+    <button 
+      [class.active]="filterStatus === 'pending'"
+      (click)="setFilter('pending')"
+      class="tab-button tab-pending">
+      ⏳ Pending ({{ getStatusCount('pending') }})
+    </button>
+    <button 
+      [class.active]="filterStatus === 'approved'"
+      (click)="setFilter('approved')"
+      class="tab-button tab-approved">
+      ✅ Approved ({{ getStatusCount('approved') }})
+    </button>
+    <button 
+      [class.active]="filterStatus === 'rejected'"
+      (click)="setFilter('rejected')"
+      class="tab-button tab-rejected">
+      ❌ Rejected ({{ getStatusCount('rejected') }})
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading entries...</p>
+  </div>
+
+  <!-- Entries List -->
+  <div *ngIf="!loading" class="entries-grid">
+    <div *ngFor="let entry of filteredEntries" class="entry-card" [class]="getStatusBadgeClass(entry.status)">
+      <div class="entry-header">
+        <div class="entry-info">
+          <h3>{{ entry.submitter_name }}</h3>
+          <p class="entry-date">📅 Entry Date: {{ formatDate(entry.entry_date) }}</p>
+          <p class="submission-date">Submitted: {{ formatDateTime(entry.created_at) }}</p>
+        </div>
+        <span class="status-badge" [class]="getStatusBadgeClass(entry.status)">
+          {{ entry.status | uppercase }}
+        </span>
+      </div>
+
+      <div class="entry-summary">
+        <div class="summary-item">
+          <span class="label">Production Items:</span>
+          <span class="value">{{ entry.production_data.length }} items ({{ getTotalProductionQty(entry) }} pcs)</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Labor Entries:</span>
+          <span class="value">{{ entry.labor_data.length }} workers (₹{{ getTotalLaborCost(entry) }})</span>
+        </div>
+        <div class="summary-item" *ngIf="entry.notes">
+          <span class="label">Notes:</span>
+          <span class="value">{{ entry.notes }}</span>
+        </div>
+      </div>
+
+      <!-- Reviewed Info (for approved/rejected) -->
+      <div *ngIf="entry.status !== 'pending'" class="review-info">
+        <p>Reviewed at: {{ formatDateTime(entry.reviewed_at!) }}</p>
+        <p *ngIf="entry.status === 'rejected' && entry.rejection_reason" class="rejection-reason">
+          Reason: {{ entry.rejection_reason }}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="entry-actions">
+        <button (click)="viewDetails(entry)" class="btn btn-secondary">
+          👁️ View Details
+        </button>
+        <div *ngIf="entry.status === 'pending'" class="action-buttons">
+          <button 
+            (click)="approveEntry(entry)"
+            [disabled]="saving"
+            class="btn btn-success">
+            ✅ Approve
+          </button>
+          <button 
+            (click)="openRejectModal(entry)"
+            [disabled]="saving"
+            class="btn btn-danger">
+            ❌ Reject
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredEntries.length === 0" class="empty-state">
+      <span class="empty-icon">📭</span>
+      <p>No {{ filterStatus === 'all' ? '' : filterStatus }} entries found</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div *ngIf="showDetailModal && selectedEntry" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Entry Details - {{ selectedEntry.submitter_name }}</h2>
+      <button (click)="closeModal()" class="btn-close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="detail-section">
+        <h3>📅 Entry Information</h3>
+        <p><strong>Entry Date:</strong> {{ formatDate(selectedEntry.entry_date) }}</p>
+        <p><strong>Submitted By:</strong> {{ selectedEntry.submitter_name }}</p>
+        <p><strong>Submitted At:</strong> {{ formatDateTime(selectedEntry.created_at) }}</p>
+        <p><strong>Status:</strong> <span [class]="getStatusBadgeClass(selectedEntry.status)">{{ selectedEntry.status | uppercase }}</span></p>
+      </div>
+
+      <!-- Production Data -->
+      <div class="detail-section" *ngIf="selectedEntry.production_data.length > 0">
+        <h3>🏭 Production Items</h3>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Quantity</th>
+              <th>Cement (bags)</th>
+              <th>Sand (cft)</th>
+              <th>Agg 10mm (cft)</th>
+              <th>Agg 20mm (cft)</th>
+              <th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of selectedEntry.production_data">
+              <td>{{ item.product_name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.cement_used?.toFixed(2) || 0 }}</td>
+              <td>{{ item.sand_used?.toFixed(2) || 0 }}</td>
+              <td>{{ item.aggregate_10mm_used?.toFixed(2) || 0 }}</td>
+              <td>{{ item.aggregate_20mm_used?.toFixed(2) || 0 }}</td>
+              <td>₹{{ item.total_cost_with_labor?.toFixed(2) || 0 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Labor Data -->
+      <div class="detail-section" *ngIf="selectedEntry.labor_data.length > 0">
+        <h3>👷 Labor Entries</h3>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>Worker Name</th>
+              <th>Task</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let worker of selectedEntry.labor_data">
+              <td>{{ worker.worker_name }}</td>
+              <td>{{ worker.task_description }}</td>
+              <td>₹{{ worker.amount?.toFixed(2) || 0 }}</td>
+              <td>{{ worker.payment_status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Notes -->
+      <div class="detail-section" *ngIf="selectedEntry.notes">
+        <h3>📝 Notes</h3>
+        <p>{{ selectedEntry.notes }}</p>
+      </div>
+
+      <!-- Review Info -->
+      <div class="detail-section" *ngIf="selectedEntry.status !== 'pending'">
+        <h3>📋 Review Information</h3>
+        <p><strong>Reviewed At:</strong> {{ formatDateTime(selectedEntry.reviewed_at!) }}</p>
+        <p *ngIf="selectedEntry.rejection_reason"><strong>Rejection Reason:</strong> {{ selectedEntry.rejection_reason }}</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button (click)="closeModal()" class="btn btn-secondary">Close</button>
+      <div *ngIf="selectedEntry.status === 'pending'">
+        <button 
+          (click)="approveEntry(selectedEntry)"
+          [disabled]="saving"
+          class="btn btn-success">
+          {{ saving ? 'Approving...' : '✅ Approve' }}
+        </button>
+        <button 
+          (click)="closeModal(); openRejectModal(selectedEntry)"
+          [disabled]="saving"
+          class="btn btn-danger">
+          ❌ Reject
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div *ngIf="showRejectModal && selectedEntry" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content reject-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Reject Entry</h2>
+      <button (click)="closeModal()" class="btn-close">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p><strong>Entry Date:</strong> {{ formatDate(selectedEntry.entry_date) }}</p>
+      <p><strong>Submitted By:</strong> {{ selectedEntry.submitter_name }}</p>
+      
+      <div class="form-group">
+        <label>Rejection Reason *</label>
+        <textarea 
+          [(ngModel)]="rejectionReason"
+          rows="4"
+          placeholder="Please provide a reason for rejection..."
+          class="form-control"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+      <button 
+        (click)="rejectEntry()"
+        [disabled]="saving || !rejectionReason.trim()"
+        class="btn btn-danger">
+        {{ saving ? 'Rejecting...' : '❌ Reject Entry' }}
+      </button>
+    </div>
+  </div>
+</div>
