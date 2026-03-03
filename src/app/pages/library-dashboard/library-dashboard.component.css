@@ -135,39 +135,39 @@
 }
 
 .card-icon.blue {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1976d2;
 }
 
 .card-icon.green {
-  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  background: #4CAF50;
 }
 
 .card-icon.orange {
-  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  background: #FF9800;
 }
 
 .card-icon.purple {
-  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+  background: #9C27B0;
 }
 
 .card-icon.red {
-  background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
+  background: #F44336;
 }
 
 .card-icon.teal {
-  background: linear-gradient(135deg, #009688 0%, #00695C 100%);
+  background: #009688;
 }
 
 .card-icon.indigo {
-  background: linear-gradient(135deg, #3F51B5 0%, #283593 100%);
+  background: #3F51B5;
 }
 
 .card-icon.cyan {
-  background: linear-gradient(135deg, #00BCD4 0%, #0097A7 100%);
+  background: #00BCD4;
 }
 
 .card-icon.blue-light {
-  background: linear-gradient(135deg, #03A9F4 0%, #0277BD 100%);
+  background: #03A9F4;
 }
 
 .card-details {

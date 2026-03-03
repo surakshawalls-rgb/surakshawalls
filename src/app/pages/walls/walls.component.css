@@ -93,7 +93,7 @@
 
 /* Products Section */
 .products-section {
-  background: #FAFAFA;
+  background: #FFFFFF;
   padding: 4rem 0;
 }
 
@@ -176,12 +176,12 @@ mat-card-actions {
   text-align: center;
   padding: 2rem;
   border-radius: 8px;
-  background: #FFF3E0;
+  background: #FFFFFF;
   transition: all 0.3s ease;
 }
 
 .comparison-item:hover {
-  background: #FFE0B2;
+  background: #F5F5F5;
   transform: scale(1.05);
 }
 
@@ -205,7 +205,7 @@ mat-card-actions {
 
 /* Fencing Section */
 .fencing-section {
-  background: #FAFAFA;
+  background: #FFFFFF;
   padding: 4rem 0;
 }
 
@@ -264,7 +264,7 @@ mat-card-actions {
   text-align: center;
   padding: 2rem;
   border-radius: 8px;
-  background: #F5F5F5;
+  background: #FFFFFF;
   transition: all 0.3s ease;
 }
 
@@ -323,7 +323,7 @@ mat-card-actions {
 
 /* Contact Info */
 .contact-info {
-  background: #FAFAFA;
+  background: #FFFFFF;
   padding: 3rem 0;
 }
 

@@ -1,5 +1,5 @@
 // src/app/pages/library-grid/library-grid.component.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/libr
 import { AuthService } from '../../services/auth.service';
 import { RegistrationDialogComponent, RegistrationResult } from './registration-dialog.component';
 import { LodgeComplaintDialogComponent } from '../../dialogs/lodge-complaint-dialog.component';
+import { MarkAttendanceDialogComponent } from './mark-attendance-dialog.component';
 import { addDays, differenceInDays, getDaysInMonth, startOfDay, format } from 'date-fns';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -95,13 +96,6 @@ export class LibraryGridComponent implements OnInit {
   checkingAttendance = false;
   allTodayAttendance: any[] = []; // All students' attendance for today
   attendanceMap: { [studentId: string]: any } = {}; // Quick lookup by student ID
-
-  // My Attendance (Self-marking)
-  showMyAttendanceModal = false;
-  myAttendanceMobile = '';
-  myAttendanceStudent: LibraryStudent | null = null;
-  myAttendanceStatus: any = null;
-  searchingStudent = false;
 
   // Bulk Operations
   showBulkOperations = false;
@@ -915,6 +909,15 @@ export class LibraryGridComponent implements OnInit {
     }
   }
 
+  // Close modal on Escape key
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && (this.showProfileModal || this.showRegistrationModal || 
+        this.showChangeSeatModal || this.showFeePaymentModal || this.showReceiptModal)) {
+      this.closeModal();
+    }
+  }
+
   closeModal() {
     this.showRegistrationModal = false;
     this.showProfileModal = false;
@@ -1438,13 +1441,33 @@ export class LibraryGridComponent implements OnInit {
   // ==============================
 
   openMyAttendanceModal() {
-    this.showMyAttendanceModal = true;
-    this.myAttendanceMobile = '';
-    this.myAttendanceStudent = null;
-    this.myAttendanceStatus = null;
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.cdr.detectChanges();
+    const dialogRef = this.dialog.open(MarkAttendanceDialogComponent, {
+      width: '500px',
+      maxWidth: '95vw',
+      disableClose: false,
+      panelClass: 'attendance-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        // Update attendance map for grid display
+        if (result.attendance && result.attendance.student_id) {
+          this.attendanceMap[result.attendance.student_id] = result.attendance;
+          this.cdr.detectChanges();
+        }
+        
+        // Show success message
+        const message = result.action === 'checkin' 
+          ? '✅ Checked in successfully!' 
+          : '✅ Checked out successfully!';
+        this.snackBar.open(message, 'Close', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['success-snackbar']
+        });
+      }
+    });
   }
 
   // ==============================
@@ -1467,170 +1490,6 @@ export class LibraryGridComponent implements OnInit {
         });
       }
     });
-  }
-
-  closeMyAttendanceModal() {
-    this.showMyAttendanceModal = false;
-    this.myAttendanceMobile = '';
-    this.myAttendanceStudent = null;
-    this.myAttendanceStatus = null;
-    this.cdr.detectChanges();
-  }
-
-  async searchMyStudent() {
-    if (!this.myAttendanceMobile || this.myAttendanceMobile.length !== 10) {
-      this.errorMessage = 'Please enter a valid 10-digit mobile number';
-      this.cdr.detectChanges();
-      return;
-    }
-
-    // Add timeout to prevent infinite loading
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Search timeout - please try again')), 10000)
-    );
-
-    try {
-      this.searchingStudent = true;
-      this.errorMessage = '';
-      this.successMessage = '';
-      this.cdr.detectChanges();
-      
-      // Race between service call and timeout
-      const student = await Promise.race([
-        this.libraryService.findStudentByMobile(this.myAttendanceMobile),
-        timeoutPromise
-      ]) as LibraryStudent | null;
-      
-      if (!student) {
-        this.errorMessage = 'No student found with this mobile number. Please check your number or contact admin.';
-        this.myAttendanceStudent = null;
-        this.myAttendanceStatus = null;
-      } else {
-        this.myAttendanceStudent = student as LibraryStudent;
-        
-        // Load today's attendance status with timeout
-        try {
-          this.myAttendanceStatus = await Promise.race([
-            this.libraryService.getTodayAttendanceStatus((student as LibraryStudent).id),
-            new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Attendance status timeout')), 5000)
-            )
-          ]);
-        } catch (attendanceError) {
-          this.myAttendanceStatus = null;
-        }
-        
-        this.successMessage = `Welcome ${(student as LibraryStudent).name}! You can now mark your attendance.`;
-      }
-
-      this.cdr.detectChanges();
-    } catch (error: any) {
-      console.error('Error in searchMyStudent:', error);
-      this.errorMessage = error.message || 'An error occurred while searching. Please check your connection and try again.';
-      this.myAttendanceStudent = null;
-      this.myAttendanceStatus = null;
-      this.cdr.detectChanges();
-    } finally {
-      console.log('Finishing search, setting searchingStudent to false');
-      this.searchingStudent = false;
-      this.cdr.detectChanges();
-      
-      // Additional safety check to ensure UI updates
-      setTimeout(() => {
-        if (this.searchingStudent) {
-          console.warn('searchingStudent still true after timeout, force setting to false');
-          this.searchingStudent = false;
-          this.cdr.detectChanges();
-        }
-      }, 100);
-    }
-  }
-
-  // Manual reset function for debugging/emergency use
-  forceResetAttendanceSearch() {
-    console.log('Force resetting attendance search state');
-    this.searchingStudent = false;
-    this.myAttendanceStudent = null;
-    this.myAttendanceStatus = null;
-    this.myAttendanceMobile = '';
-    this.errorMessage = '';
-    this.successMessage = '';
-    this.cdr.detectChanges();
-  }
-
-  async markMyAttendance() {
-    if (!this.myAttendanceStudent) {
-      this.errorMessage = 'Please search for your studentrecord first';
-      return;
-    }
-
-    if (this.checkingAttendance) return;
-
-    try {
-      this.checkingAttendance = true;
-      this.errorMessage = '';
-      this.successMessage = '';
-      this.cdr.detectChanges();
-
-      if (!this.myAttendanceStatus) {
-        // Check in - admin bypasses time restriction
-        const result = await this.libraryService.checkInStudent(this.myAttendanceStudent.id, this.isAdmin());
-        if (result.success) {
-          this.successMessage = '✅ Checked in successfully!';
-          this.myAttendanceStatus = result.attendance;
-          // Update attendance map for grid display
-          this.attendanceMap[this.myAttendanceStudent.id] = result.attendance;
-        } else {
-          this.errorMessage = result.error || 'Failed to check in';
-        }
-      } else if (!this.myAttendanceStatus.check_out_time) {
-        // Check out - admin bypasses time restriction
-        const result = await this.libraryService.checkOutStudent(this.myAttendanceStudent.id, this.isAdmin());
-        if (result.success) {
-          this.successMessage = '✅ Checked out successfully!';
-          // Reload status
-          this.myAttendanceStatus = await this.libraryService.getTodayAttendanceStatus(this.myAttendanceStudent.id);
-          // Update attendance map for grid display
-          this.attendanceMap[this.myAttendanceStudent.id] = this.myAttendanceStatus;
-        } else {
-          this.errorMessage = result.error || 'Failed to check out';
-        }
-      } else {
-        this.errorMessage = 'Already checked out for today';
-      }
-
-      this.cdr.detectChanges();
-
-      if (this.successMessage) {
-        setTimeout(() => {
-          this.successMessage = '';
-          this.cdr.detectChanges();
-        }, 3000);
-      }
-
-    } catch (error: any) {
-      this.errorMessage = error.message;
-      this.cdr.detectChanges();
-    } finally {
-      this.checkingAttendance = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  getMyAttendanceButtonText(): string {
-    if (!this.myAttendanceStatus) return '🟢 Check In';
-    if (!this.myAttendanceStatus.check_out_time) return '🔴 Check Out';
-    return '✅ Checked Out';
-  }
-
-  getMyAttendanceButtonClass(): string {
-    if (!this.myAttendanceStatus) return 'btn-success';
-    if (!this.myAttendanceStatus.check_out_time) return 'btn-danger';
-    return 'btn-secondary';
-  }
-
-  isMyAttendanceButtonDisabled(): boolean {
-    return this.checkingAttendance || (this.myAttendanceStatus && !!this.myAttendanceStatus.check_out_time);
   }
 
   // ==============================

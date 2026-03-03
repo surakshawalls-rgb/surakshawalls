@@ -10,6 +10,10 @@ DROP POLICY IF EXISTS "Allow authenticated users to insert attendance" ON librar
 DROP POLICY IF EXISTS "Allow authenticated users to update attendance" ON library_attendance;
 DROP POLICY IF EXISTS "Allow authenticated users to select attendance" ON library_attendance;
 DROP POLICY IF EXISTS "Allow authenticated users to delete attendance" ON library_attendance;
+DROP POLICY IF EXISTS "Enable read access for all users" ON library_attendance;
+DROP POLICY IF EXISTS "Enable insert access for all users" ON library_attendance;
+DROP POLICY IF EXISTS "Enable update access for all users" ON library_attendance;
+DROP POLICY IF EXISTS "Enable delete access for all users" ON library_attendance;
 
 -- Create permissive policies that allow anyone to manage attendance
 -- (Since this is an internal system with controlled access)

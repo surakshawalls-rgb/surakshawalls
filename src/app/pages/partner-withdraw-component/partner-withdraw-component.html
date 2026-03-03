@@ -39,9 +39,9 @@
 
         <tr *ngFor="let r of records; let i = index">
           <td>{{formatDateToDDMMYYYY(r.date)}}</td>
-          <td>{{r.partner_id}}</td>
+          <td>{{r.partner_name}}</td>
           <td>₹{{r.amount}}</td>
-          <td>{{r.description}}</td>
+          <td>{{r.notes || '-'}}</td>
         </tr>
       </table>
     </div>

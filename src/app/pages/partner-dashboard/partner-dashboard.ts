@@ -29,6 +29,15 @@ interface Settlement {
   notes: string;
 }
 
+interface Withdrawal {
+  id: string;
+  partner_id: string;
+  partner_name: string;
+  date: string;
+  amount: number;
+  notes: string;
+}
+
 @Component({
   selector: 'app-partner-dashboard',
   standalone: true,
@@ -39,6 +48,7 @@ interface Settlement {
 export class PartnerDashboardComponent implements OnInit {
   partners: PartnerInfo[] = [];
   settlements: Settlement[] = [];
+  withdrawals: Withdrawal[] = [];
   
   selectedMonth: string = new Date().toISOString().slice(0, 7);
   selectedPartner: string = '';
@@ -68,9 +78,12 @@ export class PartnerDashboardComponent implements OnInit {
     setTimeout(() => {
       this.loading = true;
       this.cd.detectChanges();
-      Promise.all([this.loadPartnerData(), this.loadSettlements()]).finally(() => {
-        this.loading = false;
-        this.cd.detectChanges();
+      // Load partner data first, then settlements and withdrawals
+      this.loadPartnerData().then(() => {
+        Promise.all([this.loadSettlements(), this.loadWithdrawals()]).finally(() => {
+          this.loading = false;
+          this.cd.detectChanges();
+        });
       });
     });
   }
@@ -81,7 +94,9 @@ export class PartnerDashboardComponent implements OnInit {
     this.errorMessage = '';
     this.cd.detectChanges();
     try {
-      await Promise.all([this.loadPartnerData(), this.loadSettlements()]);
+      // Load partner data first, then settlements and withdrawals
+      await this.loadPartnerData();
+      await Promise.all([this.loadSettlements(), this.loadWithdrawals()]);
       this.successMessage = '✅ Data refreshed successfully!';
       this.cd.detectChanges();
       setTimeout(() => {
@@ -237,6 +252,63 @@ export class PartnerDashboardComponent implements OnInit {
     }
   }
 
+  async loadWithdrawals() {
+    try {
+      // Get withdrawals from firm_cash_ledger
+      const { data: withdrawalsData, error: withdrawalsError } = await this.db.supabase
+        .from('firm_cash_ledger')
+        .select('*')
+        .eq('category', 'partner_withdrawal')
+        .order('date', { ascending: false })
+        .limit(50);
+
+      if (withdrawalsError) throw withdrawalsError;
+
+      // Create partner name map from already loaded partners
+      const partnerNames = new Map<string, string>();
+      this.partners.forEach(p => partnerNames.set(p.id, p.name));
+
+      this.withdrawals = withdrawalsData?.map(w => {
+        // Extract partner name from description as primary source
+        // Format: "Partner Withdrawal: Pappu Maurya withdrew ₹1000 - No notes"
+        let partnerName = 'Unknown Partner';
+        let notes = '';
+        
+        if (w.description) {
+          // Extract partner name
+          const nameMatch = w.description.match(/Partner Withdrawal:\s*([^w]+)\s+withdrew/i);
+          if (nameMatch && nameMatch[1]) {
+            partnerName = nameMatch[1].trim();
+          }
+          
+          // Extract notes (everything after the last " - ")
+          const notesMatch = w.description.match(/\s-\s(.+)$/);
+          if (notesMatch && notesMatch[1]) {
+            notes = notesMatch[1].trim();
+          }
+        }
+        
+        // Fallback to partner map if description parsing fails
+        if (partnerName === 'Unknown Partner' && w.partner_id) {
+          partnerName = partnerNames.get(w.partner_id) || 'Unknown Partner';
+        }
+        
+        return {
+          id: w.id,
+          partner_id: w.partner_id,
+          partner_name: partnerName,
+          date: w.date,
+          amount: w.amount,
+          notes: notes
+        };
+      }) || [];
+      this.cd.detectChanges();
+    } catch (error) {
+      console.error('Error loading withdrawals:', error);
+      this.cd.detectChanges();
+    }
+  }
+
   openSettlementForm(partnerId: string) {
     this.settlementForm.partner_id = partnerId;
     this.settlementForm.amount = 0;
@@ -353,12 +425,12 @@ export class PartnerDashboardComponent implements OnInit {
       const { error } = await this.db.supabase
         .from('firm_cash_ledger')
         .insert([{
-          transaction_type: 'payment',
+          type: 'payment',
           category: 'partner_withdrawal',
           amount: this.withdrawalForm.amount,
           partner_id: this.withdrawalForm.partner_id,
           description: `Partner Withdrawal: ${partner?.name || 'Partner'} withdrew ₹${this.withdrawalForm.amount} - ${this.withdrawalForm.notes || 'No notes'}`,
-          transaction_date: new Date().toISOString().split('T')[0]
+          date: new Date().toISOString().split('T')[0]
         }]);
 
       if (error) throw error;
@@ -367,11 +439,14 @@ export class PartnerDashboardComponent implements OnInit {
       this.showWithdrawalForm = false;
       this.cd.detectChanges();
       
+      // Reload data - load partners first, then withdrawals
+      await this.loadPartnerData();
+      await this.loadWithdrawals();
+      
       setTimeout(() => {
         this.successMessage = '';
         this.cd.detectChanges();
-        this.loadPartnerData();
-      }, 2000);
+      }, 3000);
     } catch (error) {
       console.error('Error submitting withdrawal:', error);
       this.errorMessage = '❌ Failed to record withdrawal';

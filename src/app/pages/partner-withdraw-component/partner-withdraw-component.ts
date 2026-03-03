@@ -94,7 +94,26 @@ export class PartnerWithdrawComponent implements OnInit {
     const to = from + this.pageSize - 1;
 
     const res = await this.db.getWithdrawals(from, to);
-    this.records = res.data || [];
+    
+    // Map partner_id to partner_name and extract notes from description
+    this.records = (res.data || []).map((r: any) => {
+      const partner = this.partners.find(p => p.id === r.partner_id);
+      let notes = '';
+      
+      // Extract notes from description (format: "Partner Withdrawal: Name withdrew ₹X - Notes")
+      if (r.description) {
+        const notesMatch = r.description.match(/\s-\s(.+)$/);
+        if (notesMatch && notesMatch[1]) {
+          notes = notesMatch[1].trim();
+        }
+      }
+      
+      return {
+        ...r,
+        partner_name: partner ? partner.partner_name : 'Unknown Partner',
+        notes: notes
+      };
+    });
 
     this.stopLoading();
   }

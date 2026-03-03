@@ -1,5 +1,5 @@
 // src/app/pages/library-students/library-students.component.ts
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -259,6 +259,15 @@ export class LibraryStudentsComponent implements OnInit {
     } catch (error: any) {
       console.error('Error loading payment history:', error);
       this.errorMessage = 'Failed to load payment history: ' + error.message;
+    }
+  }
+
+  // Close modal on Escape key
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape' && (this.showProfileModal || this.showAddModal || this.showEditModal || 
+        this.showPaymentHistoryModal || this.showChangeSeatModal || this.showAddShiftModal)) {
+      this.closeModal();
     }
   }
 

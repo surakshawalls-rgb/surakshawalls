@@ -3,7 +3,7 @@
 .quotation-page {
   width: 100%;
   min-height: 100vh;
-  background: #F5F5F5;
+  background: #FFFFFF;
 }
 
 /* Header Section */
@@ -43,7 +43,7 @@
 }
 
 mat-card-header {
-  background: #F5F5F5;
+  background: #FFFFFF;
   padding: 1.5rem !important;
   border-radius: 8px 8px 0 0;
 }
@@ -128,7 +128,7 @@ mat-form-field {
 .checkbox-option {
   margin: 1.5rem 0;
   padding: 1rem;
-  background: #FFF3E0;
+  background: #FFFFFF;
   border-radius: 4px;
 }
 
@@ -306,7 +306,7 @@ mat-form-field {
   align-items: flex-start;
   gap: 0.5rem;
   padding: 1rem;
-  background: #FFF3E0;
+  background: #FFFFFF;
   border-radius: 4px;
   margin-bottom: 1rem;
 }
@@ -360,7 +360,7 @@ mat-form-field {
 .feature {
   padding: 2rem;
   border-radius: 8px;
-  background: #F5F5F5;
+  background: #FFFFFF;
   transition: all 0.3s ease;
 }
 

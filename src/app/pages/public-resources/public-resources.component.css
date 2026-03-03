@@ -3,7 +3,7 @@
 .public-resources-page {
   width: 100%;
   min-height: 100vh;
-  background: #F5F5F5;
+  background: #FFFFFF;
 }
 
 /* Header Section */
@@ -42,7 +42,7 @@
 
 /* Info Banner */
 .info-banner {
-  background: #FFF3E0;
+  background: #FFFFFF;
   border-bottom: 3px solid #FFB300;
   padding: 1.5rem 0;
 }
@@ -306,7 +306,7 @@ mat-card-actions button {
 .feature-item {
   text-align: center;
   padding: 2rem;
-  background: #F5F5F5;
+  background: #FFFFFF;
   border-radius: 8px;
   transition: all 0.3s ease;
 }

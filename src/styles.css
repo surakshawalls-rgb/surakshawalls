@@ -173,10 +173,10 @@
   --warning-color: #FFC107;
   --info-color: #00BCD4;
 
-  /* Neutral Colors */
-  --bg-primary: #F5F5F5;
+  /* Neutral Colors - Professional White Theme */
+  --bg-primary: #FFFFFF;
   --bg-secondary: #FFFFFF;
-  --bg-tertiary: #FAFAFA;
+  --bg-tertiary: #FFFFFF;
   --text-primary: #212121;
   --text-secondary: #666666;
   --text-light: #999999;
@@ -200,15 +200,15 @@
   --border-radius-xl: 16px;
   --border-radius-full: 50%;
 
-  /* Font Sizes */
-  --font-xs: 12px;
-  --font-sm: 14px;
-  --font-base: 16px;
-  --font-lg: 18px;
-  --font-xl: 20px;
-  --font-xxl: 24px;
-  --font-xxxl: 32px;
-  --font-xxxxl: 48px;
+  /* Font Sizes - Professional Reporting Software Standard */
+  --font-xs: 9px;     /* Small labels, captions */
+  --font-sm: 11px;    /* Secondary text, table cells */
+  --font-base: 12px;  /* Body text, main content */
+  --font-lg: 13px;    /* Emphasized text */
+  --font-xl: 14px;    /* Small headings */
+  --font-xxl: 16px;   /* Medium headings */
+  --font-xxxl: 18px;  /* Large headings */
+  --font-xxxxl: 24px; /* Hero text */
 
   /* Shadows */
   --shadow-sm: 0 1px 3px var(--shadow-light);
@@ -268,7 +268,7 @@
 }
 
 .mat-card-title {
-  font-size: 1.25rem;
+  font-size: var(--font-xl); /* 14px professional standard */
   font-weight: 500;
   color: #1976d2;
   display: flex;
@@ -279,10 +279,11 @@
 
 .mat-card-content {
   color: rgba(0,0,0,0.87);
+  font-size: var(--font-base); /* 12px professional standard */
 }
 
 .mat-section-title {
-  font-size: 1.1rem;
+  font-size: var(--font-lg); /* 13px professional standard */
   font-weight: 500;
   color: #424242;
   margin-bottom: 16px;
@@ -308,12 +309,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
   transition: background 0.2s;
 }
 
 .mat-data-list-item:hover {
-  background: #f5f5f5;
+  background: #f0f0f0;
 }
 
 .mat-data-list-item:last-child {
@@ -334,14 +335,14 @@
 }
 
 .mat-stat-value {
-  font-size: 2rem;
+  font-size: var(--font-xxl); /* 16px professional standard */
   font-weight: 600;
   color: #1976d2;
   margin: 8px 0;
 }
 
 .mat-stat-label {
-  font-size: 0.875rem;
+  font-size: var(--font-sm); /* 11px compact label */
   color: #757575;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -352,7 +353,7 @@
   align-items: center;
   padding: 6px 12px;
   border-radius: 16px;
-  font-size: 0.875rem;
+  font-size: var(--font-sm); /* 11px compact chip */
   font-weight: 500;
   background: #e3f2fd;
   color: #1976d2;
@@ -383,7 +384,7 @@
   border-radius: 12px;
   background: #1976d2;
   color: white;
-  font-size: 0.75rem;
+  font-size: var(--font-xs); /* 9px compact badge */
   font-weight: 600;
 }
 
@@ -397,7 +398,7 @@
   max-width: 100% !important;
   margin-bottom: 8px !important;
   min-height: 32px !important;
-  font-size: 0.92rem !important;
+  font-size: var(--font-base) !important; /* 12px professional input */
   background: none !important;
   border-radius: 4px !important;
 }
@@ -408,7 +409,7 @@
 }
 
 .mat-input-element {
-  font-size: 0.92rem !important;
+  font-size: var(--font-base) !important; /* 12px professional input */
   padding: 2px 6px !important;
   min-height: 24px !important;
 }
@@ -436,7 +437,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: #fafafa;
+  background: #ffffff;
   border-radius: 8px;
   margin-bottom: 24px;
   flex-wrap: wrap;
@@ -496,7 +497,7 @@
   }
 
   .mat-card-title {
-    font-size: 1.1rem;
+    font-size: var(--font-lg); /* 13px tablet */
   }
 
   .mat-data-grid {
@@ -510,7 +511,7 @@
   }
 
   .mat-stat-value {
-    font-size: 1.5rem;
+    font-size: var(--font-xl); /* 14px tablet */
   }
 
   .mat-action-bar {
@@ -534,17 +535,18 @@
   }
 
   .mat-card-title {
-    font-size: 1rem;
+    font-size: var(--font-base); /* 12px mobile */
   }
 
   .mat-section-title {
-    font-size: 0.95rem;
+    font-size: var(--font-sm); /* 11px mobile */
   }
 }
 
 /* ===== RESET & BASE STYLES ===== */
 
 html {
+  font-size: 12px; /* Professional reporting software base size */
   width: 100%;
   height: 100%;
   overflow-x: hidden;
@@ -590,7 +592,7 @@ body {
 /* ===== COMMON ELEMENTS ===== */
 input, select, textarea, button {
   font-family: inherit;
-  font-size: inherit;
+  font-size: var(--font-base); /* 12px professional compact */
   max-width: 100%;
 }
 
@@ -603,6 +605,7 @@ input, select, textarea {
   box-sizing: border-box;
   background: var(--bg-secondary);
   color: var(--text-primary);
+  font-size: var(--font-base); /* 12px professional inputs */
 }
 
 input:focus, select:focus, textarea:focus {
@@ -613,12 +616,14 @@ input:focus, select:focus, textarea:focus {
 
 input::placeholder {
   color: var(--text-light);
+  font-size: var(--font-sm); /* 11px placeholder */
 }
 
 button {
   cursor: pointer;
   border: none;
   font-weight: 500;
+  font-size: var(--font-sm); /* 11px compact buttons */
   transition: all var(--transition-fast);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--border-radius-md);
@@ -641,6 +646,45 @@ a {
 
 a:hover {
   color: var(--primary-dark);
+}
+
+/* ===== HEADING STYLES - Professional Compact ===== */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+
+h1 { font-size: var(--font-xxxl); }  /* 18px */
+h2 { font-size: var(--font-xxl); }   /* 16px */
+h3 { font-size: var(--font-xl); }    /* 14px */
+h4 { font-size: var(--font-lg); }    /* 13px */
+h5 { font-size: var(--font-base); }  /* 12px */
+h6 { font-size: var(--font-sm); }    /* 11px */
+
+p {
+  font-size: var(--font-base); /* 12px body text */
+  line-height: 1.6;
+  margin: 0 0 var(--spacing-sm) 0;
+  color: var(--text-primary);
+}
+
+span, div {
+  font-size: inherit; /* Inherit from parent */
+}
+
+label {
+  font-size: var(--font-sm); /* 11px compact labels */
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+
+small {
+  font-size: var(--font-xs); /* 9px small text */
+  color: var(--text-secondary);
 }
 
 /* ===== BUTTON STYLES ===== */
@@ -993,10 +1037,14 @@ a:hover {
 .font-semibold { font-weight: 600; }
 .font-normal { font-weight: 400; }
 
-.text-sm { font-size: var(--font-sm); }
-.text-base { font-size: var(--font-base); }
-.text-lg { font-size: var(--font-lg); }
-.text-xl { font-size: var(--font-xl); }
+/* Font size utilities - Professional compact scale */
+.text-xs { font-size: var(--font-xs); }     /* 9px */
+.text-sm { font-size: var(--font-sm); }     /* 11px */
+.text-base { font-size: var(--font-base); } /* 12px */
+.text-lg { font-size: var(--font-lg); }     /* 13px */
+.text-xl { font-size: var(--font-xl); }     /* 14px */
+.text-2xl { font-size: var(--font-xxl); }   /* 16px */
+.text-3xl { font-size: var(--font-xxxl); }  /* 18px */
 
 /* ===== DISPLAY UTILITIES ===== */
 .hidden { display: none !important; }
@@ -1207,13 +1255,15 @@ a:hover {
     padding: var(--spacing-sm) !important;
   }
 
-  h1 { font-size: 24px !important; }
-  h2 { font-size: 20px !important; }
-  h3 { font-size: 18px !important; }
+  h1 { font-size: var(--font-xxxl) !important; }  /* 18px - compact mobile */
+  h2 { font-size: var(--font-xxl) !important; }   /* 16px - compact mobile */
+  h3 { font-size: var(--font-xl) !important; }    /* 14px - compact mobile */
+  h4 { font-size: var(--font-lg) !important; }    /* 13px - compact mobile */
 
   button {
-    min-height: 44px; /* Touch-friendly size */
-    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: 40px; /* Compact touch target */
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-sm) !important;
   }
 }
 
@@ -1226,7 +1276,7 @@ a:hover {
 
   .menu-bar button {
     padding: var(--spacing-xs) var(--spacing-sm) !important;
-    font-size: 12px !important;
+    font-size: var(--font-xs) !important;  /* Use variable instead of hardcoded 12px */
   }
 
   .content-area {
@@ -1283,7 +1333,7 @@ a:hover {
   color: #fff !important;
   border-radius: 16px 16px 0 0 !important;
   padding: 16px 24px !important;
-  font-size: 1.3rem !important;
+  font-size: var(--font-xl) !important; /* 14px professional dialog */
   font-weight: 600;
 }
 

@@ -311,9 +311,9 @@
   border-color: #4a93ff;
 }
 
-/* Both Halves - Soft Gradient */
+/* Both Halves - Clean Split */
 .seat-box.both-halves-occupied {
-  background: linear-gradient(180deg, #fff8f0 50%, #f0f6ff 50%);
+  background: #f5f5f5;
   border-color: #9b7fd1;
   border-width: 2px;
   cursor: pointer;
@@ -1700,7 +1700,7 @@ textarea {
 }
 
 .receipt-amount {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1976d2;
   color: white;
   padding: 12px 16px;
   border-radius: 8px;

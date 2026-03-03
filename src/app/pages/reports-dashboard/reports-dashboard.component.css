@@ -13,9 +13,10 @@
   align-items: center;
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  color: white;
+  color: #333;
 }
 
 .header-left h1 {
@@ -83,7 +84,7 @@
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1976d2;
   color: white;
   font-weight: 600;
 }
@@ -98,7 +99,7 @@
   height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
-  border-top: 8px solid #764ba2;
+  border-top: 8px solid #1976d2;
 }
 
 /* ========== LOADING OVERLAY ========== */
@@ -154,8 +155,9 @@
 
 .stat-card {
   padding: 8px 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   text-align: center;
   min-width: 120px;
@@ -187,7 +189,7 @@ table {
 }
 
 thead {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1976d2;
   color: white;
 }
 
@@ -350,38 +352,45 @@ tfoot td {
 }
 
 .summary-card.revenue {
-  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #4CAF50;
 }
 
 .summary-card.expense {
-  background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #F44336;
 }
 
 .summary-card.profit {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #2196F3;
 }
 
 .summary-card.outstanding {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #FF9800;
 }
 
 .summary-card.receivable {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #00BCD4;
 }
 
 .summary-card.stock {
-  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #9C27B0;
 }
 
 .summary-card.inventory {
-  background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border-left: 4px solid #607D8B;
 }
 
 .card-icon {
@@ -472,7 +481,7 @@ tfoot td {
 /* ========== MODAL HEADER ========== */
 .modal-header {
   padding: 14px 18px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1976d2;
   color: white;
   display: flex;
   justify-content: space-between;

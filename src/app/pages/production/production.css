@@ -53,8 +53,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-  color: white;
+  background: white;
+  color: #333;
+  border: 1px solid var(--border-color);
   padding: var(--spacing-md) var(--spacing-lg);
   border-radius: var(--border-radius-lg);
   margin-bottom: var(--spacing-lg);

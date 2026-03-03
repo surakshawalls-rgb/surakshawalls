@@ -1,87 +1,45 @@
 <!-- src/app/pages/material-purchase/material-purchase.component.html -->
 <app-breadcrumb></app-breadcrumb>
-<style>
-@keyframes pulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-@keyframes gradientFlow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
 
-<div style="min-height: 100vh; background: linear-gradient(135deg, #f093fb 0%, #f5576c 25%, #4facfe 50%, #00f2fe 75%, #667eea 100%); background-size: 400% 400%; animation: gradientFlow 15s ease infinite; padding: 24px;">
-
-  <!-- Modern Header -->
-  <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px; margin-bottom: 32px; text-align: center;">
-    <h2 style="margin: 0; font-size: 2.2rem; font-weight: 700; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 16px;">
-      <span style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 16px; animation: float 3s ease-in-out infinite;">📦</span>
-      Material Purchase
-    </h2>
-    <p style="margin: 16px 0 0 0; color: rgba(255,255,255,0.8); font-size: 1.1rem; font-weight: 500;">Record raw material purchases</p>
+<div class="page-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2 style="margin: 0; font-size: 11px; font-weight: 600; color: #333;">📦 Material Purchase</h2>
+    <p style="margin: 4px 0 0 0; color: #666; font-size: 9px;">Record raw material purchases</p>
   </div>
 
   <!-- Loading & Messages -->
-  <div *ngIf="loading" 
-       style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-    <div style="background: rgba(255,255,255,0.9); backdrop-filter: blur(20px); padding: 40px; border-radius: 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.3);">
-      <div style="width: 50px; height: 50px; border: 4px solid #e5e7eb; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-      <div style="font-size: 1.2rem; font-weight: 600; color: #374151;">Loading...</div>
+  <div *ngIf="loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: #ffffff; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+      <div style="width: 40px; height: 40px; border: 3px solid #e0e0e0; border-top: 3px solid #1976d2; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+      <div style="font-size: 10px; font-weight: 600; color: #333;">Loading...</div>
     </div>
   </div>
   
-  <div *ngIf="successMessage" 
-       style="backdrop-filter: blur(20px); background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9)); border-radius: 16px; padding: 20px; margin-bottom: 24px; color: white; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 12px;">
-    <span style="font-size: 1.4rem;">✅</span>
-    <span style="font-weight: 600;">{{ successMessage }}</span>
+  <div *ngIf="successMessage" style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; padding: 12px; margin-bottom: 20px; color: #155724; font-size: 9px; display: flex; align-items: center; gap: 8px;">
+    <span>✅</span>
+    <span>{{ successMessage }}</span>
   </div>
   
-  <div *ngIf="errorMessage" 
-       style="backdrop-filter: blur(20px); background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9)); border-radius: 16px; padding: 20px; margin-bottom: 24px; color: white; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; gap: 12px;">
-    <span style="font-size: 1.4rem;">⚠️</span>
-    <span style="font-weight: 600;">{{ errorMessage }}</span>
+  <div *ngIf="errorMessage" style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 4px; padding: 12px; margin-bottom: 20px; color: #721c24; font-size: 9px; display: flex; align-items: center; gap: 8px;">
+    <span>⚠️</span>
+    <span>{{ errorMessage }}</span>
   </div>
 
-  <div *ngIf="!loading" style="display: grid; grid-template-columns: 1fr 400px; gap: 32px; align-items: start;">
+  <div *ngIf="!loading" style="display: grid; grid-template-columns: 1fr 380px; gap: 20px;">
     <!-- Purchase Form -->
-    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px;">
-      <h3 style="margin: 0 0 32px 0; color: white; font-size: 1.6rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
-        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.2rem;">📝</span>
-        New Purchase
-      </h3>
+    <div class="form-container">
+      <h3 style="margin: 0 0 20px 0; color: #1565c0; font-size: 10px; font-weight: 600; border-bottom: 2px solid #1565c0; padding-bottom: 8px;">📝 New Purchase</h3>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
-            <span style="color: #10b981;">📅</span> Date <span style="color: #ef4444;">*</span>
-          </label>
-          <input type="date" [(ngModel)]="date" 
-                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
-                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div>
+          <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">📅 Date <span style="color: #d32f2f;">*</span></label>
+          <input type="date" [(ngModel)]="date" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
-            <span style="color: #8b5cf6;">📋</span> Material <span style="color: #ef4444;">*</span>
-          </label>
-          <select [(ngModel)]="materialName" (change)="onMaterialChange()" 
-                  style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; cursor: pointer; transition: all 0.3s ease;"
-                  onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                  onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <div>
+          <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">📋 Material <span style="color: #d32f2f;">*</span></label>
+          <select [(ngModel)]="materialName" (change)="onMaterialChange()" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
             <option value="">Select Material</option>
             <option *ngFor="let material of materials" [value]="material.material_name">
               {{ material.material_name }} (Stock: {{ material.current_stock }} {{ material.unit }})
@@ -90,155 +48,121 @@
         </div>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
-            <span style="color: #f59e0b;">📊</span> Quantity <span style="color: #ef4444;">*</span>
-          </label>
-          <input type="number" [(ngModel)]="quantity" (input)="onQuantityChange()" min="0" 
-                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
-                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div>
+          <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">📊 Quantity <span style="color: #d32f2f;">*</span></label>
+          <input type="number" [(ngModel)]="quantity" (input)="onQuantityChange()" min="0" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
-            <span style="color: #10b981;">💰</span> Unit Cost (₹) <span style="color: #ef4444;">*</span>
-          </label>
-          <input type="number" [(ngModel)]="unitCost" (input)="onUnitCostChange()" min="0" 
-                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
-                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <div>
+          <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">💰 Unit Cost (₹) <span style="color:#d32f2f;">*</span></label>
+          <input type="number" [(ngModel)]="unitCost" (input)="onUnitCostChange()" min="0" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
         </div>
       </div>
 
       <!-- Vendor & Invoice -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
-            <span style="color: #6366f1;">🏪</span> Vendor Name
-          </label>
-          <input type="text" [(ngModel)]="vendorName" placeholder="Vendor name (optional)" 
-                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
-                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+        <div>
+          <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">🏪 Vendor Name</label>
+          <input type="text" [(ngModel)]="vendorName" placeholder="Vendor name (optional)" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
         </div>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px;">
-            <span style="color: #ec4899;">📄</span> Invoice Number
-          </label>
-          <input type="text" [(ngModel)]="invoiceNumber" placeholder="Invoice # (optional)" 
-                 style="padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease;"
-                 onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                 onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+        <div>
+          <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">📄 Invoice Number</label>
+          <input type="text" [(ngModel)]="invoiceNumber" placeholder="Invoice # (optional)" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
         </div>
       </div>
 
       <!-- Payment Source -->
-      <div style="background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 2px solid rgba(255,255,255,0.3);">
-        <label style="color: white; font-weight: 700; font-size: 1.1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-          <span style="color: #fbbf24;">💳</span> Payment Source <span style="color: #ef4444;">*</span>
-        </label>
-        <div style="display: flex; gap: 24px;">
-          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 12px; flex: 1; transition: all 0.3s ease; border: 2px solid transparent;"
-                 [style.background]="paidFrom === 'office_cash' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)'"
-                 [style.borderColor]="paidFrom === 'office_cash' ? 'rgba(16, 185, 129, 0.5)' : 'transparent'"
-                 onmouseover="this.style.background='rgba(255,255,255,0.15)'"
-                 onmouseout="this.style.background=this.style.borderColor.includes('129') ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255,255,255,0.1)'">
-            <input type="radio" name="paidFrom" value="office_cash" [(ngModel)]="paidFrom" 
-                   style="width: 20px; height: 20px; cursor: pointer; accent-color: #10b981;">
-            <span style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">🏢 Office Cash</span>
+      <div style="background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; margin-bottom: 16px;">
+        <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 12px;">💳 Payment Source <span style="color: #d32f2f;">*</span></label>
+        <div style="display: flex; gap: 16px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 10px 16px; border-radius: 4px; flex: 1; border: 2px solid transparent;"
+                 [style.borderColor]="paidFrom === 'office_cash' ? '#4CAF50' : 'transparent'">
+            <input type="radio" name="paidFrom" value="office_cash" [(ngModel)]="paidFrom" style="width: 16px; height: 16px; cursor: pointer;">
+            <span style="color: #333; font-weight: 500; font-size: 9px;">🏢 Office Cash</span>
           </label>
-          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 16px 24px; border-radius: 12px; flex: 1; transition: all 0.3s ease; border: 2px solid transparent;"
-                 [style.background]="paidFrom === 'partner_pocket' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.1)'"
-                 [style.borderColor]="paidFrom === 'partner_pocket' ? 'rgba(59, 130, 246, 0.5)' : 'transparent'"
-                 onmouseover="this.style.background='rgba(255,255,255,0.15)'"
-                 onmouseout="this.style.background=this.style.borderColor.includes('246') ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255,255,255,0.1)'">
-            <input type="radio" name="paidFrom" value="partner_pocket" [(ngModel)]="paidFrom" 
-                   style="width: 20px; height: 20px; cursor: pointer; accent-color: #3b82f6;">
-            <span style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">👤 Partner Pocket</span>
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; background: #ffffff; padding: 10px 16px; border-radius: 4px; flex: 1; border: 2px solid transparent;"
+                 [style.borderColor]="paidFrom === 'partner_pocket' ? '#1976d2' : 'transparent'">
+            <input type="radio" name="paidFrom" value="partner_pocket" [(ngModel)]="paidFrom" style="width: 16px; height: 16px; cursor: pointer;">
+            <span style="color: #333; font-weight: 500; font-size: 9px;">👤 Partner Pocket</span>
           </label>
         </div>
       </div>
 
-      <!-- Partner Selection (only if paid from partner pocket) -->
-      <div *ngIf="paidFrom === 'partner_pocket'" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(29, 78, 216, 0.05)); border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 2px solid rgba(59, 130, 246, 0.3); animation: slideDown 0.3s ease;">
-        <label style="color: white; font-weight: 700; font-size: 1.1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-          <span style="color: #60a5fa;">👤</span> Which Partner? <span style="color: #ef4444;">*</span>
-        </label>
-        <select [(ngModel)]="partnerId" 
-                style="width: 100%; padding: 16px 20px; border: 2px solid rgba(255,255,255,0.4); border-radius: 12px; background: rgba(255,255,255,0.95); font-size: 1rem; cursor: pointer; transition: all 0.3s ease; font-weight: 600;"
-                onfocus="this.style.borderColor='rgba(59, 130, 246, 0.8)'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.2)'"
-                onblur="this.style.borderColor='rgba(255,255,255,0.4)'; this.style.boxShadow='none'">
+      <!-- Partner Selection -->
+      <div *ngIf="paidFrom === 'partner_pocket'" style="background: #e3f2fd; border: 1px solid #90caf9; border-radius: 4px; padding: 16px; margin-bottom: 16px;">
+        <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 8px;">👤 Which Partner? <span style="color: #d32f2f;">*</span></label>
+        <select [(ngModel)]="partnerId" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #90caf9; border-radius: 4px; font-size: 9px;">
           <option value="">-- Select Partner --</option>
           <option *ngFor="let partner of partners" [value]="partner.id">{{ partner.partner_name }}</option>
         </select>
       </div>
 
       <!-- Notes -->
-      <div style="margin-bottom: 24px;">
-        <label style="color: white; font-weight: 600; font-size: 1rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-          <span style="color: #a78bfa;">📝</span> Notes
-        </label>
-        <textarea [(ngModel)]="notes" placeholder="Additional notes (optional)" rows="3"
-                  style="width: 100%; padding: 16px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 16px; background: rgba(255,255,255,0.9); font-size: 1rem; transition: all 0.3s ease; resize: vertical; font-family: inherit;"
-                  onfocus="this.style.borderColor='rgba(255,255,255,0.6)'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'"
-                  onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'"></textarea>
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 4px;">📝 Notes</label>
+        <textarea [(ngModel)]="notes" placeholder="Additional notes (optional)" rows="3" class="form-input" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px; font-family: inherit; resize: vertical;"></textarea>
       </div>
 
       <!-- Total Amount Display -->
-      <div style="background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center; border: 1px solid rgba(255,255,255,0.3);">
-        <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-bottom: 8px;">Total Amount</div>
-        <div style="color: white; font-size: 2rem; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">₹{{ totalAmount | number }}</div>
+      <div style="background: #e8f5e9; border: 1px solid #4CAF50; border-radius: 4px; padding: 16px; margin-bottom: 16px; text-align: center;">
+        <div style="color: #666; font-size: 9px; margin-bottom: 4px;">Total Amount</div>
+        <div style="color: #2e7d32; font-size: 16px; font-weight: 700;">₹{{ totalAmount | number }}</div>
       </div>
 
       <!-- Action Buttons -->
-      <div style="display: flex; gap: 16px; justify-content: center;">
-        <button (click)="savePurchase()" [disabled]="!isFormValid() || saving" 
-                style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 16px 32px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 8px;"
-                [style.opacity]="!isFormValid() || saving ? '0.6' : '1'"
-                [style.cursor]="!isFormValid() || saving ? 'not-allowed' : 'pointer'"
-                onmouseover="if(!this.disabled) { this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 35px rgba(16, 185, 129, 0.5)'; }"
-                onmouseout="if(!this.disabled) { this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(16, 185, 129, 0.4)'; }">
-          <span *ngIf="saving" style="width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button (click)="savePurchase()" [disabled]="!isFormValid() || saving" class="btn btn-primary" style="background: #4CAF50; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-size: 9px; font-weight: 600; cursor: pointer;"
+                [style.opacity]="!isFormValid() || saving ? '0.5' : '1'"
+                [style.cursor]="!isFormValid() || saving ? 'not-allowed' : 'pointer'">
           {{ saving ? 'Saving...' : '💾 Save Purchase' }}
         </button>
-        <button (click)="resetForm()" 
-                style="background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.3); padding: 16px 32px; border-radius: 50px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px);"
-                onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateY(-3px)'"
-                onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(0)'">
+        <button (click)="resetForm()" class="btn btn-secondary" style="background: #9e9e9e; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-size: 9px; font-weight: 600; cursor: pointer;">
           🔄 Reset
         </button>
       </div>
     </div>
 
-    <!-- Recent Purchases Sidebar -->
-    <div style="backdrop-filter: blur(20px); background: rgba(255,255,255,0.1); border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 20px 40px rgba(0,0,0,0.1); padding: 32px;">
-      <h3 style="margin: 0 0 24px 0; color: white; font-size: 1.4rem; font-weight: 700; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px;">
-        <span style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px; font-size: 1.1rem;">📋</span>
-        Recent Purchases
-      </h3>
-      <div style="display: flex; flex-direction: column; gap: 16px; max-height: 600px; overflow-y: auto;">
-        <div *ngFor="let purchase of purchaseHistory" 
-             style="background: rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease;"
-             onmouseover="this.style.transform='translateY(-2px)'; this.style.background='rgba(255,255,255,0.15)'"
-             onmouseout="this.style.transform='translateY(0)'; this.style.background='rgba(255,255,255,0.1)'">
-          <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 12px;">
-            <div style="color: white; font-weight: 700; font-size: 1.1rem;">{{ purchase.material_name }}</div>
-            <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">₹{{ purchase.total_amount | number }}</div>
-          </div>
-          <div style="color: rgba(255,255,255,0.8); font-size: 0.9rem; margin-bottom: 8px;">
-            {{ purchase.date }} • {{ purchase.quantity }} units @ ₹{{ purchase.unit_cost }}
-          </div>
-          <div style="color: rgba(255,255,255,0.7); font-size: 0.85rem; font-style: italic;">
-            {{ purchase.paid_from === 'office_cash' ? '🏢 Office Cash' : '👤 Partner Pocket' }}
-          </div>
-        </div>
-        <div *ngIf="purchaseHistory.length === 0" 
-             style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 40px; text-align: center; color: rgba(255,255,255,0.6); backdrop-filter: blur(10px);">
-          <div style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;">📦</div>
-          <div style="font-size: 1.1rem;">No recent purchases</div>
+    <!-- Recent Purchases Table -->
+    <div class="form-container">
+      <h3 style="margin: 0 0 16px 0; color: #1565c0; font-size: 10px; font-weight: 600; border-bottom: 2px solid #1565c0; padding-bottom: 8px;">📋 Recent Purchases</h3>
+      
+      <div style="max-height: 600px; overflow-y: auto;">
+        <table *ngIf="purchaseHistory.length > 0" style="width: 100%; border-collapse: collapse; font-size: 9px;">
+          <thead>
+            <tr style="background: #1565c0; color: white;">
+              <th style="padding: 8px; text-align: left; border: 1px solid #e0e0e0; font-weight: 600;">Material</th>
+              <th style="padding: 8px; text-align: right; border: 1px solid #e0e0e0; font-weight: 600;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let purchase of purchaseHistory let i = index" [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
+              <td style="padding: 8px; border: 1px solid #e0e0e0;">
+                <div style="font-weight: 600; color: #333; margin-bottom: 2px;">{{ purchase.material_name }}</div>
+                <div style="color: #666; font-size: 8px;">{{ purchase.date }}</div>
+                <div style="color: #666; font-size: 8px;">{{ purchase.quantity }} units @ ₹{{ purchase.unit_cost }}</div>
+                <div style="color: #666; font-size: 8px; font-style: italic;">
+                  {{ purchase.paid_from === 'office_cash' ? '🏢 Office Cash' : '👤 Partner Pocket' }}
+                </div>
+              </td>
+              <td style="padding: 8px; border: 1px solid #e0e0e0; text-align: right; vertical-align: top;">
+                <span style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; display: inline-block;">₹{{ purchase.total_amount | number }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="purchaseHistory.length === 0" style="background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; padding: 30px; text-align: center; color: #999;">
+          <div style="font-size: 32px; margin-bottom: 12px;">📦</div>
+          <div style="font-size: 9px;">No recent purchases</div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
