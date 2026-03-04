@@ -8,6 +8,11 @@
     
     <!-- Main Navigation Menu -->
     <nav class="main-nav" *ngIf="!(isHandset$ | async)">
+      <!-- Home Button - Always Visible -->
+      <button mat-button routerLink="/home" routerLinkActive="active" class="nav-button">
+        <mat-icon>home</mat-icon>
+      </button>
+
       <!-- Labour Staff: ONLY Daily Entry -->
       <ng-container *ngIf="isLabourStaff()">
         <button mat-button routerLink="/daily-entry" routerLinkActive="active" class="nav-button">
@@ -192,6 +197,13 @@
 
     <!-- Mobile Full Menu -->
     <mat-menu #mobileMenu="matMenu" class="mobile-nav-menu">
+      <!-- Home Button -->
+      <button mat-menu-item routerLink="/home">
+        <mat-icon>home</mat-icon>
+        <span>Home</span>
+      </button>
+      <mat-divider></mat-divider>
+      
       <!-- Labour Staff: ONLY Daily Entry -->
       <ng-container *ngIf="isLabourStaff()">
         <button mat-menu-item routerLink="/daily-entry">

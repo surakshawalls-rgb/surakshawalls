@@ -14,6 +14,15 @@
   height: 24px;
 }
 
+/* Mobile-friendly notification button */
+@media (max-width: 768px) {
+  .notification-button mat-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+}
+
 .notification-menu {
   min-width: 500px;
   max-width: 650px;
@@ -264,13 +273,58 @@
   .notification-menu {
     min-width: calc(100vw - 32px);
     max-width: calc(100vw - 32px);
+    max-height: 75vh;
+  }
+
+  .notification-header {
+    padding: 18px 16px;
   }
 
   .notification-header h3 {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .notification-item {
-    padding: 10px 12px;
+    padding: 14px 16px;
+    min-height: 72px;
+  }
+
+  .notification-title {
+    font-size: 13px;
+  }
+
+  .notification-message {
+    font-size: 13px;
+  }
+
+  .notification-time {
+    font-size: 11px;
+  }
+
+  /* Larger touch targets for buttons */
+  .header-button {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .header-button mat-icon {
+    font-size: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-item {
+    padding: 16px;
+    min-height: 76px;
+  }
+
+  .notification-title {
+    font-size: 14px;
+  }
+
+  .notification-message {
+    font-size: 14px;
   }
 }

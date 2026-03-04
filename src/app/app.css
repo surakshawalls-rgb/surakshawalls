@@ -139,41 +139,81 @@
 /* Mobile Menu Button */
 .mobile-menu-btn {
   margin-right: 8px;
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.mobile-menu-btn mat-icon {
+  font-size: 28px !important;
+  width: 28px !important;
+  height: 28px !important;
 }
 
 /* Mobile Navigation Menu */
 ::ng-deep .mobile-nav-menu.mat-mdc-menu-panel {
-  max-width: 320px !important;
+  max-width: 90vw !important;
+  min-width: 280px !important;
   max-height: 80vh !important;
   border-radius: 12px !important;
+  padding: 8px !important;
 }
 
 ::ng-deep .mobile-nav-menu .menu-section-header {
-  font-size: 0.688rem !important;
+  font-size: 0.75rem !important;
   font-weight: 700 !important;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: #f84464 !important;
   background: linear-gradient(135deg, #fef5f7 0%, #ffe5ec 100%) !important;
   cursor: default !important;
-  height: 40px !important;
-  line-height: 40px !important;
-  margin: 4px 0 !important;
-  border-left: 3px solid #f84464 !important;
-  padding-left: 12px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  line-height: 48px !important;
+  margin: 8px 0 4px 0 !important;
+  border-left: 4px solid #f84464 !important;
+  padding: 0 16px !important;
+  border-radius: 8px !important;
 }
 
 ::ng-deep .mobile-nav-menu .menu-section-header mat-icon {
   color: #f84464 !important;
-  font-size: 18px !important;
-  width: 18px !important;
-  height: 18px !important;
-  margin-right: 8px !important;
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin-right: 12px !important;
+  vertical-align: middle;
 }
 
 ::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header) {
-  margin-left: 12px !important;
-  border-radius: 6px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  line-height: 56px !important;
+  font-size: 1rem !important;
+  padding: 0 20px !important;
+  margin: 4px 0 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header) mat-icon {
+  font-size: 24px !important;
+  width: 24px !important;
+  height: 24px !important;
+  margin-right: 16px !important;
+  color: #f84464 !important;
+}
+
+::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header):hover {
+  background: linear-gradient(135deg, #fef5f7 0%, #ffe5ec 100%) !important;
+}
+
+::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header):active {
+  background: linear-gradient(135deg, #ffe5ec 0%, #ffd4e0 100%) !important;
+  transform: scale(0.98);
+}
+
+::ng-deep .mobile-nav-menu .mat-divider {
+  margin: 12px 0 !important;
 }
 
 .toolbar-spacer {
@@ -221,12 +261,14 @@
 }
 
 ::ng-deep .mat-mdc-menu-item {
-  font-size: 0.875rem !important;
+  font-size: 0.938rem !important;
   border-radius: 4px;
   margin: 4px 8px;
   font-weight: 500;
-  height: 42px !important;
-  line-height: 42px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  line-height: 52px !important;
+  padding: 0 16px !important;
 }
 
 ::ng-deep .mat-mdc-menu-item:hover {
@@ -234,11 +276,11 @@
 }
 
 ::ng-deep .mat-mdc-menu-item mat-icon {
-  margin-right: 12px !important;
+  margin-right: 16px !important;
   color: #f84464;
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
 }
 
 ::ng-deep .mat-divider {
@@ -309,12 +351,24 @@
   .user-badge {
     display: none;
   }
+
+  /* Larger touch targets for mobile */
+  .app-toolbar button[mat-icon-button] {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .app-toolbar button[mat-icon-button] mat-icon {
+    font-size: 26px !important;
+    width: 26px !important;
+    height: 26px !important;
+  }
 }
 
 @media (max-width: 480px) {
   .app-toolbar {
-    min-height: 52px !important;
-    height: 52px;
+    min-height: 56px !important;
+    height: 56px;
     padding: 0 8px;
   }
 
@@ -326,13 +380,53 @@
   .content-wrapper {
     padding: 12px;
   }
+
+  /* Even larger touch targets on small screens */
+  .app-toolbar button[mat-icon-button] {
+    width: 52px !important;
+    height: 52px !important;
+  }
+
+  .app-toolbar button[mat-icon-button] mat-icon {
+    font-size: 28px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* Make mobile menu items even more spacious */
+  ::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header) {
+    height: 60px !important;
+    min-height: 60px !important;
+    line-height: 60px !important;
+    font-size: 1.063rem !important;
+    padding: 0 24px !important;
+  }
+
+  ::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header) mat-icon {
+    font-size: 26px !important;
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  ::ng-deep .mobile-nav-menu .menu-section-header {
+    height: 52px !important;
+    min-height: 52px !important;
+    line-height: 52px !important;
+    font-size: 0.813rem !important;
+  }
+
+  ::ng-deep .mobile-nav-menu .menu-section-header mat-icon {
+    font-size: 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+  }
 }
 
 /* Landscape mode adjustments */
 @media (max-height: 600px) and (orientation: landscape) {
   .app-toolbar {
-    min-height: 48px !important;
-    height: 48px;
+    min-height: 52px !important;
+    height: 52px;
     padding: 0 8px;
   }
 
@@ -342,6 +436,24 @@
 
   .content-wrapper {
     padding: 12px;
+  }
+
+  /* Compact mobile menu for landscape */
+  ::ng-deep .mobile-nav-menu.mat-mdc-menu-panel {
+    max-height: 70vh !important;
+  }
+
+  ::ng-deep .mobile-nav-menu .mat-mdc-menu-item:not(.menu-section-header) {
+    height: 48px !important;
+    min-height: 48px !important;
+    line-height: 48px !important;
+    font-size: 0.938rem !important;
+  }
+
+  ::ng-deep .mobile-nav-menu .menu-section-header {
+    height: 44px !important;
+    min-height: 44px !important;
+    line-height: 44px !important;
   }
 }
 

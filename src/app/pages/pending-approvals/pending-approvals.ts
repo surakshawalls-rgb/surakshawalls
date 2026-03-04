@@ -47,6 +47,7 @@ export class PendingApprovalsComponent implements OnInit, OnDestroy {
   rejectionReason = '';
   
   private routerSubscription?: Subscription;
+  private realtimeSubscription?: any;
 
   constructor(
     private supabase: SupabaseService,
@@ -59,6 +60,7 @@ export class PendingApprovalsComponent implements OnInit, OnDestroy {
   ngOnInit() {
     console.log('PendingApprovalsComponent initialized');
     this.loadEntries();
+    this.setupRealtimeSubscription();
     
     // Reload data when navigating to this route
     this.routerSubscription = this.router.events.pipe(
@@ -75,6 +77,28 @@ export class PendingApprovalsComponent implements OnInit, OnDestroy {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    if (this.realtimeSubscription) {
+      this.supabase.supabase.removeChannel(this.realtimeSubscription);
+    }
+  }
+  
+  setupRealtimeSubscription() {
+    console.log('Setting up realtime subscription for pending entries');
+    this.realtimeSubscription = this.supabase.supabase
+      .channel('pending-entries-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pending_daily_entries'
+        },
+        (payload) => {
+          console.log('Realtime update received:', payload);
+          this.loadEntries();
+        }
+      )
+      .subscribe();
   }
   
   refreshData() {
@@ -87,21 +111,25 @@ export class PendingApprovalsComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     
     try {
+      console.log('Starting to load entries...');
+      
       // Clear existing entries to force UI update
       this.entries = [];
       this.filteredEntries = [];
       this.cd.detectChanges();
       
-      // Fetch pending entries with cache-busting timestamp and force fresh data
-      const cacheBuster = new Date().getTime();
-      console.log('Fetching entries with cache buster:', cacheBuster);
-      
+      // Fetch pending entries without any caching - ensure fresh data
       const { data: entries, error } = await this.supabase.supabase
         .from('pending_daily_entries')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Raw entries from database:', entries);
       
       // Map entries with submitter name already in the data
       this.entries = (entries || []).map((entry: any) => ({
@@ -109,10 +137,12 @@ export class PendingApprovalsComponent implements OnInit, OnDestroy {
         submitter_name: entry.submitted_by_name || 'Unknown'
       }));
       
-      console.log('Loaded entries:', this.entries.length, 'entries');
-      console.log('Status counts - Pending:', this.getStatusCount('pending'), 
-                  'Approved:', this.getStatusCount('approved'), 
-                  'Rejected:', this.getStatusCount('rejected'));
+      console.log('Loaded entries:', this.entries.length, 'total entries');
+      console.log('Status breakdown:', {
+        pending: this.getStatusCount('pending'),
+        approved: this.getStatusCount('approved'),
+        rejected: this.getStatusCount('rejected')
+      });
       
       this.applyFilter();
       

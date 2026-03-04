@@ -367,7 +367,7 @@ section {
 
 .business-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   margin-top: 3rem;
 }
@@ -825,10 +825,22 @@ section {
   .navbar-links {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 0.4rem;
+  }
+  
+  .navbar-links button {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
   }
   
   .navbar-links button span {
-    display: none;
+    font-size: 0.85rem;
+  }
+  
+  .navbar-links button mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
   }
   
   .brand-name {
@@ -852,7 +864,12 @@ section {
     font-size: 2rem;
   }
   
-  .business-grid, .login-grid, .contact-grid {
+  .business-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .login-grid, .contact-grid {
     grid-template-columns: 1fr;
   }
   
