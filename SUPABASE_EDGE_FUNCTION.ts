@@ -87,10 +87,10 @@ serve(async (req) => {
       
       // Get user's FCM tokens from your users table or device_tokens table
       const { data: tokens, error: tokenError } = await supabase
-        .from('device_tokens')
-        .select('token, platform')
+        .from('user_push_tokens')
+        .select('fcm_token as token, platform')
         .eq('user_id', payload.user_id)
-        .eq('active', true)
+        .eq('is_active', true)
 
       if (tokenError) {
         console.warn('⚠️ Could not fetch device tokens:', tokenError.message)

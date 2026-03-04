@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { 
   PushNotifications, 
@@ -7,6 +7,7 @@ import {
   ActionPerformed 
 } from '@capacitor/push-notifications';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,13 +15,16 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 export class PushNotificationService {
   private isPushAvailable = false;
   private supabase!: SupabaseClient;
+  private authService = inject(AuthService);
 
   constructor() {
     console.log('📱 PushNotificationService constructor started');
+    console.log('📱 Capacitor available:', typeof Capacitor !== 'undefined');
     
     try {
       this.isPushAvailable = Capacitor.isNativePlatform();
       console.log('📱 Is native platform:', this.isPushAvailable);
+      console.log('📱 Current platform:', Capacitor.getPlatform());
       
       // Initialize Supabase client
       this.supabase = createClient(
@@ -56,12 +60,20 @@ export class PushNotificationService {
       if (permStatus.receive === 'granted') {
         console.log('✅ Push notification permission granted');
         
+        // Add listeners FIRST (before registration)
+        this.addListeners();
+        
         // Register with Apple / Google to receive push via APNS/FCM
         console.log('📱 Registering with FCM...');
         await PushNotifications.register();
         console.log('✅ FCM registration initiated');
         
-        this.addListeners();
+        // Add timeout to check if registration callback fires
+        setTimeout(() => {
+          console.log('⏰ 30 seconds passed - checking if token was received...');
+          console.log('⏰ If no token received, there may be a Firebase configuration issue');
+        }, 30000);
+        
       } else if (permStatus.receive === 'denied') {
         console.warn('⚠️ Push notification permission denied');
       } else {
@@ -83,8 +95,11 @@ export class PushNotificationService {
       
       // Called when a new FCM token is generated
       PushNotifications.addListener('registration', (token: Token) => {
+        console.log('🎉 ========== FCM TOKEN RECEIVED ==========');
         console.log('📱 Push registration success!');
         console.log('📱 FCM Token:', token.value);
+        console.log('📱 Token length:', token.value ? token.value.length : 0);
+        console.log('===========================================');
         
         // Save token to backend
         this.saveTokenToBackend(token.value)
@@ -94,8 +109,12 @@ export class PushNotificationService {
 
       // Called when registration fails
       PushNotifications.addListener('registrationError', (error: any) => {
+        console.error('🔴 ========== FCM REGISTRATION ERROR ==========');
         console.error('❌ Push registration error:', error);
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error message:', error.message);
         console.error('❌ Error details:', JSON.stringify(error));
+        console.error('==============================================');
       });
 
       // Called when a push notification is received (foreground)
@@ -137,8 +156,9 @@ export class PushNotificationService {
       console.log('💾 Saving token to Supabase...');
       console.log('💾 Token preview:', token.substring(0, 20) + '...');
       
-       const platform = Capacitor.getPlatform(); // 'android' or 'ios'
-      const user_id = 'default_user'; // TODO: Replace with actual user ID from auth
+      const platform = Capacitor.getPlatform(); // 'android' or 'ios'
+      const currentUser = this.authService.currentUserValue;
+      const user_id = currentUser?.id || 'anonymous_user';
       
       console.log('💾 Platform:', platform);
       console.log('💾 User ID:', user_id);

@@ -14,10 +14,8 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
 import { map, shareReplay } from 'rxjs/operators';
 import { NotificationInboxComponent } from './components/notification-inbox/notification-inbox.component';
-
-// Conditional type for mobile services (not available during build)
-type NotificationServiceType = any;
-type PushNotificationServiceType = any;
+import { NotificationService } from './services/notification.service';
+import { PushNotificationService } from './services/push-notification.service';
 
 @Component({
   selector: 'app-root',
@@ -43,19 +41,25 @@ export class AppComponent implements OnInit {
   public router: Router;
   public authService: AuthService;
   private breakpointObserver: BreakpointObserver;
+  private notificationService: NotificationService;
+  private pushNotificationService: PushNotificationService;
 
   isHandset$: Observable<boolean>;
 
   constructor(
     router: Router,
     authService: AuthService,
-    breakpointObserver: BreakpointObserver
+    breakpointObserver: BreakpointObserver,
+    notificationService: NotificationService,
+    pushNotificationService: PushNotificationService
   ) {
     console.log("✅ AppComponent Constructor started");
     
     this.router = router;
     this.authService = authService;
     this.breakpointObserver = breakpointObserver;
+    this.notificationService = notificationService;
+    this.pushNotificationService = pushNotificationService;
     
     this.isHandset$ = this.breakpointObserver.observe([Breakpoints.Handset])
       .pipe(
@@ -102,52 +106,39 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     console.log('🚀 AppComponent ngOnInit started');
-    
-    // Initialize notification services on runtime (after build)
-    if (typeof window !== 'undefined') {
-      this.initializeServices();
-      this.setupAppStateListeners();
-    }
+    this.initializeServices();
+    this.setupAppStateListeners();
   }
 
   private async initializeServices(): Promise<void> {
-    // Only run on actual runtime, not during SSR
     try {
-      // Check if we're in a browser environment
-      if (typeof document === 'undefined') return;
-      
-      // Use Function constructor to avoid TypeScript resolving imports during build
-      const loadService = new Function('path', 'return import(path)');
-      
-      // Load notification service
-      const notifModule: any = await loadService('./services/notification.service');
-      const notificationService: any = inject(notifModule.NotificationService);
+      console.log('🔄 Initializing services...');
       
       // Start real-time notifications
-      notificationService.startListening();
+      this.notificationService.startListening();
       console.log('✅ Real-time notifications active');
       
       // Sync missed notifications on startup
       setTimeout(async () => {
-        await notificationService.syncMissedNotifications();
+        await this.notificationService.syncMissedNotifications();
       }, 2000);
       
-      // Load and initialize push notifications after delay (mobile only)
+      // Initialize push notifications (mobile only)
+      console.log('🔄 About to initialize push notifications...');
       setTimeout(async () => {
         try {
-          const pushModule: any = await loadService('./services/push-notification.service');
-          const pushNotificationService: any = inject(pushModule.PushNotificationService);
-          
-          await pushNotificationService.initializePushNotifications();
+          console.log('🔄 Calling initializePushNotifications...');
+          await this.pushNotificationService.initializePushNotifications();
           console.log('✅ Push notifications initialized');
         } catch (e: any) {
-          console.log('⚠️ Push notifications not available:', e.message);
+          console.error('❌ Push notifications error:', e);
+          console.error('❌ Error message:', e.message);
+          console.error('❌ Error stack:', e.stack);
         }
-      }, 3000);
+      }, 1000);
       
     } catch (error: any) {
-      // Services not available (Vercel build) - silently continue
-      console.log('⚠️ Mobile services not available (web mode)');
+      console.error('❌ Error initializing services:', error);
     }
   }
 
@@ -194,15 +185,9 @@ export class AppComponent implements OnInit {
    */
   private async syncNotifications(): Promise<void> {
     try {
-      const loadService = new Function('path', 'return import(path)');
-      const notifModule: any = await loadService('./services/notification.service');
-      const notificationService: any = inject(notifModule.NotificationService);
-      
-      await notificationService.syncMissedNotifications();
+      await this.notificationService.syncMissedNotifications();
     } catch (error) {
-      // Silently fail if service not available
       console.log('⚠️ Could not sync notifications:', error);
     }
   }
 }
-
