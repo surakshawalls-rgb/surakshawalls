@@ -23,8 +23,8 @@
       <div class="banner-content">
         <mat-icon>info</mat-icon>
         <div>
-          <strong>Public Acces Mode:</strong> You can browse our collection, but login is required to borrow books,
-          download materials, or access full features. <a (click)="inquireForMembership()">Register for membership →</a>
+          <strong>Public Access Mode:</strong> Login required to borrow books. 
+          <a (click)="inquireForMembership()">Register →</a>
         </div>
       </div>
     </div>
@@ -101,51 +101,16 @@
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="cta-section">
+  <!-- Registration Footer -->
+  <section class="footer-section">
     <div class="container">
-      <div class="cta-content">
-        <mat-icon>lock_open</mat-icon>
-        <h2>Want Full Access?</h2>
-        <p>Register for library membership to borrow books, download materials, and access premium features</p>
-        <div class="cta-actions">
+      <div class="footer-content">
+        <p>Want to borrow books and access premium features?</p>
+        <div class="footer-actions">
           <button mat-raised-button color="primary" (click)="inquireForMembership()">
             <mat-icon>how_to_reg</mat-icon>
-            Register Now
+            Register for Membership
           </button>
-          <button mat-raised-button color="accent" (click)="goToLogin()">
-            <mat-icon>login</mat-icon>
-            Already a Member? Login
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features-section">
-    <div class="container">
-      <h2>What You Get With Membership:</h2>
-      <div class="features-grid">
-        <div class="feature-item">
-          <mat-icon>download</mat-icon>
-          <h3>Borrow Books</h3>
-          <p>Take books home or download digital copies</p>
-        </div>
-        <div class="feature-item">
-          <mat-icon>folder</mat-icon>
-          <h3>Study Materials</h3>
-          <p>Access premium study resources and notes</p>
-        </div>
-        <div class="feature-item">
-          <mat-icon>event_seat</mat-icon>
-          <h3>Reading Space</h3>
-          <p>Quiet study area with comfortable seating</p>
-        </div>
-        <div class="feature-item">
-          <mat-icon>support_agent</mat-icon>
-          <h3>Expert Guidance</h3>
-          <p>Get help from our experienced library staff</p>
         </div>
       </div>
     </div>
