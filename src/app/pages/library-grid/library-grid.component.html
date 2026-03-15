@@ -239,6 +239,10 @@
                     [disabled]="isAttendanceButtonDisabled()">
               {{ getAttendanceButtonText() }}
             </button>
+            <button (click)="openAttendanceReport(selectedStudent)" 
+                    class="btn btn-compact btn-primary">
+              📊 View Attendance
+            </button>
             <button *ngIf="authService.canEdit()" 
                     (click)="openFeePaymentModal(selectedStudent)" 
                     class="btn btn-compact btn-success">
@@ -306,6 +310,10 @@
                       [disabled]="isAttendanceButtonDisabledForStudent(selectedStudent.id)">
                 {{ getAttendanceButtonTextForStudent(selectedStudent.id) }}
               </button>
+              <button (click)="openAttendanceReport(selectedStudent)" 
+                      class="btn btn-compact btn-primary">
+                📊 Attendance
+              </button>
               <button *ngIf="authService.canEdit()" 
                       (click)="openFeePaymentModal(selectedStudent)" 
                       class="btn btn-compact btn-success">
@@ -365,6 +373,10 @@
                       [class]="'btn btn-compact ' + getAttendanceButtonClassForStudent(selectedSecondStudent.id)"
                       [disabled]="isAttendanceButtonDisabledForStudent(selectedSecondStudent.id)">
                 {{ getAttendanceButtonTextForStudent(selectedSecondStudent.id) }}
+              </button>
+              <button (click)="openAttendanceReport(selectedSecondStudent)" 
+                      class="btn btn-compact btn-primary">
+                📊 Attendance
               </button>
               <button *ngIf="authService.canEdit()" 
                       (click)="openFeePaymentModal(selectedSecondStudent)" 

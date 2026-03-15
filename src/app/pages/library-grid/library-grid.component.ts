@@ -8,9 +8,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
+import { SupabaseService } from '../../services/supabase.service';
 import { RegistrationDialogComponent, RegistrationResult } from './registration-dialog.component';
 import { LodgeComplaintDialogComponent } from '../../dialogs/lodge-complaint-dialog.component';
 import { MarkAttendanceDialogComponent } from './mark-attendance-dialog.component';
+import { StudentAttendanceDialogComponent } from './student-attendance-dialog.component';
 import { addDays, differenceInDays, getDaysInMonth, startOfDay, format } from 'date-fns';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -134,7 +136,8 @@ export class LibraryGridComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     public authService: AuthService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private supabaseService: SupabaseService
   ) {
         // Generate year ranges for DOB and Joining
     const currentYear = new Date().getFullYear();
@@ -408,6 +411,15 @@ export class LibraryGridComponent implements OnInit {
     // Open registration modal - it will auto-select the available shift
     this.openRegistrationModal(this.selectedSeat);
     this.cdr.detectChanges();
+  }
+
+  // Open student attendance report dialog
+  openAttendanceReport(student: LibraryStudent) {
+    this.dialog.open(StudentAttendanceDialogComponent, {
+      width: '800px',
+      maxWidth: '90vw',
+      data: { student }
+    });
   }
 
   getSeatClass(seat: LibrarySeat): string {
@@ -1613,20 +1625,49 @@ export class LibraryGridComponent implements OnInit {
     const message = prompt('Enter message to send to all selected students:');
     if (!message) return;
 
-    let count = 0;
-    this.selectedSeats.forEach(seatNo => {
-      const seat = this.seats.find(s => s.seat_no === seatNo);
-      if (seat) {
-        const student = seat.full_time_student || seat.first_half_student || seat.second_half_student;
-        if (student) {
-          const url = `https://wa.me/${student.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-          window.open(url, '_blank');
-          count++;
-        }
-      }
-    });
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
 
-    this.successMessage = `✅ Opened ${count} WhatsApp messages!`;
-    setTimeout(() => this.successMessage = '', 3000);
+    try {
+      // Collect phone numbers from selected seats
+      const phones: string[] = [];
+      this.selectedSeats.forEach(seatNo => {
+        const seat = this.seats.find(s => s.seat_no === seatNo);
+        if (seat) {
+          const student = seat.full_time_student || seat.first_half_student || seat.second_half_student;
+          if (student && student.mobile) {
+            phones.push(student.mobile.replace(/\D/g, '')); // Clean phone number
+          }
+        }
+      });
+
+      if (phones.length === 0) {
+        this.errorMessage = 'No valid phone numbers found for selected seats';
+        return;
+      }
+
+      // Call Supabase Edge Function
+      const { data, error } = await this.supabaseService.supabase.functions.invoke('send-whatsapp-reminder', {
+        body: { phones, message }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const results = data.results;
+      const successCount = results.filter((r: any) => r.success).length;
+      const failCount = results.length - successCount;
+
+      this.successMessage = `✅ Sent ${successCount} messages successfully${failCount > 0 ? `, ${failCount} failed` : ''}!`;
+      setTimeout(() => this.successMessage = '', 5000);
+
+    } catch (error: any) {
+      console.error('WhatsApp send error:', error);
+      this.errorMessage = `Failed to send messages: ${error.message || 'Unknown error'}`;
+    } finally {
+      this.saving = false;
+    }
   }
 }

@@ -924,6 +924,30 @@ export class LibraryService {
     }
   }
 
+  /**
+   * Get all attendance records for a student for a given month/year
+   */
+  async getStudentMonthlyAttendance(studentId: string, month: number, year: number): Promise<LibraryAttendance[]> {
+    try {
+      const start = `${year}-${String(month).padStart(2, '0')}-01`;
+      const end = `${year}-${String(month).padStart(2, '0')}-31`;
+      
+      const { data, error } = await this.supabase.supabase
+        .from('library_attendance')
+        .select('*')
+        .eq('student_id', studentId)
+        .gte('date', start)
+        .lte('date', end)
+        .order('date', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    } catch (error: any) {
+      console.error('[LibraryService] getStudentMonthlyAttendance error:', error);
+      return [];
+    }
+  }
+
   // Find student by mobile number (for self-attendance)
   async findStudentByMobile(mobile: string): Promise<LibraryStudent | null> {
     try {
