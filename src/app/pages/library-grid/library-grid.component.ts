@@ -417,7 +417,9 @@ export class LibraryGridComponent implements OnInit {
   openAttendanceReport(student: LibraryStudent) {
     this.dialog.open(StudentAttendanceDialogComponent, {
       width: '800px',
-      maxWidth: '90vw',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'attendance-dialog-panel',
       data: { student }
     });
   }

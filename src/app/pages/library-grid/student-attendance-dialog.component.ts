@@ -94,92 +94,113 @@ import { LibraryService, LibraryStudent, LibraryAttendance } from '../../service
   `,
   styles: [`
     .attendance-dialog {
-      min-width: 600px;
-      max-width: 90vw;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    h2[mat-dialog-title] {
+      font-size: 1.25rem;
+      margin: 0;
+      padding: 16px;
+    }
+
+    mat-dialog-content {
+      padding: 0 16px 16px;
+      max-height: 70vh;
+      overflow-y: auto;
     }
 
     .student-info {
       background: #f5f5f5;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 16px;
     }
 
     .student-info h3 {
-      margin: 0 0 5px 0;
+      margin: 0 0 4px 0;
       color: #333;
+      font-size: 1rem;
     }
 
     .student-info p {
       margin: 0;
       color: #666;
+      font-size: 0.875rem;
     }
 
     .month-selector {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       align-items: center;
-      margin-bottom: 20px;
-      padding: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding: 12px;
       background: #fff;
       border: 1px solid #ddd;
-      border-radius: 8px;
+      border-radius: 6px;
     }
 
     .month-selector label {
       font-weight: 500;
       color: #555;
+      font-size: 0.875rem;
     }
 
     .month-selector select {
-      padding: 8px 12px;
+      padding: 6px 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
-      font-size: 14px;
+      font-size: 0.875rem;
+      flex: 1;
+      min-width: 100px;
     }
 
     .loading, .no-data {
       text-align: center;
-      padding: 40px;
+      padding: 30px;
       color: #666;
+      font-size: 0.875rem;
     }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .stat-card {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 20px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 6px;
       text-align: center;
     }
 
     .stat-label {
       display: block;
-      font-size: 12px;
+      font-size: 0.75rem;
       opacity: 0.9;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .stat-value {
       display: block;
-      font-size: 28px;
+      font-size: 1.5rem;
       font-weight: bold;
     }
 
     .attendance-table {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      min-width: 600px;
     }
 
     thead {
@@ -187,16 +208,20 @@ import { LibraryService, LibraryStudent, LibraryAttendance } from '../../service
     }
 
     th {
-      padding: 12px;
+      padding: 10px 8px;
       text-align: left;
       font-weight: 600;
       color: #555;
       border-bottom: 2px solid #dee2e6;
+      font-size: 0.875rem;
+      white-space: nowrap;
     }
 
     td {
-      padding: 10px 12px;
+      padding: 8px;
       border-bottom: 1px solid #eee;
+      font-size: 0.875rem;
+      white-space: nowrap;
     }
 
     tr:hover {
@@ -208,10 +233,11 @@ import { LibraryService, LibraryStudent, LibraryAttendance } from '../../service
     }
 
     .status-badge {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
+      padding: 3px 6px;
+      border-radius: 3px;
+      font-size: 0.75rem;
       font-weight: 500;
+      white-space: nowrap;
     }
 
     .status-badge.present {
@@ -226,17 +252,19 @@ import { LibraryService, LibraryStudent, LibraryAttendance } from '../../service
 
     .download-section {
       text-align: center;
-      padding: 20px 0;
+      padding: 16px 0;
     }
 
     .btn-download {
       background: #28a745;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 0.875rem;
+      width: 100%;
+      max-width: 300px;
     }
 
     .btn-download:hover {
@@ -245,7 +273,128 @@ import { LibraryService, LibraryStudent, LibraryAttendance } from '../../service
 
     mat-dialog-actions {
       justify-content: flex-end;
-      padding: 20px;
+      padding: 12px 16px;
+    }
+
+    mat-dialog-actions button {
+      font-size: 0.875rem;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .attendance-dialog {
+        max-width: 100vw;
+        margin: 0;
+      }
+
+      h2[mat-dialog-title] {
+        font-size: 1.125rem;
+        padding: 12px;
+      }
+
+      mat-dialog-content {
+        padding: 0 12px 12px;
+        max-height: 60vh;
+      }
+
+      .student-info {
+        padding: 10px;
+        margin-bottom: 12px;
+      }
+
+      .student-info h3 {
+        font-size: 0.9375rem;
+      }
+
+      .student-info p {
+        font-size: 0.8125rem;
+      }
+
+      .month-selector {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px;
+        margin-bottom: 12px;
+      }
+
+      .month-selector label {
+        font-size: 0.8125rem;
+      }
+
+      .month-selector select {
+        width: 100%;
+        padding: 8px;
+        font-size: 0.875rem;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .stat-card {
+        padding: 10px;
+      }
+
+      .stat-label {
+        font-size: 0.6875rem;
+      }
+
+      .stat-value {
+        font-size: 1.25rem;
+      }
+
+      .loading, .no-data {
+        padding: 20px;
+        font-size: 0.8125rem;
+      }
+
+      table {
+        min-width: 550px;
+        font-size: 0.8125rem;
+      }
+
+      th, td {
+        padding: 6px 4px;
+        font-size: 0.75rem;
+      }
+
+      .status-badge {
+        font-size: 0.6875rem;
+        padding: 2px 4px;
+      }
+
+      .download-section {
+        padding: 12px 0;
+      }
+
+      .btn-download {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px 12px;
+        font-size: 0.875rem;
+      }
+
+      mat-dialog-actions {
+        padding: 10px 12px;
+      }
+
+      mat-dialog-actions button {
+        font-size: 0.8125rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h2[mat-dialog-title] {
+        font-size: 1rem;
+        padding: 10px;
+      }
+
+      .stat-value {
+        font-size: 1.125rem;
+      }
     }
   `]
 })

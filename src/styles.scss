@@ -1,1 +1,30 @@
 @import 'material-theme.scss';
+
+/* Mobile-friendly Material Dialog */
+.attendance-dialog-panel {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .attendance-dialog-panel {
+    max-width: 100vw !important;
+    
+    .mat-mdc-dialog-container {
+      border-radius: 8px 8px 0 0;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-dialog-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    
+    .mat-mdc-dialog-container {
+      border-radius: 0;
+    }
+  }
+}
