@@ -375,6 +375,63 @@
     padding: 20px;
     max-width: 95%;
   }
+
+  /* Supplier Table Mobile */
+  .data-table thead {
+    display: none !important;
+  }
+
+  .data-table tbody {
+    display: block !important;
+  }
+
+  .data-table tbody tr {
+    display: flex !important;
+    flex-direction: column !important;
+    background: white !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .data-table tbody tr td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 0 !important;
+    border: none !important;
+    border-bottom: 1px solid #f0f0f0 !important;
+  }
+
+  .data-table tbody tr td:last-child {
+    border-bottom: none !important;
+    padding-top: 12px !important;
+    margin-top: 8px !important;
+    border-top: 1px solid #e0e0e0 !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  .data-table tbody tr td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #666;
+    font-size: 0.85rem;
+  }
+
+  .data-table tbody tr td:last-child::before {
+    content: none;
+  }
+
+  .data-table tbody tr td strong {
+    font-size: 1rem;
+  }
+
+  .amount-col {
+    font-weight: 700 !important;
+    color: #1976d2 !important;
+  }
 }
 
 @media (max-width: 480px) {

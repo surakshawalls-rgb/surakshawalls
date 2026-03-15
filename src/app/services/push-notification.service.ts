@@ -6,8 +6,9 @@ import {
   PushNotificationSchema, 
   ActionPerformed 
 } from '@capacitor/push-notifications';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
+import { SupabaseService } from './supabase.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +17,7 @@ export class PushNotificationService {
   private isPushAvailable = false;
   private supabase!: SupabaseClient;
   private authService = inject(AuthService);
+  private supabaseService = inject(SupabaseService);
 
   constructor() {
     console.log('📱 PushNotificationService constructor started');
@@ -26,12 +28,9 @@ export class PushNotificationService {
       console.log('📱 Is native platform:', this.isPushAvailable);
       console.log('📱 Current platform:', Capacitor.getPlatform());
       
-      // Initialize Supabase client
-      this.supabase = createClient(
-        'https://lcwjtwidxihclizliksd.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjd2p0d2lkeGloY2xpemxpa3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgzMzYsImV4cCI6MjA4NTI3NDMzNn0.5U5hX3UKBVg41XiBc3pUZAqL7Png8aMBzBx-OLp7PrU'
-      );
-      console.log('✅ Supabase client initialized');
+      // Use the authenticated supabase client from SupabaseService
+      this.supabase = this.supabaseService.supabase;
+      console.log('✅ Using authenticated Supabase client');
     } catch (error) {
       console.error('❌ Error in PushNotificationService constructor:', error);
     }

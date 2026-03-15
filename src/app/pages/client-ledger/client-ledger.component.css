@@ -486,6 +486,82 @@
   .stat-value {
     font-size: 2rem;
   }
+
+  /* Client Ledger Mobile Styles */
+  .client-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+
+  .client-header button {
+    width: 100% !important;
+  }
+
+  .client-filters {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .client-filters input,
+  .client-filters select {
+    width: 100% !important;
+  }
+
+  .client-table-header {
+    display: none !important;
+  }
+
+  .client-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .client-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+  }
+
+  .client-detail {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+
+  .client-detail::before {
+    font-weight: 600 !important;
+    color: #666 !important;
+    font-size: 0.85rem !important;
+  }
+
+  .client-contact::before { content: "📱 Contact:"; }
+  .client-city::before { content: "📍 City:"; }
+  .client-billed::before { content: "📊 Billed:"; }
+  .client-paid::before { content: "✅ Paid:"; }
+  .client-outstanding::before { content: "⚠️ Outstanding:"; }
+  .client-credit-limit::before { content: "💳 Credit Limit:"; }
+
+  .client-actions {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 12px 0 0 0 !important;
+    border: none !important;
+    border-top: 1px solid #e0e0e0 !important;
+    margin-top: 8px !important;
+  }
+
+  .client-actions button {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 480px) {

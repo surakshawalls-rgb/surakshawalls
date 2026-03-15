@@ -23,6 +23,10 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        Log.e("SURAKSHA", "========================================");
+        Log.e("SURAKSHA", "MainActivity onCreate() started");
+        Log.e("SURAKSHA", "========================================");
+        
         // Create notification channels for instant push (like GPay, Swiggy)
         createNotificationChannels();
         
@@ -30,23 +34,15 @@ public class MainActivity extends BridgeActivity {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
-            Log.e(TAG, "❌ Google Play Services not available. Error code: " + resultCode);
+            Log.e("SURAKSHA", "❌ Google Play Services not available. Error code: " + resultCode);
             return;
         }
-        Log.d(TAG, "✅ Google Play Services available");
+        Log.e("SURAKSHA", "✅ Google Play Services available - code: " + resultCode);
         
-        // Explicitly initialize Firebase
-        try {
-            FirebaseApp.initializeApp(this);
-            Log.d(TAG, "✅ Firebase initialized successfully");
-            
-            // Delay token retrieval to allow Firebase to fully initialize
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                attemptGetToken();
-            }, 5000); // 5 seconds delay
-        } catch (Exception e) {
-            Log.e(TAG, "❌ Firebase initialization failed", e);
-        }
+        // Firebase is auto-initialized by FirebaseInitProvider
+        // Token retrieval will be handled by Capacitor PushNotifications plugin
+        Log.e("SURAKSHA", "✅ MainActivity onCreate complete - Firebase initialized");
+        Log.e("SURAKSHA", "✅ Token retrieval will be handled by Capacitor PushNotifications plugin");
     }
     
     /**
@@ -87,26 +83,26 @@ public class MainActivity extends BridgeActivity {
     
     private void attemptGetToken() {
         tokenRetryCount++;
-        Log.d(TAG, "📱 Attempting to get FCM token (attempt " + tokenRetryCount + "/" + MAX_RETRIES + ")...");
+        Log.e("SURAKSHA", "📱 Attempt " + tokenRetryCount + "/" + MAX_RETRIES + " - Getting FCM token...");
         
         FirebaseMessaging.getInstance().getToken()
             .addOnCompleteListener(task -> {
                 if (task.isSuccessful() && task.getResult() != null) {
                     String token = task.getResult();
                     if (!token.isEmpty()) {
-                        Log.d(TAG, "🔥🔥🔥 FCM TOKEN RECEIVED! 🔥🔥🔥");
-                        Log.d(TAG, "🔥 Token: " + token);
-                        Log.d(TAG, "🔥 Token length: " + token.length());
-                        Log.d(TAG, "🔥🔥🔥 SUCCESS! 🔥🔥🔥");
+                        Log.e("SURAKSHA", "🔥🔥🔥 FCM TOKEN RECEIVED! 🔥🔥🔥");
+                        Log.e("SURAKSHA", "🔥 Token: " + token);
+                        Log.e("SURAKSHA", "🔥 Token length: " + token.length());
+                        Log.e("SURAKSHA", "🔥🔥🔥 SUCCESS! 🔥🔥🔥");
                     } else {
-                        Log.e(TAG, "❌ Token is empty");
+                        Log.e("SURAKSHA", "❌ Token is empty");
                         retryGetToken();
                     }
                 } else {
                     Exception exception = task.getException();
-                    Log.e(TAG, "❌ Failed to get FCM token (attempt " + tokenRetryCount + ")", exception);
+                    Log.e("SURAKSHA", "❌ Failed to get FCM token (attempt " + tokenRetryCount + ")", exception);
                     if (exception != null) {
-                        Log.e(TAG, "❌ Exception: " + exception.getClass().getName() + ": " + exception.getMessage());
+                        Log.e("SURAKSHA", "❌ Exception: " + exception.getClass().getName() + ": " + exception.getMessage());
                     }
                     retryGetToken();
                 }
@@ -116,12 +112,13 @@ public class MainActivity extends BridgeActivity {
     private void retryGetToken() {
         if (tokenRetryCount < MAX_RETRIES) {
             int delayMs = tokenRetryCount * 10000; // 10s, 20s, 30s, 40s, 50s
-            Log.d(TAG, "🔄 Will retry in " + (delayMs/1000) + " seconds...");
+            Log.e("SURAKSHA", "🔄 Will retry in " + (delayMs/1000) + " seconds...");
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 attemptGetToken();
             }, delayMs);
         } else {
-            Log.e(TAG, "❌ Failed to get FCM token after " + MAX_RETRIES + " attempts");
+            Log.e("SURAKSHA", "❌ Failed to get FCM token after " + MAX_RETRIES + " attempts");
+            Log.e("SURAKSHA", "❌ Check: 1) Google Play Services   2) Firebase Console FCM enabled   3) SHA-1 fingerprint added");
         }
     }
 }

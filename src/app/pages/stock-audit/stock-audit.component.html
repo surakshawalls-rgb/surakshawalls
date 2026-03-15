@@ -24,7 +24,7 @@
     <span style="font-weight: 600;">{{ errorMessage }}</span>
   </div>
 
-  <div *ngIf="!loading" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+  <div *ngIf="!loading" class="audit-grid-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
     <!-- Create Audit Form -->
     <div class="form-container">
       <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">➕ Create New Audit</h3>
@@ -120,7 +120,7 @@
     <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">📋 Recent Audits</h3>
 
     <div *ngIf="auditHistory.length > 0" style="overflow-x: auto;">
-      <table style="width: 100%; border-collapse: collapse; background: white;">
+      <table class="audit-table" style="width: 100%; border-collapse: collapse; background: white;">
         <thead style="background: #1976d2; color: white;">
           <tr>
             <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9rem; border-bottom: 2px solid #1565c0;">Date</th>
@@ -132,21 +132,21 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let audit of auditHistory; let i = index"
+          <tr *ngFor="let audit of auditHistory; let i = index" class="audit-row"
               [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'"
               style="border-bottom: 1px solid #e0e0e0; transition: background 0.2s;"
               onmouseover="this.style.background='#f0f7ff'"
               onmouseout="this.style.background=this.getAttribute('data-bg')"
               [attr.data-bg]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
-            <td style="padding: 12px; font-size: 0.9rem; color: #666;">{{ audit.audit_date }}</td>
-            <td style="padding: 12px; font-weight: 600; color: #333;">{{ audit.material_name }}</td>
-            <td style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ audit.digital_stock }}</td>
-            <td style="padding: 12px; text-align: center; font-weight: 600; color: #4CAF50;">{{ audit.physical_count }}</td>
-            <td style="padding: 12px; text-align: center; font-weight: 700;" 
+            <td class="audit-date" style="padding: 12px; font-size: 0.9rem; color: #666;">{{ audit.audit_date }}</td>
+            <td class="audit-material-name" style="padding: 12px; font-weight: 600; color: #333;">{{ audit.material_name }}</td>
+            <td class="audit-detail audit-digital" style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ audit.digital_stock }}</td>
+            <td class="audit-detail audit-physical" style="padding: 12px; text-align: center; font-weight: 600; color: #4CAF50;">{{ audit.physical_count }}</td>
+            <td class="audit-detail audit-variance" style="padding: 12px; text-align: center; font-weight: 700;" 
                 [style.color]="getVarianceClass(audit.variance) === 'positive' ? '#4CAF50' : getVarianceClass(audit.variance) === 'negative' ? '#F44336' : '#FF9800'">
               {{ audit.variance }}
             </td>
-            <td style="padding: 12px; text-align: center;">
+            <td class="audit-detail audit-status" style="padding: 12px; text-align: center;">
               <span style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-block; text-transform: uppercase;"
                     [style.background]="audit.approval_status === 'approved' ? '#e8f5e9' : audit.approval_status === 'rejected' ? '#ffebee' : '#fff3e0'"
                     [style.color]="audit.approval_status === 'approved' ? '#2e7d32' : audit.approval_status === 'rejected' ? '#c62828' : '#e65100'">

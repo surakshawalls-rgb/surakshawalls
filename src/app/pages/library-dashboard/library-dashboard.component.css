@@ -443,6 +443,59 @@
     align-items: flex-start;
   }
 
+  /* Mobile mat-table card layout */
+  .mat-mdc-table .mat-mdc-header-row {
+    display: none !important;
+  }
+
+  .mat-mdc-table .mat-mdc-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+    min-height: auto;
+  }
+
+  .mat-mdc-table .mat-mdc-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  .mat-mdc-table .mat-mdc-cell::before {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.75rem;
+    flex: 0 0 40%;
+  }
+
+  /* Expiring Seats Table - seat_no, student, shift, expiry, days */
+  .mat-mdc-table .mat-mdc-row .mat-mdc-cell:nth-child(1)::before {
+    content: 'Seat';
+  }
+
+  .mat-mdc-table .mat-mdc-row .mat-mdc-cell:nth-child(2)::before {
+    content: 'Student';
+  }
+
+  .mat-mdc-table .mat-mdc-row .mat-mdc-cell:nth-child(3)::before {
+    content: 'Shift';
+  }
+
+  .mat-mdc-table .mat-mdc-row .mat-mdc-cell:nth-child(4)::before {
+    content: 'Expiry/Date';
+  }
+
+  .mat-mdc-table .mat-mdc-row .mat-mdc-cell:nth-child(5)::before {
+    content: 'Days Left/Amount';
+  }
+
   .card-value {
     font-size: 1.5rem;
   }

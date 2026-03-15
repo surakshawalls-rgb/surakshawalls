@@ -292,15 +292,15 @@
                 style="border-bottom: 1px solid #e0e0e0; transition: all 0.3s ease;"
                 onmouseover="this.style.background='white'"
                 onmouseout="this.style.background='transparent'">
-              <td style="padding: 8px; color: #666; font-weight: 400; font-size: 9px;">{{ settlement.settlement_date | date: 'dd/MM/yyyy' }}</td>
-              <td style="padding: 8px; color: #333; font-weight: 500; font-size: 9px;">{{ settlement.partner_name }}</td>
-              <td style="padding: 8px; color: #333; font-weight: 600; font-size: 9px;">₹{{ settlement.amount | number: '1.2-2' }}</td>
-              <td style="padding: 8px;">
+              <td data-label="Date" style="padding: 8px; color: #666; font-weight: 400; font-size: 9px;">{{ settlement.settlement_date | date: 'dd/MM/yyyy' }}</td>
+              <td data-label="Partner" style="padding: 8px; color: #333; font-weight: 500; font-size: 9px;">{{ settlement.partner_name }}</td>
+              <td data-label="Amount" style="padding: 8px; color: #333; font-weight: 600; font-size: 9px;">₹{{ settlement.amount | number: '1.2-2' }}</td>
+              <td data-label="Payment Mode" style="padding: 8px;">
                 <span style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 3px 6px; border-radius: 10px; font-size: 8px; font-weight: 500; border: 1px solid rgba(16, 185, 129, 0.2);">
                   {{ settlement.payment_mode }}
                 </span>
               </td>
-              <td style="padding: 8px; color: #666; font-style: italic; font-size: 9px;">{{ settlement.notes || '-' }}</td>
+              <td data-label="Notes" style="padding: 8px; color: #666; font-style: italic; font-size: 9px;">{{ settlement.notes || '-' }}</td>
             </tr>
           </tbody>
         </table>
@@ -335,10 +335,10 @@
                 style="border-bottom: 1px solid #e0e0e0; transition: all 0.3s ease;"
                 onmouseover="this.style.background='white'"
                 onmouseout="this.style.background='transparent'">
-              <td style="padding: 8px; color: #666; font-weight: 400; font-size: 9px;">{{ withdrawal.date | date: 'dd/MM/yyyy' }}</td>
-              <td style="padding: 8px; color: #333; font-weight: 500; font-size: 9px;">{{ withdrawal.partner_name }}</td>
-              <td style="padding: 8px; color: #ef4444; font-weight: 600; font-size: 9px;">-₹{{ withdrawal.amount | number: '1.2-2' }}</td>
-              <td style="padding: 8px; color: #666; font-style: italic; font-size: 9px;">{{ withdrawal.notes || '-' }}</td>
+              <td data-label="Date" style="padding: 8px; color: #666; font-weight: 400; font-size: 9px;">{{ withdrawal.date | date: 'dd/MM/yyyy' }}</td>
+              <td data-label="Partner" style="padding: 8px; color: #333; font-weight: 500; font-size: 9px;">{{ withdrawal.partner_name }}</td>
+              <td data-label="Amount" style="padding: 8px; color: #ef4444; font-weight: 600; font-size: 9px;">-₹{{ withdrawal.amount | number: '1.2-2' }}</td>
+              <td data-label="Notes" style="padding: 8px; color: #666; font-style: italic; font-size: 9px;">{{ withdrawal.notes || '-' }}</td>
             </tr>
           </tbody>
         </table>

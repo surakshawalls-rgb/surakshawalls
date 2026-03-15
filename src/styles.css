@@ -556,37 +556,55 @@ html {
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
 body {
   width: 100%;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  height: 100%;
   margin: 0;
   padding: 0;
   background: var(--bg-primary);
   color: var(--text-primary);
   font-size: var(--font-base);
   line-height: 1.5;
-  overflow-x: hidden;
-  position: relative;
+  overflow: hidden;
+  position: fixed;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ===== SCROLLING ===== */
+/* Hide scrollbars globally but keep scrolling functionality */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 0px;
+  height: 0px;
+  display: none;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: transparent;
+  display: none;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--border-radius-md);
+  background: transparent;
+  display: none;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-light);
+  background: transparent;
+  display: none;
+}
+
+/* Firefox scrollbar hiding */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* ===== COMMON ELEMENTS ===== */
@@ -1379,10 +1397,12 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Prevent horizontal scroll on small screens */
-body {
-  overflow-x: hidden;
-  position: relative;
+/* Mobile overscroll prevention */
+#app-root,
+app-root {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 /* Ensure all images are responsive */
@@ -1438,6 +1458,24 @@ a {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Mobile dialog optimization - full width, no side margins */
+  .mat-mdc-dialog-container {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .mat-mdc-dialog-surface {
+    max-width: 100vw !important;
+    width: 100vw !important;
+    border-radius: 0 !important;
+  }
+
+  .cdk-overlay-pane {
+    max-width: 100vw !important;
   }
 }
 

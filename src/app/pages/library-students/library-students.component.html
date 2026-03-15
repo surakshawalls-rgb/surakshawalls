@@ -437,13 +437,13 @@
           </thead>
           <tbody>
             <tr *ngFor="let payment of paymentHistory">
-              <td>{{ formatDate(payment.payment_date) }}</td>
-              <td>{{ payment.seat_no || '-' }}</td>
-              <td><span class="badge">{{ payment.shift_type }}</span></td>
-              <td class="text-success"><strong>{{ formatCurrency(payment.amount_paid) }}</strong></td>
-              <td>{{ formatDate(payment.valid_from) }}</td>
-              <td>{{ formatDate(payment.valid_until) }}</td>
-              <td>{{ payment.payment_mode }}</td>
+              <td data-label="Date">{{ formatDate(payment.payment_date) }}</td>
+              <td data-label="Seat">{{ payment.seat_no || '-' }}</td>
+              <td data-label="Shift"><span class="badge">{{ payment.shift_type }}</span></td>
+              <td data-label="Amount" class="text-success"><strong>{{ formatCurrency(payment.amount_paid) }}</strong></td>
+              <td data-label="Valid From">{{ formatDate(payment.valid_from) }}</td>
+              <td data-label="Valid Until">{{ formatDate(payment.valid_until) }}</td>
+              <td data-label="Mode">{{ payment.payment_mode }}</td>
             </tr>
           </tbody>
         </table>

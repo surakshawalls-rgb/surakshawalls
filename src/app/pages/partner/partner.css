@@ -328,6 +328,42 @@ input::placeholder {
     padding: var(--spacing-md);
   }
 
+  /* Mobile table card layout */
+  table thead {
+    display: none !important;
+  }
+
+  table tbody {
+    display: block;
+  }
+
+  table tbody tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+  }
+
+  table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 0.7rem;
+    flex: 0 0 40%;
+  }
+
   .partner-table {
     font-size: var(--font-sm);
   }

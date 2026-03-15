@@ -329,6 +329,21 @@ export interface RegistrationResult {
       max-height: 64vh;
       padding: 0 24px 20px 24px;
       background: white;
+      scrollbar-width: thin;
+      scrollbar-color: #dce0e4 transparent;
+    }
+
+    mat-dialog-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    mat-dialog-content::-webkit-scrollbar-thumb {
+      background-color: #dce0e4;
+      border-radius: 3px;
     }
 
     mat-dialog-title {
@@ -441,6 +456,115 @@ export interface RegistrationResult {
 
     ::ng-deep .mat-mdc-text-field-wrapper {
       background-color: white !important;
+    }
+
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      .registration-form {
+        grid-template-columns: 1fr;
+        min-width: unset;
+        gap: 12px;
+        padding: 16px 0;
+      }
+
+      .date-range {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      mat-dialog-content {
+        max-height: 70vh;
+        padding: 0 12px 12px 12px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      mat-dialog-content::-webkit-scrollbar {
+        display: none;
+      }
+
+      mat-dialog-title {
+        padding: 12px;
+        font-size: 16px;
+      }
+
+      mat-dialog-actions {
+        padding: 10px 12px;
+        flex-wrap: wrap;
+      }
+
+      button[mat-button] {
+        min-width: auto;
+        flex: 1;
+      }
+
+      button[mat-raised-button] {
+        min-width: auto;
+        flex: 1;
+      }
+
+      ::ng-deep .mat-button-toggle-label-content {
+        line-height: 36px !important;
+        padding: 0 12px !important;
+        font-size: 13px;
+      }
+
+      ::ng-deep .mat-mdc-dialog-container {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      ::ng-deep .mat-mdc-dialog-surface {
+        border-radius: 0 !important;
+        max-width: 100vw !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .registration-form {
+        gap: 10px;
+        padding: 12px 0;
+      }
+
+      mat-dialog-content {
+        padding: 0 8px 8px 8px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      mat-dialog-content::-webkit-scrollbar {
+        display: none;
+      }
+
+      mat-dialog-title {
+        padding: 10px 8px;
+        font-size: 14px;
+      }
+
+      mat-dialog-actions {
+        padding: 8px;
+      }
+
+      ::ng-deep .mat-button-toggle-label-content {
+        line-height: 32px !important;
+        padding: 0 8px !important;
+        font-size: 12px;
+      }
+
+      ::ng-deep .mat-mdc-form-field-infix {
+        padding-top: 12px !important;
+        padding-bottom: 12px !important;
+      }
+
+      ::ng-deep .mat-mdc-dialog-container {
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      ::ng-deep .mat-mdc-dialog-surface {
+        border-radius: 0 !important;
+        max-width: 100vw !important;
+      }
     }
   `]
 })

@@ -147,11 +147,11 @@
               </thead>
               <tbody>
                 <tr *ngFor="let client of overdueClients">
-                  <td><strong>{{client.client_name}}</strong></td>
-                  <td>{{client.phone || 'N/A'}}</td>
-                  <td class="amount-col">₹{{client.outstanding | number:'1.0-0'}}</td>
-                  <td>{{formatDateToDDMMYYYY(client.last_purchase_date)}}</td>
-                  <td>
+                  <td data-label="Client"><strong>{{client.client_name}}</strong></td>
+                  <td data-label="Phone">{{client.phone || 'N/A'}}</td>
+                  <td data-label="Outstanding" class="amount-col">₹{{client.outstanding | number:'1.0-0'}}</td>
+                  <td data-label="Last Purchase">{{formatDateToDDMMYYYY(client.last_purchase_date)}}</td>
+                  <td data-label="Days Overdue">
                     <mat-chip color="warn">{{getDaysOverdue(client.last_purchase_date)}} days</mat-chip>
                   </td>
                   <td>
@@ -192,11 +192,11 @@
               </thead>
               <tbody>
                 <tr *ngFor="let client of clients" [class.has-outstanding]="dueLedger[client.id] > 0">
-                  <td><strong>{{client.client_name}}</strong></td>
-                  <td>{{client.phone || 'N/A'}}</td>
-                  <td class="amount-col">₹{{client.total_billed | number:'1.0-0'}}</td>
-                  <td class="amount-col">₹{{client.total_paid | number:'1.0-0'}}</td>
-                  <td class="amount-col outstanding-amount">
+                  <td data-label="Client"><strong>{{client.client_name}}</strong></td>
+                  <td data-label="Phone">{{client.phone || 'N/A'}}</td>
+                  <td data-label="Total Billed" class="amount-col">₹{{client.total_billed | number:'1.0-0'}}</td>
+                  <td data-label="Total Paid" class="amount-col">₹{{client.total_paid | number:'1.0-0'}}</td>
+                  <td data-label="Outstanding" class="amount-col outstanding-amount">
                     <strong>₹{{dueLedger[client.id] || 0 | number:'1.0-0'}}</strong>
                   </td>
                   <td>
@@ -259,19 +259,19 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let payment of paymentHistory">
-                    <td>{{formatDateToDDMMYYYY(payment.payment_date)}}</td>
-                    <td class="amount-col"><strong>₹{{payment.amount_paid | number:'1.0-0'}}</strong></td>
-                    <td>
+                    <td data-label="Date">{{formatDateToDDMMYYYY(payment.payment_date)}}</td>
+                    <td data-label="Amount" class="amount-col"><strong>₹{{payment.amount_paid | number:'1.0-0'}}</strong></td>
+                    <td data-label="Mode">
                       <mat-icon [inline]="true">{{getPaymentModeIcon(payment.payment_mode)}}</mat-icon>
                       {{payment.payment_mode.toUpperCase()}}
                     </td>
-                    <td>{{payment.partner_name || 'Firm'}}</td>
-                    <td>
+                    <td data-label="Collected By">{{payment.partner_name || 'Firm'}}</td>
+                    <td data-label="Deposited To">
                       <mat-chip [color]="payment.deposited_to_firm ? 'primary' : 'accent'" class="small-chip">
                         {{payment.deposited_to_firm ? 'Firm' : 'Partner'}}
                       </mat-chip>
                     </td>
-                    <td>{{payment.notes || '-'}}</td>
+                    <td data-label="Notes">{{payment.notes || '-'}}</td>
                     <td>
                       <button mat-icon-button color="primary" (click)="prepareReceiptForPayment(payment)"
                               matTooltip="Print Receipt">

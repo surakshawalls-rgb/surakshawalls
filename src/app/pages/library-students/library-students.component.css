@@ -408,12 +408,124 @@
     flex: 1;
   }
 
-  .table-wrapper {
-    overflow-x: scroll;
+  /* Mobile mat-table card layout */
+  .students-table {
+    min-width: 100%;
   }
 
-  .students-table {
-    min-width: 1000px;
+  .students-table .mat-mdc-header-row {
+    display: none !important;
+  }
+
+  .students-table .mat-mdc-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+    min-height: auto;
+  }
+
+  .students-table .mat-mdc-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  .students-table .mat-mdc-cell::before {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.75rem;
+    flex: 0 0 40%;
+  }
+
+  .students-table .mat-mdc-cell:nth-child(1)::before {
+    content: 'Photo';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(2)::before {
+    content: 'Name';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(3)::before {
+    content: 'Gender';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(4)::before {
+    content: 'Mobile';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(5)::before {
+    content: 'Seat';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(6)::before {
+    content: 'Emergency';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(7)::before {
+    content: 'Address';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(8)::before {
+    content: 'Joined';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(9)::before {
+    content: 'Reg. Fee';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(10)::before {
+    content: 'Status';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(11)::before {
+    content: 'Actions';
+  }
+
+  /* Payment history table in modal */
+  .data-table thead {
+    display: none !important;
+  }
+
+  .data-table tbody {
+    display: block;
+  }
+
+  .data-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+  }
+
+  .data-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  .data-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #666;
+    font-size: 0.75rem;
+    flex: 0 0 40%;
+  }
+
+  .table-wrapper {
+    overflow-x: visible;
   }
 }
 

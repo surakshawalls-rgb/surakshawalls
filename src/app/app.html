@@ -189,6 +189,11 @@
         <span>{{ currentUser?.full_name || currentUser?.email }}</span>
       </button>
       <mat-divider></mat-divider>
+      <button mat-menu-item (click)="sendTestNotification()" *ngIf="authService.isAdmin()">
+        <mat-icon>notifications_active</mat-icon>
+        <span>Test Notifications</span>
+      </button>
+      <mat-divider *ngIf="authService.isAdmin()"></mat-divider>
       <button mat-menu-item (click)="logout()">
         <mat-icon>exit_to_app</mat-icon>
         <span>Logout</span>

@@ -654,8 +654,66 @@ textarea.form-control {
     max-height: 90vh;
   }
 
+  /* Mobile table card layout */
   table {
     font-size: 0.75rem;
+  }
+
+  thead {
+    display: none !important;
+  }
+
+  tbody, tfoot {
+    display: block;
+  }
+
+  tbody tr, tfoot tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+  }
+
+  tbody td, tfoot td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  tbody td::before, tfoot td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #666;
+    flex: 0 0 40%;
+  }
+
+  tbody td:last-child, tfoot td:last-child {
+    border-bottom: none;
+  }
+
+  tbody td:last-child::before {
+    content: '';
+  }
+
+  .action-buttons {
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .action-buttons .btn {
+    font-size: 0.7rem;
+    padding: 6px 10px;
+  }
+
+  tfoot tr {
+    background: #f8f9fa !important;
+    border: 2px solid #dee2e6;
   }
 
   thead th, tbody td {

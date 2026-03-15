@@ -181,13 +181,13 @@
           </thead>
           <tbody>
             <tr *ngFor="let entry of paginatedLedger; let i = index" class="table-row">
-              <td class="index-cell">{{((currentPage - 1) * itemsPerPage) + i + 1}}</td>
-              <td class="date-cell">{{formatDateToDDMMYYYY(entry.date)}}</td>
-              <td>
+              <td data-label="#" class="index-cell">{{((currentPage - 1) * itemsPerPage) + i + 1}}</td>
+              <td data-label="Date" class="date-cell">{{formatDateToDDMMYYYY(entry.date)}}</td>
+              <td data-label="Category">
                 <span class="category-badge">{{entry.display_category}}</span>
               </td>
-              <td class="description-cell">{{entry.description || '-'}}</td>
-              <td>
+              <td data-label="Description" class="description-cell">{{entry.description || '-'}}</td>
+              <td data-label="Type">
                 <span 
                   class="type-badge" 
                   [ngClass]="entry.type === 'receipt' ? 'badge-income' : 'badge-expense'"
@@ -195,7 +195,7 @@
                   {{entry.type === 'receipt' ? '📈 Income' : '📉 Expense'}}
                 </span>
               </td>
-              <td class="amount-cell text-right" [ngClass]="entry.type === 'receipt' ? 'positive' : 'negative'">
+              <td data-label="Amount" class="amount-cell text-right" [ngClass]="entry.type === 'receipt' ? 'positive' : 'negative'">
                 {{entry.type === 'receipt' ? '+' : '-'}}₹{{entry.amount | number:'1.2-2'}}
               </td>
             </tr>

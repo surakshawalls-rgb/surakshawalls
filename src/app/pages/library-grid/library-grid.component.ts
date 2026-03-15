@@ -624,9 +624,10 @@ export class LibraryGridComponent implements OnInit {
     }
     
     // Open Material Dialog with proper configuration
+    const isMobile = window.innerWidth <= 768;
     const dialogRef = this.dialog.open(RegistrationDialogComponent, {
-      width: '750px',
-      maxWidth: '90vw',
+      width: isMobile ? '100vw' : '750px',
+      maxWidth: isMobile ? '100vw' : '95vw',
       maxHeight: '90vh',
       data: {
         seat: seat,
@@ -637,7 +638,7 @@ export class LibraryGridComponent implements OnInit {
       panelClass: ['registration-dialog', 'custom-dialog-container'],
       hasBackdrop: true,
       backdropClass: 'custom-dialog-backdrop',
-      position: {
+      position: isMobile ? undefined : {
         top: '50px'
       }
     });

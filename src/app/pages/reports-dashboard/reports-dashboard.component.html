@@ -69,12 +69,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let worker of workersWithOutstanding; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td><strong>{{ worker.worker_name }}</strong></td>
-            <td>{{ worker.phone || 'N/A' }}</td>
-            <td>{{ formatCurrency(worker.total_earned) }}</td>
-            <td>{{ formatCurrency(worker.total_paid) }}</td>
-            <td class="text-right amount-highlight">{{ formatCurrency(worker.outstanding) }}</td>
+            <td data-label="#">{{ i + 1 }}</td>
+            <td data-label="Worker Name"><strong>{{ worker.worker_name }}</strong></td>
+            <td data-label="Phone">{{ worker.phone || 'N/A' }}</td>
+            <td data-label="Total Earned">{{ formatCurrency(worker.total_earned) }}</td>
+            <td data-label="Total Paid">{{ formatCurrency(worker.total_paid) }}</td>
+            <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(worker.outstanding) }}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn btn-sm btn-success" (click)="openPayWorkerDialog(worker, 'full')" title="Pay Full">
@@ -140,12 +140,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let client of clientsWithOutstanding; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td><strong>{{ client.client_name }}</strong></td>
-            <td>{{ client.phone || 'N/A' }}</td>
-            <td>{{ formatCurrency(client.total_sales) }}</td>
-            <td>{{ formatCurrency(client.total_paid) }}</td>
-            <td class="text-right amount-highlight">{{ formatCurrency(client.outstanding) }}</td>
+            <td data-label="#">{{ i + 1 }}</td>
+            <td data-label="Client Name"><strong>{{ client.client_name }}</strong></td>
+            <td data-label="Phone">{{ client.phone || 'N/A' }}</td>
+            <td data-label="Total Sales">{{ formatCurrency(client.total_sales) }}</td>
+            <td data-label="Total Paid">{{ formatCurrency(client.total_paid) }}</td>
+            <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(client.outstanding) }}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn btn-sm btn-success" (click)="openCollectFromClientDialog(client, 'full')" title="Collect Full">
@@ -196,11 +196,11 @@
         </thead>
         <tbody>
           <tr *ngFor="let partner of partnerInfo; let i = index">
-            <td>{{ i + 1 }}</td>
-            <td><strong>{{ partner.partner_name }}</strong></td>
-            <td>{{ partner.share_percentage }}%</td>
-            <td>{{ formatCurrency(partner.wallet_balance || 0) }}</td>
-            <td>
+            <td data-label="#">{{ i + 1 }}</td>
+            <td data-label="Partner Name"><strong>{{ partner.partner_name }}</strong></td>
+            <td data-label="Profit Share">{{ partner.share_percentage }}%</td>
+            <td data-label="Wallet Balance">{{ formatCurrency(partner.wallet_balance || 0) }}</td>
+            <td data-label="Status">
               <span class="status-badge active">
                 Active
               </span>
@@ -294,11 +294,11 @@
             </thead>
             <tbody>
               <tr *ngFor="let mat of materialStock">
-                <td>{{ mat.material_name }}</td>
-                <td>{{ mat.current_stock }}</td>
-                <td>{{ mat.unit }}</td>
-                <td>{{ formatCurrency(mat.unit_cost || 0) }}</td>
-                <td>{{ formatCurrency((mat.current_stock * (mat.unit_cost || 0))) }}</td>
+                <td data-label="Material">{{ mat.material_name }}</td>
+                <td data-label="Quantity">{{ mat.current_stock }}</td>
+                <td data-label="Unit">{{ mat.unit }}</td>
+                <td data-label="Avg Rate">{{ formatCurrency(mat.unit_cost || 0) }}</td>
+                <td data-label="Value">{{ formatCurrency((mat.current_stock * (mat.unit_cost || 0))) }}</td>
               </tr>
             </tbody>
           </table>
@@ -321,11 +321,11 @@
             </thead>
             <tbody>
               <tr *ngFor="let prod of finishedStock">
-                <td>{{ prod.product_name }}</td>
-                <td>{{ prod.product_variant || 'Standard' }}</td>
-                <td>{{ prod.current_stock }}</td>
-                <td>{{ formatCurrency(prod.unit_cost || 0) }}</td>
-                <td>{{ formatCurrency((prod.current_stock * (prod.unit_cost || 0))) }}</td>
+                <td data-label="Product">{{ prod.product_name }}</td>
+                <td data-label="Variant">{{ prod.product_variant || 'Standard' }}</td>
+                <td data-label="Quantity">{{ prod.current_stock }}</td>
+                <td data-label="Est. Cost/Unit">{{ formatCurrency(prod.unit_cost || 0) }}</td>
+                <td data-label="Value">{{ formatCurrency((prod.current_stock * (prod.unit_cost || 0))) }}</td>
               </tr>
             </tbody>
           </table>
@@ -444,12 +444,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let entry of passbookDialog.entries">
-              <td>{{ formatDate(entry.work_date) }}</td>
-              <td>{{ entry.attendance_type }}</td>
-              <td>{{ formatCurrency(entry.wage_earned) }}</td>
-              <td>{{ formatCurrency(entry.paid_initially) }}</td>
-              <td>{{ formatCurrency(entry.total_paid_later) }}</td>
-              <td class="amount-highlight">{{ formatCurrency(entry.current_outstanding) }}</td>
+              <td data-label="Date">{{ formatDate(entry.work_date) }}</td>
+              <td data-label="Type">{{ entry.attendance_type }}</td>
+              <td data-label="Wage Earned">{{ formatCurrency(entry.wage_earned) }}</td>
+              <td data-label="Paid Initially">{{ formatCurrency(entry.paid_initially) }}</td>
+              <td data-label="Paid Later">{{ formatCurrency(entry.total_paid_later) }}</td>
+              <td data-label="Outstanding" class="amount-highlight">{{ formatCurrency(entry.current_outstanding) }}</td>
             </tr>
           </tbody>
           <tfoot>

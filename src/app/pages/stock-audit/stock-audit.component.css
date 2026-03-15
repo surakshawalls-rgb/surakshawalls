@@ -486,6 +486,70 @@
   .stat-value {
     font-size: 2rem;
   }
+
+  /* Stock Audit Mobile Styles */
+  .audit-grid-container {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  .audit-table thead {
+    display: none !important;
+  }
+
+  .audit-table tbody {
+    display: block !important;
+  }
+
+  .audit-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    background: white !important;
+  }
+
+  .audit-material-name {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: #333 !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+  }
+
+  .audit-date {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 0 !important;
+    font-size: 0.85rem !important;
+    color: #666 !important;
+  }
+
+  .audit-date::before {
+    content: "Date:" !important;
+    font-weight: 600 !important;
+  }
+
+  .audit-detail {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+
+  .audit-detail::before {
+    font-weight: 600 !important;
+    color: #666 !important;
+    font-size: 0.85rem !important;
+  }
+
+  .audit-digital::before { content: "Digital Stock:"; }
+  .audit-physical::before { content: "Physical Count:"; }
+  .audit-variance::before { content: "Variance:"; }
+  .audit-status::before { content: "Status:"; }
 }
 
 @media (max-width: 480px) {

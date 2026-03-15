@@ -26,7 +26,7 @@
     <span>{{ errorMessage }}</span>
   </div>
 
-  <div *ngIf="!loading" style="display: grid; grid-template-columns: 1fr 380px; gap: 20px;">
+  <div *ngIf="!loading" class="purchase-grid-container" style="display: grid; grid-template-columns: 1fr 380px; gap: 20px;">
     <!-- Purchase Form -->
     <div class="form-container">
       <h3 style="margin: 0 0 20px 0; color: #1565c0; font-size: 10px; font-weight: 600; border-bottom: 2px solid #1565c0; padding-bottom: 8px;">📝 New Purchase</h3>
@@ -127,7 +127,7 @@
       <h3 style="margin: 0 0 16px 0; color: #1565c0; font-size: 10px; font-weight: 600; border-bottom: 2px solid #1565c0; padding-bottom: 8px;">📋 Recent Purchases</h3>
       
       <div style="max-height: 600px; overflow-y: auto;">
-        <table *ngIf="purchaseHistory.length > 0" style="width: 100%; border-collapse: collapse; font-size: 9px;">
+        <table *ngIf="purchaseHistory.length > 0" class="purchase-table" style="width: 100%; border-collapse: collapse; font-size: 9px;">
           <thead>
             <tr style="background: #1565c0; color: white;">
               <th style="padding: 8px; text-align: left; border: 1px solid #e0e0e0; font-weight: 600;">Material</th>
@@ -135,8 +135,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let purchase of purchaseHistory let i = index" [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
-              <td style="padding: 8px; border: 1px solid #e0e0e0;">
+            <tr *ngFor="let purchase of purchaseHistory let i = index" class="purchase-row" [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
+              <td class="purchase-material" style="padding: 8px; border: 1px solid #e0e0e0;">
                 <div style="font-weight: 600; color: #333; margin-bottom: 2px;">{{ purchase.material_name }}</div>
                 <div style="color: #666; font-size: 8px;">{{ purchase.date }}</div>
                 <div style="color: #666; font-size: 8px;">{{ purchase.quantity }} units @ ₹{{ purchase.unit_cost }}</div>
@@ -144,7 +144,7 @@
                   {{ purchase.paid_from === 'office_cash' ? '🏢 Office Cash' : '👤 Partner Pocket' }}
                 </div>
               </td>
-              <td style="padding: 8px; border: 1px solid #e0e0e0; text-align: right; vertical-align: top;">
+              <td class="purchase-amount" style="padding: 8px; border: 1px solid #e0e0e0; text-align: right; vertical-align: top;">
                 <span style="background: #4CAF50; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; display: inline-block;">₹{{ purchase.total_amount | number }}</span>
               </td>
             </tr>

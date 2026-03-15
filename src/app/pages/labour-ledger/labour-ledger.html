@@ -87,12 +87,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let labour of getFilteredLabours()" [class.overdue]="labour.due_amount > 0">
-            <td>{{ labour.name }}</td>
-            <td>{{ labour.phone || '-' }}</td>
-            <td class="amount">₹{{ labour.total_earned | number:'1.0-2' }}</td>
-            <td class="amount paid">₹{{ labour.total_paid | number:'1.0-2' }}</td>
-            <td class="amount" [class.due]="labour.due_amount > 0">₹{{ labour.due_amount | number:'1.0-2' }}</td>
-            <td>
+            <td data-label="Name">{{ labour.name }}</td>
+            <td data-label="Phone">{{ labour.phone || '-' }}</td>
+            <td data-label="Total Earned" class="amount">₹{{ labour.total_earned | number:'1.0-2' }}</td>
+            <td data-label="Total Paid" class="amount paid">₹{{ labour.total_paid | number:'1.0-2' }}</td>
+            <td data-label="Due Amount" class="amount" [class.due]="labour.due_amount > 0">₹{{ labour.due_amount | number:'1.0-2' }}</td>
+            <td data-label="Status">
               <span [class.status-active]="labour.status === 'active'" 
                     [class.status-inactive]="labour.status === 'inactive'"
                     class="status-badge">

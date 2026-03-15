@@ -486,6 +486,72 @@
   .stat-value {
     font-size: 2rem;
   }
+
+  /* Worker Management Mobile Styles */
+  .worker-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+  }
+
+  .worker-header button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .worker-table-header {
+    display: none !important;
+  }
+
+  .worker-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+
+  .worker-info {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+
+  .worker-contact {
+    text-align: left !important;
+    justify-content: flex-start !important;
+    font-size: 10px !important;
+  }
+
+  .worker-contact::before {
+    content: "📱 Contact: ";
+    font-weight: 700;
+    color: #333;
+  }
+
+  .worker-balance {
+    text-align: left !important;
+    justify-content: flex-start !important;
+  }
+
+  .worker-balance::before {
+    content: "💰 Balance: ";
+    font-weight: 700;
+    color: #333;
+    margin-right: 8px;
+  }
+
+  .worker-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .worker-actions button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px !important;
+    font-size: 10px !important;
+  }
 }
 
 @media (max-width: 480px) {

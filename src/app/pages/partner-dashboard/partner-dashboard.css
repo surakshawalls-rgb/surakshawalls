@@ -432,6 +432,42 @@ table tbody tr:hover {
     width: 95%;
   }
 
+  /* Mobile table card layout */
+  table thead {
+    display: none !important;
+  }
+
+  table tbody {
+    display: block;
+  }
+
+  table tbody tr {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+  }
+
+  table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #333;
+    font-size: 9px;
+    flex: 0 0 40%;
+  }
+
   table {
     font-size: 12px;
   }

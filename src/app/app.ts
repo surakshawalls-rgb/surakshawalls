@@ -190,4 +190,23 @@ export class AppComponent implements OnInit {
       console.log('⚠️ Could not sync notifications:', error);
     }
   }
+
+  /**
+   * Send a test notification (Admin only)
+   */
+  async sendTestNotification(): Promise<void> {
+    try {
+      const result = await this.notificationService.sendTestNotification();
+      if (result.success) {
+        console.log('✅ Test notification sent');
+        alert('✅ Test notification sent! Check your notification bell.');
+      } else {
+        console.error('❌ Failed to send test notification:', result.message);
+        alert(`❌ Failed: ${result.message}`);
+      }
+    } catch (error: any) {
+      console.error('❌ Error sending test notification:', error);
+      alert(`❌ Error: ${error.message}`);
+    }
+  }
 }

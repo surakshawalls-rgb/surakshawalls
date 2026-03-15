@@ -486,6 +486,54 @@
   .stat-value {
     font-size: 2rem;
   }
+
+  /* Inventory Tables Mobile */
+  .inventory-table thead {
+    display: none !important;
+  }
+
+  .inventory-table tbody {
+    display: block !important;
+  }
+
+  .inventory-row {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 16px !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    background: white !important;
+  }
+
+  .inventory-product-name {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    color: #333 !important;
+    padding-bottom: 10px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+  }
+
+  .inventory-detail {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 !important;
+  }
+
+  .inventory-detail::before {
+    font-weight: 600 !important;
+    color: #666 !important;
+    font-size: 0.85rem !important;
+  }
+
+  .inventory-stock::before { content: "Stock:"; }
+  .inventory-unit-cost::before { content: "Unit Cost:"; }
+  .inventory-selling-price::before { content: "Selling Price:"; }
+  .inventory-stock-value::before { content: "Stock Value:"; }
+  .inventory-status::before { content: "Status:"; }
+  .material-unit::before { content: "Unit:"; }
 }
 
 @media (max-width: 480px) {

@@ -73,12 +73,12 @@
               </thead>
               <tbody>
                 <tr *ngFor="let supplier of suppliers">
-                  <td><strong>{{supplier.supplier_name}}</strong></td>
-                  <td>{{supplier.company_name || '-'}}</td>
-                  <td>{{supplier.phone}}</td>
-                  <td>{{supplier.city || '-'}}</td>
-                  <td class="amount-col">₹{{supplier.outstanding | number:'1.0-0'}}</td>
-                  <td>
+                  <td data-label="Supplier"><strong>{{supplier.supplier_name}}</strong></td>
+                  <td data-label="Company">{{supplier.company_name || '-'}}</td>
+                  <td data-label="Phone">{{supplier.phone}}</td>
+                  <td data-label="City">{{supplier.city || '-'}}</td>
+                  <td data-label="Outstanding" class="amount-col">₹{{supplier.outstanding | number:'1.0-0'}}</td>
+                  <td data-label="Status">
                     <mat-chip [color]="supplier.active ? 'primary' : 'warn'">
                       {{supplier.active ? 'Active' : 'Inactive'}}
                     </mat-chip>
@@ -125,12 +125,12 @@
               </thead>
               <tbody>
                 <tr *ngFor="let po of purchaseOrders">
-                  <td><strong>{{po.po_number}}</strong></td>
-                  <td>{{getSupplierName(po.supplier_id)}}</td>
-                  <td>{{formatDateToDDMMYYYY(po.order_date)}}</td>
-                  <td>{{po.expected_delivery_date ? formatDateToDDMMYYYY(po.expected_delivery_date) : '-'}}</td>
-                  <td class="amount-col">₹{{po.total_amount | number:'1.0-0'}}</td>
-                  <td>
+                  <td data-label="PO Number"><strong>{{po.po_number}}</strong></td>
+                  <td data-label="Supplier">{{getSupplierName(po.supplier_id)}}</td>
+                  <td data-label="Order Date">{{formatDateToDDMMYYYY(po.order_date)}}</td>
+                  <td data-label="Expected Delivery">{{po.expected_delivery_date ? formatDateToDDMMYYYY(po.expected_delivery_date) : '-'}}</td>
+                  <td data-label="Amount" class="amount-col">₹{{po.total_amount | number:'1.0-0'}}</td>
+                  <td data-label="Status">
                     <mat-chip [color]="getStatusColor(po.status)">
                       <mat-icon [inline]="true">{{getStatusIcon(po.status)}}</mat-icon>
                       {{po.status.toUpperCase()}}
@@ -193,12 +193,12 @@
               </thead>
               <tbody>
                 <tr *ngFor="let supplier of suppliers" [class.has-outstanding]="supplier.outstanding > 0">
-                  <td><strong>{{supplier.supplier_name}}</strong></td>
-                  <td>{{supplier.company_name || '-'}}</td>
-                  <td>{{supplier.phone}}</td>
-                  <td class="amount-col">₹{{supplier.total_purchases | number:'1.0-0'}}</td>
-                  <td class="amount-col">₹{{supplier.total_paid | number:'1.0-0'}}</td>
-                  <td class="amount-col outstanding-amount">
+                  <td data-label="Supplier"><strong>{{supplier.supplier_name}}</strong></td>
+                  <td data-label="Company">{{supplier.company_name || '-'}}</td>
+                  <td data-label="Phone">{{supplier.phone}}</td>
+                  <td data-label="Total Purchases" class="amount-col">₹{{supplier.total_purchases | number:'1.0-0'}}</td>
+                  <td data-label="Total Paid" class="amount-col">₹{{supplier.total_paid | number:'1.0-0'}}</td>
+                  <td data-label="Outstanding" class="amount-col outstanding-amount">
                     <strong>₹{{supplier.outstanding | number:'1.0-0'}}</strong>
                   </td>
                   <td>
@@ -251,13 +251,13 @@
                 </thead>
                 <tbody>
                   <tr *ngFor="let entry of supplierLedger" [class.balance-row]="entry.transaction_type === 'Opening Balance'">
-                    <td>{{entry.transaction_date === '2000-01-01' ? '-' : formatDateToDDMMYYYY(entry.transaction_date)}}</td>
-                    <td><strong>{{entry.transaction_type}}</strong></td>
-                    <td>{{entry.reference_number || '-'}}</td>
-                    <td>{{entry.description}}</td>
-                    <td class="amount-col debit">{{entry.debit_amount > 0 ? (entry.debit_amount | number:'1.2-2') : '-'}}</td>
-                    <td class="amount-col credit">{{entry.credit_amount > 0 ? (entry.credit_amount | number:'1.2-2') : '-'}}</td>
-                    <td class="amount-col balance" [class.negative]="entry.balance < 0">
+                    <td data-label="Date">{{entry.transaction_date === '2000-01-01' ? '-' : formatDateToDDMMYYYY(entry.transaction_date)}}</td>
+                    <td data-label="Type"><strong>{{entry.transaction_type}}</strong></td>
+                    <td data-label="Reference">{{entry.reference_number || '-'}}</td>
+                    <td data-label="Description">{{entry.description}}</td>
+                    <td data-label="Debit" class="amount-col debit">{{entry.debit_amount > 0 ? (entry.debit_amount | number:'1.2-2') : '-'}}</td>
+                    <td data-label="Credit" class="amount-col credit">{{entry.credit_amount > 0 ? (entry.credit_amount | number:'1.2-2') : '-'}}</td>
+                    <td data-label="Balance" class="amount-col balance" [class.negative]="entry.balance < 0">
                       <strong>{{entry.balance | number:'1.2-2'}}</strong>
                     </td>
                   </tr>

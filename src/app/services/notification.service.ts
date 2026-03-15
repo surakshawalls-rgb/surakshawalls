@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { createClient, SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
+import { SupabaseClient, RealtimeChannel } from '@supabase/supabase-js';
 import { ToastrService } from 'ngx-toastr';
+import { SupabaseService } from './supabase.service';
+import { AuthService } from './auth.service';
 
 interface DatabasePayload {
   eventType: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -28,26 +30,35 @@ export class NotificationService {
   private channels: RealtimeChannel[] = [];
   private currentUserId: string | null = null;
 
-  constructor(private toastr: ToastrService) {
+  constructor(
+    private toastr: ToastrService,
+    private supabaseService: SupabaseService,
+    private authService: AuthService
+  ) {
     console.log('🔔 NotificationService constructor started');
     
     try {
-      this.supabase = createClient(
-        'https://lcwjtwidxihclizliksd.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxjd2p0d2lkeGloY2xpemxpa3NkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2OTgzMzYsImV4cCI6MjA4NTI3NDMzNn0.5U5hX3UKBVg41XiBc3pUZAqL7Png8aMBzBx-OLp7PrU'
-      );
+      // Use the authenticated supabase client from SupabaseService
+      this.supabase = this.supabaseService.supabase;
       
-      // Get current user
-      this.getCurrentUser();
-      console.log('✅ NotificationService initialized');
+      // Get current user from AuthService
+      const currentUser = this.authService.currentUserValue;
+      this.currentUserId = currentUser?.id || null;
+      
+      console.log('✅ NotificationService initialized with user:', this.currentUserId);
     } catch (error) {
       console.error('❌ Error in NotificationService constructor:', error);
     }
   }
 
   private async getCurrentUser() {
-    const { data: { user } } = await this.supabase.auth.getUser();
-    this.currentUserId = user?.id || null;
+    try {
+      const currentUser = this.authService.currentUserValue;
+      this.currentUserId = currentUser?.id || null;
+      console.log('✅ Current user ID set:', this.currentUserId);
+    } catch (error) {
+      console.error('❌ Exception getting user:', error);
+    }
   }
 
   // Start listening to all important tables
@@ -391,14 +402,14 @@ export class NotificationService {
    */
   async markAllAsRead(): Promise<boolean> {
     try {
-      const { data: { user } } = await this.supabase.auth.getUser();
-      if (!user) {
+      const currentUser = this.authService.currentUserValue;
+      if (!currentUser || !currentUser.id) {
         console.error('❌ No user logged in');
         return false;
       }
 
       const { error } = await this.supabase.rpc('mark_all_notifications_read', {
-        p_user_id: user.id
+        p_user_id: currentUser.id
       });
 
       if (error) {
@@ -513,5 +524,47 @@ export class NotificationService {
       });
 
     this.channels.push(channel);
+  }
+
+  /**
+   * Send a test notification to verify the notification system is working
+   * Only for admins/testing purposes
+   */
+  async sendTestNotification(): Promise<{ success: boolean; message: string }> {
+    try {
+      // Get current user from AuthService (already authenticated)
+      const currentUser = this.authService.currentUserValue;
+      
+      if (!currentUser || !currentUser.id) {
+        console.error('❌ No user found in AuthService');
+        return { success: false, message: 'No user logged in' };
+      }
+
+      console.log('✅ Current user:', currentUser.id, currentUser.email);
+      console.log('📨 Calling send_test_notification() function...');
+
+      // Call the PostgreSQL function (runs with SECURITY DEFINER to bypass RLS)
+      const { data, error } = await this.supabase
+        .rpc('send_test_notification');
+
+      if (error) {
+        console.error('❌ Error calling send_test_notification():', error);
+        return { success: false, message: `Error: ${error.message}` };
+      }
+
+      console.log('✅ Function response:', data);
+
+      // Check the function's response
+      if (data && data.success) {
+        console.log('✅ Test notification sent successfully, ID:', data.notification_id);
+        return { success: true, message: 'Test notification sent successfully!' };
+      } else {
+        console.error('❌ Function returned error:', data?.error);
+        return { success: false, message: data?.error || 'Unknown error' };
+      }
+    } catch (error: any) {
+      console.error('❌ Exception sending test notification:', error);
+      return { success: false, message: `Exception: ${error.message}` };
+    }
   }
 }

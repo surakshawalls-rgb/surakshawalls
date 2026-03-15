@@ -55,7 +55,7 @@
     <div class="form-container">
       <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">🏭 Finished Goods Inventory</h3>
       <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; background: white;">
+        <table class="inventory-table" style="width: 100%; border-collapse: collapse; background: white;">
           <thead style="background: #1976d2; color: white;">
             <tr>
               <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9rem; border-bottom: 2px solid #1565c0;">Product Name</th>
@@ -67,18 +67,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of finishedGoods; let i = index" 
+            <tr *ngFor="let item of finishedGoods; let i = index" class="inventory-row"
                 [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'"
                 style="border-bottom: 1px solid #e0e0e0; transition: background 0.2s;"
                 onmouseover="this.style.background='#f0f7ff'"
                 onmouseout="this.style.background=this.getAttribute('data-bg')"
                 [attr.data-bg]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
-              <td style="padding: 12px; font-weight: 600; color: #333;">{{ item.product_name }}</td>
-              <td style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ item.current_stock }} units</td>
-              <td style="padding: 12px; text-align: right; color: #666;">₹{{ item.unit_cost | number }}</td>
-              <td style="padding: 12px; text-align: right; color: #4CAF50; font-weight: 600;">₹{{ item.selling_price | number }}</td>
-              <td style="padding: 12px; text-align: right; color: #333; font-weight: 700;">₹{{ (item.current_stock * item.unit_cost) | number }}</td>
-              <td style="padding: 12px; text-align: center;">
+              <td class="inventory-product-name" style="padding: 12px; font-weight: 600; color: #333;">{{ item.product_name }}</td>
+              <td class="inventory-detail inventory-stock" style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ item.current_stock }} units</td>
+              <td class="inventory-detail inventory-unit-cost" style="padding: 12px; text-align: right; color: #666;">₹{{ item.unit_cost | number }}</td>
+              <td class="inventory-detail inventory-selling-price" style="padding: 12px; text-align: right; color: #4CAF50; font-weight: 600;">₹{{ item.selling_price | number }}</td>
+              <td class="inventory-detail inventory-stock-value" style="padding: 12px; text-align: right; color: #333; font-weight: 700;">₹{{ (item.current_stock * item.unit_cost) | number }}</td>
+              <td class="inventory-detail inventory-status" style="padding: 12px; text-align: center;">
                 <span style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-block;"
                       [style.background]="item.current_stock === 0 ? '#ffebee' : item.current_stock <= item.reorder_level ? '#fff3e0' : '#e8f5e9'"
                       [style.color]="item.current_stock === 0 ? '#c62828' : item.current_stock <= item.reorder_level ? '#e65100' : '#2e7d32'">
@@ -95,7 +95,7 @@
     <div class="form-container">
       <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">🏗️ Raw Materials Stock</h3>
       <div style="overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; background: white;">
+        <table class="inventory-table" style="width: 100%; border-collapse: collapse; background: white;">
           <thead style="background: #1976d2; color: white;">
             <tr>
               <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9rem; border-bottom: 2px solid #1565c0;">Material Name</th>
@@ -107,18 +107,18 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let material of rawMaterials; let i = index"
+            <tr *ngFor="let material of rawMaterials; let i = index" class="inventory-row"
                 [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'"
                 style="border-bottom: 1px solid #e0e0e0; transition: background 0.2s;"
                 onmouseover="this.style.background='#f0f7ff'"
                 onmouseout="this.style.background=this.getAttribute('data-bg')"
                 [attr.data-bg]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
-              <td style="padding: 12px; font-weight: 600; color: #333;">{{ material.material_name }}</td>
-              <td style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ material.current_stock | number }}</td>
-              <td style="padding: 12px; text-align: center; color: #666;">{{ material.unit }}</td>
-              <td style="padding: 12px; text-align: right; color: #666;">₹{{ material.unit_cost | number }}</td>
-              <td style="padding: 12px; text-align: right; color: #333; font-weight: 700;">₹{{ (material.current_stock * material.unit_cost) | number }}</td>
-              <td style="padding: 12px; text-align: center;">
+              <td class="inventory-product-name" style="padding: 12px; font-weight: 600; color: #333;">{{ material.material_name }}</td>
+              <td class="inventory-detail inventory-stock" style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ material.current_stock | number }}</td>
+              <td class="inventory-detail material-unit" style="padding: 12px; text-align: center; color: #666;">{{ material.unit }}</td>
+              <td class="inventory-detail inventory-unit-cost" style="padding: 12px; text-align: right; color: #666;">₹{{ material.unit_cost | number }}</td>
+              <td class="inventory-detail inventory-stock-value" style="padding: 12px; text-align: right; color: #333; font-weight: 700;">₹{{ (material.current_stock * material.unit_cost) | number }}</td>
+              <td class="inventory-detail inventory-status" style="padding: 12px; text-align: center;">
                 <span style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-block;"
                       [style.background]="material.current_stock === 0 ? '#ffebee' : material.current_stock <= material.reorder_level ? '#fff3e0' : '#e8f5e9'"
                       [style.color]="material.current_stock === 0 ? '#c62828' : material.current_stock <= material.reorder_level ? '#e65100' : '#2e7d32'">

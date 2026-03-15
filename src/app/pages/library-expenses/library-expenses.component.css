@@ -616,12 +616,72 @@ textarea.form-control {
     grid-template-columns: 1fr;
   }
 
-  .table-wrapper {
-    overflow-x: scroll;
+  /* Mobile mat-table card layout */
+  .expenses-table {
+    min-width: 100%;
   }
 
-  .expenses-table {
-    min-width: 800px;
+  .expenses-table .mat-mdc-header-row {
+    display: none !important;
+  }
+
+  .expenses-table .mat-mdc-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    background: white;
+    min-height: auto;
+  }
+
+  .expenses-table .mat-mdc-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+
+  .expenses-table .mat-mdc-cell::before {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.75rem;
+    flex: 0 0 40%;
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(1)::before {
+    content: 'Date';
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(2)::before {
+    content: 'Category';
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(3)::before {
+    content: 'Description';
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(4)::before {
+    content: 'Vendor';
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(5)::before {
+    content: 'Amount';
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(6)::before {
+    content: 'Payment';
+  }
+
+  .expenses-table .mat-mdc-cell:nth-child(7)::before {
+    content: 'Actions';
+  }
+
+  .table-wrapper {
+    overflow-x: visible;
   }
 
   .modal-content {
