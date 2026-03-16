@@ -75,6 +75,9 @@
       <button *ngIf="isAdmin()" routerLink="/library-complaints" class="btn btn-warning">
         🚨 View Complaints
       </button>
+      <button *ngIf="isAdmin()" routerLink="/library-bulk-whatsapp" class="btn btn-whatsapp">
+        💬 Bulk WhatsApp
+      </button>
       <button *ngIf="isAdmin()" (click)="toggleBulkOperations()" class="btn-bulk">
         📋 Bulk Operations
       </button>
@@ -112,7 +115,7 @@
           🚪 Release {{ selectedSeats.length }} Seats
         </button>
         <button (click)="sendBulkWhatsAppMessages()" class="btn btn-success">
-          📱 Send WhatsApp to All
+          💬 Open Bulk WhatsApp
         </button>
       </div>
     </div>

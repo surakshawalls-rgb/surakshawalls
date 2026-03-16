@@ -144,6 +144,11 @@ export const routes: Routes = [
     canActivate: [authGuard, adminGuard] 
   },
   { 
+    path: 'library-bulk-whatsapp', 
+    loadComponent: () => import('./pages/library-bulk-whatsapp/library-bulk-whatsapp.component').then(m => m.LibraryBulkWhatsappComponent),
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
     path: 'resources', 
     loadComponent: () => import('./pages/digital-library/digital-library.component').then(m => m.DigitalLibraryComponent)
     // NO authGuard - Public access for advertisement/marketing

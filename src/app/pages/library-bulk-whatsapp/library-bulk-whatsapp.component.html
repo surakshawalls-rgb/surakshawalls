@@ -1,0 +1,268 @@
+<!-- src/app/pages/library-bulk-whatsapp/library-bulk-whatsapp.component.html -->
+<app-breadcrumb></app-breadcrumb>
+
+<div class="wa-container">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="wa-header">
+    <div class="wa-title">
+      <button mat-icon-button (click)="goBack()" class="back-btn" matTooltip="Back to Library Grid">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <span class="wa-icon">💬</span>
+      <div>
+        <h1>Bulk WhatsApp Messenger</h1>
+        <p>Send WhatsApp messages to library students via Meta Cloud API</p>
+      </div>
+    </div>
+    <button mat-raised-button (click)="loadStudents()" [disabled]="loading || sending" class="refresh-btn">
+      <mat-icon>refresh</mat-icon> Refresh
+    </button>
+  </div>
+
+  <!-- ── Status messages ─────────────────────────────────────────────────── -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <mat-icon>check_circle</mat-icon> {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <mat-icon>error_outline</mat-icon> {{ errorMessage }}
+  </div>
+
+  <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+  <div *ngIf="loading" class="loading-block">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p>Loading students…</p>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- ── Message Template Card ───────────────────────────────────────── -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>message</mat-icon> 1. Choose Message
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+
+        <div class="preset-grid">
+          <label
+            *ngFor="let p of presets"
+            class="preset-tile"
+            [class.selected]="selectedPresetId === p.id"
+            (click)="onPresetSelect(p.id)"
+          >
+            <input type="radio" [ngModel]="selectedPresetId" [value]="p.id" hidden>
+            <span class="mode-badge" [class.template-badge]="p.mode === 'template'">
+              {{ p.mode === 'template' ? '📋 Template' : '✍️ Text' }}
+            </span>
+            <strong>{{ p.label }}</strong>
+          </label>
+        </div>
+
+        <!-- Custom text input -->
+        <div *ngIf="isCustomMode()" class="custom-msg-wrap">
+          <label>Your custom message (supports <code>&#123;name&#125;</code> and <code>&#123;expiry_date&#125;</code>):</label>
+          <textarea
+            [(ngModel)]="customMessage"
+            rows="4"
+            placeholder="Type your message here… e.g. Dear &#123;name&#125;, please renew your library membership."
+          ></textarea>
+        </div>
+
+        <div *ngIf="isApprovedTemplateMode()" class="template-config-wrap">
+          <div class="template-grid">
+            <div>
+              <label>Approved template name</label>
+              <input [(ngModel)]="approvedTemplateName" type="text" placeholder="Exact approved name from WhatsApp Manager">
+            </div>
+            <div>
+              <label>Language code</label>
+              <input [(ngModel)]="approvedTemplateLanguage" type="text" placeholder="e.g. en_US (recommended), en, hi">
+            </div>
+          </div>
+          <label>Template variables in order (comma-separated)</label>
+          <input [(ngModel)]="approvedTemplateVariables" type="text" placeholder="e.g. &#123;name&#125;, &#123;expiry_date&#125;">
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-box">
+          <p class="preview-label">Preview</p>
+          <div class="preview-bubble">
+            <div class="wa-bubble-dots"><span></span><span></span><span></span></div>
+            <p>{{ previewMessage }}</p>
+          </div>
+          <p class="preview-hint" *ngIf="selectedPreset.id === 'hello_world'">
+            ⚠️ <strong>hello_world</strong> only works from Meta public test numbers. It will not send from your live production sender.
+          </p>
+          <p class="preview-hint" *ngIf="isApprovedTemplateMode()">
+            ℹ️ Use the exact approved template name and language from WhatsApp Manager. Variables must match the template body order.
+          </p>
+          <p class="preview-hint" *ngIf="selectedPreset.mode === 'text'">
+            ℹ️ Text messages only work if the student has messaged your number within the last 24 hours.
+          </p>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ── Student Selection Card ──────────────────────────────────────── -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>people</mat-icon> 2. Select Students
+          <span class="count-badge">{{ selectedRows.length }} selected</span>
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+
+        <!-- Filter tabs -->
+        <div class="filter-row">
+          <button class="filter-tab" [class.active]="filterKey === 'all'"          (click)="setFilter('all')">All Active</button>
+          <button class="filter-tab" [class.active]="filterKey === 'expiring_30'"  (click)="setFilter('expiring_30')">Expiring &lt;= 30d</button>
+          <button class="filter-tab" [class.active]="filterKey === 'expiring_7'"   (click)="setFilter('expiring_7')">Expiring &lt;= 7d</button>
+          <button class="filter-tab" [class.active]="filterKey === 'expired'"      (click)="setFilter('expired')">Expired</button>
+        </div>
+
+        <!-- Search -->
+        <div class="search-wrap">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="applyFilter()"
+            placeholder="Search by name or number…"
+            class="search-input"
+          >
+        </div>
+
+        <!-- Bulk select actions -->
+        <div class="bulk-select-row">
+          <label class="check-all">
+            <input type="checkbox" [checked]="allSelected" (change)="toggleAll($any($event.target).checked)">
+            Select All ({{ filteredRows.length }})
+          </label>
+          <button mat-stroked-button (click)="selectExpiring()" color="warn" class="quick-btn">
+            <mat-icon>warning</mat-icon> Select Expiring
+          </button>
+        </div>
+
+        <!-- Student table -->
+        <div class="student-table-wrap">
+          <table class="student-table">
+            <thead>
+              <tr>
+                <th class="col-check"></th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Seat</th>
+                <th>Shift</th>
+                <th>Expiry</th>
+                <th *ngIf="showResults">Latest status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let row of filteredRows; trackBy: trackById"
+                [class.row-selected]="row.selected"
+              >
+                <td class="col-check">
+                  <input type="checkbox" [(ngModel)]="row.selected">
+                </td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.mobile }}</td>
+                <td>{{ row.seat_no ?? '—' }}</td>
+                <td>{{ row.shift ?? '—' }}</td>
+                <td>
+                  <span class="expiry-badge" [class]="'badge-' + row.expiry_class">
+                    {{ row.expiry_label }}
+                  </span>
+                </td>
+                <td *ngIf="showResults">
+                  <ng-container *ngIf="row.result; else noResult">
+                    <div class="result-stack">
+                      <span class="result-chip" [ngClass]="getResultClass(row.result.status)">
+                        {{ getResultLabel(row.result) }}
+                      </span>
+                      <span *ngIf="row.result.error" class="result-error">{{ row.result.error }}</span>
+                      <span *ngIf="getResultTimestamp(row.result)" class="result-time">{{ getResultTimestamp(row.result) }}</span>
+                    </div>
+                  </ng-container>
+                  <ng-template #noResult>
+                    <span class="result-chip result-neutral">—</span>
+                  </ng-template>
+                </td>
+              </tr>
+              <tr *ngIf="filteredRows.length === 0">
+                <td [colSpan]="showResults ? 7 : 6" class="empty-state">
+                  No students match the current filter.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- ── Send Card ────────────────────────────────────────────────────── -->
+    <mat-card class="section-card send-card">
+      <mat-card-content>
+        <div class="send-row">
+          <div class="send-info">
+            <strong>Ready to send to {{ selectedRows.length }} student(s)</strong>
+            using <em>{{ selectedPreset.label }}</em>
+          </div>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="sendMessages()"
+            [disabled]="sending || selectedRows.length === 0"
+            class="send-btn"
+          >
+            <mat-icon>send</mat-icon>
+            {{ sending ? 'Sending…' : 'Send WhatsApp' }}
+          </button>
+        </div>
+
+        <!-- Progress during send -->
+        <div *ngIf="sending" class="progress-wrap">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          <p>Sending messages… please wait</p>
+        </div>
+
+        <!-- Summary after send -->
+        <div *ngIf="showResults && !sending" class="send-summary-grid">
+          <span class="summary-chip summary-accepted">🟢 Accepted {{ statusSummary.accepted }}</span>
+          <span class="summary-chip summary-sent" *ngIf="statusSummary.sent > 0">📤 Sent {{ statusSummary.sent }}</span>
+          <span class="summary-chip summary-delivered" *ngIf="statusSummary.delivered > 0">📬 Delivered {{ statusSummary.delivered }}</span>
+          <span class="summary-chip summary-read" *ngIf="statusSummary.read > 0">👁️ Read {{ statusSummary.read }}</span>
+          <span class="summary-chip summary-failed" *ngIf="statusSummary.failed > 0">❌ Failed {{ statusSummary.failed }}</span>
+        </div>
+
+        <div *ngIf="showResults && trackingEnabled" class="tracking-panel">
+          <div class="tracking-row">
+            <div>
+              <strong>Live delivery tracking</strong>
+              <p *ngIf="!batchTrackingComplete">Auto-refreshing every 10 seconds until delivery finishes.</p>
+              <p *ngIf="batchTrackingComplete">Final delivery states have been received for this batch.</p>
+              <p *ngIf="lastStatusCheckedAt" class="tracking-meta">Last checked: {{ lastStatusCheckedAt }}</p>
+            </div>
+            <button mat-stroked-button (click)="refreshDeliveryStatus()" [disabled]="sending">
+              <mat-icon>sync</mat-icon>
+              Refresh status
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="showResults && !trackingEnabled && sentCount > 0" class="tracking-panel tracking-panel-muted">
+          <div>
+            <strong>Live delivery tracking unavailable</strong>
+            <p>This batch was accepted, but tracking could not be attached on the server.</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+</div>

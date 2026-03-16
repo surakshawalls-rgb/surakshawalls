@@ -137,6 +137,7 @@ export class BreadcrumbComponent implements OnInit {
     'library-registration-requests': { label: 'Membership Requests', icon: 'approval' },
     'library-expenses': { label: 'Expenses', icon: 'payments' },
     'library-complaints': { label: 'Complaints', icon: 'feedback' },
+    'library-bulk-whatsapp': { label: 'Bulk WhatsApp', icon: 'chat' },
     'resources': { label: 'Resources', icon: 'book' },
     'partner-dashboard': { label: 'Partner Dashboard', icon: 'handshake' },
     'company-cash': { label: 'Company Cash', icon: 'account_balance' },

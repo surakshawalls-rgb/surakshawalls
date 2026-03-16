@@ -2,7 +2,7 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -137,7 +137,8 @@ export class LibraryGridComponent implements OnInit {
     public authService: AuthService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private supabaseService: SupabaseService
+    private supabaseService: SupabaseService,
+    private router: Router
   ) {
         // Generate year ranges for DOB and Joining
     const currentYear = new Date().getFullYear();
@@ -1624,52 +1625,8 @@ export class LibraryGridComponent implements OnInit {
       return;
     }
 
-    const message = prompt('Enter message to send to all selected students:');
-    if (!message) return;
-
-    this.saving = true;
+    this.successMessage = 'Open the Bulk WhatsApp page to use approved templates. Legacy free-text bulk send has been disabled.';
     this.errorMessage = '';
-    this.successMessage = '';
-
-    try {
-      // Collect phone numbers from selected seats
-      const phones: string[] = [];
-      this.selectedSeats.forEach(seatNo => {
-        const seat = this.seats.find(s => s.seat_no === seatNo);
-        if (seat) {
-          const student = seat.full_time_student || seat.first_half_student || seat.second_half_student;
-          if (student && student.mobile) {
-            phones.push(student.mobile.replace(/\D/g, '')); // Clean phone number
-          }
-        }
-      });
-
-      if (phones.length === 0) {
-        this.errorMessage = 'No valid phone numbers found for selected seats';
-        return;
-      }
-
-      // Call Supabase Edge Function
-      const { data, error } = await this.supabaseService.supabase.functions.invoke('send-whatsapp-reminder', {
-        body: { phones, message }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      const results = data.results;
-      const successCount = results.filter((r: any) => r.success).length;
-      const failCount = results.length - successCount;
-
-      this.successMessage = `✅ Sent ${successCount} messages successfully${failCount > 0 ? `, ${failCount} failed` : ''}!`;
-      setTimeout(() => this.successMessage = '', 5000);
-
-    } catch (error: any) {
-      console.error('WhatsApp send error:', error);
-      this.errorMessage = `Failed to send messages: ${error.message || 'Unknown error'}`;
-    } finally {
-      this.saving = false;
-    }
+    this.router.navigate(['/library-bulk-whatsapp']);
   }
 }

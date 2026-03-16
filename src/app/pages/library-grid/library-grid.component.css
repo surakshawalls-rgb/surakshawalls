@@ -199,13 +199,24 @@
   transform: scale(1.02);
 }
 
+.btn-whatsapp {
+  background: #25d366;
+  color: white;
+}
+
+.btn-whatsapp:hover {
+  background: #1da851;
+  transform: scale(1.02);
+}
+
 .btn:active,
 .btn-primary:active,
 .btn-secondary:active,
 .btn-success:active,
 .btn-danger:active,
 .btn-info:active,
-.btn-warning:active {
+.btn-warning:active,
+.btn-whatsapp:active {
   transform: scale(0.98);
 }
 
