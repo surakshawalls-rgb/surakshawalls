@@ -11,6 +11,10 @@ export const routes: Routes = [
     path: 'home', 
     loadComponent: () => import('./pages/public-home/public-home.component').then(m => m.PublicHomeComponent)
   },
+  {
+    path: 'software',
+    loadComponent: () => import('./pages/suraksha-software/suraksha-software.component').then(m => m.SurakshaSoftwareComponent)
+  },
   { 
     path: 'library/resources', 
     loadComponent: () => import('./pages/public-resources/public-resources.component').then(m => m.PublicResourcesComponent)

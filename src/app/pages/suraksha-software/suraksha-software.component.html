@@ -1,0 +1,154 @@
+<div class="software-page">
+  <header class="software-hero">
+    <div class="hero-shell">
+      <a class="back-link" routerLink="/">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Suraksha Group
+      </a>
+
+      <div class="hero-main">
+        <div>
+          <p class="eyebrow">SURAKSHA SOFTWARE</p>
+          <h1>Enterprise-grade software development with industry-focused training.</h1>
+          <p class="hero-copy">
+            We design and deliver business-ready digital products for clients across web, mobile, and desktop.
+            Training programs are available on demand for students and professionals who want practical full stack skills.
+          </p>
+
+          <div class="hero-actions">
+            <button mat-flat-button class="cta-primary" (click)="switchFocus('development')">
+              Software Development
+            </button>
+            <button mat-stroked-button class="cta-secondary" (click)="switchFocus('training')">
+              Training Institute
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-metrics">
+          <mat-card class="metric-card">
+            <strong>{{ developmentServices.length }}</strong>
+            <span>Development domains</span>
+          </mat-card>
+          <mat-card class="metric-card">
+            <strong>{{ clients.length }}</strong>
+            <span>Client websites</span>
+          </mat-card>
+          <mat-card class="metric-card">
+            <strong>{{ trainingTracks.length }}</strong>
+            <span>Training tracks</span>
+          </mat-card>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="focus-strip">
+    <div class="focus-shell">
+      <p class="focus-title">Choose your focus</p>
+      <div class="focus-toggle" role="tablist" aria-label="Software focus mode">
+        <button
+          mat-button
+          role="tab"
+          [attr.aria-selected]="focusMode === 'development'"
+          [class.active]="focusMode === 'development'"
+          (click)="switchFocus('development')"
+        >
+          Client Software Development
+        </button>
+        <button
+          mat-button
+          role="tab"
+          [attr.aria-selected]="focusMode === 'training'"
+          [class.active]="focusMode === 'training'"
+          (click)="switchFocus('training')"
+        >
+          Software Training Institute
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="focusMode === 'development'" id="development-services" class="content-section">
+    <div class="section-header">
+      <p class="section-kicker">Software Development</p>
+      <h2>Build your product with a delivery-focused engineering team</h2>
+      <p>
+        We deliver scalable digital solutions with clean user experience, solid architecture,
+        and dependable post-launch support.
+      </p>
+    </div>
+
+    <div class="cards-grid services-grid">
+      <mat-card class="info-card service-card" *ngFor="let service of developmentServices">
+        <div class="card-head">
+          <mat-icon>{{ service.icon }}</mat-icon>
+          <h3>{{ service.title }}</h3>
+        </div>
+        <p class="service-copy">{{ service.description }}</p>
+        <ul class="deliverables">
+          <li *ngFor="let item of service.deliverables">{{ item }}</li>
+        </ul>
+      </mat-card>
+    </div>
+  </section>
+
+  <section *ngIf="focusMode === 'development'" class="content-section tinted">
+    <div class="section-header">
+      <p class="section-kicker">Client Portfolio</p>
+      <h2>Live websites delivered by our team</h2>
+      <p>Selected client projects currently active and maintained.</p>
+    </div>
+
+    <div class="client-list">
+      <a class="client-item" *ngFor="let client of clients" [href]="client.url" target="_blank" rel="noopener">
+        <div>
+          <h3>{{ client.name }}</h3>
+          <p>{{ client.summary }}</p>
+          <span class="client-url">{{ client.url }}</span>
+        </div>
+        <mat-icon>open_in_new</mat-icon>
+      </a>
+    </div>
+  </section>
+
+  <section *ngIf="focusMode === 'training'" id="training-curriculum" class="content-section">
+    <div class="section-header">
+      <p class="section-kicker">Training Institute</p>
+      <h2>Structured curriculum for full stack and UI careers</h2>
+      <p>
+        Training content is shown on demand. Explore track-wise modules,
+        practical labs, and industry workflow coverage.
+      </p>
+    </div>
+
+    <div class="cards-grid training-grid">
+      <mat-card class="info-card" *ngFor="let track of trainingTracks">
+        <div class="card-head">
+          <mat-icon>{{ track.icon }}</mat-icon>
+          <h3>{{ track.title }}</h3>
+        </div>
+        <div class="chip-wrap">
+          <span class="topic-chip" *ngFor="let topic of track.topics">{{ topic }}</span>
+        </div>
+      </mat-card>
+    </div>
+  </section>
+
+  <section class="content-section contact-strip">
+    <mat-card class="contact-card">
+      <h2 *ngIf="focusMode === 'development'">Need a software product for your business?</h2>
+      <h2 *ngIf="focusMode === 'training'">Want to enroll in professional software training?</h2>
+      <p *ngIf="focusMode === 'development'">
+        Share your project goals and we will propose architecture, timeline, and execution plan.
+      </p>
+      <p *ngIf="focusMode === 'training'">
+        Contact us for batch schedule, curriculum details, and the right learning path for your target role.
+      </p>
+      <div class="hero-actions">
+        <a mat-flat-button class="cta-primary" href="https://wa.me/919506629814" target="_blank" rel="noopener">WhatsApp Now</a>
+        <a mat-stroked-button class="cta-secondary" href="mailto:surakshawalls@gmail.com">Email Us</a>
+      </div>
+    </mat-card>
+  </section>
+</div>

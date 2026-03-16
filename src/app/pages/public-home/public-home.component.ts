@@ -58,7 +58,7 @@ export class PublicHomeComponent {
       tagline: 'Full Stack & Digital Solutions',
       icon: 'code',
       gradientClass: 'software-gradient',
-      externalUrl: 'https://www.surakshawalls.shop',
+      internalRoute: '/software',
       description: 'Custom software development, web applications, mobile apps, and complete digital transformation solutions for businesses.'
     },
     {
