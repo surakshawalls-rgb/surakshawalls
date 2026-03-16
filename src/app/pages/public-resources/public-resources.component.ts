@@ -7,17 +7,38 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { FormsModule } from '@angular/forms';
+import { format } from 'date-fns';
 import { DigitalLibraryService } from '../../services/digital-library.service';
+import { LibrarySeat, LibraryService } from '../../services/library.service';
+import { RegistrationDialogComponent } from '../library-grid/registration-dialog.component';
 
 @Component({
   selector: 'app-public-resources',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, MatButtonModule, MatCardModule, MatIconModule, MatChipsModule, MatFormFieldModule, MatInputModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDialogModule,
+    MatSnackBarModule
+  ],
   templateUrl: './public-resources.component.html',
   styleUrls: ['./public-resources.component.css']
 })
 export class PublicResourcesComponent implements OnInit {
+  private readonly publicRegistrationSeat: LibrarySeat = {
+    seat_no: 0,
+    updated_at: ''
+  };
   
   books: any[] = [];
   filteredBooks: any[] = [];
@@ -34,7 +55,10 @@ export class PublicResourcesComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private libraryService: DigitalLibraryService
+    private digitalLibraryService: DigitalLibraryService,
+    private membershipService: LibraryService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -43,7 +67,7 @@ export class PublicResourcesComponent implements OnInit {
 
   async loadBooks() {
     try {
-      this.books = await this.libraryService.getBooks();
+      this.books = await this.digitalLibraryService.getBooks();
       this.filteredBooks = this.books;
     } catch (error) {
       console.error('Error loading books:', error);
@@ -97,6 +121,62 @@ export class PublicResourcesComponent implements OnInit {
   }
 
   inquireForMembership() {
-    this.router.navigate(['/library/inquiry']);
+    const isMobile = window.innerWidth <= 768;
+    const dialogRef = this.dialog.open(RegistrationDialogComponent, {
+      width: isMobile ? '100vw' : '750px',
+      maxWidth: isMobile ? '100vw' : '95vw',
+      maxHeight: '90vh',
+      data: {
+        seat: this.publicRegistrationSeat,
+        canViewPersonalDetails: true,
+        mode: 'public_request',
+        title: '📝 Register for Library Membership',
+        submitLabel: '✓ Submit Request',
+        allowExistingStudentLookup: false
+      },
+      disableClose: false,
+      autoFocus: true,
+      panelClass: ['registration-dialog', 'custom-dialog-container'],
+      hasBackdrop: true,
+      backdropClass: 'custom-dialog-backdrop'
+    });
+
+    dialogRef.afterClosed().subscribe(async (result) => {
+      if (!result) {
+        return;
+      }
+
+      const response = await this.membershipService.createRegistrationRequest({
+        name: result.name,
+        mobile: result.mobile,
+        emergency_contact: result.emergency_contact || null,
+        emergency_contact_name: result.emergency_contact_name || null,
+        address: result.address,
+        dob: result.dob ? format(result.dob, 'yyyy-MM-dd') : null,
+        gender: result.gender,
+        requested_start_date: format(result.startDate, 'yyyy-MM-dd'),
+        requested_end_date: format(result.endDate, 'yyyy-MM-dd'),
+        requested_shift_type: result.selectedShift,
+        registration_fee_amount: Number(result.registration_fee_paid || 0),
+        seat_fee_amount: Number(result.feeAmount || 0),
+        payment_mode: result.paymentMode,
+        notes: result.notes || null
+      });
+
+      if (response.success) {
+        this.snackBar.open(
+          '✅ Membership request submitted. Payment will be verified manually before seat allocation.',
+          'Close',
+          { duration: 5000, horizontalPosition: 'center', verticalPosition: 'top' }
+        );
+        return;
+      }
+
+      this.snackBar.open(
+        `❌ ${response.error || 'Failed to submit membership request'}`,
+        'Close',
+        { duration: 6000, horizontalPosition: 'center', verticalPosition: 'top' }
+      );
+    });
   }
 }

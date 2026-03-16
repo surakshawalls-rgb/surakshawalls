@@ -356,6 +356,15 @@
   transition: all 0.2s ease;
 }
 
+.complaint-actions button[color="accent"] {
+  background-color: #25D366 !important;
+  color: #ffffff !important;
+}
+
+.complaint-actions button[color="accent"]:hover {
+  background-color: #1da851 !important;
+}
+
 .status-badge {
   display: inline-block;
   padding: 4px 12px;

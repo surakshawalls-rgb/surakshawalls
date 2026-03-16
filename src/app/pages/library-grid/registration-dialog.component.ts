@@ -15,8 +15,12 @@ import { LibrarySeat, LibraryService } from '../../services/library.service';
 import { addDays, getDaysInMonth, startOfDay } from 'date-fns';
 
 export interface RegistrationDialogData {
-  seat: LibrarySeat;
+  seat?: LibrarySeat | null;
   canViewPersonalDetails: boolean;
+  mode?: 'seat_registration' | 'public_request';
+  title?: string;
+  submitLabel?: string;
+  allowExistingStudentLookup?: boolean;
 }
 
 export interface RegistrationResult {
@@ -59,10 +63,15 @@ export interface RegistrationResult {
     MatNativeDateModule
   ],
   template: `
-    <h2 mat-dialog-title>📝 Register Student - Seat {{ data.seat.seat_no }}</h2>
+    <h2 mat-dialog-title>{{ dialogTitle }}</h2>
     
     <mat-dialog-content>
       <form [formGroup]="registrationForm" class="registration-form">
+        <div *ngIf="isPublicRequestMode" class="public-request-banner full-width">
+          <strong>Manual payment workflow:</strong>
+          After you submit this request, the library team will verify payment manually and assign a seat after approval.
+        </div>
+
         <mat-form-field appearance="outline">
           <mat-label>Full Name</mat-label>
           <input matInput formControlName="name" placeholder="Enter full name" required>
@@ -201,7 +210,7 @@ export interface RegistrationResult {
       <button mat-button (click)="onCancel()">✖ Cancel</button>
       <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!registrationForm.valid || saving">
         <mat-spinner diameter="18" *ngIf="saving" style="display: inline-block; margin-right: 8px; vertical-align: middle;"></mat-spinner>
-        {{ saving ? 'Saving...' : '✓ Register Student' }}
+        {{ saving ? 'Saving...' : submitButtonLabel }}
       </button>
     </mat-dialog-actions>
   `,
@@ -236,6 +245,16 @@ export interface RegistrationResult {
       color: #333333;
       font-weight: 600;
       margin-bottom: 4px;
+    }
+
+    .public-request-banner {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .toggle-section {
@@ -569,19 +588,20 @@ export interface RegistrationResult {
   `]
 })
 export class RegistrationDialogComponent implements OnInit {
-      onStartDateChange(event: any): void {
-        const start: Date = event.value;
-        if (start && (!this.registrationForm.get('endDate')?.value || this.registrationForm.get('endDate')?.pristine)) {
-          // Get days in the start month using date-fns
-          const daysInMonth = getDaysInMonth(start);
-          
-          // Calculate end date: start date + days in month - 1
-          const end = addDays(start, daysInMonth - 1);
-          
-          this.registrationForm.get('endDate')?.setValue(end);
-        }
-      }
-    // Removed flatpickr instances
+  onStartDateChange(event: any): void {
+    const start: Date = event.value;
+    if (start && (!this.registrationForm.get('endDate')?.value || this.registrationForm.get('endDate')?.pristine)) {
+      // Get days in the start month using date-fns
+      const daysInMonth = getDaysInMonth(start);
+      
+      // Calculate end date: start date + days in month - 1
+      const end = addDays(start, daysInMonth - 1);
+      
+      this.registrationForm.get('endDate')?.setValue(end);
+    }
+  }
+
+  // Removed flatpickr instances
   registrationForm!: FormGroup;
   saving = false;
 
@@ -591,6 +611,42 @@ export class RegistrationDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: RegistrationDialogData,
     private libraryService: LibraryService
   ) {}
+
+  get isPublicRequestMode(): boolean {
+    return this.data.mode === 'public_request';
+  }
+
+  get dialogTitle(): string {
+    if (this.data.title) {
+      return this.data.title;
+    }
+
+    if (this.isPublicRequestMode) {
+      return '📝 Register for Library Membership';
+    }
+
+    if (this.data.seat?.seat_no) {
+      return `📝 Register Student - Seat ${this.data.seat.seat_no}`;
+    }
+
+    return '📝 Register Student';
+  }
+
+  get submitButtonLabel(): string {
+    if (this.data.submitLabel) {
+      return this.data.submitLabel;
+    }
+
+    return this.isPublicRequestMode ? '✓ Submit Request' : '✓ Register Student';
+  }
+
+  private shouldLookupExistingStudent(): boolean {
+    if (typeof this.data.allowExistingStudentLookup === 'boolean') {
+      return this.data.allowExistingStudentLookup;
+    }
+
+    return !this.isPublicRequestMode;
+  }
 
   ngOnInit() {
     const today = startOfDay(new Date());
@@ -602,7 +658,7 @@ export class RegistrationDialogComponent implements OnInit {
     let defaultShift = 'full_time';
     const seat = this.data.seat;
     
-    if (!seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id) {
+    if (!seat || (!seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id)) {
       defaultShift = 'full_time';
     } else if (seat.first_half_student_id && !seat.second_half_student_id) {
       defaultShift = 'second_half';
@@ -652,27 +708,29 @@ export class RegistrationDialogComponent implements OnInit {
     });
     
     // Auto-fill form when mobile number is entered
-    this.registrationForm.get('mobile')?.valueChanges.subscribe(async mobile => {
-      if (mobile && mobile.length === 10 && /^[0-9]{10}$/.test(mobile)) {
-        try {
-          const existingStudent = await this.libraryService.getStudentByMobile(mobile);
-          if (existingStudent) {
-            // Pre-fill the form with existing student data
-            this.registrationForm.patchValue({
-              name: existingStudent.name || '',
-              emergency_contact: existingStudent.emergency_contact || '',
-              emergency_contact_name: existingStudent.emergency_contact_name || '',
-              address: existingStudent.address || '',
-              dob: existingStudent.dob ? new Date(existingStudent.dob) : null,
-              gender: existingStudent.gender || 'Male',
-              notes: existingStudent.notes || ''
-            }, { emitEvent: false });
+    if (this.shouldLookupExistingStudent()) {
+      this.registrationForm.get('mobile')?.valueChanges.subscribe(async mobile => {
+        if (mobile && mobile.length === 10 && /^[0-9]{10}$/.test(mobile)) {
+          try {
+            const existingStudent = await this.libraryService.getStudentByMobile(mobile);
+            if (existingStudent) {
+              // Pre-fill the form with existing student data
+              this.registrationForm.patchValue({
+                name: existingStudent.name || '',
+                emergency_contact: existingStudent.emergency_contact || '',
+                emergency_contact_name: existingStudent.emergency_contact_name || '',
+                address: existingStudent.address || '',
+                dob: existingStudent.dob ? new Date(existingStudent.dob) : null,
+                gender: existingStudent.gender || 'Male',
+                notes: existingStudent.notes || ''
+              }, { emitEvent: false });
+            }
+          } catch (error) {
+            console.error('Error fetching student by mobile:', error);
           }
-        } catch (error) {
-          console.error('Error fetching student by mobile:', error);
         }
-      }
-    });
+      });
+    }
   }
 
   onDateRangeChange() {
@@ -700,6 +758,10 @@ export class RegistrationDialogComponent implements OnInit {
 
   isShiftAvailable(shift: 'full_time' | 'first_half' | 'second_half'): boolean {
     const seat = this.data.seat;
+
+    if (!seat) {
+      return true;
+    }
     
     if (shift === 'full_time') {
       return !seat.full_time_student_id && !seat.first_half_student_id && !seat.second_half_student_id;

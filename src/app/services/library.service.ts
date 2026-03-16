@@ -2,6 +2,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from './supabase.service';
+import { AuthService } from './auth.service';
 import { format, startOfMonth, addDays, getDaysInMonth, subMonths, startOfYear } from 'date-fns';
 
 export interface LibraryStudent {
@@ -77,13 +78,69 @@ export interface LibraryAttendance {
   student?: LibraryStudent;
 }
 
+export interface LibraryRegistrationRequest {
+  id: string;
+  name: string;
+  mobile: string;
+  emergency_contact?: string | null;
+  emergency_contact_name?: string | null;
+  address: string;
+  dob?: string | null;
+  gender?: 'Male' | 'Female';
+  requested_start_date: string;
+  requested_end_date: string;
+  requested_shift_type: 'full_time' | 'first_half' | 'second_half';
+  registration_fee_amount: number;
+  seat_fee_amount: number;
+  payment_mode: 'cash' | 'upi' | 'card' | 'other';
+  notes?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  assigned_seat_no?: number | null;
+  approved_student_id?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  rejection_reason?: string | null;
+  payment_verified: boolean;
+  payment_reference?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateLibraryRegistrationRequestInput {
+  name: string;
+  mobile: string;
+  emergency_contact?: string | null;
+  emergency_contact_name?: string | null;
+  address: string;
+  dob?: string | null;
+  gender?: 'Male' | 'Female';
+  requested_start_date: string;
+  requested_end_date: string;
+  requested_shift_type: 'full_time' | 'first_half' | 'second_half';
+  registration_fee_amount: number;
+  seat_fee_amount: number;
+  payment_mode: 'cash' | 'upi' | 'card' | 'other';
+  notes?: string | null;
+}
+
+export interface ApproveLibraryRegistrationRequestInput {
+  seat_no: number;
+  registration_fee_amount: number;
+  seat_fee_amount: number;
+  payment_mode: 'cash' | 'upi' | 'card' | 'other';
+  payment_reference?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LibraryService {
   private SEATS_CACHE_KEY = 'library_seats_cache';
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
   private platformId = inject(PLATFORM_ID);
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private authService: AuthService
+  ) {}
 
   // ========================================
   // CACHE MANAGEMENT
@@ -279,6 +336,170 @@ export class LibraryService {
     } catch (error: any) {
       console.error('[LibraryService] updateSeatExpiryForStudent error:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  // ========================================
+  // PUBLIC REGISTRATION REQUESTS
+  // ========================================
+
+  private getRegistrationRequestErrorMessage(error: any): string {
+    const message = error?.message || 'Unknown error';
+    const normalizedMessage = message.toLowerCase();
+
+    if (
+      message.includes('library_registration_requests') ||
+      message.includes('approve_library_registration_request')
+    ) {
+      return 'Library registration approval system is not set up yet. Please run LIBRARY_REGISTRATION_REQUESTS_SETUP.sql.';
+    }
+
+    if (normalizedMessage.includes('duplicate key value')) {
+      return 'A pending registration request already exists for this mobile number.';
+    }
+
+    if (
+      normalizedMessage.includes('row-level security') ||
+      normalizedMessage.includes('permission denied')
+    ) {
+      return 'Library registration request permissions are not configured correctly. Please run LIBRARY_REGISTRATION_REQUESTS_SETUP.sql.';
+    }
+
+    return message;
+  }
+
+  async createRegistrationRequest(
+    request: CreateLibraryRegistrationRequestInput
+  ): Promise<{ success: boolean; request?: LibraryRegistrationRequest; error?: string }> {
+    try {
+      const payload = {
+        ...request,
+        emergency_contact: request.emergency_contact || null,
+        emergency_contact_name: request.emergency_contact_name || null,
+        dob: request.dob || null,
+        notes: request.notes || null,
+        status: 'pending',
+        payment_verified: false,
+        assigned_seat_no: null,
+        approved_student_id: null,
+        reviewed_by: null,
+        reviewed_at: null,
+        rejection_reason: null,
+        payment_reference: null
+      };
+
+      const { error } = await this.supabase.supabase
+        .from('library_registration_requests')
+        .insert(payload);
+
+      if (error) {
+        throw error;
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('[LibraryService] createRegistrationRequest error:', error);
+      return { success: false, error: this.getRegistrationRequestErrorMessage(error) };
+    }
+  }
+
+  async getRegistrationRequests(
+    status?: 'pending' | 'approved' | 'rejected'
+  ): Promise<LibraryRegistrationRequest[]> {
+    try {
+      let query = this.supabase.supabase
+        .from('library_registration_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (status) {
+        query = query.eq('status', status);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        throw error;
+      }
+
+      return data || [];
+    } catch (error: any) {
+      console.error('[LibraryService] getRegistrationRequests error:', error);
+      throw new Error(this.getRegistrationRequestErrorMessage(error));
+    }
+  }
+
+  async approveRegistrationRequest(
+    requestId: string,
+    approval: ApproveLibraryRegistrationRequestInput
+  ): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const currentUser = this.authService.currentUserValue;
+
+      if (!currentUser?.id) {
+        return { success: false, error: 'User not authenticated' };
+      }
+
+      const { data, error } = await this.supabase.supabase.rpc('approve_library_registration_request', {
+        p_request_id: requestId,
+        p_seat_no: approval.seat_no,
+        p_reviewed_by: currentUser.id,
+        p_registration_fee_amount: approval.registration_fee_amount,
+        p_seat_fee_amount: approval.seat_fee_amount,
+        p_payment_mode: approval.payment_mode,
+        p_payment_reference: approval.payment_reference || null
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.success === false) {
+        return { success: false, error: data.error || 'Failed to approve registration request' };
+      }
+
+      this.clearSeatsCache();
+
+      return {
+        success: true,
+        message: data?.message || 'Registration request approved successfully'
+      };
+    } catch (error: any) {
+      console.error('[LibraryService] approveRegistrationRequest error:', error);
+      return { success: false, error: this.getRegistrationRequestErrorMessage(error) };
+    }
+  }
+
+  async rejectRegistrationRequest(
+    requestId: string,
+    rejectionReason: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const currentUser = this.authService.currentUserValue;
+
+      if (!currentUser?.id) {
+        return { success: false, error: 'User not authenticated' };
+      }
+
+      const { error } = await this.supabase.supabase
+        .from('library_registration_requests')
+        .update({
+          status: 'rejected',
+          reviewed_by: currentUser.id,
+          reviewed_at: new Date().toISOString(),
+          rejection_reason: rejectionReason || null,
+          payment_verified: false
+        })
+        .eq('id', requestId)
+        .eq('status', 'pending');
+
+      if (error) {
+        throw error;
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('[LibraryService] rejectRegistrationRequest error:', error);
+      return { success: false, error: this.getRegistrationRequestErrorMessage(error) };
     }
   }
 

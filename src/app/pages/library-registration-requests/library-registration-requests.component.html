@@ -1,0 +1,188 @@
+<app-breadcrumb></app-breadcrumb>
+
+<div class="requests-page">
+  <div class="page-header">
+    <div>
+      <h1>📝 Membership Requests</h1>
+      <p>Review public library registrations, verify manual payments, and assign seats.</p>
+    </div>
+    <button class="btn btn-primary" (click)="refresh()">🔄 Refresh</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card pending">
+      <div class="stat-value">{{ getStatusCount('pending') }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card approved">
+      <div class="stat-value">{{ getStatusCount('approved') }}</div>
+      <div class="stat-label">Approved</div>
+    </div>
+    <div class="stat-card rejected">
+      <div class="stat-value">{{ getStatusCount('rejected') }}</div>
+      <div class="stat-label">Rejected</div>
+    </div>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+  <div *ngIf="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
+
+  <div class="filters">
+    <button class="filter-btn" [class.active]="filterStatus === 'pending'" (click)="setFilter('pending')">
+      Pending
+    </button>
+    <button class="filter-btn" [class.active]="filterStatus === 'approved'" (click)="setFilter('approved')">
+      Approved
+    </button>
+    <button class="filter-btn" [class.active]="filterStatus === 'rejected'" (click)="setFilter('rejected')">
+      Rejected
+    </button>
+    <button class="filter-btn" [class.active]="filterStatus === 'all'" (click)="setFilter('all')">
+      All
+    </button>
+  </div>
+
+  <div class="loading" *ngIf="loading">Loading membership requests...</div>
+
+  <div class="empty-state" *ngIf="!loading && filteredRequests.length === 0">
+    <div class="empty-icon">📭</div>
+    <h3>No {{ filterStatus === 'all' ? '' : filterStatus + ' ' }}requests found</h3>
+    <p>New public registration requests will appear here automatically.</p>
+  </div>
+
+  <div class="requests-grid" *ngIf="!loading && filteredRequests.length > 0">
+    <div class="request-card" *ngFor="let request of filteredRequests">
+      <div class="request-header">
+        <div>
+          <h3>{{ request.name }}</h3>
+          <p>{{ request.mobile }} • {{ getShiftLabel(request.requested_shift_type) }}</p>
+        </div>
+        <span class="status-pill" [ngClass]="getStatusClass(request.status)">
+          {{ request.status }}
+        </span>
+      </div>
+
+      <div class="request-meta">
+        <div><strong>Requested On:</strong> {{ formatDateTime(request.created_at) }}</div>
+        <div><strong>Membership:</strong> {{ formatDate(request.requested_start_date) }} → {{ formatDate(request.requested_end_date) }}</div>
+        <div><strong>Payment Mode:</strong> {{ request.payment_mode | uppercase }}</div>
+        <div><strong>Reg Fee:</strong> ₹{{ request.registration_fee_amount || 0 }}</div>
+        <div><strong>Seat Fee:</strong> ₹{{ request.seat_fee_amount || 0 }}</div>
+        <div *ngIf="request.assigned_seat_no"><strong>Assigned Seat:</strong> {{ request.assigned_seat_no }}</div>
+        <div *ngIf="request.reviewed_at"><strong>Reviewed:</strong> {{ formatDateTime(request.reviewed_at) }}</div>
+      </div>
+
+      <div class="request-details">
+        <div><strong>Address:</strong> {{ request.address }}</div>
+        <div *ngIf="request.emergency_contact || request.emergency_contact_name">
+          <strong>Emergency:</strong>
+          {{ request.emergency_contact_name || 'N/A' }}
+          <span *ngIf="request.emergency_contact">- {{ request.emergency_contact }}</span>
+        </div>
+        <div *ngIf="request.notes"><strong>Notes:</strong> {{ request.notes }}</div>
+        <div *ngIf="request.payment_reference"><strong>Payment Ref:</strong> {{ request.payment_reference }}</div>
+        <div *ngIf="request.rejection_reason" class="rejection-reason">
+          <strong>Rejection Reason:</strong> {{ request.rejection_reason }}
+        </div>
+      </div>
+
+      <div class="request-actions" *ngIf="request.status === 'pending' && canManageRequests()">
+        <button class="btn btn-success" (click)="openApproveModal(request)">✅ Approve & Assign Seat</button>
+        <button class="btn btn-danger" (click)="openRejectModal(request)">❌ Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showApproveModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedRequest">
+    <div class="modal-header">
+      <h3>✅ Approve Membership Request</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="summary-box">
+        <div><strong>Student:</strong> {{ selectedRequest.name }}</div>
+        <div><strong>Mobile:</strong> {{ selectedRequest.mobile }}</div>
+        <div><strong>Requested Shift:</strong> {{ getShiftLabel(selectedRequest.requested_shift_type) }}</div>
+        <div><strong>Requested Duration:</strong> {{ formatDate(selectedRequest.requested_start_date) }} → {{ formatDate(selectedRequest.requested_end_date) }}</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field full-width">
+          <label>Assign Seat</label>
+          <select [(ngModel)]="approvalSeatNo">
+            <option [ngValue]="null">Select seat</option>
+            <option *ngFor="let seat of availableSeats" [ngValue]="seat.seat_no">
+              Seat {{ seat.seat_no }}
+            </option>
+          </select>
+          <small *ngIf="availableSeats.length === 0" class="helper-text error-text">
+            No seats are currently available for this shift.
+          </small>
+        </div>
+
+        <div class="form-field">
+          <label>Registration Fee (₹)</label>
+          <input type="number" [(ngModel)]="approvalRegistrationFee" min="0">
+        </div>
+
+        <div class="form-field">
+          <label>Seat Fee (₹)</label>
+          <input type="number" [(ngModel)]="approvalSeatFee" min="0">
+        </div>
+
+        <div class="form-field">
+          <label>Payment Mode</label>
+          <select [(ngModel)]="approvalPaymentMode">
+            <option value="cash">Cash</option>
+            <option value="upi">UPI</option>
+            <option value="card">Card</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Payment Reference</label>
+          <input type="text" [(ngModel)]="approvalPaymentReference" placeholder="Optional receipt / reference">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-success" (click)="approveSelectedRequest()" [disabled]="saving || !approvalSeatNo || availableSeats.length === 0">
+        {{ saving ? 'Approving...' : 'Approve Request' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedRequest">
+    <div class="modal-header">
+      <h3>❌ Reject Membership Request</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="summary-box">
+        <div><strong>Student:</strong> {{ selectedRequest.name }}</div>
+        <div><strong>Mobile:</strong> {{ selectedRequest.mobile }}</div>
+      </div>
+
+      <div class="form-field full-width">
+        <label>Reason for rejection</label>
+        <textarea [(ngModel)]="rejectionReason" rows="4" placeholder="Optional reason shown to staff records"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-danger" (click)="rejectSelectedRequest()" [disabled]="saving">
+        {{ saving ? 'Rejecting...' : 'Reject Request' }}
+      </button>
+    </div>
+  </div>
+</div>

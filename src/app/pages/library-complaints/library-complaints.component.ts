@@ -199,23 +199,48 @@ export class LibraryComplaintsComponent implements OnInit {
     this.router.navigate(['/library-grid']);
   }
 
+  private normalizeWhatsAppNumber(rawPhone: string): string | null {
+    const digits = (rawPhone || '').replace(/\D/g, '');
+
+    if (digits.length === 10) {
+      return `91${digits}`;
+    }
+
+    if (digits.length === 11 && digits.startsWith('0')) {
+      return `91${digits.substring(1)}`;
+    }
+
+    if (digits.length === 12 && digits.startsWith('91')) {
+      return digits;
+    }
+
+    return null;
+  }
+
+  private buildWhatsAppReminderMessage(complaint: Complaint): string {
+    return `Hello ${complaint.student_name || 'Student'},\n\nThis is a reminder from Suraksha Library Administration regarding a complaint on Seat #${complaint.complaint_against_seat_no}.\n\n*Complaint Type:* ${complaint.complaint_type}\n*Description:* ${complaint.description || 'No description provided'}\n*Reported On:* ${this.formatDate(complaint.created_at)}\n\nPlease follow library rules and ensure a peaceful study environment for everyone.\n\nThank you for your cooperation.\n\nRegards,\nSuraksha Library Team`;
+  }
+
   sendWhatsApp(complaint: Complaint) {
-    if (!complaint.student_phone) {
-      this.snackBar.open('⚠️ No phone number available', 'Close', { duration: 3000 });
+    let phoneInput = complaint.student_phone?.trim() || '';
+
+    if (!phoneInput) {
+      const enteredPhone = prompt('⚠️ Student phone not found. Enter WhatsApp number (10 digits):');
+      if (enteredPhone === null) {
+        return;
+      }
+      phoneInput = enteredPhone.trim();
+    }
+
+    const whatsappNumber = this.normalizeWhatsAppNumber(phoneInput);
+    if (!whatsappNumber) {
+      this.snackBar.open('⚠️ Invalid phone number. Please enter a valid 10-digit number.', 'Close', { duration: 3500 });
       return;
     }
 
-    // Clean phone number (remove spaces, dashes, etc.)
-    const phoneNumber = complaint.student_phone.replace(/\D/g, '');
-    
-    // Create message
-    const message = `Hello ${complaint.student_name || 'Student'},\n\nThis is from Suraksha Library Administration.\n\nWe have received a complaint regarding Seat #${complaint.complaint_against_seat_no}:\n\n*Complaint Type:* ${complaint.complaint_type}\n*Description:* ${complaint.description || 'No description provided'}\n*Date:* ${this.formatDate(complaint.created_at)}\n\nPlease be mindful of library rules and maintain a peaceful study environment for all students.\n\nThank you for your cooperation.\n\nRegards,\nSuraksha Library Team`;
-    
-    // Encode message for URL
+    const message = this.buildWhatsAppReminderMessage(complaint);
     const encodedMessage = encodeURIComponent(message);
-    
-    // Open WhatsApp
-    const whatsappUrl = `https://wa.me/91${phoneNumber}?text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   }
 }

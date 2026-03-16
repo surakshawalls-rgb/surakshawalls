@@ -134,6 +134,7 @@ export class BreadcrumbComponent implements OnInit {
     'library-grid': { label: 'Library Grid', icon: 'view_module' },
     'library-dashboard': { label: 'Library Dashboard', icon: 'dashboard' },
     'library-students': { label: 'Students', icon: 'school' },
+    'library-registration-requests': { label: 'Membership Requests', icon: 'approval' },
     'library-expenses': { label: 'Expenses', icon: 'payments' },
     'library-complaints': { label: 'Complaints', icon: 'feedback' },
     'resources': { label: 'Resources', icon: 'book' },

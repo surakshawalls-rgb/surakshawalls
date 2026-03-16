@@ -30,6 +30,11 @@ export class NotificationService {
   private channels: RealtimeChannel[] = [];
   private currentUserId: string | null = null;
 
+  private shouldEnableInAppToasts(): boolean {
+    // Management roles only (su, admin, editor, library_manager)
+    return this.authService.canEdit();
+  }
+
   constructor(
     private toastr: ToastrService,
     private supabaseService: SupabaseService,
@@ -64,6 +69,14 @@ export class NotificationService {
   // Start listening to all important tables
   startListening() {
     console.log('🔔 Starting database change notifications...');
+
+    // Reset any existing subscriptions before creating new ones
+    this.stopListening();
+
+    if (!this.shouldEnableInAppToasts()) {
+      console.log('🔕 In-app realtime notifications disabled for current user role');
+      return;
+    }
 
     // ========== MANUFACTURING/CONSTRUCTION TABLES ==========
     
@@ -221,7 +234,37 @@ export class NotificationService {
       }
     });
 
-    console.log('✅ Notifications enabled for 11 tables (7 Manufacturing + 4 Library)');
+    if (this.authService.hasAccess('library') && this.authService.canEdit()) {
+      this.subscribeToTable('library_registration_requests', (payload) => {
+        const data = payload.new || payload.old as any;
+
+        if (payload.eventType === 'INSERT') {
+          this.showNotification(
+            '📝 New Library Request',
+            `${data.name} submitted a ${this.getShiftName(data.requested_shift_type)} membership request`,
+            'info'
+          );
+        } else if (payload.eventType === 'UPDATE') {
+          if (data.status === 'approved') {
+            this.showNotification(
+              '✅ Library Request Approved',
+              `${data.name} has been assigned Seat ${data.assigned_seat_no}`,
+              'success'
+            );
+          } else if (data.status === 'rejected') {
+            this.showNotification(
+              '❌ Library Request Rejected',
+              `${data.name}'s registration request was rejected`,
+              'warning'
+            );
+          } else {
+            this.showNotification('✏️ Library Request Updated', `${data.name}'s request was updated`, 'info');
+          }
+        }
+      });
+    }
+
+    console.log('✅ Notifications enabled for all configured manufacturing and library tables');
   }
 
   // Subscribe to a specific table
@@ -299,6 +342,16 @@ export class NotificationService {
       'adjustment': 'Balance Adjustment'
     };
     return categoryMap[category] || category;
+  }
+
+  private getShiftName(shiftType: string): string {
+    const shiftMap: { [key: string]: string } = {
+      full_time: 'Full Day',
+      first_half: 'Morning',
+      second_half: 'Evening'
+    };
+
+    return shiftMap[shiftType] || shiftType;
   }
 
   // ========== NOTIFICATION INBOX METHODS ==========
@@ -453,6 +506,11 @@ export class NotificationService {
    * Shows toasts for unread notifications
    */
   async syncMissedNotifications(): Promise<void> {
+    if (!this.shouldEnableInAppToasts()) {
+      console.log('🔕 Missed notification sync skipped for current user role');
+      return;
+    }
+
     console.log('🔄 Syncing missed notifications...');
     
     const unreadNotifications = await this.getUnreadNotifications();

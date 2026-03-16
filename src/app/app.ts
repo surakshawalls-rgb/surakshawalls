@@ -1,5 +1,5 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { Router, RouterLink, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './services/auth.service';
@@ -16,6 +16,7 @@ import { map, shareReplay } from 'rxjs/operators';
 import { NotificationInboxComponent } from './components/notification-inbox/notification-inbox.component';
 import { NotificationService } from './services/notification.service';
 import { PushNotificationService } from './services/push-notification.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-root',
@@ -36,13 +37,16 @@ import { PushNotificationService } from './services/push-notification.service';
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 
   public router: Router;
   public authService: AuthService;
   private breakpointObserver: BreakpointObserver;
   private notificationService: NotificationService;
   private pushNotificationService: PushNotificationService;
+  private location: Location;
+  private dialog: MatDialog;
+  private backButtonListener: any = null;
 
   isHandset$: Observable<boolean>;
 
@@ -51,7 +55,9 @@ export class AppComponent implements OnInit {
     authService: AuthService,
     breakpointObserver: BreakpointObserver,
     notificationService: NotificationService,
-    pushNotificationService: PushNotificationService
+    pushNotificationService: PushNotificationService,
+    location: Location,
+    dialog: MatDialog
   ) {
     console.log("✅ AppComponent Constructor started");
     
@@ -60,6 +66,8 @@ export class AppComponent implements OnInit {
     this.breakpointObserver = breakpointObserver;
     this.notificationService = notificationService;
     this.pushNotificationService = pushNotificationService;
+    this.location = location;
+    this.dialog = dialog;
     
     this.isHandset$ = this.breakpointObserver.observe([Breakpoints.Handset])
       .pipe(
@@ -108,6 +116,14 @@ export class AppComponent implements OnInit {
     console.log('🚀 AppComponent ngOnInit started');
     this.initializeServices();
     this.setupAppStateListeners();
+    this.setupBackButtonHandler();
+  }
+
+  ngOnDestroy(): void {
+    if (this.backButtonListener?.remove) {
+      this.backButtonListener.remove();
+      this.backButtonListener = null;
+    }
   }
 
   private async initializeServices(): Promise<void> {
@@ -178,6 +194,78 @@ export class AppComponent implements OnInit {
       console.log('🌐 Network connection restored');
       await this.syncNotifications();
     });
+  }
+
+  private setupBackButtonHandler(): void {
+    if (typeof window === 'undefined' || !(window as any).Capacitor) {
+      return;
+    }
+
+    const loadApp = new Function('return import("@capacitor/app")');
+    loadApp().then(async (AppModule: any) => {
+      this.backButtonListener = await AppModule.App.addListener('backButton', async () => {
+        await this.handleBackButtonPress(async () => {
+          await AppModule.App.exitApp();
+        });
+      });
+
+      console.log('✅ Back button handler registered');
+    }).catch(() => {
+      console.log('⚠️ Capacitor App plugin not available for back button');
+    });
+  }
+
+  private async handleBackButtonPress(exitApp: () => Promise<void>): Promise<void> {
+    if (this.closeTopDialogOrPopup()) {
+      return;
+    }
+
+    if (this.hasPreviousInAppPage()) {
+      this.location.back();
+      return;
+    }
+
+    const shouldExit = window.confirm('Do you want to close the app?');
+    if (shouldExit) {
+      await exitApp();
+    }
+  }
+
+  private hasPreviousInAppPage(): boolean {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    const navigationId = window.history.state?.navigationId;
+    return typeof navigationId === 'number' && navigationId > 1;
+  }
+
+  private closeTopDialogOrPopup(): boolean {
+    if (this.dialog.openDialogs.length > 0) {
+      this.dialog.closeAll();
+      return true;
+    }
+
+    if (typeof document === 'undefined') {
+      return false;
+    }
+
+    const materialBackdrop = document.querySelector('.cdk-overlay-backdrop') as HTMLElement | null;
+    if (materialBackdrop) {
+      materialBackdrop.click();
+      return true;
+    }
+
+    const customOverlays = Array.from(
+      document.querySelectorAll('.modal-overlay, .custom-dialog-backdrop')
+    ) as HTMLElement[];
+
+    if (customOverlays.length > 0) {
+      customOverlays[customOverlays.length - 1].click();
+      return true;
+    }
+
+    return false;
   }
 
   /**

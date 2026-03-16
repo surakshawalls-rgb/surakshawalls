@@ -12,8 +12,17 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/public-home/public-home.component').then(m => m.PublicHomeComponent)
   },
   { 
-    path: 'public-resources', 
+    path: 'library/resources', 
     loadComponent: () => import('./pages/public-resources/public-resources.component').then(m => m.PublicResourcesComponent)
+  },
+  { 
+    path: 'library', 
+    loadComponent: () => import('./pages/library-public/library-public.component').then(m => m.LibraryPublicComponent)
+  },
+  {
+    path: 'public-resources',
+    redirectTo: 'library/resources',
+    pathMatch: 'full'
   },
   { 
     path: 'quotation', 
@@ -122,6 +131,11 @@ export const routes: Routes = [
   { 
     path: 'library-expenses', 
     loadComponent: () => import('./pages/library-expenses/library-expenses.component').then(m => m.LibraryExpensesComponent),
+    canActivate: [authGuard, libraryGuard] 
+  },
+  { 
+    path: 'library-registration-requests', 
+    loadComponent: () => import('./pages/library-registration-requests/library-registration-requests.component').then(m => m.LibraryRegistrationRequestsComponent),
     canActivate: [authGuard, libraryGuard] 
   },
   { 

@@ -49,7 +49,7 @@ export class PublicHomeComponent {
       tagline: 'Professional Study Environment',
       icon: 'menu_book',
       gradientClass: 'library-gradient',
-      internalRoute: '/public-resources',
+      internalRoute: '/library',
       description: 'Premium study environment with comfortable seating, AC rooms, digital resources, and expert guidance for competitive exam preparation.'
     },
     {

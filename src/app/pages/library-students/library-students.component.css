@@ -1539,3 +1539,55 @@ textarea.form-control {
   flex: 1;
   min-width: 0;
 }
+
+/* ===== MOBILE FIX: STUDENT RECORDS TABLE ===== */
+@media (max-width: 768px) {
+  .students-container-modern .table-card .mat-mdc-card-content {
+    padding: 0;
+  }
+
+  .students-container-modern .table-wrapper {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .students-container-modern .students-table {
+    min-width: 1080px !important;
+    width: 1080px !important;
+  }
+
+  .students-container-modern .students-table .mat-mdc-header-row {
+    display: table-row !important;
+  }
+
+  .students-container-modern .students-table .mat-mdc-row {
+    display: table-row !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    min-height: 52px !important;
+  }
+
+  .students-container-modern .students-table .mat-mdc-header-cell,
+  .students-container-modern .students-table .mat-mdc-cell {
+    display: table-cell !important;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .students-container-modern .students-table .mat-mdc-cell::before {
+    content: none !important;
+  }
+
+  .students-container-modern .action-buttons-horizontal {
+    flex-wrap: nowrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .students-container-modern .students-table {
+    min-width: 980px !important;
+    width: 980px !important;
+  }
+}

@@ -72,8 +72,8 @@
             </div>
           </div>
           <div class="complaint-actions">
-            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
-              <mat-icon>chat</mat-icon> WhatsApp
+            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)">
+              <mat-icon>chat</mat-icon> Remainder
             </button>
             <button mat-raised-button color="primary" (click)="resolveComplaint(complaint)">
               <mat-icon>check</mat-icon> Resolve
@@ -133,8 +133,8 @@
             </div>
           </div>
           <div class="complaint-actions">
-            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
-              <mat-icon>chat</mat-icon> WhatsApp
+            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)">
+              <mat-icon>chat</mat-icon> Remainder
             </button>
           </div>
         </div>
@@ -184,8 +184,8 @@
             </div>
           </div>
           <div class="complaint-actions">
-            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
-              <mat-icon>chat</mat-icon> WhatsApp
+            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)">
+              <mat-icon>chat</mat-icon> Remainder
             </button>
           </div>
         </div>
@@ -227,8 +227,8 @@
             </div>
           </div>
           <div class="complaint-actions" *ngIf="complaint.status === 'pending'">
-            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
-              <mat-icon>chat</mat-icon> WhatsApp
+            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)">
+              <mat-icon>chat</mat-icon> Remainder
             </button>
             <button mat-raised-button color="primary" (click)="resolveComplaint(complaint)">
               <mat-icon>check</mat-icon> Resolve
@@ -238,8 +238,8 @@
             </button>
           </div>
           <div class="complaint-actions" *ngIf="complaint.status !== 'pending'">
-            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)" *ngIf="complaint.student_phone">
-              <mat-icon>chat</mat-icon> WhatsApp
+            <button mat-raised-button color="accent" (click)="sendWhatsApp(complaint)">
+              <mat-icon>chat</mat-icon> Remainder
             </button>
           </div>
         </div>
