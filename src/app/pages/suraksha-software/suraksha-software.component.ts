@@ -92,7 +92,7 @@ export class SurakshaSoftwareComponent {
   clients: ClientShowcase[] = [
     {
       name: 'Suraksha Walls',
-      url: 'https://www.surakshawalls.shop/',
+      url: 'https://www.surakshawalls.shop',
       summary: 'Construction and precast solutions website with brand and lead flow support.'
     },
     {
@@ -112,7 +112,7 @@ export class SurakshaSoftwareComponent {
     },
     {
       name: 'Soft Steps Carpet',
-      url: 'https://www.softstepscarpet.store/',
+      url: 'https://www.softstepscarpet.store',
       summary: 'Ecommerce-focused storefront for carpet and flooring products.'
     }
   ];
