@@ -29,64 +29,6 @@
   padding: 0 1.2rem;
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 120;
-  background: linear-gradient(135deg, rgba(21, 101, 192, 0.96) 0%, rgba(25, 118, 210, 0.96) 100%);
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 22px rgba(21, 70, 136, 0.22);
-}
-
-.topbar-shell {
-  min-height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: #f6f9ff;
-  text-decoration: none;
-  font-family: 'Sora', 'Trebuchet MS', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.03rem;
-}
-
-.brand mat-icon {
-  color: #80b4ff;
-}
-
-.top-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.top-actions button {
-  color: #e6eefb;
-  font-weight: 600;
-}
-
-.top-actions button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.login-btn {
-  background: linear-gradient(135deg, #2f8d67 0%, #206f52 100%) !important;
-  color: #ffffff !important;
-  font-weight: 700 !important;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
 .hero {
   padding: 2.6rem 0 1.7rem;
 }
@@ -457,25 +399,12 @@
     grid-template-columns: 1fr;
   }
 
-  .top-actions button:nth-child(1),
-  .top-actions button:nth-child(2) {
-    display: none;
-  }
-
   .quick-dock {
     display: flex;
   }
 }
 
 @media (max-width: 640px) {
-  .topbar-shell {
-    min-height: 60px;
-  }
-
-  .brand {
-    font-size: 0.92rem;
-  }
-
   .hero {
     padding-top: 1.25rem;
   }

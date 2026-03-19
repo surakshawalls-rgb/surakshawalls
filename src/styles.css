@@ -448,7 +448,9 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .mat-responsive-table {
@@ -549,7 +551,8 @@ html {
   font-size: 12px; /* Professional reporting software base size */
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
+  overflow-x: auto;
+  overflow-y: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -558,9 +561,11 @@ html {
 
 html {
   height: 100%;
-  overflow: hidden;
-  position: fixed;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: static;
   width: 100%;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 body {
@@ -572,9 +577,12 @@ body {
   color: var(--text-primary);
   font-size: var(--font-base);
   line-height: 1.5;
-  overflow: hidden;
-  position: fixed;
-  overscroll-behavior: none;
+  overflow-x: auto;
+  overflow-y: auto;
+  position: static;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
+  touch-action: pan-x pan-y pinch-zoom;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -1401,8 +1409,11 @@ html {
 #app-root,
 app-root {
   height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: contain;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* Ensure all images are responsive */
@@ -1418,13 +1429,13 @@ select,
 textarea,
 a {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  touch-action: manipulation;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* Prevent double-tap to zoom on buttons and links */
 button,
 a {
-  touch-action: manipulation;
+  touch-action: pan-x pan-y pinch-zoom;
 }
 
 /* Make tables scroll horizontally on mobile */

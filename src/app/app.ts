@@ -47,6 +47,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private location: Location;
   private dialog: MatDialog;
   private backButtonListener: any = null;
+  private navigationStack: string[] = [];
+  readonly isLocalhostEnvironment: boolean =
+    typeof window !== 'undefined' &&
+    ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
 
   isHandset$: Observable<boolean>;
 
@@ -78,7 +82,9 @@ export class AppComponent implements OnInit, OnDestroy {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(event => {
-        console.log("➡ Route Changed:", event);
+        const currentUrl = (event as NavigationEnd).urlAfterRedirects;
+        this.trackNavigation(currentUrl);
+        console.log("➡ Route Changed:", currentUrl);
       });
       
     console.log("✅ AppComponent Constructor completed");
@@ -114,6 +120,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('🚀 AppComponent ngOnInit started');
+    this.trackNavigation(this.router.url);
     this.initializeServices();
     this.setupAppStateListeners();
     this.setupBackButtonHandler();
@@ -203,10 +210,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
     const loadApp = new Function('return import("@capacitor/app")');
     loadApp().then(async (AppModule: any) => {
-      this.backButtonListener = await AppModule.App.addListener('backButton', async () => {
-        await this.handleBackButtonPress(async () => {
-          await AppModule.App.exitApp();
-        });
+      this.backButtonListener = await AppModule.App.addListener('backButton', async (event: { canGoBack?: boolean }) => {
+        await this.handleBackButtonPress(
+          async () => {
+            await AppModule.App.exitApp();
+          },
+          !!event?.canGoBack
+        );
       });
 
       console.log('✅ Back button handler registered');
@@ -215,29 +225,87 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  private async handleBackButtonPress(exitApp: () => Promise<void>): Promise<void> {
+  private async handleBackButtonPress(
+    exitApp: () => Promise<void>,
+    canGoBackFromWebView = false
+  ): Promise<void> {
     if (this.closeTopDialogOrPopup()) {
       return;
     }
 
-    if (this.hasPreviousInAppPage()) {
-      this.location.back();
+    if (this.hasPreviousInAppPage(canGoBackFromWebView)) {
+      this.goToPreviousInAppPage(canGoBackFromWebView);
       return;
     }
 
-    const shouldExit = window.confirm('Do you want to close the app?');
+    const shouldExit = this.confirmExitApp();
     if (shouldExit) {
       await exitApp();
     }
   }
 
-  private hasPreviousInAppPage(): boolean {
+  private hasPreviousInAppPage(canGoBackFromWebView = false): boolean {
+    if (this.navigationStack.length > 1) {
+      return true;
+    }
+
+    if (canGoBackFromWebView) {
+      return true;
+    }
+
     if (typeof window === 'undefined') {
       return false;
     }
 
     const navigationId = window.history.state?.navigationId;
     return typeof navigationId === 'number' && navigationId > 1;
+  }
+
+  private goToPreviousInAppPage(canGoBackFromWebView = false): void {
+    if (canGoBackFromWebView) {
+      this.location.back();
+      return;
+    }
+
+    if (this.navigationStack.length > 1) {
+      // Remove current route and navigate to the previous in-app route.
+      this.navigationStack.pop();
+      const previousUrl = this.navigationStack[this.navigationStack.length - 1];
+
+      if (previousUrl) {
+        this.router.navigateByUrl(previousUrl).catch(() => {
+          this.location.back();
+        });
+        return;
+      }
+    }
+
+    this.location.back();
+  }
+
+  private trackNavigation(url: string | undefined): void {
+    if (!url) {
+      return;
+    }
+
+    const lastUrl = this.navigationStack[this.navigationStack.length - 1];
+    if (lastUrl === url) {
+      return;
+    }
+
+    this.navigationStack.push(url);
+
+    if (this.navigationStack.length > 50) {
+      this.navigationStack.shift();
+    }
+  }
+
+  private confirmExitApp(): boolean {
+    if (typeof window === 'undefined' || typeof window.confirm !== 'function') {
+      return false;
+    }
+
+    return window.confirm('No previous page found. Do you want to close the app?');
   }
 
   private closeTopDialogOrPopup(): boolean {

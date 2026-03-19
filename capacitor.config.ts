@@ -4,6 +4,7 @@ const config: CapacitorConfig = {
   appId: 'io.suraksha.report',
   appName: 'SurakshaHub',
   webDir: 'dist/suraksha-report',
+  zoomEnabled: true,
   
   server: {
     androidScheme: 'https',

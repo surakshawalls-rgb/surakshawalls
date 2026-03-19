@@ -5,7 +5,8 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  overflow: auto;
+  touch-action: pan-x pan-y pinch-zoom;
   position: relative;
 }
 
@@ -15,63 +16,63 @@
   top: 0;
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  min-height: 56px !important;
-  height: 56px;
-  padding: 0 16px;
+  min-height: 64px !important;
+  height: 64px;
+  padding: 0 20px;
 }
 
 .app-title {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  margin-right: 24px;
+  font-size: 1.08rem;
+  letter-spacing: 0.6px;
+  margin-right: 28px;
 }
 
 .title-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
 }
 
 /* Main Navigation - Horizontal Menu */
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex: 1;
 }
 
 .nav-button {
-  font-size: 0.813rem !important;
-  font-weight: 500 !important;
-  padding: 0 12px !important;
-  height: 42px !important;
-  line-height: 42px !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  padding: 0 16px !important;
+  height: 46px !important;
+  line-height: 46px !important;
   min-width: auto !important;
-  border-radius: 4px !important;
+  border-radius: 8px !important;
   transition: all 0.2s ease !important;
 }
 
 .nav-button mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
-  margin-right: 6px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
 }
 
 .nav-button .dropdown-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-  margin-left: 2px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
   margin-right: 0;
 }
 
 .nav-button:hover {
-  background: rgba(255,255,255,0.15) !important;
+  background: rgba(21, 101, 192, 0.12) !important;
 }
 
 .nav-button span {
@@ -104,11 +105,11 @@
 }
 
 ::ng-deep .nav-dropdown .mat-mdc-menu-item {
-  font-size: 0.875rem !important;
-  height: 44px !important;
-  line-height: 44px !important;
+  font-size: 0.94rem !important;
+  height: 46px !important;
+  line-height: 46px !important;
   padding: 0 18px !important;
-  min-height: 44px !important;
+  min-height: 46px !important;
   transition: all 0.2s ease !important;
 }
 
@@ -231,25 +232,26 @@
   background: rgba(255,255,255,0.15);
   border-radius: 20px;
   margin-right: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.93rem;
+  font-weight: 600;
 }
 
 .user-badge mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Main Content - Full Width */
 .main-content {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   background: #f5f5f5;
   width: 100%;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   position: relative;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -271,9 +273,10 @@
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   position: relative;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -337,19 +340,19 @@
 /* Tablet */
 @media (max-width: 1024px) {
   .nav-button {
-    padding: 0 10px !important;
-    font-size: 0.75rem !important;
+    padding: 0 12px !important;
+    font-size: 0.86rem !important;
   }
 
   .nav-button mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-    margin-right: 4px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
   }
 
   .app-title {
-    font-size: 0.938rem;
+    font-size: 1rem;
   }
 }
 
@@ -360,11 +363,14 @@
   }
 
   .app-toolbar {
+    min-height: 60px !important;
+    height: 60px;
     padding: 0 12px;
   }
 
   .app-title {
-    font-size: 0.875rem;
+    font-size: 0.94rem;
+    margin-right: 8px;
   }
 
   .title-icon {
@@ -402,8 +408,9 @@
   }
 
   .app-title {
-    font-size: 0.813rem;
+    font-size: 0.9rem;
     gap: 6px;
+    margin-right: 6px;
   }
 
   .content-wrapper {

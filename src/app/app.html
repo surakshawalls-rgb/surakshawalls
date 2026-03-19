@@ -1,6 +1,15 @@
 ﻿<!-- PRIVATE VIEW: Logged In Users -->
 <div class="app-container" *ngIf="authService.isLoggedIn">
   <mat-toolbar color="primary" class="app-toolbar">
+    <!-- Mobile Menu Button -->
+    <button mat-icon-button 
+            *ngIf="isHandset$ | async" 
+            [matMenuTriggerFor]="mobileMenu"
+            class="mobile-menu-btn"
+            aria-label="Open menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+
     <span class="app-title">
       <mat-icon class="title-icon">shield</mat-icon>
       SURAKSHA GROUP
@@ -164,15 +173,6 @@
       </ng-container>
     </nav>
 
-    <!-- Mobile Menu Button -->
-    <button mat-icon-button 
-            *ngIf="isHandset$ | async" 
-            [matMenuTriggerFor]="mobileMenu"
-            class="mobile-menu-btn"
-            aria-label="Open menu">
-      <mat-icon>menu</mat-icon>
-    </button>
-
     <span class="toolbar-spacer"></span>
     
     <!-- Notification Bell (Admin Only) -->
@@ -193,11 +193,11 @@
         <span>{{ currentUser?.full_name || currentUser?.email }}</span>
       </button>
       <mat-divider></mat-divider>
-      <button mat-menu-item (click)="sendTestNotification()" *ngIf="authService.isAdmin()">
+      <button mat-menu-item (click)="sendTestNotification()" *ngIf="authService.isAdmin() && isLocalhostEnvironment">
         <mat-icon>notifications_active</mat-icon>
         <span>Test Notifications</span>
       </button>
-      <mat-divider *ngIf="authService.isAdmin()"></mat-divider>
+      <mat-divider *ngIf="authService.isAdmin() && isLocalhostEnvironment"></mat-divider>
       <button mat-menu-item (click)="logout()">
         <mat-icon>exit_to_app</mat-icon>
         <span>Logout</span>

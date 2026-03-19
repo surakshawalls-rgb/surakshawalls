@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -123,7 +122,6 @@ export function buildLibraryReminderMessage(
     FormsModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule,
     MatSelectModule,
     MatButtonModule,
     MatIconModule
@@ -149,16 +147,6 @@ export function buildLibraryReminderMessage(
             </mat-option>
           </mat-select>
           <mat-hint>{{ selectedOption.helper }}</mat-hint>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Additional Note {{ selectedReason === 'other' ? '(Required)' : '(Optional)' }}</mat-label>
-          <textarea
-            matInput
-            [(ngModel)]="customNote"
-            rows="4"
-            placeholder="Add any specific instruction or detail to include in the message"
-          ></textarea>
         </mat-form-field>
 
         <div class="alert-info">
@@ -278,7 +266,6 @@ export function buildLibraryReminderMessage(
 export class ReminderReasonDialogComponent {
   reasonOptions = REMINDER_REASON_OPTIONS;
   selectedReason: ReminderReasonType = 'fee_due';
-  customNote = '';
 
   constructor(
     private dialogRef: MatDialogRef<ReminderReasonDialogComponent>,
@@ -290,7 +277,7 @@ export class ReminderReasonDialogComponent {
   }
 
   isValid(): boolean {
-    return this.selectedReason !== 'other' || this.customNote.trim().length > 0;
+    return !!this.selectedReason;
   }
 
   cancel() {
@@ -300,7 +287,7 @@ export class ReminderReasonDialogComponent {
   submit() {
     this.dialogRef.close({
       reason: this.selectedReason,
-      customNote: this.customNote.trim()
+      customNote: ''
     } satisfies ReminderReasonSelection);
   }
 }
