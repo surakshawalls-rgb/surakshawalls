@@ -1,321 +1,112 @@
-<div class="public-home">
-  
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <div class="container">
-      <div class="navbar-brand">
-        <mat-icon class="brand-icon">shield</mat-icon>
-        <span>SURAKSHA GROUP</span>
-      </div>
-      <div class="navbar-links">
-        <button mat-button (click)="scrollToSection('businesses')">
-          <mat-icon>business</mat-icon>
-          <span>Businesses</span>
-        </button>
-        <button mat-button routerLink="/quotation">
-          <mat-icon>calculate</mat-icon>
-          <span>Get Quotation</span>
-        </button>
-        <button mat-button routerLink="/library">
-          <mat-icon>menu_book</mat-icon>
-          <span>Library</span>
-        </button>
-        <button mat-button (click)="scrollToSection('contact')">
-          <mat-icon>contact_mail</mat-icon>
-          <span>Contact</span>
-        </button>
-        <button mat-button (click)="scrollToSection('login')">
+<div class="portal-page">
+  <nav class="topbar">
+    <div class="shell topbar-shell">
+      <a class="brand" routerLink="/">
+        <mat-icon>hub</mat-icon>
+        <span>Suraksha Group</span>
+      </a>
+
+      <div class="top-actions">
+        <button mat-button (click)="scrollToSection('platforms')">Sites</button>
+        <button mat-button (click)="scrollToSection('access')">Quick Access</button>
+        <button mat-flat-button class="login-btn" routerLink="/login">
           <mat-icon>login</mat-icon>
-          <span>Login</span>
+          Login
         </button>
       </div>
     </div>
   </nav>
 
-  <!-- HERO SECTION -->
-  <section class="hero-section">
-    <div class="hero-overlay">
-      <div class="hero-content">
-        <div class="logo-container">
-          <mat-icon class="shield-icon">shield</mat-icon>
-          <h1 class="brand-name">Boundary Wall & Precast RCC Experts in Bhadohi</h1>
-        </div>
-        <p class="tagline">Strong Construction | Reliable Fencing | Trusted Local Service</p>
-        <div class="hero-actions">
-          <button mat-raised-button color="primary" (click)="scrollToSection('businesses')" class="cta-button">
-            <mat-icon>explore</mat-icon>
-            Explore Services
-          </button>
-          <button mat-stroked-button color="primary" (click)="scrollToSection('contact')" class="secondary-button">
-            <mat-icon>call</mat-icon>
-            Contact Us
-          </button>
-        </div>
+  <header class="hero">
+    <div class="shell hero-shell">
+      <h1>One place for all Suraksha platforms.</h1>
+
+      <div class="hero-actions">
+        <button mat-flat-button class="primary-btn" (click)="scrollToSection('platforms')">
+          <mat-icon>apps</mat-icon>
+          Open Platforms
+        </button>
+        <button mat-stroked-button class="secondary-btn" routerLink="/login">
+          <mat-icon>key</mat-icon>
+          Login Portal
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="platforms" id="platforms">
+    <div class="shell">
+      <div class="section-head">
+        <h2>Choose Your Platform</h2>
+        <p>Direct access to every active Suraksha destination.</p>
+      </div>
+
+      <div class="platform-grid">
+        <mat-card
+          *ngFor="let platform of platforms"
+          class="platform-card"
+          [ngClass]="platform.toneClass"
+          (click)="navigateTo(platform)"
+        >
+          <div class="platform-icon-wrap">
+            <mat-icon>{{ platform.icon }}</mat-icon>
+          </div>
+          <mat-card-content>
+            <h3>{{ platform.name }}</h3>
+            <p class="platform-tagline">{{ platform.tagline }}</p>
+            <p class="platform-copy">{{ platform.description }}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-flat-button>
+              {{ platform.actionLabel }}
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
       </div>
     </div>
   </section>
 
-  <!-- ABOUT SECTION -->
-  <section class="about-section">
-    <div class="container text-center">
-      <h2 class="section-title">Suraksha Group – Local Business Leader</h2>
-      <p class="section-description">
-        Looking for <strong>Boundary Wall in Bhadohi</strong>, Precast RCC Walls, Fencing Poles, 
-        Cement Articles or Barbed Wire Fencing? We provide durable and professionally installed 
-        security solutions across Bhadohi and surrounding areas. From construction to education, 
-        software to interiors – we serve the complete spectrum of business needs.
-      </p>
-    </div>
-  </section>
-
-  <!-- QUOTATION CALL-TO-ACTION BANNER -->
-  <section class="quotation-banner">
-    <div class="container">
-      <mat-card class="quotation-cta-card">
-        <div class="quotation-cta-content">
-          <div class="quotation-cta-text">
-            <mat-icon class="quotation-icon">calculate</mat-icon>
-            <div>
-              <h3>Need a Cost Estimate?</h3>
-              <p>Calculate instant quotation for Boundary Wall or Barbed Wire Fencing - Free & Fast!</p>
-              <ul class="benefits-list">
-                <li><mat-icon>check_circle</mat-icon> Instant calculation based on land size</li>
-                <li><mat-icon>check_circle</mat-icon> Accurate pricing with GST breakdown</li>
-                <li><mat-icon>check_circle</mat-icon> Download professional PDF quotation</li>
-                <li><mat-icon>check_circle</mat-icon> Support for Biswa, Bigha, and Running Feet</li>
-              </ul>
-            </div>
+  <section class="access" id="access">
+    <div class="shell access-shell">
+      <mat-card class="access-card login-card">
+        <div class="access-header">
+          <mat-icon>admin_panel_settings</mat-icon>
+          <div>
+            <h3>Single Login Portal</h3>
+            <p>Students, staff, and admins can all continue from one secure login page.</p>
           </div>
-          <button mat-raised-button color="primary" routerLink="/quotation" class="quotation-cta-button">
-            <mat-icon>receipt_long</mat-icon>
-            Get Instant Quotation
-          </button>
+        </div>
+        <button mat-flat-button class="login-card-btn" routerLink="/login">Go to Login</button>
+      </mat-card>
+
+      <mat-card class="access-card links-card">
+        <h3>Quick Links</h3>
+        <div class="quick-links">
+          <a routerLink="/suraksha-walls">Suraksha Walls Page</a>
+          <a routerLink="/software">Suraksha Software</a>
+          <a routerLink="/library">Suraksha Library</a>
+          <a href="https://www.softstepscarpet.store/" target="_blank" rel="noopener">Soft Step Carpet</a>
+          <a href="https://www.surakshawalls.shop/" target="_blank" rel="noopener">Official Suraksha Walls Website</a>
         </div>
       </mat-card>
     </div>
   </section>
 
-  <!-- BUSINESSES SECTION -->
-  <section class="business-section" id="businesses">
-    <div class="container">
-      <h2 class="section-title">Our Business Verticals</h2>
-      <p class="section-subtitle">Trusted solutions across multiple industries</p>
-      
-      <div class="business-grid">
-        <mat-card *ngFor="let business of businesses" 
-                  class="business-card" 
-                  [ngClass]="business.gradientClass"
-                  (click)="navigateTo(business)">
-          <mat-card-header>
-            <div class="business-icon-container">
-              <mat-icon class="business-icon">{{ business.icon }}</mat-icon>
-            </div>
-          </mat-card-header>
-          <mat-card-content>
-            <h3 class="business-name">{{ business.name }}</h3>
-            <p class="business-tagline">{{ business.tagline }}</p>
-            <p class="business-description">{{ business.description }}</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-raised-button color="primary">
-              <mat-icon>arrow_forward</mat-icon>
-              Learn More
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
-    </div>
-  </section>
-
-  <!-- LOGIN OPTIONS SECTION -->
-  <section class="login-section" id="login">
-    <div class="container">
-      <h2 class="section-title">Access Your Account</h2>
-      <p class="section-subtitle">Login based on your role to access relevant features and resources</p>
-      
-      <div class="login-grid">
-        <mat-card *ngFor="let option of loginOptions" 
-                  class="login-card" 
-                  [ngClass]="option.gradientClass"
-                  (click)="navigateToRoute(option.route)">
-          <mat-card-header>
-            <div class="login-icon-container">
-              <mat-icon class="login-icon">{{ option.icon }}</mat-icon>
-            </div>
-          </mat-card-header>
-          <mat-card-content>
-            <h3 class="login-title">{{ option.title }}</h3>
-            <p class="login-description">{{ option.description }}</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-raised-button color="accent">
-              <mat-icon>login</mat-icon>
-              Login Now
-            </button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
-    </div>
-  </section>
-
-  <!-- TESTIMONIALS SECTION -->
-  <section class="testimonials-section">
-    <div class="container">
-      <h2 class="section-title">What Our Clients Say</h2>
-      <div class="testimonial-carousel">
-        <button mat-icon-button class="carousel-button prev" (click)="prevTestimonial()">
-          <mat-icon>chevron_left</mat-icon>
-        </button>
-        
-        <div class="testimonial-content">
-          <mat-icon class="quote-icon">format_quote</mat-icon>
-          <p class="testimonial-text">{{ testimonials[activeTestimonial].text }}</p>
-          <div class="testimonial-author">
-            <strong>{{ testimonials[activeTestimonial].author }}</strong>
-            <span>{{ testimonials[activeTestimonial].designation }}</span>
-          </div>
-          <div class="testimonial-rating">
-            <mat-icon>star</mat-icon>
-            <mat-icon>star</mat-icon>
-            <mat-icon>star</mat-icon>
-            <mat-icon>star</mat-icon>
-            <mat-icon>star</mat-icon>
-          </div>
-        </div>
-
-        <button mat-icon-button class="carousel-button next" (click)="nextTestimonial()">
-          <mat-icon>chevron_right</mat-icon>
-        </button>
-      </div>
-      
-      <div class="testimonial-dots">
-        <span *ngFor="let t of testimonials; let i = index" 
-              class="dot" 
-              [class.active]="i === activeTestimonial"
-              (click)="activeTestimonial = i">
-        </span>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACT SECTION -->
-  <section class="contact-section" id="contact">
-    <div class="container">
-      <h2 class="section-title">Get In Touch</h2>
-      <p class="section-subtitle">We're here to help with all your needs</p>
-      
-      <div class="contact-grid">
-        <mat-card class="contact-card">
-          <mat-card-header>
-            <mat-icon class="contact-icon">call</mat-icon>
-          </mat-card-header>
-          <mat-card-content>
-            <h3>Call Us</h3>
-            <div class="whatsapp-buttons">
-              <button mat-raised-button 
-                      *ngFor="let contact of whatsappNumbers"
-                      class="whatsapp-button" 
-                      (click)="openWhatsApp(contact.number)">
-                <mat-icon>phone</mat-icon>
-                {{ contact.display }}
-              </button>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="contact-card">
-          <mat-card-header>
-            <mat-icon class="contact-icon">email</mat-icon>
-          </mat-card-header>
-          <mat-card-content>
-            <h3>Email Us</h3>
-            <a href="mailto:surakshawalls@gmail.com" class="email-link">
-              <mat-icon>mail_outline</mat-icon>
-              surakshawalls@gmail.com
-            </a>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="contact-card">
-          <mat-card-header>
-            <mat-icon class="contact-icon">location_on</mat-icon>
-          </mat-card-header>
-          <mat-card-content>
-            <h3>Visit Us</h3>
-            <p>Mahajuda, Bhadohi<br>Uttar Pradesh, India</p>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="contact-card">
-          <mat-card-header>
-            <mat-icon class="contact-icon">language</mat-icon>
-          </mat-card-header>
-          <mat-card-content>
-            <h3>Our Websites</h3>
-            <div class="website-links">
-              <a href="https://www.surakshawalls.shop" target="_blank" rel="noopener">Main Website</a>
-              <a href="https://www.surakshawalls.space" target="_blank" rel="noopener">Library</a>
-              <a href="https://www.softstepscarpet.store" target="_blank" rel="noopener">Carpet Store</a>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <mat-card class="contact-card google-card">
-          <mat-card-header>
-            <mat-icon class="contact-icon google-icon">verified</mat-icon>
-          </mat-card-header>
-          <mat-card-content>
-            <h3>Find Us on Google</h3>
-            <a href="https://www.google.co.in/search?utm_medium=noren&utm_source=gbp&utm_campaign=2026&q=Suraksha+Walls&ludocid=8452122438039384761&lsig=AB86z5V6GzCjCcsJTeXQPrGzy1iI#ebo=0" 
-               target="_blank" 
-               rel="noopener" 
-               class="google-link">
-              <img src="assets/google-qr.png" alt="Google Business QR Code" class="qr-code" />
-              <span>Scan or Click to View Profile</span>
-            </a>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    </div>
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-brand">
-          <mat-icon class="footer-icon">shield</mat-icon>
-          <h3>SURAKSHA GROUP</h3>
-          <p>Building Trust, Creating Solutions</p>
-        </div>
-        
-        <div class="footer-links">
-          <div class="footer-column">
-            <h4>Quick Links</h4>
-            <a (click)="scrollToSection('businesses')">Businesses</a>
-            <a routerLink="/library">Library</a>
-            <a (click)="scrollToSection('login')">Login</a>
-          </div>
-          
-          <div class="footer-column">
-            <h4>Our Businesses</h4>
-            <a href="https://www.surakshawalls.shop/surakshawalls" target="_blank" rel="noopener">Suraksha Walls</a>
-            <a routerLink="/library">Suraksha Library</a>
-            <a routerLink="/software">Suraksha Software</a>
-            <a href="https://www.softstepscarpet.store" target="_blank" rel="noopener">Soft Step Carpet</a>
-          </div>
-        </div>
-      </div>
-      
-      <div class="footer-bottom">
-        <p>&copy; 2026 Suraksha Group | RCC Walls & Fencing Experts in Bhadohi</p>
-        <p class="footer-contact">
-          <mat-icon>email</mat-icon> surakshawalls@gmail.com | 
-          <mat-icon>call</mat-icon> +91 9506629814, +91 8090272727
-        </p>
-      </div>
+  <footer class="portal-footer">
+    <div class="shell footer-shell">
+      <p>Suraksha Group</p>
+      <a href="https://www.surakshawalls.shop/" target="_blank" rel="noopener">Visit surakshawalls.shop</a>
     </div>
   </footer>
 
+  <div class="quick-dock">
+    <button mat-mini-fab class="dock-btn" (click)="scrollToSection('platforms')" aria-label="Open platforms">
+      <mat-icon>apps</mat-icon>
+    </button>
+    <button mat-mini-fab class="dock-btn" routerLink="/login" aria-label="Go to login">
+      <mat-icon>login</mat-icon>
+    </button>
+  </div>
 </div>
 

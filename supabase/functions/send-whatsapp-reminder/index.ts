@@ -96,11 +96,29 @@ const adminClient = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
     })
   : null
 
-function buildIndianPhone(raw: string): string {
+function buildIndianPhone(raw: string): string | null {
   const digits = raw.replace(/\D/g, '')
-  if (digits.startsWith('91') && digits.length === 12) return digits
-  if (digits.length === 10) return `91${digits}`
-  return digits
+
+  if (/^[6-9]\d{9}$/.test(digits)) {
+    return `91${digits}`
+  }
+
+  if (/^0[6-9]\d{9}$/.test(digits)) {
+    return `91${digits.slice(1)}`
+  }
+
+  if (/^91[6-9]\d{9}$/.test(digits)) {
+    return digits
+  }
+
+  if (digits.length > 10) {
+    const lastTenDigits = digits.slice(-10)
+    if (/^[6-9]\d{9}$/.test(lastTenDigits)) {
+      return `91${lastTenDigits}`
+    }
+  }
+
+  return null
 }
 
 async function callWhatsApp(body: Record<string, unknown>): Promise<SendOutcome> {
@@ -349,6 +367,51 @@ Deno.serve(async (req: Request) => {
 
   for (const [index, student] of students.entries()) {
     const phone = buildIndianPhone(student.phone)
+
+    if (!phone) {
+      const statusTimestamp = new Date().toISOString()
+
+      results.push({
+        student_id: student.student_id,
+        phone: student.phone,
+        name: student.name,
+        success: false,
+        status: 'failed',
+        error: 'Invalid phone number. Use a valid 10-digit Indian mobile number.',
+        failed_at: statusTimestamp,
+        last_status_at: statusTimestamp,
+      })
+
+      logRows.push({
+        batch_id: batchId,
+        batch_index: index,
+        student_id: student.student_id ?? null,
+        student_name: student.name,
+        recipient_phone: student.phone,
+        mode,
+        template_name: mode === 'template' ? ((template_name ?? '').trim() || 'hello_world') : null,
+        template_language: mode === 'template' ? ((template_language ?? '').trim() || 'en_US') : null,
+        template_params: mode === 'template' ? (template_params ?? []) : [],
+        text_message: mode === 'text' ? text_message ?? null : null,
+        request_payload: {
+          messaging_product: 'whatsapp',
+          to: student.phone,
+          type: mode,
+        },
+        wa_message_id: null,
+        status: 'failed',
+        provider_error: 'Invalid phone number. Use a valid 10-digit Indian mobile number.',
+        accepted_at: null,
+        sent_at: null,
+        delivered_at: null,
+        read_at: null,
+        failed_at: statusTimestamp,
+        last_status_at: statusTimestamp,
+        last_webhook_payload: null,
+      })
+
+      continue
+    }
 
     if (mode === 'template' && templateUnavailableError) {
       const statusTimestamp = new Date().toISOString()

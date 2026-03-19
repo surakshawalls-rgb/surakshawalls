@@ -130,7 +130,7 @@ export class LibraryPublicComponent implements OnInit {
   }
 
   contactWhatsApp() {
-    window.open('https://wa.me/9506629814?text=Hi, I am interested in Suraksha Library membership', '_blank');
+    window.open('https://wa.me/919506629814?text=Hi, I am interested in Suraksha Library membership', '_blank');
   }
 
   callNow() {

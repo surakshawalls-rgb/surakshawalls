@@ -1,0 +1,128 @@
+<div class="walls-page">
+  <header class="walls-hero">
+    <div class="hero-shell">
+      <a class="back-link" routerLink="/">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Suraksha Group
+      </a>
+
+      <p class="eyebrow">Suraksha Walls</p>
+      <h1>Durable, cost-effective, and smart boundary wall solutions.</h1>
+      <p class="hero-copy">
+        At Suraksha Walls, we build dependable precast systems for farms, industries, homes, and institutions.
+        Our technology ensures strong protection with faster construction and practical long-term value.
+      </p>
+
+      <div class="hero-actions">
+        <a mat-flat-button class="primary-btn" [href]="whatsAppOrderLink" target="_blank" rel="noopener">Order Now</a>
+        <a mat-stroked-button class="secondary-btn" [href]="officialWebsite" target="_blank" rel="noopener">Visit Website</a>
+        <a mat-stroked-button class="secondary-btn" routerLink="/quotation">Get Quotation</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="content-section">
+    <div class="section-header">
+      <p class="section-kicker">Our Services</p>
+      <h2>Complete precast and security solutions</h2>
+      <p>From boundary walls to ready structures, we provide practical site-ready execution.</p>
+    </div>
+
+    <div class="service-grid">
+      <mat-card class="service-card" *ngFor="let service of services">
+        <div class="service-head">
+          <div class="icon-wrap">
+            <mat-icon>{{ service.icon }}</mat-icon>
+          </div>
+          <h3>{{ service.title }}</h3>
+        </div>
+
+        <ul>
+          <li *ngFor="let item of service.offerings">{{ item }}</li>
+        </ul>
+      </mat-card>
+    </div>
+  </section>
+
+  <section class="content-section tinted">
+    <div class="section-header">
+      <p class="section-kicker">RCC Fencing and Precast Products</p>
+      <h2>Current pricing and order options</h2>
+      <p>Use the WhatsApp order button below each product to get immediate support.</p>
+    </div>
+
+    <div class="product-grid">
+      <mat-card class="product-card" *ngFor="let product of products">
+        <div class="product-top">
+          <h3>{{ product.name }}</h3>
+          <span class="price-tag">{{ product.price }}</span>
+        </div>
+
+        <p class="specs">{{ product.specs }}</p>
+        <p class="description">{{ product.description }}</p>
+
+        <ul class="benefit-list">
+          <li *ngFor="let benefit of product.benefits">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ benefit }}</span>
+          </li>
+        </ul>
+
+        <a mat-flat-button class="order-btn" [href]="whatsAppOrderLink" target="_blank" rel="noopener">
+          <mat-icon>chat</mat-icon>
+          Order Now
+        </a>
+      </mat-card>
+    </div>
+  </section>
+
+  <section class="content-section">
+    <div class="section-header">
+      <p class="section-kicker">Why Choose Us</p>
+      <h2>Execution quality you can trust</h2>
+    </div>
+
+    <div class="reasons-grid">
+      <div class="reason-card" *ngFor="let reason of whyChooseUs; let i = index">
+        <span class="reason-index">0{{ i + 1 }}</span>
+        <p>{{ reason }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="content-section contact-section">
+    <mat-card class="contact-card">
+      <div class="section-header">
+        <p class="section-kicker">Contact Us</p>
+        <h2>Suraksha Walls</h2>
+      </div>
+
+      <div class="contact-grid">
+        <div>
+          <h3>Address</h3>
+          <p>Shukulpur, Baharaichi, Suriyawan Bhadohi 221404</p>
+        </div>
+
+        <div>
+          <h3>Mobile / WhatsApp</h3>
+          <a [href]="whatsAppOrderLink" target="_blank" rel="noopener">9346842755</a>
+        </div>
+
+        <div>
+          <h3>Email</h3>
+          <a href="mailto:surakshawalls@gmail.com">surakshawalls@gmail.com</a>
+        </div>
+
+        <div>
+          <h3>Instagram</h3>
+          <p>@surakshawalls</p>
+        </div>
+
+        <div>
+          <h3>Website</h3>
+          <a [href]="officialWebsite" target="_blank" rel="noopener">https://www.surakshawalls.shop</a>
+        </div>
+      </div>
+    </mat-card>
+  </section>
+</div>

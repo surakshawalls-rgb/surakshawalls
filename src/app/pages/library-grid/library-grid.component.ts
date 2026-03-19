@@ -11,6 +11,11 @@ import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { RegistrationDialogComponent, RegistrationResult } from './registration-dialog.component';
 import { LodgeComplaintDialogComponent } from '../../dialogs/lodge-complaint-dialog.component';
+import {
+  buildLibraryReminderMessage,
+  ReminderReasonDialogComponent,
+  ReminderReasonSelection
+} from '../../dialogs/reminder-reason-dialog.component';
 import { MarkAttendanceDialogComponent } from './mark-attendance-dialog.component';
 import { StudentAttendanceDialogComponent } from './student-attendance-dialog.component';
 import { addDays, differenceInDays, getDaysInMonth, startOfDay, format } from 'date-fns';
@@ -801,13 +806,151 @@ export class LibraryGridComponent implements OnInit {
   // STUDENT PROFILE
   // ==============================
 
+  private normalizeIndianWhatsAppNumber(rawPhone: string | null | undefined): string | null {
+    const digits = (rawPhone || '').replace(/\D/g, '');
+
+    if (/^[6-9]\d{9}$/.test(digits)) {
+      return `91${digits}`;
+    }
+
+    if (/^0[6-9]\d{9}$/.test(digits)) {
+      return `91${digits.slice(1)}`;
+    }
+
+    if (/^91[6-9]\d{9}$/.test(digits)) {
+      return digits;
+    }
+
+    if (digits.length > 10) {
+      const lastTenDigits = digits.slice(-10);
+      if (/^[6-9]\d{9}$/.test(lastTenDigits)) {
+        return `91${lastTenDigits}`;
+      }
+    }
+
+    return null;
+  }
+
+  private openWhatsAppMessage(rawPhone: string | null | undefined, message: string, invalidMessage: string): boolean {
+    const normalizedPhone = this.normalizeIndianWhatsAppNumber(rawPhone);
+
+    if (!normalizedPhone) {
+      this.errorMessage = invalidMessage;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return false;
+    }
+
+    window.open(`https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    return true;
+  }
+
+  private openReminderReasonDialog(student: LibraryStudent) {
+    return this.dialog.open(ReminderReasonDialogComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: {
+        studentName: student.name
+      }
+    });
+  }
+
+  private getReminderShiftType(student: LibraryStudent): 'full_time' | 'first_half' | 'second_half' | null {
+    if (!this.selectedSeat || !student.id) {
+      return null;
+    }
+
+    if (this.selectedSeat.full_time_student_id === student.id) {
+      return 'full_time';
+    }
+
+    if (this.selectedSeat.first_half_student_id === student.id) {
+      return 'first_half';
+    }
+
+    if (this.selectedSeat.second_half_student_id === student.id) {
+      return 'second_half';
+    }
+
+    return null;
+  }
+
+  private getReminderSeatLabel(student: LibraryStudent): string | null {
+    if (!this.selectedSeat) {
+      return null;
+    }
+
+    const shiftType = this.getReminderShiftType(student);
+
+    if (!shiftType) {
+      return `${this.selectedSeat.seat_no}`;
+    }
+
+    const shiftLabelMap: Record<'full_time' | 'first_half' | 'second_half', string> = {
+      full_time: 'Full Time',
+      first_half: 'First Half',
+      second_half: 'Second Half'
+    };
+
+    return `${this.selectedSeat.seat_no} (${shiftLabelMap[shiftType]})`;
+  }
+
+  private getShiftLabel(shiftType: 'full_time' | 'first_half' | 'second_half'): string {
+    const shiftLabelMap: Record<'full_time' | 'first_half' | 'second_half', string> = {
+      full_time: 'Full Time',
+      first_half: 'First Half',
+      second_half: 'Second Half'
+    };
+
+    return shiftLabelMap[shiftType];
+  }
+
+  private formatReminderDate(dateValue: string): string {
+    return new Date(dateValue).toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  }
+
+  private getReminderExpiryDate(student: LibraryStudent): string | null {
+    if (!this.selectedSeat) {
+      return null;
+    }
+
+    const shiftType = this.getReminderShiftType(student);
+    let expiryDate: string | null | undefined = null;
+
+    if (shiftType === 'full_time') {
+      expiryDate = this.selectedSeat.full_time_expiry;
+    } else if (shiftType === 'first_half') {
+      expiryDate = this.selectedSeat.first_half_expiry;
+    } else if (shiftType === 'second_half') {
+      expiryDate = this.selectedSeat.second_half_expiry;
+    }
+
+    return expiryDate ? this.formatReminderDate(expiryDate) : null;
+  }
+
+  private buildReminderMessage(student: LibraryStudent, selection: ReminderReasonSelection): string {
+    return buildLibraryReminderMessage(selection, {
+      studentName: student.name,
+      seatLabel: this.getReminderSeatLabel(student),
+      expiryDate: this.getReminderExpiryDate(student)
+    });
+  }
+
   sendWhatsAppReminder(student?: LibraryStudent) {
     const targetStudent = student || this.selectedStudent;
     if (!targetStudent) return;
-    
-    const message = `Dear ${targetStudent.name}, your Suraksha Library fee is due soon. Please renew to keep your seat reserved. Thank you!`;
-    const url = `https://wa.me/${targetStudent.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+
+    this.openReminderReasonDialog(targetStudent).afterClosed().subscribe((selection?: ReminderReasonSelection) => {
+      if (!selection) {
+        return;
+      }
+
+      const message = this.buildReminderMessage(targetStudent, selection);
+      this.openWhatsAppMessage(targetStudent.mobile, message, `Invalid mobile number for ${targetStudent.name}`);
+    });
   }
 
   sendEmergencySOS(student?: LibraryStudent) {
@@ -815,23 +958,39 @@ export class LibraryGridComponent implements OnInit {
     if (!targetStudent) return;
     
     const message = `URGENT: This is Suraksha Library. Regarding ${targetStudent.name}, there is an emergency. Please contact us immediately.`;
-    const url = `https://wa.me/${targetStudent.emergency_contact.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    this.openWhatsAppMessage(
+      targetStudent.emergency_contact,
+      message,
+      `Invalid emergency contact number for ${targetStudent.name}`
+    );
   }
 
   async releaseSeatConfirm(studentOrShift?: LibraryStudent | 'full_time' | 'first_half' | 'second_half', shiftTypeParam?: 'full_time' | 'first_half' | 'second_half') {
+    if (!this.selectedSeat) {
+      return;
+    }
+
     // Determine the shift type
     let shiftType: 'full_time' | 'first_half' | 'second_half' | undefined;
+    let targetStudent: LibraryStudent | null = null;
     
     if (typeof studentOrShift === 'string') {
       // Old API: releaseSeatConfirm('first_half')
       shiftType = studentOrShift;
-    } else if (shiftTypeParam) {
+    } else if (studentOrShift) {
+      targetStudent = studentOrShift;
+    }
+
+    if (shiftTypeParam) {
       // New API: releaseSeatConfirm(student, 'first_half')
       shiftType = shiftTypeParam;
     }
+
+    const seatNumber = this.selectedSeat?.seat_no;
+    const shiftText = shiftType ? ` (${this.getShiftLabel(shiftType)})` : '';
+    const studentText = targetStudent ? ` for ${targetStudent.name}` : '';
     
-    if (!confirm('Are you sure you want to release this seat?')) return;
+    if (!confirm(`Are you sure you want to release Seat ${seatNumber}${shiftText}${studentText}? This will remove the seat assignment.`)) return;
     
     try {
       const result = await this.libraryService.releaseSeat(this.selectedSeat!.seat_no, shiftType);
@@ -892,7 +1051,7 @@ export class LibraryGridComponent implements OnInit {
       return;
     }
 
-    if (!confirm(`Change ${this.changingSeatStudent.name} from Seat ${this.selectedSeat.seat_no} to Seat ${this.newSeatNumber}?`)) {
+    if (!confirm(`Are you sure you want to change ${this.changingSeatStudent.name} from Seat ${this.selectedSeat.seat_no} to Seat ${this.newSeatNumber} (${this.getShiftLabel(this.changingSeatShiftType)})?`)) {
       return;
     }
 
@@ -1310,8 +1469,15 @@ export class LibraryGridComponent implements OnInit {
       `Valid Until: ${this.receiptData.valid_until}\n\n` +
       `Thank you for your payment! 🙏`;
     
-    const url = `https://wa.me/${this.receiptData.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    const shared = this.openWhatsAppMessage(
+      this.receiptData.mobile,
+      message,
+      `Invalid mobile number for ${this.receiptData.student_name}`
+    );
+
+    if (!shared) {
+      return;
+    }
     
     this.successMessage = '✅ Receipt shared on WhatsApp!';
     setTimeout(() => this.successMessage = '', 3000);

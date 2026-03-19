@@ -8,12 +8,18 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/library.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import {
+  buildLibraryReminderMessage,
+  ReminderReasonDialogComponent,
+  ReminderReasonSelection
+} from '../../dialogs/reminder-reason-dialog.component';
 
 @Component({
   selector: 'app-library-students',
@@ -26,6 +32,7 @@ import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.comp
     MatPaginatorModule,
     MatTooltipModule,
     MatButtonModule,
+    MatDialogModule,
     MatIconModule,
     MatCardModule,
     MatChipsModule,
@@ -111,7 +118,8 @@ export class LibraryStudentsComponent implements OnInit {
   constructor(
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     // Generate year ranges
     const currentYear = new Date().getFullYear();
@@ -424,10 +432,70 @@ export class LibraryStudentsComponent implements OnInit {
     }
   }
 
+  private normalizeIndianWhatsAppNumber(rawPhone: string | null | undefined): string | null {
+    const digits = (rawPhone || '').replace(/\D/g, '');
+
+    let tenDigitNumber: string | null = null;
+
+    if (/^[6-9]\d{9}$/.test(digits)) {
+      tenDigitNumber = digits;
+    } else if (/^0[6-9]\d{9}$/.test(digits)) {
+      tenDigitNumber = digits.slice(1);
+    } else if (/^91[6-9]\d{9}$/.test(digits)) {
+      tenDigitNumber = digits.slice(2);
+    } else if (digits.length > 10) {
+      const lastTenDigits = digits.slice(-10);
+      if (/^[6-9]\d{9}$/.test(lastTenDigits)) {
+        tenDigitNumber = lastTenDigits;
+      }
+    }
+
+    return tenDigitNumber ? `91${tenDigitNumber}` : null;
+  }
+
+  private openWhatsAppMessage(rawPhone: string | null | undefined, message: string, invalidMessage: string): boolean {
+    const normalizedPhone = this.normalizeIndianWhatsAppNumber(rawPhone);
+
+    if (!normalizedPhone) {
+      this.errorMessage = invalidMessage;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return false;
+    }
+
+    const url = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+    return true;
+  }
+
   sendWhatsApp(student: LibraryStudent) {
     const message = `Hello ${student.name}! This is a message from Suraksha Library. Thank you for being with us!`;
-    const url = `https://wa.me/${student.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    this.openWhatsAppMessage(student.mobile, message, `Invalid mobile number for ${student.name}`);
+  }
+
+  private openReminderReasonDialog(student: LibraryStudent) {
+    return this.dialog.open(ReminderReasonDialogComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: {
+        studentName: student.name
+      }
+    });
+  }
+
+  private getReminderSeatLabel(student: LibraryStudent): string | null {
+    if (!student.id) {
+      return null;
+    }
+
+    const seatInfo = this.getStudentSeatInfo(student.id);
+    return seatInfo && seatInfo !== '-' ? seatInfo : null;
+  }
+
+  private buildReminderMessage(student: LibraryStudent, selection: ReminderReasonSelection): string {
+    return buildLibraryReminderMessage(selection, {
+      studentName: student.name,
+      seatLabel: this.getReminderSeatLabel(student)
+    });
   }
 
   formatCurrency(amount: number): string {
@@ -568,9 +636,29 @@ export class LibraryStudentsComponent implements OnInit {
     }
   }
 
+  private getShiftLabel(shiftType: 'full_time' | 'first_half' | 'second_half'): string {
+    if (shiftType === 'full_time') {
+      return 'Full Time';
+    }
+
+    if (shiftType === 'first_half') {
+      return 'First Half';
+    }
+
+    return 'Second Half';
+  }
+
   async confirmSeatChange() {
     if (!this.selectedStudent || !this.newSeatNumber) {
       this.errorMessage = 'Please select a new seat';
+      return;
+    }
+
+    const confirmed = confirm(
+      `Are you sure you want to change ${this.selectedStudent.name} from Seat ${this.currentSeatNo} to Seat ${this.newSeatNumber} (${this.getShiftLabel(this.currentShiftType)})?`
+    );
+
+    if (!confirmed) {
       return;
     }
 
@@ -627,8 +715,15 @@ export class LibraryStudentsComponent implements OnInit {
 
     try {
       const message = `🚨 URGENT: This is an emergency message from Suraksha Library regarding ${student.name}. Please contact the library immediately at your earliest convenience. Library Contact: 8090272727`;
-      const url = `https://wa.me/${student.emergency_contact.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
+      const sent = this.openWhatsAppMessage(
+        student.emergency_contact,
+        message,
+        `Invalid emergency contact number for ${student.name}`
+      );
+
+      if (!sent) {
+        return;
+      }
       
       this.successMessage = 'Emergency SOS sent!';
       setTimeout(() => this.successMessage = '', 3000);
@@ -642,9 +737,6 @@ export class LibraryStudentsComponent implements OnInit {
   // ========== RELEASE SEAT ==========
 
   async releaseSeat(student: LibraryStudent) {
-    const confirmRelease = confirm(`Are you sure you want to release the seat for ${student.name}? This will remove their seat assignment.`);
-    if (!confirmRelease) return;
-
     try {
       // Find student's seat to release
       const seats = await this.libraryService.getAllSeats();
@@ -666,6 +758,14 @@ export class LibraryStudentsComponent implements OnInit {
         shiftType = 'first_half';
       } else {
         shiftType = 'second_half';
+      }
+
+      const confirmRelease = confirm(
+        `Are you sure you want to release Seat ${seat.seat_no} (${this.getShiftLabel(shiftType)}) for ${student.name}? This will remove the seat assignment.`
+      );
+
+      if (!confirmRelease) {
+        return;
       }
 
       await this.libraryService.releaseSeat(seat.seat_no, shiftType);
@@ -794,9 +894,14 @@ export class LibraryStudentsComponent implements OnInit {
   // ========== WHATSAPP REMINDER ==========
 
   sendWhatsAppReminder(student: LibraryStudent) {
-    const message = `Hello ${student.name}! 👋\n\nThis is a reminder from Suraksha Library 📚\n\nPlease remember to:\n✅ Maintain library discipline\n✅ Keep your seat clean\n✅ Pay fees on time\n\nThank you for being a valued member! 🙏\n\nFor queries: 8090272727`;
-    const url = `https://wa.me/${student.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
+    this.openReminderReasonDialog(student).afterClosed().subscribe((selection?: ReminderReasonSelection) => {
+      if (!selection) {
+        return;
+      }
+
+      const message = this.buildReminderMessage(student, selection);
+      this.openWhatsAppMessage(student.mobile, message, `Invalid mobile number for ${student.name}`);
+    });
   }
 
   goBackToGrid() {

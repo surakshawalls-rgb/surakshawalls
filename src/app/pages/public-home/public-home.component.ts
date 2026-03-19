@@ -5,23 +5,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 
-interface Business {
+interface Platform {
   id: string;
   name: string;
   tagline: string;
   icon: string;
-  gradientClass: string;
+  toneClass: string;
+  actionLabel: string;
   externalUrl?: string;
   internalRoute?: string;
   description: string;
-}
-
-interface LoginOption {
-  title: string;
-  description: string;
-  icon: string;
-  gradientClass: string;
-  route: string;
 }
 
 @Component({
@@ -32,124 +25,58 @@ interface LoginOption {
   styleUrls: ['./public-home.component.css']
 })
 export class PublicHomeComponent {
-  
-  businesses: Business[] = [
+
+  platforms: Platform[] = [
     {
       id: 'walls',
       name: 'Suraksha Walls',
       tagline: 'Boundary Wall & Precast RCC Solutions',
-      icon: 'domain',
-      gradientClass: 'walls-gradient',
-      externalUrl: 'https://www.surakshawalls.shop/surakshawalls',
-      description: 'Leading provider of Boundary Walls, Precast RCC Walls, Fencing Poles, Cement Articles and Barbed Wire Fencing in Bhadohi.'
+      icon: 'home_work',
+      toneClass: 'walls-tone',
+      internalRoute: '/suraksha-walls',
+      actionLabel: 'Open Walls Page',
+      description: 'Precast walls, security add-ons, readymade structures, and field-ready fencing solutions.'
     },
     {
       id: 'library',
       name: 'Suraksha Library',
       tagline: 'Professional Study Environment',
       icon: 'menu_book',
-      gradientClass: 'library-gradient',
+      toneClass: 'library-tone',
       internalRoute: '/library',
-      description: 'Premium study environment with comfortable seating, AC rooms, digital resources, and expert guidance for competitive exam preparation.'
+      actionLabel: 'Open Library',
+      description: 'Student-first library platform with seats, resources, and growth-focused study support.'
     },
     {
       id: 'software',
       name: 'Suraksha Software',
       tagline: 'Full Stack & Digital Solutions',
       icon: 'code',
-      gradientClass: 'software-gradient',
+      toneClass: 'software-tone',
       internalRoute: '/software',
-      description: 'Custom software development, web applications, mobile apps, and complete digital transformation solutions for businesses.'
+      actionLabel: 'Open Software Page',
+      description: 'Business software delivery, product engineering, and practical training tracks.'
     },
     {
       id: 'carpet',
       name: 'Soft Step Carpet',
       tagline: 'Premium Interior Products',
-      icon: 'deck',
-      gradientClass: 'carpet-gradient',
+      icon: 'storefront',
+      toneClass: 'carpet-tone',
       externalUrl: 'https://www.softstepscarpet.store/',
-      description: 'High-quality carpets, rugs, and interior decoration products. Transform your space with premium flooring solutions.'
+      actionLabel: 'Visit Store',
+      description: 'Interior and flooring products crafted for homes, offices, and commercial spaces.'
     }
-  ];
-
-  loginOptions: LoginOption[] = [
-    {
-      title: 'Admin Login',
-      description: 'Access complete system with full permissions',
-      icon: 'admin_panel_settings',
-      gradientClass: 'admin-card',
-      route: '/login'
-    },
-    {
-      title: 'Student Login',
-      description: 'Access library resources and study materials',
-      icon: 'school',
-      gradientClass: 'student-card',
-      route: '/login'
-    },
-    {
-      title: 'Staff Login',
-      description: 'Access based on your assigned role',
-      icon: 'badge',
-      gradientClass: 'staff-card',
-      route: '/login'
-    }
-  ];
-
-  testimonials = [
-    {
-      text: 'Suraksha Walls delivered our boundary wall faster and stronger than expected. Highly recommended for all construction needs in Bhadohi!',
-      author: 'Ramesh Singh',
-      designation: 'Farmer, Bhadohi'
-    },
-    {
-      text: 'The library is peaceful and well-equipped. The digital resources and study environment helped me crack my competitive exams!',
-      author: 'Priya Sharma',
-      designation: 'Civil Services Aspirant'
-    },
-    {
-      text: 'Soft Steps Carpet quality is unmatched. Our hotel guests love the new look and the comfort. Best carpet supplier in Bhadohi!',
-      author: 'Vikram Gupta',
-      designation: 'Hotel Manager'
-    },
-    {
-      text: 'Software training was practical and job-oriented. The team delivered exactly what we needed. Great experience working with Suraksha Software!',
-      author: 'Amit Verma',
-      designation: 'Software Developer'
-    }
-  ];
-  
-  activeTestimonial = 0;
-
-  whatsappNumbers = [
-    { number: '919506629814', display: '9506629814' },
-    { number: '918090272727', display: '8090272727' }
   ];
 
   constructor(private router: Router) {}
 
-  navigateTo(business: Business) {
-    if (business.externalUrl) {
-      window.open(business.externalUrl, '_blank', 'noopener,noreferrer');
-    } else if (business.internalRoute) {
-      this.router.navigate([business.internalRoute]);
+  navigateTo(platform: Platform) {
+    if (platform.externalUrl) {
+      window.open(platform.externalUrl, '_blank', 'noopener,noreferrer');
+    } else if (platform.internalRoute) {
+      this.router.navigate([platform.internalRoute]);
     }
-  }
-
-  navigateToRoute(path: string) {
-    this.router.navigate([path]);
-  }
-
-  openWhatsApp(number: string) {
-    window.open(`https://wa.me/${number}`, '_blank', 'noopener,noreferrer');
-  }
-
-  prevTestimonial() {
-    this.activeTestimonial = (this.activeTestimonial - 1 + this.testimonials.length) % this.testimonials.length;
-  }
-
-  nextTestimonial() {
-    this.activeTestimonial = (this.activeTestimonial + 1) % this.testimonials.length;
   }
 
   scrollToSection(sectionId: string) {

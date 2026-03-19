@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Urbanist:wght@600;700;800&display=swap');
 
 :host {
-  --bg: #edf3fb;
+  --bg: #f7fbff;
   --surface: #ffffff;
-  --surface-soft: #f7faff;
-  --ink: #122034;
-  --muted: #526179;
-  --brand: #0f5fcc;
-  --brand-deep: #0e3d84;
-  --accent: #118d78;
-  --outline: #d6e2f2;
-  --hero-ink: #f5f9ff;
+  --surface-soft: #f5f9ff;
+  --ink: #17324f;
+  --muted: #546881;
+  --brand: #1565c0;
+  --brand-deep: #0d47a1;
+  --accent: #1b5e20;
+  --outline: #d7e3ef;
+  --hero-ink: #f7fbff;
   display: block;
   font-family: 'Manrope', 'Segoe UI', Tahoma, sans-serif;
 }
@@ -19,16 +19,16 @@
   min-height: 100vh;
   color: var(--ink);
   background:
-    radial-gradient(circle at 5% 1%, #dcebff 0%, transparent 28%),
-    radial-gradient(circle at 94% 6%, #d4f8f0 0%, transparent 22%),
-    linear-gradient(180deg, var(--bg) 0%, #ffffff 58%);
+    radial-gradient(circle at 5% 1%, #e6f1ff 0%, transparent 28%),
+    radial-gradient(circle at 94% 6%, #eef7ff 0%, transparent 22%),
+    linear-gradient(180deg, var(--bg) 0%, #ffffff 62%);
 }
 
 .software-hero {
   position: relative;
   overflow: hidden;
-  padding: 3rem 1.4rem 2.2rem;
-  background: linear-gradient(135deg, #101f34 0%, #1b355b 52%, #1f4f87 100%);
+  padding: 3.2rem 1.4rem 2.4rem;
+  background: linear-gradient(135deg, #1565c0 0%, #1976d2 50%, #2196f3 100%);
 }
 
 .software-hero::before,
@@ -42,7 +42,7 @@
 .software-hero::before {
   width: 260px;
   height: 260px;
-  background: rgba(17, 141, 120, 0.24);
+  background: rgba(255, 255, 255, 0.16);
   right: -70px;
   top: -120px;
 }
@@ -50,7 +50,7 @@
 .software-hero::after {
   width: 220px;
   height: 220px;
-  background: rgba(89, 158, 255, 0.24);
+  background: rgba(255, 213, 79, 0.2);
   left: -80px;
   bottom: -120px;
 }
@@ -67,8 +67,8 @@
   align-items: center;
   gap: 0.35rem;
   text-decoration: none;
-  color: #d8e7ff;
-  font-size: 0.93rem;
+  color: #eaf3ff;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -93,15 +93,15 @@ h3 {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.15rem;
-  font-size: 0.73rem;
-  color: #8bc4ff;
+  font-size: 0.8rem;
+  color: #ffd54f;
   font-weight: 700;
 }
 
 .hero-main h1 {
   margin: 0.56rem 0 0.88rem;
   max-width: 22ch;
-  font-size: clamp(1.8rem, 3vw, 2.85rem);
+  font-size: clamp(2.05rem, 3.2vw, 3.15rem);
   line-height: 1.2;
   color: var(--hero-ink);
 }
@@ -110,7 +110,8 @@ h3 {
   margin: 0;
   max-width: 62ch;
   line-height: 1.72;
-  color: #d5e5fb;
+  color: #edf5ff;
+  font-size: 1.08rem;
 }
 
 .hero-actions {
@@ -138,22 +139,22 @@ h3 {
 
 .metric-card {
   border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.18) !important;
   color: #e9f2ff;
   text-align: center;
-  padding: 0.7rem 0.4rem;
+  padding: 0.85rem 0.55rem;
   backdrop-filter: blur(4px);
 }
 
 .metric-card strong {
   display: block;
-  font-size: 1.52rem;
+  font-size: 1.7rem;
   line-height: 1.05;
 }
 
 .metric-card span {
-  font-size: 0.79rem;
+  font-size: 0.9rem;
   color: #d7e8ff;
 }
 
@@ -179,7 +180,7 @@ h3 {
   margin: 0;
   font-weight: 700;
   color: #31445f;
-  font-size: 0.92rem;
+  font-size: 1rem;
 }
 
 .focus-toggle {
@@ -236,7 +237,7 @@ h3 {
 
 .plain-panel h3 {
   margin: 0.5rem 0 0.55rem;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   line-height: 1.35;
 }
 
@@ -244,6 +245,7 @@ h3 {
   margin: 0;
   color: var(--muted);
   line-height: 1.72;
+  font-size: 1.02rem;
 }
 
 .about-grid {
@@ -290,7 +292,7 @@ h3 {
   margin: 0.35rem 0 0;
   color: var(--muted);
   line-height: 1.6;
-  font-size: 0.92rem;
+  font-size: 0.99rem;
 }
 
 .process-list {
@@ -343,14 +345,14 @@ h3 {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.12rem;
-  font-size: 0.73rem;
+  font-size: 0.8rem;
   color: var(--brand-deep);
   font-weight: 800;
 }
 
 .section-header h2 {
   margin: 0.44rem 0 0.62rem;
-  font-size: clamp(1.42rem, 2.2vw, 2.1rem);
+  font-size: clamp(1.72rem, 2.4vw, 2.35rem);
 }
 
 .section-header p {
@@ -358,6 +360,7 @@ h3 {
   color: var(--muted);
   line-height: 1.74;
   max-width: 74ch;
+  font-size: 1.05rem;
 }
 
 .cards-grid {
@@ -459,7 +462,7 @@ h3 {
 
 .service-title {
   margin: 0 0 0.52rem;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: #0d2340;
   letter-spacing: -0.01rem;
@@ -470,7 +473,7 @@ h3 {
   margin: 0 0 0.88rem;
   color: #3a4f68;
   line-height: 1.7;
-  font-size: 0.94rem;
+  font-size: 1rem;
 }
 
 .deliverable-tags {
@@ -481,7 +484,7 @@ h3 {
 }
 
 .deliverable-tag {
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   font-weight: 600;
   color: #1b3e6a;
   background: #eef3fc;
@@ -504,7 +507,7 @@ h3 {
   border: 1px solid #c8d8f2;
   background: #eef4ff;
   color: #1a4d96;
-  font-size: 0.76rem;
+  font-size: 0.84rem;
   font-weight: 700;
 }
 
@@ -544,7 +547,7 @@ h3 {
 
 .client-card h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.08rem;
   font-weight: 800;
   color: #0d2340;
 }
@@ -567,12 +570,12 @@ h3 {
   margin: 0 0 0.6rem;
   color: var(--muted);
   line-height: 1.55;
-  font-size: 0.9rem;
+  font-size: 0.98rem;
   flex: 1;
 }
 
 .client-url {
-  font-size: 0.77rem;
+  font-size: 0.86rem;
   color: #4a7bc0;
   word-break: break-all;
   margin-top: auto;
@@ -594,7 +597,7 @@ h3 {
 
 .contact-card h2 {
   margin: 0;
-  font-size: clamp(1.32rem, 2vw, 1.95rem);
+  font-size: clamp(1.52rem, 2.2vw, 2.15rem);
 }
 
 .contact-card p {
@@ -602,6 +605,7 @@ h3 {
   max-width: 64ch;
   color: var(--muted);
   line-height: 1.7;
+  font-size: 1.05rem;
 }
 
 .contact-card .hero-actions {
@@ -672,7 +676,7 @@ h3 {
 
 .track-content h3 {
   margin: 0 0 0.45rem;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 800;
   color: #0d2340;
   line-height: 1.25;
@@ -682,14 +686,14 @@ h3 {
   margin: 0 0 0.88rem;
   color: #3a4f68;
   line-height: 1.68;
-  font-size: 0.93rem;
+  font-size: 1rem;
 }
 
 .track-outcome {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: #0c7c68;
   margin-top: 0.7rem;

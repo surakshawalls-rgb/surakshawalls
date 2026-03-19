@@ -131,10 +131,34 @@ export class LibraryDashboardComponent implements OnInit {
       return;
     }
 
+    const normalizeIndianWhatsAppNumber = (rawPhone: string | null | undefined): string | null => {
+      const digits = (rawPhone || '').replace(/\D/g, '');
+
+      if (/^[6-9]\d{9}$/.test(digits)) return `91${digits}`;
+      if (/^0[6-9]\d{9}$/.test(digits)) return `91${digits.slice(1)}`;
+      if (/^91[6-9]\d{9}$/.test(digits)) return digits;
+
+      if (digits.length > 10) {
+        const lastTenDigits = digits.slice(-10);
+        if (/^[6-9]\d{9}$/.test(lastTenDigits)) {
+          return `91${lastTenDigits}`;
+        }
+      }
+
+      return null;
+    };
+
     let message = '📚 Suraksha Library - Fee Reminders Sent:\n\n';
     this.expiringSeats.forEach(seat => {
       const whatsappMsg = `Hello ${seat.student_name}! Your library seat ${seat.seat_no} (${seat.shift_type}) expires on ${seat.expiry_date}. Please renew to continue. Thank you! - Suraksha Library`;
-      const url = `https://wa.me/${seat.mobile.replace(/\D/g, '')}?text=${encodeURIComponent(whatsappMsg)}`;
+      const normalizedPhone = normalizeIndianWhatsAppNumber(seat.mobile);
+
+      if (!normalizedPhone) {
+        message += `✗ ${seat.student_name} (Seat ${seat.seat_no}) - invalid mobile\n`;
+        return;
+      }
+
+      const url = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(whatsappMsg)}`;
       window.open(url, '_blank');
       message += `✓ ${seat.student_name} (Seat ${seat.seat_no})\n`;
     });
