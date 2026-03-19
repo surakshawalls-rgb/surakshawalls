@@ -218,7 +218,7 @@ export class LibraryComplaintsComponent implements OnInit {
   }
 
   private buildWhatsAppReminderMessage(complaint: Complaint): string {
-    return `Hello ${complaint.student_name || 'Student'},\n\nThis is a reminder from Suraksha Library Administration regarding a complaint on Seat #${complaint.complaint_against_seat_no}.\n\n*Complaint Type:* ${complaint.complaint_type}\n*Description:* ${complaint.description || 'No description provided'}\n*Reported On:* ${this.formatDate(complaint.created_at)}\n\nPlease follow library rules and ensure a peaceful study environment for everyone.\n\nThank you for your cooperation.\n\nRegards,\nSuraksha Library Team`;
+    return `Hello ${complaint.student_name || 'Student'},\n\nThis is a reminder from Suraksha Library Administration regarding a complaint on Seat #${complaint.complaint_against_seat_no}.\n\n*Complaint Type:* ${complaint.complaint_type}\n*Description:* ${complaint.description || 'No description provided'}\n*Reported On:* ${this.formatDate(complaint.created_at)}\n\nPlease follow library rules and ensure a peaceful study environment for everyone.\n\nThank you for your cooperation.\n\nRegards,\nSuraksha Library Admin Team`;
   }
 
   sendWhatsApp(complaint: Complaint) {

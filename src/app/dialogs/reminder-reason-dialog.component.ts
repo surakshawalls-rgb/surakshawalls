@@ -13,6 +13,7 @@ export type ReminderReasonType =
   | 'discipline'
   | 'disturbance'
   | 'attendance'
+  | 'status_check'
   | 'cleanliness'
   | 'other';
 
@@ -59,6 +60,11 @@ export const REMINDER_REASON_OPTIONS: ReminderReasonOption[] = [
     helper: 'Use this for irregular attendance or prolonged absence reminders.'
   },
   {
+    value: 'status_check',
+    label: 'Continue or Quit Status',
+    helper: 'Use this when the student has been absent for a few days without notice and the team needs confirmation.'
+  },
+  {
     value: 'cleanliness',
     label: 'Cleanliness Reminder',
     helper: 'Use this when the student needs to maintain seat and desk cleanliness.'
@@ -86,23 +92,26 @@ export function buildLibraryReminderMessage(
 
   switch (selection.reason) {
     case 'fee_due':
-      return `Hello ${context.studentName},\n\nThis is a fee reminder from Suraksha Library.\n${seatLine}${expiryLine}\nPlease renew your library fee on time to continue using your seat without interruption. If payment has already been made, please share the update with the library desk.${additionalNote}\nRegards,\nSuraksha Library Team`;
+      return `Hello ${context.studentName},\n\nThis is a fee reminder from Suraksha Library.\n${seatLine}${expiryLine}\nPlease renew your library fee on time to continue using your seat without interruption. If payment has already been made, please share the update with the library desk.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
 
     case 'discipline':
-      return `Hello ${context.studentName},\n\nThis is an important reminder from Suraksha Library regarding discipline and library rules.\n${seatLine}\nPlease maintain silence, avoid phone conversations, and follow staff instructions so the study environment remains peaceful for everyone.${additionalNote}\nRegards,\nSuraksha Library Team`;
+      return `Hello ${context.studentName},\n\nThis is an important reminder from Suraksha Library regarding discipline and library rules.\n${seatLine}\nPlease maintain silence, avoid phone conversations, and follow staff instructions so the study environment remains peaceful for everyone.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
 
     case 'disturbance':
-      return `Hello ${context.studentName},\n\nA disturbance-related issue has been reported in the study area.\n${seatLine}\nPlease avoid loud conversation, unnecessary movement, or any behavior that affects other students. We request your cooperation in maintaining a calm study environment.${additionalNote}\nRegards,\nSuraksha Library Team`;
+      return `Hello ${context.studentName},\n\nA disturbance-related issue has been reported in the study area.\n${seatLine}\nPlease avoid loud conversation, unnecessary movement, or any behavior that affects other students. We request your cooperation in maintaining a calm study environment.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
 
     case 'attendance':
-      return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library regarding regular attendance and seat usage.\n${seatLine}${expiryLine}\nPlease use your allotted seat regularly. If you are unable to continue, kindly inform the library desk so we can update the record accordingly.${additionalNote}\nRegards,\nSuraksha Library Team`;
+      return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library regarding regular attendance and seat usage.\n${seatLine}${expiryLine}\nPlease use your allotted seat regularly. If you are unable to continue, kindly inform the library desk so we can update the record accordingly.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
+
+    case 'status_check':
+      return `Hello ${context.studentName},\n\nWe noticed that you have not been coming to Suraksha Library for the last few days and no prior notice has been received.\n${seatLine}\nPlease confirm your current status so we can manage your seat properly:\n1. Reply *CONTINUE* if you want to continue and keep your seat.\n2. Reply *QUIT* if you do not want to continue, so we can vacate and release the seat for another student.\n\nPlease update us as soon as possible.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
 
     case 'cleanliness':
-      return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library regarding cleanliness and seat maintenance.\n${seatLine}\nPlease keep your seat, desk, and surrounding area clean. Avoid leaving waste, food items, or unnecessary materials on the study table.${additionalNote}\nRegards,\nSuraksha Library Team`;
+      return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library regarding cleanliness and seat maintenance.\n${seatLine}\nPlease keep your seat, desk, and surrounding area clean. Avoid leaving waste, food items, or unnecessary materials on the study table.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
 
     case 'other':
     default:
-      return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library.\n${seatLine}${expiryLine}${selection.customNote.trim() || 'Please contact the library desk for further details.'}\n\nRegards,\nSuraksha Library Team`;
+      return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library.\n${seatLine}${expiryLine}${selection.customNote.trim() || 'Please contact the library desk for further details.'}\n\nRegards,\nSuraksha Library Admin Team`;
   }
 }
 
