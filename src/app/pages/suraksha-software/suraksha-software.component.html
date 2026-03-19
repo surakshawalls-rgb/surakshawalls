@@ -72,24 +72,63 @@
   <section *ngIf="focusMode === 'development'" id="development-services" class="content-section">
     <div class="section-header">
       <p class="section-kicker">Software Development</p>
-      <h2>Build your product with a delivery-focused engineering team</h2>
+      <h2>Four specialised domains, one delivery team</h2>
       <p>
-        We deliver scalable digital solutions with clean user experience, solid architecture,
-        and dependable post-launch support.
+        Web portals, mobile apps, desktop tools, and end-to-end product builds &mdash; for businesses
+        that need clean execution, solid architecture, and long-term technical ownership.
       </p>
     </div>
 
-    <div class="cards-grid services-grid">
-      <mat-card class="info-card service-card" *ngFor="let service of developmentServices">
-        <div class="card-head">
-          <mat-icon>{{ service.icon }}</mat-icon>
-          <h3>{{ service.title }}</h3>
+    <div class="cards-grid services-grid development-services-grid">
+      <mat-card class="info-card service-card" *ngFor="let service of developmentServices; let i = index">
+        <div class="service-header">
+          <div class="service-icon-badge">
+            <mat-icon>{{ service.icon }}</mat-icon>
+          </div>
+          <span class="service-index">0{{ i + 1 }}</span>
         </div>
+        <h3 class="service-title">{{ service.title }}</h3>
         <p class="service-copy">{{ service.description }}</p>
-        <ul class="deliverables">
-          <li *ngFor="let item of service.deliverables">{{ item }}</li>
-        </ul>
+        <div class="deliverable-tags">
+          <span class="deliverable-tag" *ngFor="let item of service.deliverables">{{ item }}</span>
+        </div>
       </mat-card>
+    </div>
+
+    <div class="development-layout">
+      <div class="plain-panel about-panel">
+        <p class="panel-kicker">About Us</p>
+        <h3>Software solutions designed for real business operations.</h3>
+        <p class="panel-copy">
+          Suraksha Software works with businesses that need dependable delivery, clean implementation,
+          and a team that understands both product quality and practical execution.
+        </p>
+
+        <div class="about-grid">
+          <div class="about-point" *ngFor="let item of aboutHighlights">
+            <div class="about-icon-wrap">
+              <mat-icon>{{ item.icon }}</mat-icon>
+            </div>
+            <h4>{{ item.title }}</h4>
+            <p>{{ item.description }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="plain-panel process-panel">
+        <p class="panel-kicker">How We Work</p>
+        <h3>Clear delivery flow with measurable accountability.</h3>
+
+        <div class="process-list">
+          <div class="process-item" *ngFor="let step of deliverySteps; let i = index">
+            <span class="process-step">0{{ i + 1 }}</span>
+            <div>
+              <h4>{{ step.title }}</h4>
+              <p>{{ step.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -100,14 +139,14 @@
       <p>Selected client projects currently active and maintained.</p>
     </div>
 
-    <div class="client-list">
-      <a class="client-item" *ngFor="let client of clients" [href]="client.url" target="_blank" rel="noopener">
-        <div>
+    <div class="client-grid">
+      <a class="client-card" *ngFor="let client of clients" [href]="client.url" target="_blank" rel="noopener">
+        <div class="client-card-header">
           <h3>{{ client.name }}</h3>
-          <p>{{ client.summary }}</p>
-          <span class="client-url">{{ client.url }}</span>
+          <mat-icon>open_in_new</mat-icon>
         </div>
-        <mat-icon>open_in_new</mat-icon>
+        <p>{{ client.summary }}</p>
+        <span class="client-url">{{ client.url }}</span>
       </a>
     </div>
   </section>
@@ -115,23 +154,33 @@
   <section *ngIf="focusMode === 'training'" id="training-curriculum" class="content-section">
     <div class="section-header">
       <p class="section-kicker">Training Institute</p>
-      <h2>Structured curriculum for full stack and UI careers</h2>
+      <h2>Industry-structured training across five full stack tracks</h2>
       <p>
-        Training content is shown on demand. Explore track-wise modules,
-        practical labs, and industry workflow coverage.
+        Practical modules covering frontend, Java, Spring, Python with AI, and delivery workflow.
+        Each track builds toward a defined role with real project guidance and placement readiness.
       </p>
     </div>
 
-    <div class="cards-grid training-grid">
-      <mat-card class="info-card" *ngFor="let track of trainingTracks">
-        <div class="card-head">
-          <mat-icon>{{ track.icon }}</mat-icon>
+    <div class="track-list">
+      <div class="track-card" *ngFor="let track of trainingTracks; let i = index">
+        <div class="track-badge-col">
+          <div class="track-icon-badge">
+            <mat-icon>{{ track.icon }}</mat-icon>
+          </div>
+          <span class="track-number">0{{ i + 1 }}</span>
+        </div>
+        <div class="track-content">
           <h3>{{ track.title }}</h3>
+          <p class="track-desc">{{ track.description }}</p>
+          <div class="chip-wrap">
+            <span class="topic-chip" *ngFor="let topic of track.topics">{{ topic }}</span>
+          </div>
+          <div class="track-outcome">
+            <mat-icon>east</mat-icon>
+            <span>{{ track.outcome }}</span>
+          </div>
         </div>
-        <div class="chip-wrap">
-          <span class="topic-chip" *ngFor="let topic of track.topics">{{ topic }}</span>
-        </div>
-      </mat-card>
+      </div>
     </div>
   </section>
 
