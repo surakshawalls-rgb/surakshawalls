@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { InventoryService, MaterialStock } from '../../services/inventory.service';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-manage-materials',
@@ -57,7 +58,8 @@ export class ManageMaterialsComponent implements OnInit {
   constructor(
     private inventoryService: InventoryService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -126,7 +128,15 @@ export class ManageMaterialsComponent implements OnInit {
     }
   }
 
+  canDelete(): boolean {
+    return this.authService.canDelete();
+  }
+
   openDeleteModal(material: MaterialStock) {
+    if (!this.canDelete()) {
+      this.notificationService.notify('Access Denied', 'Only Super Admin can delete records.', 'error');
+      return;
+    }
     this.deletingMaterial = material;
     this.showDeleteModal = true;
   }
@@ -137,7 +147,7 @@ export class ManageMaterialsComponent implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.deletingMaterial) return;
+    if (!this.deletingMaterial || !this.canDelete()) return;
 
     try {
       const result = await this.inventoryService.deleteRawMaterial(this.deletingMaterial.id);

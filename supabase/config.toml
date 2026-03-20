@@ -21,3 +21,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/whatsapp-message-status/deno.json"
 entrypoint = "./functions/whatsapp-message-status/index.ts"
+
+[functions.admin-user-management]
+enabled = true
+verify_jwt = false
+import_map = "./functions/admin-user-management/deno.json"
+entrypoint = "./functions/admin-user-management/index.ts"

@@ -15,11 +15,19 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/library.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { AuthService } from '../../services/auth.service';
 import {
   buildLibraryReminderMessage,
   ReminderReasonDialogComponent,
   ReminderReasonSelection
 } from '../../dialogs/reminder-reason-dialog.component';
+
+interface StudentSeatInfo {
+  seatNo: number;
+  shiftType: string;
+  shiftTypeKey: 'full_time' | 'first_half' | 'second_half';
+  expiryDate: string | null;
+}
 
 @Component({
   selector: 'app-library-students',
@@ -46,8 +54,8 @@ export class LibraryStudentsComponent implements OnInit {
   students: LibraryStudent[] = [];
   filteredStudents: LibraryStudent[] = [];
   dataSource: MatTableDataSource<LibraryStudent> = new MatTableDataSource<LibraryStudent>();
-  displayedColumns: string[] = ['photo', 'name', 'gender', 'mobile', 'seat_no', 'emergency_contact', 'address', 'joining_date', 'registration_fee_paid', 'status', 'actions'];
-  studentSeatMap: { [studentId: string]: { seatNo: number, shiftType: string } } = {};
+  displayedColumns: string[] = ['photo', 'name', 'gender', 'mobile', 'seat_no', 'emergency_contact', 'address', 'joining_date', 'registration_fee_paid', 'payment_tracking', 'status', 'actions'];
+  studentSeatMap: { [studentId: string]: StudentSeatInfo } = {};
   
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -89,6 +97,8 @@ export class LibraryStudentsComponent implements OnInit {
     gender: 'Male',
     joining_date: new Date().toISOString().split('T')[0],
     registration_fee_paid: 0,
+    payment_pending: false,
+    pending_payment_amount: 0,
     status: 'active'
   };
 
@@ -119,7 +129,8 @@ export class LibraryStudentsComponent implements OnInit {
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService
   ) {
     // Generate year ranges
     const currentYear = new Date().getFullYear();
@@ -171,19 +182,25 @@ export class LibraryStudentsComponent implements OnInit {
         if (seat.full_time_student_id) {
           this.studentSeatMap[seat.full_time_student_id] = {
             seatNo: seat.seat_no,
-            shiftType: 'Full Time'
+            shiftType: 'Full Time',
+            shiftTypeKey: 'full_time',
+            expiryDate: seat.full_time_expiry || null
           };
         }
         if (seat.first_half_student_id) {
           this.studentSeatMap[seat.first_half_student_id] = {
             seatNo: seat.seat_no,
-            shiftType: 'First Half'
+            shiftType: 'First Half',
+            shiftTypeKey: 'first_half',
+            expiryDate: seat.first_half_expiry || null
           };
         }
         if (seat.second_half_student_id) {
           this.studentSeatMap[seat.second_half_student_id] = {
             seatNo: seat.seat_no,
-            shiftType: 'Second Half'
+            shiftType: 'Second Half',
+            shiftTypeKey: 'second_half',
+            expiryDate: seat.second_half_expiry || null
           };
         }
       });
@@ -247,6 +264,8 @@ export class LibraryStudentsComponent implements OnInit {
       gender: 'Male',
       joining_date: new Date().toISOString().split('T')[0],
       registration_fee_paid: 0,
+      payment_pending: false,
+      pending_payment_amount: 0,
       status: 'active'
     };
     this.selectedPhoto = null;
@@ -412,7 +431,15 @@ export class LibraryStudentsComponent implements OnInit {
     }
   }
 
+  canDelete(): boolean {
+    return this.authService.canDelete();
+  }
+
   async deleteStudent(student: LibraryStudent) {
+    if (!this.canDelete()) {
+      this.errorMessage = 'Only Super Admin can delete records.';
+      return;
+    }
     if (!confirm(`Are you sure you want to delete ${student.name}? This will remove all associated seat assignments.`)) {
       return;
     }
@@ -504,6 +531,96 @@ export class LibraryStudentsComponent implements OnInit {
 
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-IN');
+  }
+
+  isStudentPaymentPending(student: LibraryStudent): boolean {
+    return !!student.payment_pending;
+  }
+
+  getPendingPaymentAmount(student: LibraryStudent): number {
+    return Number(student.pending_payment_amount || 0);
+  }
+
+  async markPendingPaymentReceived(student: LibraryStudent) {
+    if (!student.id) {
+      return;
+    }
+
+    if (!this.isStudentPaymentPending(student)) {
+      this.errorMessage = `${student.name} does not have any pending payment.`;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const seatInfo = this.studentSeatMap[student.id];
+    if (!seatInfo) {
+      this.errorMessage = `Seat assignment not found for ${student.name}.`;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const pendingAmount = this.getPendingPaymentAmount(student) ||
+      (seatInfo.shiftTypeKey === 'full_time' ? 400 : 250);
+
+    const shouldContinue = confirm(
+      `Collect pending payment of ${this.formatCurrency(pendingAmount)} from ${student.name} (Seat ${seatInfo.seatNo}, ${seatInfo.shiftType})?`
+    );
+
+    if (!shouldContinue) {
+      return;
+    }
+
+    const modeInput = prompt('Enter payment mode: cash / upi / card', 'cash');
+    if (modeInput === null) {
+      return;
+    }
+
+    const normalizedMode = modeInput.trim().toLowerCase();
+    if (!['cash', 'upi', 'card'].includes(normalizedMode)) {
+      this.errorMessage = 'Invalid payment mode. Please use cash, upi, or card.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    let transactionReference = '';
+    if (normalizedMode !== 'cash') {
+      const refInput = prompt('Transaction reference (optional):', '');
+      if (refInput === null) {
+        return;
+      }
+      transactionReference = refInput.trim();
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+    const validFrom = student.joining_date || today;
+    const validUntil = seatInfo.expiryDate || today;
+
+    try {
+      const settleResult = await this.libraryService.settlePendingPayment({
+        student_id: student.id,
+        seat_no: seatInfo.seatNo,
+        shift_type: seatInfo.shiftTypeKey,
+        amount_paid: pendingAmount,
+        payment_date: today,
+        valid_from: validFrom,
+        valid_until: validUntil,
+        payment_mode: normalizedMode as 'cash' | 'upi' | 'card',
+        transaction_reference: transactionReference || undefined,
+        notes: 'Pending registration payment collected from Library Students page'
+      });
+
+      if (!settleResult.success) {
+        throw new Error(settleResult.error || 'Failed to settle pending payment');
+      }
+
+      this.successMessage = `Payment recorded for ${student.name}. Pending flag removed.`;
+      await this.loadStudents();
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      console.error('Error settling pending payment:', error);
+      this.errorMessage = `Failed to record payment: ${error.message}`;
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
   }
 
   getStatusBadgeClass(status: string): string {

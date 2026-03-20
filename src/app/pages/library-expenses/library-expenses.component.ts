@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LibraryService, LibraryExpense } from '../../services/library.service';
 import { MatCardModule } from '@angular/material/card';
+import { AuthService } from '../../services/auth.service';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -65,7 +66,8 @@ export class LibraryExpensesComponent implements OnInit {
   constructor(
     private libraryService: LibraryService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
@@ -162,6 +164,10 @@ export class LibraryExpensesComponent implements OnInit {
   }
 
   async deleteExpense(expense: LibraryExpense) {
+    if (!this.authService.canDelete()) {
+      this.errorMessage = 'Only Super Admin can delete records.';
+      return;
+    }
     if (!confirm('Are you sure you want to delete this expense?')) {
       return;
     }
@@ -180,6 +186,10 @@ export class LibraryExpensesComponent implements OnInit {
       console.error('Error deleting expense:', error);
       this.errorMessage = 'Failed to delete expense: ' + error.message;
     }
+  }
+
+  canDelete(): boolean {
+    return this.authService.canDelete();
   }
 
   getCategoryIcon(category: string): string {

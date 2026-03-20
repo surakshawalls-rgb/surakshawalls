@@ -154,6 +154,19 @@
         <td mat-cell *matCellDef="let student">{{ formatCurrency(student.registration_fee_paid || 0) }}</td>
       </ng-container>
 
+      <!-- Payment Tracking Column -->
+      <ng-container matColumnDef="payment_tracking">
+        <th mat-header-cell *matHeaderCellDef>Payment</th>
+        <td mat-cell *matCellDef="let student">
+          <span *ngIf="isStudentPaymentPending(student)" class="badge badge-warning">
+            Pending {{ formatCurrency(getPendingPaymentAmount(student)) }}
+          </span>
+          <span *ngIf="!isStudentPaymentPending(student)" class="badge badge-success">
+            Paid
+          </span>
+        </td>
+      </ng-container>
+
       <!-- Status Column -->
       <ng-container matColumnDef="status">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
@@ -182,6 +195,14 @@
                     (click)="openPaymentHistory(student)">
               💳
             </button>
+
+                <button mat-icon-button
+                  *ngIf="isStudentPaymentPending(student)"
+                  matTooltip="Mark Pending Payment Received"
+                  color="accent"
+                  (click)="markPendingPaymentReceived(student)">
+                  ₹
+                </button>
             
             <button mat-icon-button 
                     matTooltip="WhatsApp"
@@ -195,7 +216,7 @@
               ✏️
             </button>
             
-            <button mat-icon-button 
+            <button *ngIf="canDelete()" mat-icon-button 
                     matTooltip="Delete Student"
                     color="warn"
                     (click)="deleteStudent(student)">
@@ -647,6 +668,6 @@
     <button (click)="openPaymentHistory(selectedStudent)" class="btn-icon" title="Payment History">💳</button>
     <button (click)="sendWhatsApp(selectedStudent)" class="btn-icon" title="WhatsApp">💬</button>
     <button (click)="openEditModal(selectedStudent)" class="btn-icon" title="Edit">✏️</button>
-    <button (click)="deleteStudent(selectedStudent)" class="btn-icon danger" title="Delete">🗑️</button>
+    <button *ngIf="canDelete()" (click)="deleteStudent(selectedStudent)" class="btn-icon danger" title="Delete">🗑️</button>
   </div>
 </div>

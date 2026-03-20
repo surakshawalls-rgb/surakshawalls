@@ -38,6 +38,7 @@ export interface RegistrationResult {
   selectedShift: 'full_time' | 'first_half' | 'second_half';
   feeAmount: number;
   paymentMode: 'cash' | 'upi' | 'card';
+  isPaymentReceived: boolean;
 }
 
 @Component({
@@ -182,6 +183,17 @@ export interface RegistrationResult {
           </mat-error>
         </mat-form-field>
 
+        <div class="form-group full-width" *ngIf="!isPublicRequestMode">
+          <label class="group-label">Seat Fee Received Today?</label>
+          <mat-button-toggle-group formControlName="isPaymentReceived" class="full-width-toggle">
+            <mat-button-toggle [value]="true">✅ Paid</mat-button-toggle>
+            <mat-button-toggle [value]="false">⏳ Not Paid Yet</mat-button-toggle>
+          </mat-button-toggle-group>
+          <small class="pending-help" *ngIf="registrationForm.get('isPaymentReceived')?.value === false">
+            Student will be registered and seat will be assigned, but payment status will stay pending until you collect fee.
+          </small>
+        </div>
+
         <div class="form-group">
           <label class="group-label">Payment Mode</label>
           <mat-button-toggle-group formControlName="paymentMode" class="full-width-toggle">
@@ -255,6 +267,16 @@ export interface RegistrationResult {
       color: #1d4ed8;
       font-size: 13px;
       line-height: 1.5;
+    }
+
+    .pending-help {
+      color: #9a3412;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.4;
     }
 
     .toggle-section {
@@ -689,7 +711,8 @@ export class RegistrationDialogComponent implements OnInit {
       notes: [''],
       selectedShift: [defaultShift],
       feeAmount: [defaultShift === 'full_time' ? 400 : 250, [Validators.required, Validators.min(1)]],
-      paymentMode: ['cash']
+      paymentMode: ['cash'],
+      isPaymentReceived: [!this.isPublicRequestMode]
     });
 
     // Flatpickr removed. Will use Angular Material pickers.

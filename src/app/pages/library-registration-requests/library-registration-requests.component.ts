@@ -247,6 +247,9 @@ export class LibraryRegistrationRequestsComponent implements OnInit, OnDestroy {
       }
 
       this.successMessage = `✅ ${this.selectedRequest.name} has been approved and assigned Seat ${this.approvalSeatNo}`;
+      if (result.warning) {
+        this.successMessage += ` ${result.warning}`;
+      }
       this.closeModal();
       await this.loadData();
     } catch (error: any) {

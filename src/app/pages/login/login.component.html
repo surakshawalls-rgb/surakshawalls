@@ -32,8 +32,9 @@
           required>
       </div>
 
-      <div *ngIf="errorMessage && errorMessage.length > 0" class="error-message">
-        ⚠️ {{ errorMessage }}
+      <div *ngIf="errorMessage && errorMessage.length > 0" class="error-message" role="alert">
+        <div class="error-message-title">Unable to Continue</div>
+        <div class="error-message-body">{{ errorMessage }}</div>
       </div>
 
       <button 

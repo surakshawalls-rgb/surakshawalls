@@ -167,6 +167,9 @@
         <div class="seat-status-top">Full Time</div>
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ getFullTimeStudentDisplay(seat) }}</div>
+        <div class="seat-payment-pending" *ngIf="isStudentPaymentPending(seat.full_time_student)">
+          ₹{{ getStudentPendingPaymentAmount(seat.full_time_student) }} Pending
+        </div>
       </ng-container>
       
       <!-- BOTH SHIFTS OCCUPIED -->
@@ -177,10 +180,16 @@
           <div class="half-shift">
             <div class="shift-label">🌅 1st</div>
             <div class="student-name">{{ getFirstHalfStudentDisplay(seat) }}</div>
+            <div class="half-pending" *ngIf="isStudentPaymentPending(seat.first_half_student)">
+              ₹{{ getStudentPendingPaymentAmount(seat.first_half_student) }} Due
+            </div>
           </div>
           <div class="half-shift">
             <div class="shift-label">🌃 2nd</div>
             <div class="student-name">{{ getSecondHalfStudentDisplay(seat) }}</div>
+            <div class="half-pending" *ngIf="isStudentPaymentPending(seat.second_half_student)">
+              ₹{{ getStudentPendingPaymentAmount(seat.second_half_student) }} Due
+            </div>
           </div>
         </div>
       </ng-container>
@@ -190,6 +199,9 @@
         <div class="seat-status-top">First Half</div>
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ getFirstHalfStudentDisplay(seat) }}</div>
+        <div class="seat-payment-pending" *ngIf="isStudentPaymentPending(seat.first_half_student)">
+          ₹{{ getStudentPendingPaymentAmount(seat.first_half_student) }} Pending
+        </div>
       </ng-container>
       
       <!-- SECOND HALF ONLY -->
@@ -197,6 +209,9 @@
         <div class="seat-status-top">Second Half</div>
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ getSecondHalfStudentDisplay(seat) }}</div>
+        <div class="seat-payment-pending" *ngIf="isStudentPaymentPending(seat.second_half_student)">
+          ₹{{ getStudentPendingPaymentAmount(seat.second_half_student) }} Pending
+        </div>
       </ng-container>
     </div>
   </div>
@@ -251,6 +266,11 @@
                     class="btn btn-compact btn-success">
               💳 Pay Fee
             </button>
+            <button *ngIf="authService.canEdit() && isStudentPaymentPending(selectedStudent)"
+                    (click)="markPendingPaymentReceived(selectedStudent)"
+                    class="btn btn-compact btn-warning">
+              ₹ Clear Due
+            </button>
             <button *ngIf="authService.canEdit() && selectedStudent"
                     (click)="openChangeSeatModal(selectedStudent, getCurrentShiftType())"
                     class="btn btn-compact btn-info">
@@ -258,6 +278,9 @@
             </button>
             <button (click)="sendWhatsAppReminder()" class="btn btn-compact btn-success">
               💬 Reminder
+            </button>
+            <button *ngIf="authService.canEdit()" (click)="shareStudentLoginCredentials()" class="btn btn-compact btn-success">
+              📨 Share Login
             </button>
             <button (click)="viewLastReceipt()" class="btn btn-compact btn-info">
               🧾 View Receipt
@@ -322,6 +345,11 @@
                       class="btn btn-compact btn-success">
                 💳 Fee
               </button>
+              <button *ngIf="authService.canEdit() && isStudentPaymentPending(selectedStudent)"
+                      (click)="markPendingPaymentReceived(selectedStudent)"
+                      class="btn btn-compact btn-warning">
+                ₹ Clear Due
+              </button>
               <button *ngIf="authService.canEdit()"
                       (click)="openChangeSeatModal(selectedStudent, 'first_half')" 
                       class="btn btn-compact btn-info">
@@ -329,6 +357,9 @@
               </button>
               <button (click)="sendWhatsAppReminder(selectedStudent)" class="btn btn-compact btn-success">
                 💬 Reminder
+              </button>
+              <button *ngIf="authService.canEdit()" (click)="shareStudentLoginCredentials(selectedStudent)" class="btn btn-compact btn-success">
+                📨 Share Login
               </button>
               <button (click)="viewLastReceiptForStudent(selectedStudent)" class="btn btn-compact btn-info">
                 🧾 Receipt
@@ -386,6 +417,11 @@
                       class="btn btn-compact btn-success">
                 💳 Fee
               </button>
+              <button *ngIf="authService.canEdit() && isStudentPaymentPending(selectedSecondStudent)"
+                      (click)="markPendingPaymentReceived(selectedSecondStudent)"
+                      class="btn btn-compact btn-warning">
+                ₹ Clear Due
+              </button>
               <button *ngIf="authService.canEdit()"
                       (click)="openChangeSeatModal(selectedSecondStudent, 'second_half')" 
                       class="btn btn-compact btn-info">
@@ -393,6 +429,9 @@
               </button>
               <button (click)="sendWhatsAppReminder(selectedSecondStudent)" class="btn btn-compact btn-success">
                 💬 Reminder
+              </button>
+              <button *ngIf="authService.canEdit()" (click)="shareStudentLoginCredentials(selectedSecondStudent)" class="btn btn-compact btn-success">
+                📨 Share Login
               </button>
               <button (click)="viewLastReceiptForStudent(selectedSecondStudent)" class="btn btn-compact btn-info">
                 🧾 Receipt

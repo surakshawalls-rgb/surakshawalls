@@ -113,6 +113,7 @@ export class LibraryGridComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   saving = false;
+  studentPortalEmailMap: Record<string, string> = {};
 
   // Date dropdown arrays
   days: number[] = Array.from({length: 31}, (_, i) => i + 1);
@@ -288,6 +289,14 @@ export class LibraryGridComponent implements OnInit {
       return seat.second_half_student_id.substring(0, 6);
     }
     return '';
+  }
+
+  isStudentPaymentPending(student?: LibraryStudent | null): boolean {
+    return !!student?.payment_pending;
+  }
+
+  getStudentPendingPaymentAmount(student?: LibraryStudent | null): number {
+    return Number(student?.pending_payment_amount || 0);
   }
 
   // ==============================
@@ -670,9 +679,11 @@ export class LibraryGridComponent implements OnInit {
     });
   }
 
-  async processRegistration(result: any, seat: LibrarySeat) {
+  async processRegistration(result: RegistrationResult, seat: LibrarySeat) {
     try {
       let student: LibraryStudent;
+      const isPaymentReceived = result.isPaymentReceived !== false;
+      const pendingPaymentAmount = isPaymentReceived ? 0 : Number(result.feeAmount || 0);
 
       // Check if student already exists
       const existingStudent = await this.libraryService.getStudentByMobile(result.mobile);
@@ -689,7 +700,10 @@ export class LibraryGridComponent implements OnInit {
           address: result.address,
           dob: result.dob ? format(result.dob, 'yyyy-MM-dd') : undefined,
           gender: result.gender,
-          notes: result.notes
+          joining_date: format(result.startDate, 'yyyy-MM-dd'),
+          notes: result.notes,
+          payment_pending: !isPaymentReceived,
+          pending_payment_amount: pendingPaymentAmount
         });
       } else {
         // Create new student
@@ -704,6 +718,8 @@ export class LibraryGridComponent implements OnInit {
           joining_date: format(result.startDate, 'yyyy-MM-dd'),
           registration_fee_paid: result.registration_fee_paid || 0,
           notes: result.notes,
+          payment_pending: !isPaymentReceived,
+          pending_payment_amount: pendingPaymentAmount,
           status: 'active'
         });
 
@@ -728,34 +744,77 @@ export class LibraryGridComponent implements OnInit {
         }
       }
 
-      // Record seat fee payment
       const validFrom = startOfDay(new Date(result.startDate));
       const validUntil = startOfDay(new Date(result.endDate));
 
-      const paymentResult = await this.libraryService.recordFeePayment({
-        student_id: student.id,
-        seat_no: seat.seat_no,
-        shift_type: result.selectedShift,
-        amount_paid: result.feeAmount,
-        payment_date: format(validFrom, 'yyyy-MM-dd'),
-        valid_from: format(validFrom, 'yyyy-MM-dd'),
-        valid_until: format(validUntil, 'yyyy-MM-dd'),
-        payment_mode: result.paymentMode
+      if (isPaymentReceived) {
+        const paymentResult = await this.libraryService.recordFeePayment({
+          student_id: student.id,
+          seat_no: seat.seat_no,
+          shift_type: result.selectedShift,
+          amount_paid: result.feeAmount,
+          payment_date: format(validFrom, 'yyyy-MM-dd'),
+          valid_from: format(validFrom, 'yyyy-MM-dd'),
+          valid_until: format(validUntil, 'yyyy-MM-dd'),
+          payment_mode: result.paymentMode
+        });
+
+        if (!paymentResult.success) {
+          throw new Error(paymentResult.error || 'Failed to record payment and assign seat');
+        }
+      } else {
+        const assignResult = await this.libraryService.assignSeat(
+          seat.seat_no,
+          student.id,
+          result.selectedShift,
+          format(validUntil, 'yyyy-MM-dd')
+        );
+
+        if (!assignResult.success) {
+          throw new Error(assignResult.error || 'Failed to assign seat for unpaid registration');
+        }
+      }
+
+      const provisioningResult = await this.libraryService.provisionStudentPortalAccount({
+        id: student.id,
+        name: result.name,
+        mobile: result.mobile,
       });
 
-      // Check if payment and seat assignment succeeded
-      if (!paymentResult.success) {
-        throw new Error(paymentResult.error || 'Failed to record payment and assign seat');
+      if (provisioningResult.success && provisioningResult.email) {
+        this.studentPortalEmailMap[student.id] = provisioningResult.email;
       }
 
       // Show success message
       this.snackBar.open(
-        existingStudent 
-          ? '✅ Existing student registered to seat successfully!' 
-          : '✅ New student registered successfully!',
+        isPaymentReceived
+          ? (existingStudent
+              ? '✅ Existing student registered to seat successfully!'
+              : '✅ New student registered successfully!')
+          : (existingStudent
+              ? '✅ Student registered with pending payment flag.'
+              : '✅ New student registered. Payment marked pending.'),
         'Close',
         { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top' }
       );
+
+      if (!provisioningResult.success) {
+        this.snackBar.open(
+          `⚠️ Student registered, but login account could not be created: ${provisioningResult.error}`,
+          'Close',
+          { duration: 6000, horizontalPosition: 'center', verticalPosition: 'top' }
+        );
+      } else if (provisioningResult.email) {
+        const shareLoginRef = this.snackBar.open(
+          '📨 Registration successful. Share login details on WhatsApp now?',
+          'Share Login',
+          { duration: 8000, horizontalPosition: 'center', verticalPosition: 'top' }
+        );
+
+        shareLoginRef.onAction().subscribe(() => {
+          this.shareStudentLoginCredentials(student, provisioningResult.email);
+        });
+      }
 
       // Reload seats with force refresh
       this.libraryService.clearSeatsCache();
@@ -842,6 +901,55 @@ export class LibraryGridComponent implements OnInit {
 
     window.open(`https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`, '_blank');
     return true;
+  }
+
+  private buildStudentLoginMessage(student: LibraryStudent, email: string): string {
+    return `Hello ${student.name},\n\nWelcome to Suraksha Library.\n\nYour login details are:\nEmail: ${email}\nPassword: Your registered mobile number\n\nLogin here to access our library features:\nhttps://www.surakshawalls.space\n\nAfter login, you can:\n- Download free eBooks\n- Log attendance\n- Lodge complaints\n\nRegards,\nSuraksha Library Admin Team`;
+  }
+
+  private async getStudentPortalEmail(student: LibraryStudent): Promise<string | null> {
+    const cachedEmail = this.studentPortalEmailMap[student.id];
+    if (cachedEmail) {
+      return cachedEmail;
+    }
+
+    const provisioningResult = await this.libraryService.provisionStudentPortalAccount({
+      id: student.id,
+      name: student.name,
+      mobile: student.mobile,
+    });
+
+    if (!provisioningResult.success || !provisioningResult.email) {
+      const errorText = provisioningResult.error || 'Failed to fetch login email for student.';
+      this.snackBar.open(`⚠️ ${errorText}`, 'Close', {
+        duration: 5000,
+        horizontalPosition: 'center',
+        verticalPosition: 'top',
+      });
+      return null;
+    }
+
+    this.studentPortalEmailMap[student.id] = provisioningResult.email;
+    return provisioningResult.email;
+  }
+
+  async shareStudentLoginCredentials(student?: LibraryStudent, email?: string): Promise<void> {
+    const targetStudent = student || this.selectedStudent;
+    if (!targetStudent) {
+      return;
+    }
+
+    const portalEmail = email || await this.getStudentPortalEmail(targetStudent);
+    if (!portalEmail) {
+      return;
+    }
+
+    const loginMessage = this.buildStudentLoginMessage(targetStudent, portalEmail);
+    this.openWhatsAppMessage(
+      targetStudent.mobile,
+      loginMessage,
+      `Invalid mobile number for ${targetStudent.name}`
+    );
   }
 
   private openReminderReasonDialog(student: LibraryStudent) {
@@ -963,6 +1071,125 @@ export class LibraryGridComponent implements OnInit {
       message,
       `Invalid emergency contact number for ${targetStudent.name}`
     );
+  }
+
+  private getStudentSeatPaymentContext(student: LibraryStudent): {
+    seatNo: number;
+    shiftType: 'full_time' | 'first_half' | 'second_half';
+    expiryDate: string | null;
+  } | null {
+    if (!this.selectedSeat || !student.id) {
+      return null;
+    }
+
+    const shiftType = this.getReminderShiftType(student);
+    if (!shiftType) {
+      return null;
+    }
+
+    let expiryDate: string | null = null;
+    if (shiftType === 'full_time') {
+      expiryDate = this.selectedSeat.full_time_expiry || null;
+    } else if (shiftType === 'first_half') {
+      expiryDate = this.selectedSeat.first_half_expiry || null;
+    } else {
+      expiryDate = this.selectedSeat.second_half_expiry || null;
+    }
+
+    return {
+      seatNo: this.selectedSeat.seat_no,
+      shiftType,
+      expiryDate
+    };
+  }
+
+  async markPendingPaymentReceived(student: LibraryStudent) {
+    if (!student.id) {
+      return;
+    }
+
+    if (!this.isStudentPaymentPending(student)) {
+      this.errorMessage = `${student.name} does not have any pending payment.`;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const context = this.getStudentSeatPaymentContext(student);
+    if (!context) {
+      this.errorMessage = `Could not find seat/shift details for ${student.name}.`;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const pendingAmount = this.getStudentPendingPaymentAmount(student)
+      || (context.shiftType === 'full_time' ? 400 : 250);
+
+    const shouldContinue = confirm(
+      `Collect pending payment of ₹${pendingAmount} from ${student.name} (Seat ${context.seatNo}, ${this.getShiftLabel(context.shiftType)})?`
+    );
+
+    if (!shouldContinue) {
+      return;
+    }
+
+    const modeInput = prompt('Enter payment mode: cash / upi / card', 'cash');
+    if (modeInput === null) {
+      return;
+    }
+
+    const normalizedMode = modeInput.trim().toLowerCase();
+    if (!['cash', 'upi', 'card'].includes(normalizedMode)) {
+      this.errorMessage = 'Invalid payment mode. Please use cash, upi, or card.';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    let transactionReference = '';
+    if (normalizedMode !== 'cash') {
+      const refInput = prompt('Transaction reference (optional):', '');
+      if (refInput === null) {
+        return;
+      }
+      transactionReference = refInput.trim();
+    }
+
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const validFrom = student.joining_date || today;
+    const validUntil = context.expiryDate || today;
+
+    try {
+      this.saving = true;
+      this.errorMessage = '';
+
+      const settleResult = await this.libraryService.settlePendingPayment({
+        student_id: student.id,
+        seat_no: context.seatNo,
+        shift_type: context.shiftType,
+        amount_paid: pendingAmount,
+        payment_date: today,
+        valid_from: validFrom,
+        valid_until: validUntil,
+        payment_mode: normalizedMode as 'cash' | 'upi' | 'card',
+        transaction_reference: transactionReference || undefined,
+        notes: 'Pending registration payment collected from profile panel'
+      });
+
+      if (!settleResult.success) {
+        throw new Error(settleResult.error || 'Failed to settle pending payment');
+      }
+
+      student.payment_pending = false;
+      student.pending_payment_amount = 0;
+
+      this.successMessage = `✅ Payment recorded for ${student.name}. Pending flag removed.`;
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      this.errorMessage = `Failed to record payment: ${error.message}`;
+      setTimeout(() => this.errorMessage = '', 3000);
+    } finally {
+      this.saving = false;
+      this.cdr.detectChanges();
+    }
   }
 
   async releaseSeatConfirm(studentOrShift?: LibraryStudent | 'full_time' | 'first_half' | 'second_half', shiftTypeParam?: 'full_time' | 'first_half' | 'second_half') {
@@ -1363,6 +1590,18 @@ export class LibraryGridComponent implements OnInit {
       });
 
       if (result.success && result.payment) {
+        const clearPendingResult = await this.libraryService.updateStudent(this.selectedStudent.id, {
+          payment_pending: false,
+          pending_payment_amount: 0
+        });
+
+        if (!clearPendingResult.success) {
+          console.warn('Payment saved but pending flag clear failed:', clearPendingResult.error);
+        }
+
+        this.selectedStudent.payment_pending = false;
+        this.selectedStudent.pending_payment_amount = 0;
+
         // Generate receipt
         this.receiptData = this.libraryService.generateReceiptData(result.payment, this.selectedStudent);
         

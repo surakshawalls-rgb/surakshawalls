@@ -37,10 +37,9 @@ interface Breadcrumb {
   `,
   styles: [`
     .breadcrumb-container {
-      padding: 12px 16px;
-      background: #f5f5f5;
-      border-radius: 4px;
-      margin-bottom: 16px;
+      padding: 2px 0;
+      background: transparent;
+      margin-bottom: 8px;
     }
 
     .breadcrumb {
@@ -50,14 +49,14 @@ interface Breadcrumb {
       list-style: none;
       margin: 0;
       padding: 0;
-      gap: 8px;
+      gap: 2px;
     }
 
     .breadcrumb-item {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 2px;
+      font-size: 12px;
     }
 
     .breadcrumb-link {
@@ -65,10 +64,10 @@ interface Breadcrumb {
       text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.2s ease;
+      gap: 2px;
+      padding: 1px 4px;
+      border-radius: 3px;
+      transition: background 0.15s ease;
     }
 
     .breadcrumb-link:hover {
@@ -77,42 +76,38 @@ interface Breadcrumb {
     }
 
     .breadcrumb-active {
-      color: #424242;
+      color: #616161;
       font-weight: 500;
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
+      gap: 2px;
+      padding: 1px 4px;
     }
 
     .breadcrumb-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      line-height: 18px;
+      font-size: 13px;
+      width: 13px;
+      height: 13px;
+      line-height: 13px;
     }
 
     .breadcrumb-separator {
-      color: #9e9e9e;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
+      color: #bdbdbd;
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
     }
 
     @media (max-width: 600px) {
-      .breadcrumb-container {
-        padding: 8px 12px;
-      }
-
       .breadcrumb-item {
-        font-size: 12px;
+        font-size: 11px;
       }
 
       .breadcrumb-icon,
       .breadcrumb-separator {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
       }
     }
   `]

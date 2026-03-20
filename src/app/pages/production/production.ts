@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductionService } from '../../services/production.service';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
+import { AuthService } from '../../services/auth.service';
 
 export type ProductionKey =
   | 'fencingPole'
@@ -20,7 +21,7 @@ export type ProductionKey =
 })
 export class ProductionComponent implements OnInit {
 
-  constructor(private db: ProductionService, private cd: ChangeDetectorRef) {}
+  constructor(private db: ProductionService, private cd: ChangeDetectorRef, private authService: AuthService) {}
 
   // Tabs
   activeTab: 'production' | 'selling' | 'damage' = 'production';
@@ -193,8 +194,13 @@ export class ProductionComponent implements OnInit {
     this.loadTable();
   }
 
+  canDelete(): boolean {
+    return this.authService.canDelete();
+  }
+
   // 🗑️ DELETE FUNCTIONS
   async deleteProduction(id: number) {
+    if (!this.canDelete()) { alert('Only Super Admin can delete records.'); return; }
     if (!confirm('Are you sure you want to delete this production record?')) return;
 
     this.startLoading();
@@ -216,6 +222,7 @@ export class ProductionComponent implements OnInit {
   }
 
   async deleteSelling(id: number) {
+    if (!this.canDelete()) { alert('Only Super Admin can delete records.'); return; }
     if (!confirm('Are you sure you want to delete this sale?')) return;
 
     this.startLoading();
@@ -237,6 +244,7 @@ export class ProductionComponent implements OnInit {
   }
 
   async deleteDamage(id: number) {
+    if (!this.canDelete()) { alert('Only Super Admin can delete records.'); return; }
     if (!confirm('Are you sure you want to delete this damage record?')) return;
 
     this.startLoading();

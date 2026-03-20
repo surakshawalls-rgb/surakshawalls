@@ -12,6 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ClientService, Client } from '../../services/client.service';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-manage-clients',
@@ -49,7 +50,8 @@ export class ManageClientsComponent implements OnInit {
   constructor(
     private clientService: ClientService,
     private notificationService: NotificationService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
@@ -120,7 +122,15 @@ export class ManageClientsComponent implements OnInit {
     }
   }
 
+  canDelete(): boolean {
+    return this.authService.canDelete();
+  }
+
   openDeleteModal(client: Client) {
+    if (!this.canDelete()) {
+      this.notificationService.notify('Access Denied', 'Only Super Admin can delete records.', 'error');
+      return;
+    }
     this.deletingClient = client;
     this.showDeleteModal = true;
   }
@@ -131,7 +141,7 @@ export class ManageClientsComponent implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.deletingClient) return;
+    if (!this.deletingClient || !this.canDelete()) return;
 
     try {
       const result = await this.clientService.deleteClient(this.deletingClient.id);

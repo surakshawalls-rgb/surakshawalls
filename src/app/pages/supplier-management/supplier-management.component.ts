@@ -23,6 +23,7 @@ import {
 } from '../../services/supplier.service';
 import { PartnerService } from '../../services/partner.service';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-supplier-management',
@@ -126,7 +127,8 @@ export class SupplierManagementComponent implements OnInit {
     private supplierService: SupplierService,
     private partnerService: PartnerService,
     private cd: ChangeDetectorRef,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private authService: AuthService
   ) {}
 
   async ngOnInit() {
@@ -252,6 +254,10 @@ export class SupplierManagementComponent implements OnInit {
     }
   }
 
+  canDelete(): boolean {
+    return this.authService.canDelete();
+  }
+
   cancelSupplierForm() {
     this.showSupplierForm = false;
     this.supplierForm = this.getEmptySupplierForm();
@@ -259,6 +265,10 @@ export class SupplierManagementComponent implements OnInit {
   }
 
   async deleteSupplier(supplierId: string) {
+    if (!this.authService.canDelete()) {
+      alert('Only Super Admin can delete records.');
+      return;
+    }
     if (!confirm('Are you sure you want to delete this supplier? This will also delete all related purchase orders and payments.')) {
       return;
     }

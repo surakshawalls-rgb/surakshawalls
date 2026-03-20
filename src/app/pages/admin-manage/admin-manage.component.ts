@@ -109,6 +109,17 @@ export class AdminManageComponent implements OnInit {
       route: '/manage/library-seats',
       category: 'Library',
       operations: ['View', 'Edit']
+    },
+
+    // System Modules
+    {
+      id: 'user-management',
+      title: 'User Management',
+      description: 'Create, update, delete users and manage passwords',
+      icon: 'manage_accounts',
+      route: '/admin-user-management',
+      category: 'System',
+      operations: ['View', 'Add', 'Edit', 'Delete']
     }
   ];
 

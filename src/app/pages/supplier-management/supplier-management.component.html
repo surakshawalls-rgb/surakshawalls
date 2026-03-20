@@ -90,7 +90,7 @@
                     <button mat-icon-button color="accent" (click)="viewSupplierLedger(supplier.id)" matTooltip="View Ledger">
                       <mat-icon>account_balance</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="deleteSupplier(supplier.id)" matTooltip="Delete">
+                    <button *ngIf="canDelete()" mat-icon-button color="warn" (click)="deleteSupplier(supplier.id)" matTooltip="Delete">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>

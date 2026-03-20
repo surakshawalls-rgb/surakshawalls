@@ -1,0 +1,376 @@
+<div class="manage-container">
+  <div class="header">
+    <div class="header-left">
+      <mat-icon class="header-icon">manage_accounts</mat-icon>
+      <div>
+        <h1>User Management</h1>
+        <p class="subtitle">Admin panel to create, edit, suspend, delete users and update passwords</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button mat-stroked-button (click)="loadUsers()" [disabled]="loading || saving">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-raised-button color="primary" (click)="openCreateModal()" [disabled]="saving">
+        <mat-icon>person_add</mat-icon>
+        Add User
+      </button>
+    </div>
+  </div>
+
+  <div class="search-bar">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search users</mat-label>
+      <input
+        matInput
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilter()"
+        placeholder="Name, email, role, module, status"
+      />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+
+    <div class="stats">
+      <span class="stat-item">
+        <mat-icon>group</mat-icon>
+        Total: {{ users.length }}
+      </span>
+      <span class="stat-item">
+        <mat-icon>filter_alt</mat-icon>
+        Showing: {{ filteredUsers.length }}
+      </span>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <mat-icon>hourglass_empty</mat-icon>
+    <p>Loading users...</p>
+  </div>
+
+  <div *ngIf="!loading" class="table-container">
+    <table mat-table [dataSource]="filteredUsers" class="users-table">
+      <ng-container matColumnDef="full_name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="inline-cell inline-name-cell" [title]="user.full_name">
+            <strong class="cell-primary text-ellipsis">{{ user.full_name }}</strong>
+            <span class="self-chip" *ngIf="isCurrentUser(user)">Current</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="inline-cell" [title]="user.email">
+            <span class="email-text text-ellipsis">{{ user.email }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef>Role</th>
+        <td mat-cell *matCellDef="let user">
+          <span class="role-chip" [class.role-admin]="user.role === 'admin' || user.role === 'su'">
+            {{ roleLabel(user.role) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="modules">
+        <th mat-header-cell *matHeaderCellDef>Modules</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="module-list" [title]="formatModules(user.modules)">
+            <span class="module-chip" *ngFor="let module of user.modules">
+              {{ moduleLabel(module) }}
+            </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="can_delete">
+        <th mat-header-cell *matHeaderCellDef>Delete Rights</th>
+        <td mat-cell *matCellDef="let user">
+          <span class="permission-chip" [class.permission-yes]="user.can_delete" [class.permission-no]="!user.can_delete">
+            <mat-icon>{{ user.can_delete ? 'verified_user' : 'block' }}</mat-icon>
+            {{ user.can_delete ? 'Allowed' : 'Blocked' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="inline-cell" [title]="statusDetail(user)">
+            <span class="status-chip" [class.status-active]="!user.is_suspended" [class.status-suspended]="user.is_suspended">
+              <mat-icon>{{ user.is_suspended ? 'block' : 'check_circle' }}</mat-icon>
+              {{ statusLabel(user) }}
+            </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="last_sign_in_at">
+        <th mat-header-cell *matHeaderCellDef>Last Login</th>
+        <td mat-cell *matCellDef="let user">
+          <div class="inline-cell" [title]="lastLoginDetail(user)">
+            <span class="cell-primary text-ellipsis">{{ formatDate(user.last_sign_in_at) }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let user" class="actions-cell">
+          <div class="action-group">
+          <button
+            mat-icon-button
+            class="action-btn action-edit"
+            (click)="openEditModal(user)"
+            matTooltip="Edit user or change password"
+            [attr.aria-label]="'Edit ' + user.full_name"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            class="action-btn action-suspend"
+            [class.action-restore]="user.is_suspended"
+            (click)="openSuspendModal(user)"
+            [disabled]="isCurrentUser(user)"
+            [matTooltip]="suspendActionTooltip(user)"
+            [attr.aria-label]="suspendActionLabel(user) + ' ' + user.full_name"
+          >
+            <mat-icon>{{ user.is_suspended ? 'lock_open' : 'block' }}</mat-icon>
+          </button>
+
+          <button
+            mat-icon-button
+            class="action-btn action-delete"
+            (click)="openDeleteModal(user)"
+            [disabled]="isCurrentUser(user) || !isSuperAdmin()"
+            matTooltip="Delete user"
+            [attr.aria-label]="'Delete ' + user.full_name"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <div *ngIf="filteredUsers.length === 0" class="empty-state">
+      <mat-icon>person_off</mat-icon>
+      <p>No users found</p>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showSuspendModal" class="modal-overlay" (click)="closeSuspendModal()">
+  <div class="modal-content delete-modal suspend-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>
+        <mat-icon [color]="suspendTargetState ? 'warn' : 'primary'">
+          {{ suspendTargetState ? 'block' : 'lock_open' }}
+        </mat-icon>
+        {{ suspendTargetState ? 'Temporarily Suspend User' : 'Re-enable User' }}
+      </h2>
+      <button mat-icon-button (click)="closeSuspendModal()" [disabled]="saving">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p>
+        {{ suspendTargetState ? 'Do you want to temporarily disable' : 'Do you want to allow login again for' }}
+        <strong>{{ suspendingUser?.full_name }}</strong>
+        ({{ suspendingUser?.email }})?
+      </p>
+
+      <p *ngIf="suspendTargetState" class="warning-text">
+        This keeps the user record intact but blocks future logins until you re-enable the account.
+      </p>
+
+      <p *ngIf="!suspendTargetState" class="info-text">
+        This restores login access without creating a new registration.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button mat-button (click)="closeSuspendModal()" [disabled]="saving">Cancel</button>
+      <button
+        mat-raised-button
+        [color]="suspendTargetState ? 'warn' : 'primary'"
+        (click)="updateSuspension()"
+        [disabled]="saving"
+      >
+        <mat-icon>{{ suspendTargetState ? 'block' : 'lock_open' }}</mat-icon>
+        {{ suspendTargetState ? 'Suspend User' : 'Re-enable User' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><mat-icon>person_add</mat-icon>Create New User</h2>
+      <button mat-icon-button (click)="closeCreateModal()" [disabled]="saving">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Full Name</mat-label>
+        <input matInput [(ngModel)]="createForm.full_name" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [(ngModel)]="createForm.email" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" [(ngModel)]="createForm.password" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Role</mat-label>
+        <mat-select [(ngModel)]="createForm.role">
+          <mat-option *ngFor="let role of roleOptions" [value]="role">
+            {{ roleLabel(role) }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="modules-box">
+        <label>Modules Access</label>
+        <div class="module-options">
+          <mat-checkbox
+            *ngFor="let module of moduleOptions"
+            [checked]="isModuleSelected('create', module)"
+            (change)="toggleModuleSelection('create', module, $event.checked)"
+          >
+            {{ module === 'library' ? 'Library' : 'Manufacturing' }}
+          </mat-checkbox>
+        </div>
+      </div>
+
+      <div class="permissions-box">
+        <mat-checkbox [(ngModel)]="createForm.can_delete">
+          Allow delete operations
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button mat-button (click)="closeCreateModal()" [disabled]="saving">Cancel</button>
+      <button mat-raised-button color="primary" (click)="createUser()" [disabled]="saving">
+        <mat-icon>save</mat-icon>
+        Create User
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showEditModal" class="modal-overlay" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><mat-icon>edit</mat-icon>Edit User</h2>
+      <button mat-icon-button (click)="closeEditModal()" [disabled]="saving">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Full Name</mat-label>
+        <input matInput [(ngModel)]="editForm.full_name" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" [(ngModel)]="editForm.email" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>New Password (optional)</mat-label>
+        <input matInput type="password" [(ngModel)]="editForm.password" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Role</mat-label>
+        <mat-select [(ngModel)]="editForm.role">
+          <mat-option *ngFor="let role of roleOptions" [value]="role">
+            {{ roleLabel(role) }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="modules-box">
+        <label>Modules Access</label>
+        <div class="module-options">
+          <mat-checkbox
+            *ngFor="let module of moduleOptions"
+            [checked]="isModuleSelected('edit', module)"
+            (change)="toggleModuleSelection('edit', module, $event.checked)"
+          >
+            {{ module === 'library' ? 'Library' : 'Manufacturing' }}
+          </mat-checkbox>
+        </div>
+      </div>
+
+      <div class="permissions-box">
+        <mat-checkbox [(ngModel)]="editForm.can_delete">
+          Allow delete operations
+        </mat-checkbox>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button mat-button (click)="closeEditModal()" [disabled]="saving">Cancel</button>
+      <button mat-raised-button color="primary" (click)="updateUser()" [disabled]="saving">
+        <mat-icon>save</mat-icon>
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDeleteModal" class="modal-overlay" (click)="closeDeleteModal()">
+  <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2><mat-icon color="warn">warning</mat-icon>Delete User</h2>
+      <button mat-icon-button (click)="closeDeleteModal()" [disabled]="saving">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p>
+        Are you sure you want to delete
+        <strong>{{ deletingUser?.full_name }}</strong>
+        ({{ deletingUser?.email }})?
+      </p>
+      <p class="warning-text">
+        This action is permanent and cannot be undone.
+      </p>
+    </div>
+
+    <div class="modal-actions">
+      <button mat-button (click)="closeDeleteModal()" [disabled]="saving">Cancel</button>
+      <button mat-raised-button color="warn" (click)="deleteUser()" [disabled]="saving">
+        <mat-icon>delete</mat-icon>
+        Delete User
+      </button>
+    </div>
+  </div>
+</div>

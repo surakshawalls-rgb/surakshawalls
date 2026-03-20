@@ -3,6 +3,7 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { AdminUserService } from './admin-user.service';
 import { format, startOfMonth, addDays, getDaysInMonth, subMonths, startOfYear } from 'date-fns';
 
 export interface LibraryStudent {
@@ -17,6 +18,8 @@ export interface LibraryStudent {
   photo_url?: string;
   joining_date: string;
   registration_fee_paid: number;
+  payment_pending?: boolean;
+  pending_payment_amount?: number;
   status: 'active' | 'inactive' | 'suspended';
   notes?: string;
   created_at: string;
@@ -52,6 +55,19 @@ export interface LibraryFeePayment {
   transaction_reference?: string;
   notes?: string;
   created_at: string;
+}
+
+export interface SettlePendingPaymentInput {
+  student_id: string;
+  seat_no: number;
+  shift_type: 'full_time' | 'first_half' | 'second_half';
+  amount_paid: number;
+  payment_date: string;
+  valid_from: string;
+  valid_until: string;
+  payment_mode: 'cash' | 'upi' | 'card' | 'other';
+  transaction_reference?: string;
+  notes?: string;
 }
 
 export interface LibraryExpense {
@@ -139,7 +155,8 @@ export class LibraryService {
 
   constructor(
     private supabase: SupabaseService,
-    private authService: AuthService
+    private authService: AuthService,
+    private adminUserService: AdminUserService
   ) {}
 
   // ========================================
@@ -266,6 +283,28 @@ export class LibraryService {
     } catch (error: any) {
       console.error('[LibraryService] addStudent error:', error);
       return { success: false, error: error.message };
+    }
+  }
+
+  async provisionStudentPortalAccount(student: {
+    id: string;
+    name: string;
+    mobile: string;
+  }): Promise<{ success: boolean; email?: string; error?: string }> {
+    try {
+      const user = await this.adminUserService.provisionLibraryStudentUser({
+        student_id: student.id,
+        full_name: student.name,
+        mobile: student.mobile,
+      });
+
+      return { success: true, email: user.email };
+    } catch (error: any) {
+      console.error('[LibraryService] provisionStudentPortalAccount error:', error);
+      return {
+        success: false,
+        error: error?.message || 'Failed to create student login account.',
+      };
     }
   }
 
@@ -431,7 +470,7 @@ export class LibraryService {
   async approveRegistrationRequest(
     requestId: string,
     approval: ApproveLibraryRegistrationRequestInput
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  ): Promise<{ success: boolean; message?: string; warning?: string; error?: string }> {
     try {
       const currentUser = this.authService.currentUserValue;
 
@@ -459,9 +498,31 @@ export class LibraryService {
 
       this.clearSeatsCache();
 
+      let warning: string | undefined;
+      const approvedStudentId = typeof data?.student_id === 'string' ? data.student_id : null;
+
+      if (approvedStudentId) {
+        const student = await this.getStudentById(approvedStudentId);
+
+        if (student) {
+          const provisioningResult = await this.provisionStudentPortalAccount({
+            id: student.id,
+            name: student.name,
+            mobile: student.mobile,
+          });
+
+          if (!provisioningResult.success) {
+            warning = `Seat approval succeeded, but the student login account could not be created. ${provisioningResult.error}`;
+          }
+        } else {
+          warning = 'Seat approval succeeded, but the student record could not be loaded for login creation.';
+        }
+      }
+
       return {
         success: true,
-        message: data?.message || 'Registration request approved successfully'
+        message: data?.message || 'Registration request approved successfully',
+        warning
       };
     } catch (error: any) {
       console.error('[LibraryService] approveRegistrationRequest error:', error);
@@ -721,6 +782,46 @@ export class LibraryService {
       return { success: true, payment: paymentData };
     } catch (error: any) {
       console.error('[LibraryService] recordFeePayment error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async settlePendingPayment(
+    input: SettlePendingPaymentInput
+  ): Promise<{success: boolean, payment?: LibraryFeePayment, error?: string}> {
+    try {
+      const paymentResult = await this.recordFeePayment({
+        student_id: input.student_id,
+        seat_no: input.seat_no,
+        shift_type: input.shift_type,
+        amount_paid: input.amount_paid,
+        payment_date: input.payment_date,
+        valid_from: input.valid_from,
+        valid_until: input.valid_until,
+        payment_mode: input.payment_mode,
+        transaction_reference: input.transaction_reference,
+        notes: input.notes || 'Pending registration payment collected later'
+      });
+
+      if (!paymentResult.success) {
+        return { success: false, error: paymentResult.error || 'Failed to record payment' };
+      }
+
+      const clearResult = await this.updateStudent(input.student_id, {
+        payment_pending: false,
+        pending_payment_amount: 0
+      });
+
+      if (!clearResult.success) {
+        return {
+          success: false,
+          error: clearResult.error || 'Payment recorded, but failed to clear pending flag'
+        };
+      }
+
+      return { success: true, payment: paymentResult.payment };
+    } catch (error: any) {
+      console.error('[LibraryService] settlePendingPayment error:', error);
       return { success: false, error: error.message };
     }
   }

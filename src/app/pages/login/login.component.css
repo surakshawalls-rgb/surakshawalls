@@ -127,6 +127,19 @@
   padding: 14px 18px;
   border-radius: 10px;
   font-size: 0.9375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid #ffcdd2;
+}
+
+.error-message-title {
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.error-message-body {
+  line-height: 1.45;
 }
 
 .forgot-password {

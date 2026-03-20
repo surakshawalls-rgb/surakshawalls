@@ -29,12 +29,38 @@ export class LoginComponent {
     }
   }
 
+  private validateLoginForm(): string | null {
+    const email = this.email.trim();
+    const password = this.password;
+
+    if (!email && !password) {
+      return 'Enter your email address and password to continue.';
+    }
+
+    if (!email) {
+      return 'Enter your email address to continue.';
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return 'Enter a valid email address, for example name@company.com.';
+    }
+
+    if (!password) {
+      return 'Enter your password to continue.';
+    }
+
+    return null;
+  }
+
   async onLogin() {
-    if (!this.email || !this.password) {
-      this.errorMessage = 'Please enter email and password';
+    const validationMessage = this.validateLoginForm();
+    if (validationMessage) {
+      this.errorMessage = validationMessage;
       this.cdr.detectChanges();
       return;
     }
+
+    this.email = this.email.trim().toLowerCase();
 
     this.loading = true;
     this.errorMessage = '';

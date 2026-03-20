@@ -93,7 +93,7 @@
           <button mat-icon-button color="primary" (click)="openEditModal(worker)" matTooltip="Edit Worker">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button color="warn" (click)="openDeleteModal(worker)" matTooltip="Delete Worker">
+          <button *ngIf="canDelete()" mat-icon-button color="warn" (click)="openDeleteModal(worker)" matTooltip="Delete Worker">
             <mat-icon>delete</mat-icon>
           </button>
         </td>

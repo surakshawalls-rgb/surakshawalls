@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { WorkerService, Worker } from '../../services/worker.service';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-manage-workers',
@@ -56,7 +57,8 @@ export class ManageWorkersComponent implements OnInit {
   constructor(
     private workerService: WorkerService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -125,7 +127,15 @@ export class ManageWorkersComponent implements OnInit {
     }
   }
 
+  canDelete(): boolean {
+    return this.authService.canDelete();
+  }
+
   openDeleteModal(worker: Worker) {
+    if (!this.canDelete()) {
+      this.notificationService.notify('Access Denied', 'Only Super Admin can delete records.', 'error');
+      return;
+    }
     this.deletingWorker = worker;
     this.showDeleteModal = true;
   }
@@ -136,7 +146,7 @@ export class ManageWorkersComponent implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.deletingWorker) return;
+    if (!this.deletingWorker || !this.canDelete()) return;
 
     try {
       const result = await this.workerService.deleteWorker(this.deletingWorker.id);

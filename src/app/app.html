@@ -131,6 +131,10 @@
             <mat-icon>account_balance</mat-icon>
             <span>Company Cash</span>
           </button>
+          <button mat-menu-item routerLink="/admin-user-management" routerLinkActive="active">
+            <mat-icon>manage_accounts</mat-icon>
+            <span>User Management</span>
+          </button>
         </mat-menu>
       </ng-container>
 
@@ -316,6 +320,10 @@
         <button mat-menu-item routerLink="/company-cash">
           <mat-icon>account_balance</mat-icon>
           <span>Company Cash</span>
+        </button>
+        <button mat-menu-item routerLink="/admin-user-management">
+          <mat-icon>manage_accounts</mat-icon>
+          <span>User Management</span>
         </button>
       </ng-container>
       <ng-container *ngIf="hasLibraryAccess()">

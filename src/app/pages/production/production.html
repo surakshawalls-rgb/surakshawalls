@@ -151,7 +151,7 @@
           <div style="font-weight: 600;">{{r.round_plate}}</div>
           <div style="font-weight: 600;">{{r.biscuit_plate}}</div>
           <div style="text-align: center;">
-            <button (click)="deleteProduction(r.id)" title="Delete" 
+            <button *ngIf="canDelete()" (click)="deleteProduction(r.id)" title="Delete" 
                     style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; font-size: 8px;"
                     onmouseover="this.style.background='#dc2626'"
                     onmouseout="this.style.background='#ef4444'">
@@ -232,7 +232,7 @@
           <td>₹{{s.price}}</td>
           <td>₹{{s.quantity * s.price}}</td>
           <td>
-            <button class="delete-btn" (click)="deleteSelling(s.id)" title="Delete">🗑️</button>
+            <button *ngIf="canDelete()" class="delete-btn" (click)="deleteSelling(s.id)" title="Delete">🗑️</button>
           </td>
         </tr>
       </table>
@@ -282,7 +282,7 @@
           <td>{{d.quantity}}</td>
           <td>{{d.reason}}</td>
           <td>
-            <button class="delete-btn" (click)="deleteDamage(d.id)" title="Delete">🗑️</button>
+            <button *ngIf="canDelete()" class="delete-btn" (click)="deleteDamage(d.id)" title="Delete">🗑️</button>
           </td>
         </tr>
       </table>

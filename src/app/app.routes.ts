@@ -269,6 +269,11 @@ export const routes: Routes = [
     path: 'partner', 
     loadComponent: () => import('./pages/partner/partner').then(m => m.PartnerComponent),
     canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+  },
+  {
+    path: 'admin-user-management',
+    loadComponent: () => import('./pages/admin-user-management/admin-user-management.component').then(m => m.AdminUserManagementComponent),
+    canActivate: [authGuard, adminGuard]
   }
 
   // DEPRECATED - Replaced by unified-daily-entry

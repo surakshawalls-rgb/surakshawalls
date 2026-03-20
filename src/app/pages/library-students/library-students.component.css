@@ -481,10 +481,14 @@
   }
 
   .students-table .mat-mdc-cell:nth-child(10)::before {
-    content: 'Status';
+    content: 'Payment';
   }
 
   .students-table .mat-mdc-cell:nth-child(11)::before {
+    content: 'Status';
+  }
+
+  .students-table .mat-mdc-cell:nth-child(12)::before {
     content: 'Actions';
   }
 
@@ -1085,7 +1089,9 @@
 
 .students-table {
   width: 100%;
+  min-width: 1120px;
   background: white;
+  table-layout: auto;
 }
 
 .students-table th {
@@ -1097,6 +1103,7 @@
   text-align: left;
   border-bottom: 2px solid #dce0e4;
   height: 48px;
+  white-space: nowrap;
 }
 
 .students-table td {
@@ -1105,6 +1112,42 @@
   font-size: 0.875rem;
   border-bottom: 1px solid #e0e0e0;
   height: 52px;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.students-table .mat-column-photo {
+  width: 56px;
+}
+
+.students-table .mat-column-gender,
+.students-table .mat-column-mobile,
+.students-table .mat-column-seat_no,
+.students-table .mat-column-joining_date,
+.students-table .mat-column-registration_fee_paid,
+.students-table .mat-column-payment_tracking,
+.students-table .mat-column-status,
+.students-table .mat-column-actions {
+  width: 1%;
+}
+
+.students-table .mat-column-photo,
+.students-table .mat-column-gender,
+.students-table .mat-column-mobile,
+.students-table .mat-column-seat_no,
+.students-table .mat-column-joining_date,
+.students-table .mat-column-registration_fee_paid,
+.students-table .mat-column-payment_tracking,
+.students-table .mat-column-status,
+.students-table .mat-column-actions {
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+.students-table .mat-column-name,
+.students-table .mat-column-emergency_contact,
+.students-table .mat-column-address {
+  min-width: 0;
 }
 
 .student-row {
@@ -1117,20 +1160,23 @@
 }
 
 .photo-column {
-  width: 60px;
+  width: 56px;
 }
 
 /* Horizontal Action Buttons */
 .action-buttons-horizontal {
   display: flex;
-  gap: 2px;
+  gap: 1px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: max-content;
 }
 
 .action-buttons-horizontal button {
-  min-width: 32px;
-  height: 32px;
+  min-width: 30px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
   font-size: 15px;
   transition: all 0.2s ease;
 }
@@ -1551,9 +1597,15 @@ textarea.form-control {
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Hide non-essential columns on tablet/mobile */
+  .students-container-modern .students-table .mat-column-emergency_contact,
+  .students-container-modern .students-table .mat-column-address {
+    display: none !important;
+  }
+
   .students-container-modern .students-table {
-    min-width: 1080px !important;
-    width: 1080px !important;
+    min-width: 740px !important;
+    width: auto !important;
   }
 
   .students-container-modern .students-table .mat-mdc-header-row {
@@ -1586,8 +1638,13 @@ textarea.form-control {
 }
 
 @media (max-width: 480px) {
+  /* Also hide joining date on small phones */
+  .students-container-modern .students-table .mat-column-joining_date {
+    display: none !important;
+  }
+
   .students-container-modern .students-table {
-    min-width: 980px !important;
-    width: 980px !important;
+    min-width: 620px !important;
+    width: auto !important;
   }
 }

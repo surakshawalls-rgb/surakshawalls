@@ -358,6 +358,13 @@
   background: rgba(255,255,255,0.25);
 }
 
+.seat-box.selected .seat-payment-pending,
+.seat-box.selected .half-pending {
+  color: #fff7ed;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+}
+
 /* Seat Number - Clean and Bold */
 .seat-number {
   font-size: 1.25rem;
@@ -517,6 +524,23 @@
   white-space: nowrap;
 }
 
+.seat-payment-pending {
+  font-size: 0.56rem;
+  font-weight: 700;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 8px;
+  padding: 1px 6px;
+  margin-top: 2px;
+  max-width: 95%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+}
+
 /* Expiry Information */
 .seat-expiry {
   font-size: 0.65rem;
@@ -557,6 +581,19 @@
   font-size: 0.65rem;
   padding: 2px 4px;
   font-weight: 500;
+}
+
+.half-pending {
+  font-size: 0.52rem;
+  font-weight: 700;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.18);
+  border-radius: 6px;
+  padding: 1px 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  margin-top: 1px;
+  display: inline-block;
 }
 
 /* Dual Students Layout */
@@ -782,6 +819,16 @@
     font-size: 0.6rem;
   }
 
+  .seat-payment-pending {
+    font-size: 0.5rem;
+    padding: 1px 5px;
+  }
+
+  .half-pending {
+    font-size: 0.5rem;
+    padding: 1px 4px;
+  }
+
   .student-name {
     font-size: 0.7rem;
   }
@@ -877,6 +924,16 @@
     font-size: 0.563rem;
   }
 
+  .seat-payment-pending {
+    font-size: 0.48rem;
+    letter-spacing: 0.15px;
+  }
+
+  .half-pending {
+    font-size: 0.45rem;
+    padding: 1px 3px;
+  }
+
   .student-name {
     font-size: 0.688rem;
     padding: 2px 4px;
@@ -932,6 +989,16 @@
   .seat-status-top {
     font-size: 0.5rem;
     padding: 2px 5px;
+  }
+
+  .seat-payment-pending {
+    font-size: 0.44rem;
+    padding: 1px 3px;
+  }
+
+  .half-pending {
+    font-size: 0.42rem;
+    padding: 1px 2px;
   }
 
   .time-status-top .checkin-time,
