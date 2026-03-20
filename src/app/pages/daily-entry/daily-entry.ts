@@ -752,8 +752,8 @@ export class UnifiedDailyEntryComponent implements OnInit {
       return;
     }
     
-    if (this.productionItems.length === 0 && !this.hasSalesToday && this.otherExpenses.length === 0) {
-      this.showError('Add at least one entry (production, sales, or expenses)');
+    if (this.productionItems.length === 0 && !this.hasSalesToday && this.otherExpenses.length === 0 && this.workerEntries.length === 0) {
+      this.showError('Add at least one entry (production, sales, expenses, or worker attendance)');
       return;
     }
     
@@ -920,7 +920,28 @@ export class UnifiedDailyEntryComponent implements OnInit {
           if (rpcError) throw rpcError;
         }
       }
-      
+
+      // 5. Save worker wages for attendance-only days (no production)
+      // When production exists, wages are already saved inside saveProduction(). Skip to avoid duplicates.
+      if (!this.hasProduction || this.productionItems.length === 0) {
+        if (this.workerEntries.length > 0) {
+          const wageResult = await this.productionService.saveWorkerWagesOnly(
+            this.workerEntries.map(we => ({
+              worker_id: we.worker.id,
+              worker_name: we.worker.name,
+              attendance_type: we.attendance_type,
+              wage_earned: we.wage_earned,
+              paid_today: we.paid_today,
+              paid_by_partner_id: we.paid_by_partner_id
+            })),
+            this.entryDate
+          );
+          if (!wageResult.success) {
+            throw new Error(wageResult.error || 'Failed to save worker wages');
+          }
+        }
+      }
+
       this.successMessage = `✅ Daily entry for ${this.entryDate} saved successfully!`;
       console.log('Daily entry saved successfully');
       

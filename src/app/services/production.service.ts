@@ -225,6 +225,26 @@ export class ProductionService {
   /**
    * Record worker wage and update cumulative balance
    */
+  /**
+   * Save worker wages for a day with no production (attendance-only entry).
+   * production_entry_id is intentionally null in this case.
+   */
+  async saveWorkerWagesOnly(workers: ProductionData['workers'], date: string): Promise<{success: boolean, error?: string}> {
+    try {
+      for (const worker of workers) {
+        await this.recordWage({
+          ...worker,
+          production_entry_id: null,
+          date
+        });
+      }
+      return { success: true };
+    } catch (error: any) {
+      console.error('[ProductionService] saveWorkerWagesOnly error:', error);
+      return { success: false, error: error.message || 'Failed to save worker wages' };
+    }
+  }
+
   private async recordWage(wageData: any) {
     // Insert wage entry
     const { error: wageError } = await this.supabase.supabase
