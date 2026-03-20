@@ -145,7 +145,11 @@ export class LabourLedgerComponent implements OnInit {
     try {
       const { data, error } = await this.db.queryView('partner_master');
       if (error) throw error;
-      this.partners = data || [];
+      this.partners = (data || []).map((p: any) => ({
+        partner_id: p.partner_id || p.id,
+        name: p.name || p.partner_name || 'Unknown Partner',
+        profit_share: p.profit_share ?? p.share_percentage ?? 0
+      })).filter((p: Partner) => !!p.partner_id);
       if (this.partners.length > 0) {
         this.paidByPartnerId = this.partners[0].partner_id;
       }

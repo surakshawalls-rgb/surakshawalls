@@ -371,9 +371,18 @@
 
       <div class="form-group" *ngIf="paymentDialog.type === 'worker'">
         <label>Payment Source *</label>
-        <select [(ngModel)]="paymentDialog.paymentSource" class="form-control">
+        <select [(ngModel)]="paymentDialog.paymentSource" (change)="onWorkerPaymentSourceChange()" class="form-control">
           <option value="company">Company Revenue</option>
           <option value="client_revenue">Client Revenue</option>
+          <option value="partner">Partner Payment</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="paymentDialog.type === 'worker' && paymentDialog.paymentSource === 'partner'">
+        <label>Paid By Partner *</label>
+        <select [(ngModel)]="paymentDialog.workerPaidByPartnerId" class="form-control">
+          <option [ngValue]="undefined" disabled *ngIf="partners.length === 0">No partners available</option>
+          <option *ngFor="let p of partners" [value]="p.id">{{ p.partner_name }}</option>
         </select>
       </div>
 

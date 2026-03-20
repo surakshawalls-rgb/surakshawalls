@@ -59,7 +59,7 @@
       <label>Paid By:</label>
       <select [(ngModel)]="paidByPartnerId" class="input-field">
         <option *ngFor="let partner of partners" [value]="partner.partner_id">
-          {{ partner.name }}
+          {{ partner.name || 'Unknown Partner' }}
         </option>
       </select>
     </div>

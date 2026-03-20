@@ -20,7 +20,8 @@ interface PaymentDialog {
   clientId?: string;
   clientName?: string;
   paymentAmount: number;
-  paymentSource: 'company' | 'client_revenue';
+  paymentSource: 'company' | 'client_revenue' | 'partner';
+  workerPaidByPartnerId?: string;
   paymentDate: string;
   notes: string;
   collectedBy?: string; // 'firm' or partner name
@@ -77,6 +78,7 @@ export class ReportsDashboardComponent implements OnInit {
     mode: 'full',
     paymentAmount: 0,
     paymentSource: 'company',
+    workerPaidByPartnerId: undefined,
     paymentDate: new Date().toISOString().split('T')[0],
     notes: '',
     collectedBy: 'firm',
@@ -257,6 +259,7 @@ export class ReportsDashboardComponent implements OnInit {
       outstandingAmount: worker.outstanding,
       paymentAmount: mode === 'full' ? worker.outstanding : 0,
       paymentSource: 'company',
+      workerPaidByPartnerId: this.partners[0]?.id,
       paymentDate: new Date().toISOString().split('T')[0],
       notes: ''
     };
@@ -282,6 +285,14 @@ export class ReportsDashboardComponent implements OnInit {
   closePaymentDialog() {
     this.paymentDialog.show = false;
     this.paymentDialog.type = null;
+  }
+
+  onWorkerPaymentSourceChange() {
+    if (this.paymentDialog.paymentSource === 'partner') {
+      this.paymentDialog.workerPaidByPartnerId = this.paymentDialog.workerPaidByPartnerId || this.partners[0]?.id;
+      return;
+    }
+    this.paymentDialog.workerPaidByPartnerId = undefined;
   }
   
   async submitPayment() {
@@ -327,6 +338,14 @@ export class ReportsDashboardComponent implements OnInit {
   
   private async payWorker() {
     if (!this.paymentDialog.workerId) return;
+
+    const paidByPartnerId = this.paymentDialog.paymentSource === 'partner'
+      ? this.paymentDialog.workerPaidByPartnerId
+      : undefined;
+
+    if (this.paymentDialog.paymentSource === 'partner' && !paidByPartnerId) {
+      throw new Error('Please select partner for this payment');
+    }
     
     // Get worker's wage entries with outstanding
     const workerWithOutstanding = this.workersWithOutstanding.find(
@@ -351,7 +370,7 @@ export class ReportsDashboardComponent implements OnInit {
           worker_id: wageEntry.worker_id,
           payment_date: this.paymentDialog.paymentDate,
           amount_paid: amountToPay,
-          paid_by_partner_id: undefined, // company payment
+          paid_by_partner_id: paidByPartnerId,
           payment_mode: 'cash', // Default payment mode
           notes: this.paymentDialog.notes || `Payment via Reports Dashboard`
         });
