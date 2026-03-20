@@ -12,6 +12,7 @@ export type ReminderReasonType =
   | 'discipline'
   | 'disturbance'
   | 'attendance'
+  | 'holiday_closure'
   | 'status_check'
   | 'cleanliness'
   | 'other';
@@ -29,6 +30,8 @@ export interface ReminderReasonDialogData {
 export interface ReminderReasonSelection {
   reason: ReminderReasonType;
   customNote: string;
+  closureStartDate?: string | null;
+  closureEndDate?: string | null;
 }
 
 export interface ReminderMessageContext {
@@ -59,6 +62,11 @@ export const REMINDER_REASON_OPTIONS: ReminderReasonOption[] = [
     helper: 'Use this for irregular attendance or prolonged absence reminders.'
   },
   {
+    value: 'holiday_closure',
+    label: 'Holiday / Closed Notice',
+    helper: 'Use this when library will remain closed for festival, emergency, or maintenance.'
+  },
+  {
     value: 'status_check',
     label: 'Continue or Quit Status',
     helper: 'Use this when the student has been absent for a few days without notice and the team needs confirmation.'
@@ -77,6 +85,40 @@ export const REMINDER_REASON_OPTIONS: ReminderReasonOption[] = [
 
 export function getReminderReasonLabel(reason: ReminderReasonType): string {
   return REMINDER_REASON_OPTIONS.find(option => option.value === reason)?.label || 'Reminder';
+}
+
+function parseIsoDate(dateValue: string | null | undefined): Date | null {
+  if (!dateValue) {
+    return null;
+  }
+
+  const parsed = new Date(`${dateValue}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatReminderDateLabel(dateValue: string | null | undefined): string {
+  const parsed = parseIsoDate(dateValue);
+  if (!parsed) {
+    return 'selected date';
+  }
+
+  return parsed.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+function getInclusiveDaysBetween(startDate: string | null | undefined, endDate: string | null | undefined): number {
+  const start = parseIsoDate(startDate);
+  const end = parseIsoDate(endDate);
+
+  if (!start || !end) {
+    return 0;
+  }
+
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+  return Math.floor((end.getTime() - start.getTime()) / millisecondsPerDay) + 1;
 }
 
 export function buildLibraryReminderMessage(
@@ -101,6 +143,18 @@ export function buildLibraryReminderMessage(
 
     case 'attendance':
       return `Hello ${context.studentName},\n\nThis is a reminder from Suraksha Library regarding regular attendance and seat usage.\n${seatLine}${expiryLine}\nPlease use your allotted seat regularly. If you are unable to continue, kindly inform the library desk so we can update the record accordingly.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
+
+    case 'holiday_closure': {
+      const fromDate = formatReminderDateLabel(selection.closureStartDate);
+      const toDate = formatReminderDateLabel(selection.closureEndDate || selection.closureStartDate);
+      const dayCount = getInclusiveDaysBetween(selection.closureStartDate, selection.closureEndDate || selection.closureStartDate);
+      const durationLabel = dayCount > 0 ? `${dayCount} day${dayCount === 1 ? '' : 's'}` : 'a short duration';
+      const closureReasonLine = selection.customNote.trim()
+        ? `Reason: ${selection.customNote.trim()}\n`
+        : '';
+
+      return `Hello ${context.studentName},\n\nThis is to inform you that Suraksha Library will remain closed from ${fromDate} to ${toDate} (${durationLabel}).\n${closureReasonLine}\nPlease plan your study schedule accordingly. Library services will resume as per regular timings after this closure period.\n\nRegards,\nSuraksha Library Admin Team`;
+    }
 
     case 'status_check':
       return `Hello ${context.studentName},\n\nWe noticed that you have not been coming to Suraksha Library for the last few days and no prior notice has been received.\n${seatLine}\nPlease confirm your current status so we can manage your seat properly:\n1. Reply *CONTINUE* if you want to continue and keep your seat.\n2. Reply *QUIT* if you do not want to continue, so we can vacate and release the seat for another student.\n\nPlease update us as soon as possible.${additionalNote}\nRegards,\nSuraksha Library Admin Team`;
@@ -141,13 +195,53 @@ export function buildLibraryReminderMessage(
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Reminder Reason</mat-label>
-          <mat-select [(ngModel)]="selectedReason" required>
+          <mat-select [(ngModel)]="selectedReason" (ngModelChange)="onReasonChange()" required>
             <mat-option *ngFor="let option of reasonOptions" [value]="option.value">
               {{ option.label }}
             </mat-option>
           </mat-select>
           <mat-hint>{{ selectedOption.helper }}</mat-hint>
         </mat-form-field>
+
+        <div class="closure-details" *ngIf="selectedReason === 'holiday_closure'">
+          <p class="section-title">Closure Date Range (Maximum 3 days)</p>
+
+          <div class="date-grid">
+            <label class="date-field">
+              <span>From Date</span>
+              <input type="date" [(ngModel)]="closureStartDate" (ngModelChange)="onClosureStartDateChange()">
+            </label>
+
+            <label class="date-field">
+              <span>To Date</span>
+              <input type="date" [(ngModel)]="closureEndDate" [min]="closureStartDate || null">
+            </label>
+          </div>
+
+          <div class="quick-days">
+            <span>Quick select:</span>
+            <button type="button" class="day-btn" [class.active]="getClosureDayCount() === 1" (click)="setClosureDuration(1)">1 Day</button>
+            <button type="button" class="day-btn" [class.active]="getClosureDayCount() === 2" (click)="setClosureDuration(2)">2 Days</button>
+            <button type="button" class="day-btn" [class.active]="getClosureDayCount() === 3" (click)="setClosureDuration(3)">3 Days</button>
+          </div>
+
+          <p class="closure-summary" *ngIf="closureStartDate && closureEndDate && !closureValidationError">
+            Closure selected for {{ getClosureDayCount() }} day{{ getClosureDayCount() === 1 ? '' : 's' }}.
+          </p>
+          <p class="validation-error" *ngIf="closureValidationError">{{ closureValidationError }}</p>
+        </div>
+
+        <div class="custom-note-section" *ngIf="selectedReason === 'holiday_closure' || selectedReason === 'other'">
+          <label class="note-label">
+            {{ selectedReason === 'holiday_closure' ? 'Reason (optional)' : 'Custom note (optional)' }}
+          </label>
+          <textarea
+            [(ngModel)]="customNote"
+            rows="3"
+            maxlength="300"
+            placeholder="Example: Closed for festival / emergency."
+          ></textarea>
+        </div>
 
         <div class="alert-info">
           <mat-icon>info</mat-icon>
@@ -205,6 +299,113 @@ export function buildLibraryReminderMessage(
       margin-bottom: 16px;
     }
 
+    .closure-details {
+      margin-top: 6px;
+      margin-bottom: 14px;
+      padding: 12px;
+      border: 1px solid #dbe7f8;
+      border-radius: 8px;
+      background: #f8fbff;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #26486d;
+    }
+
+    .date-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .date-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #355074;
+    }
+
+    .date-field input {
+      border: 1px solid #c6d7ef;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: #1f2f45;
+      background: #fff;
+    }
+
+    .quick-days {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: #466386;
+    }
+
+    .day-btn {
+      border: 1px solid #9ab9e2;
+      background: #fff;
+      color: #214b7a;
+      border-radius: 999px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .day-btn.active {
+      background: #1f5aa8;
+      color: #fff;
+      border-color: #1f5aa8;
+    }
+
+    .closure-summary {
+      margin: 10px 0 0;
+      font-size: 12px;
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    .validation-error {
+      margin: 10px 0 0;
+      font-size: 12px;
+      color: #b42318;
+      font-weight: 600;
+    }
+
+    .custom-note-section {
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .note-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #355074;
+    }
+
+    .custom-note-section textarea {
+      width: 100%;
+      resize: vertical;
+      min-height: 80px;
+      border: 1px solid #c6d7ef;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: #1f2f45;
+      font-family: inherit;
+      background: #fff;
+      box-sizing: border-box;
+    }
+
     .alert-info {
       display: flex;
       align-items: flex-start;
@@ -252,6 +453,10 @@ export function buildLibraryReminderMessage(
         max-width: 98vw;
       }
 
+      .date-grid {
+        grid-template-columns: 1fr;
+      }
+
       mat-dialog-actions {
         padding: 12px !important;
         flex-direction: column;
@@ -266,6 +471,9 @@ export function buildLibraryReminderMessage(
 export class ReminderReasonDialogComponent {
   reasonOptions = REMINDER_REASON_OPTIONS;
   selectedReason: ReminderReasonType = 'fee_due';
+  customNote = '';
+  closureStartDate = '';
+  closureEndDate = '';
 
   constructor(
     private dialogRef: MatDialogRef<ReminderReasonDialogComponent>,
@@ -276,8 +484,92 @@ export class ReminderReasonDialogComponent {
     return this.reasonOptions.find(option => option.value === this.selectedReason) || this.reasonOptions[0];
   }
 
+  get closureValidationError(): string {
+    if (this.selectedReason !== 'holiday_closure') {
+      return '';
+    }
+
+    if (!this.closureStartDate || !this.closureEndDate) {
+      return '';
+    }
+
+    const dayCount = this.getClosureDayCount();
+    if (dayCount <= 0) {
+      return 'End date must be same as or after start date.';
+    }
+
+    if (dayCount > 3) {
+      return 'Maximum closure range is 3 days.';
+    }
+
+    return '';
+  }
+
+  onReasonChange() {
+    if (this.selectedReason === 'holiday_closure' && !this.closureStartDate) {
+      const today = new Date();
+      this.closureStartDate = this.toIsoDate(today);
+      this.closureEndDate = this.closureStartDate;
+      return;
+    }
+
+    if (this.selectedReason !== 'holiday_closure') {
+      this.closureStartDate = '';
+      this.closureEndDate = '';
+    }
+  }
+
+  onClosureStartDateChange() {
+    if (!this.closureStartDate) {
+      this.closureEndDate = '';
+      return;
+    }
+
+    if (!this.closureEndDate || this.closureEndDate < this.closureStartDate) {
+      this.closureEndDate = this.closureStartDate;
+    }
+  }
+
+  setClosureDuration(days: 1 | 2 | 3) {
+    if (!this.closureStartDate) {
+      this.closureStartDate = this.toIsoDate(new Date());
+    }
+
+    const startDate = parseIsoDate(this.closureStartDate);
+    if (!startDate) {
+      return;
+    }
+
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + (days - 1));
+    this.closureEndDate = this.toIsoDate(endDate);
+  }
+
+  getClosureDayCount(): number {
+    return getInclusiveDaysBetween(this.closureStartDate, this.closureEndDate);
+  }
+
+  private toIsoDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   isValid(): boolean {
-    return !!this.selectedReason;
+    if (!this.selectedReason) {
+      return false;
+    }
+
+    if (this.selectedReason === 'holiday_closure') {
+      if (!this.closureStartDate || !this.closureEndDate) {
+        return false;
+      }
+
+      return !this.closureValidationError;
+    }
+
+    return true;
   }
 
   cancel() {
@@ -287,7 +579,9 @@ export class ReminderReasonDialogComponent {
   submit() {
     this.dialogRef.close({
       reason: this.selectedReason,
-      customNote: ''
+      customNote: this.customNote.trim(),
+      closureStartDate: this.selectedReason === 'holiday_closure' ? this.closureStartDate : null,
+      closureEndDate: this.selectedReason === 'holiday_closure' ? this.closureEndDate : null
     } satisfies ReminderReasonSelection);
   }
 }
