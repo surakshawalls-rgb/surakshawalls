@@ -196,19 +196,56 @@ export class LaborPaymentService {
   }
 
   /**
-   * Get all payments for a worker
+   * Get worker passbook entries (wage entries + payment aggregates)
    */
-  async getWorkerPaymentHistory(workerId: string): Promise<any[]> {
+  async getWorkerPaymentHistory(workerId: string): Promise<WageEntryWithPayments[]> {
     try {
-      const { data, error } = await this.supabase.supabase
+      const { data: worker, error: workerError } = await this.supabase.supabase
+        .from('workers_master')
+        .select('id, name')
+        .eq('id', workerId)
+        .single();
+
+      if (workerError) throw workerError;
+
+      const { data: wageEntries, error: wageError } = await this.supabase.supabase
+        .from('wage_entries')
+        .select('id, date, worker_id, attendance_type, wage_earned, paid_today')
+        .eq('worker_id', workerId)
+        .order('date', { ascending: false });
+
+      if (wageError) throw wageError;
+
+      if (!wageEntries || wageEntries.length === 0) {
+        return [];
+      }
+
+      const wageEntryIds = wageEntries.map((e: any) => e.id);
+      const { data: wagePayments, error: paymentsError } = await this.supabase.supabase
         .from('wage_payments')
         .select('*')
-        .eq('worker_id', workerId)
+        .in('wage_entry_id', wageEntryIds)
         .order('payment_date', { ascending: false });
 
-      if (error) throw error;
+      if (paymentsError) throw paymentsError;
 
-      return data || [];
+      return wageEntries.map((entry: any) => {
+        const entryPayments = (wagePayments || []).filter((p: any) => p.wage_entry_id === entry.id);
+        const totalPaidLater = entryPayments.reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
+
+        return {
+          wage_entry_id: entry.id,
+          work_date: entry.date,
+          worker_id: workerId,
+          worker_name: worker?.name || 'Unknown Worker',
+          attendance_type: entry.attendance_type || 'Full Day',
+          wage_earned: entry.wage_earned || 0,
+          paid_initially: entry.paid_today || 0,
+          total_paid_later: totalPaidLater,
+          current_outstanding: (entry.wage_earned || 0) - (entry.paid_today || 0) - totalPaidLater,
+          payment_history: entryPayments
+        };
+      });
     } catch (error) {
       console.error('Error getting worker payment history:', error);
       return [];

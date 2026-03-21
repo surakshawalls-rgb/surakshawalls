@@ -422,7 +422,7 @@ export class ReportsDashboardComponent implements OnInit {
         show: true,
         workerId: worker.worker_id,
         workerName: worker.worker_name,
-        entries: entries
+        entries: entries.length > 0 ? entries : (worker.wage_entries || [])
       };
       
     } catch (error: any) {

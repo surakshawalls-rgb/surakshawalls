@@ -1,136 +1,117 @@
-<div class="library-public-page">
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>📚 Suraksha Library</h1>
-      <p class="hero-subtitle">Peaceful Study Environment for Your Success</p>
-      <p class="hero-description">
-        Premium study space with digital library access, perfect for competitive exam preparation.
-      </p>
-      <div class="hero-actions">
-        <button mat-raised-button color="primary" (click)="navigateToResources()">
-          <mat-icon>import_contacts</mat-icon>
-          Browse Digital Library
-        </button>
-        <button mat-raised-button color="accent" (click)="navigateToInquiry()">
-          <mat-icon>how_to_reg</mat-icon>
-          Register for Membership
-        </button>
-        <button *ngIf="!isLoggedIn" mat-stroked-button (click)="goToLogin()">
-          <mat-icon>login</mat-icon>
-          Student Login
-        </button>
-      </div>
-    </div>
-  </section>
+<div class="lib-page">
 
-  <!-- About Section -->
-  <section class="about-section">
-    <div class="container">
-      <h2 class="section-title">About Our Library</h2>
-      <div class="about-content">
-        <div class="about-text">
-          <p>
-            Suraksha Library provides a serene and focused environment for students preparing for 
-            competitive exams and academic studies. Our modern facilities and extensive digital 
-            resources make learning efficient and enjoyable.
+  <!-- ══ HERO ══════════════════════════════════════════ -->
+  <header class="lib-hero">
+    <div class="hero-grid-line"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-inner">
+
+      <nav class="hero-breadcrumb">
+        <a routerLink="/" class="bc-link">
+          <mat-icon>arrow_back</mat-icon>Suraksha Group
+        </a>
+        <mat-icon class="bc-sep">chevron_right</mat-icon>
+        <span>Suraksha Library</span>
+      </nav>
+
+      <div class="hero-body">
+        <div class="hero-left">
+          <span class="hero-kicker">
+            <span class="kicker-dot"></span>SURAKSHA LIBRARY
+          </span>
+          <h1 class="hero-h1">
+            Study Smart.<br>
+            <span class="hero-accent">Grow Faster.</span>
+          </h1>
+          <p class="hero-sub">
+            Premium study environment with digital library access, comfortable seating,
+            and everything a serious learner needs to achieve their goals.
           </p>
-          <ul class="highlights">
-            <li><mat-icon>check_circle</mat-icon> Quiet & Distraction-Free Environment</li>
-            <li><mat-icon>check_circle</mat-icon> Extensive Digital Book Collection</li>
-            <li><mat-icon>check_circle</mat-icon> Flexible Membership Plans</li>
-            <li><mat-icon>check_circle</mat-icon> Experienced Library Staff</li>
-            <li><mat-icon>check_circle</mat-icon> Study Material & Resources</li>
-          </ul>
-        </div>
-        <div class="about-image">
-          <mat-icon class="large-icon">menu_book</mat-icon>
-          <p>Your Success is Our Mission</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Facilities Section -->
-  <section class="facilities-section">
-    <div class="container">
-      <h2 class="section-title">Our Facilities</h2>
-      <p class="section-subtitle">Everything you need for focused study</p>
-      
-      <div class="facilities-grid">
-        <mat-card *ngFor="let facility of facilities" class="facility-card">
-          <mat-icon>{{ facility.icon }}</mat-icon>
-          <h3>{{ facility.title }}</h3>
-          <p>{{ facility.description }}</p>
-        </mat-card>
-      </div>
-    </div>
-  </section>
-
-  <!-- Digital Library Preview -->
-  <section class="digital-library-section">
-    <div class="container">
-      <h2 class="section-title">📚 Digital Library</h2>
-      <p class="section-subtitle">Access thousands of books and study materials</p>
-      
-      <div class="library-preview">
-        <div class="preview-content">
-          <mat-icon class="preview-icon">library_books</mat-icon>
-          <h3>Comprehensive Collection</h3>
-          <p>Browse our extensive collection of academic books, competitive exam materials, reference guides, and more.</p>
-          
-          <div class="categories-list">
-            <div class="category-chip">📖 Competitive Exams</div>
-            <div class="category-chip">📚 Academic Books</div>
-            <div class="category-chip">📝 Reference Materials</div>
-            <div class="category-chip">📄 Previous Year Papers</div>
-            <div class="category-chip">📰 Magazines & Journals</div>
-          </div>
-
-          <button mat-raised-button color="primary" (click)="navigateToResources()">
-            <mat-icon>search</mat-icon>
-            Browse Books Now (Public Access)
-          </button>
-          
-          <p class="login-note">
-            <mat-icon>info</mat-icon>
-            *Login required to borrow books and access full features
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Membership Plans -->
-  <section class="plans-section">
-    <div class="container">
-      <h2 class="section-title">Membership Plans</h2>
-      <p class="section-subtitle">Choose the plan that fits your need</p>
-      
-      <div class="plans-grid">
-        <mat-card *ngFor="let plan of plans" class="plan-card" [class.popular]="plan.popular">
-          <div *ngIf="plan.popular" class="popular-badge">MOST POPULAR</div>
-          <mat-card-header>
-            <mat-card-title>{{ plan.name }}</mat-card-title>
-            <mat-card-subtitle>{{ plan.duration }}</mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="price">₹{{ plan.price }}</div>
-            <ul class="features">
-              <li *ngFor="let feature of plan.features">
-                <mat-icon>check</mat-icon>
-                {{ feature }}
-              </li>
-            </ul>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-raised-button [color]="plan.popular ? 'accent' : 'primary'" (click)="navigateToInquiry()">
-              Select Plan
+          <div class="hero-cta-row">
+            <button class="btn-primary" (click)="navigateToInquiry()">
+              <mat-icon>how_to_reg</mat-icon>Register for Membership
             </button>
-          </mat-card-actions>
-        </mat-card>
-      </div>
+            <button class="btn-ghost" (click)="navigateToResources()">
+              <mat-icon>import_contacts</mat-icon>Browse Digital Library
+            </button>
+          </div>
+        </div>
 
+        <div class="hero-right">
+          <div class="stat-grid">
+            <div class="stat-box">
+              <span class="stat-num">8+</span>
+              <span class="stat-label">Facilities</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">4</span>
+              <span class="stat-label">Plans Available</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">₹10</span>
+              <span class="stat-label">Daily Pass</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">7AM</span>
+              <span class="stat-label">Opens Daily</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ FACILITIES ════════════════════════════════════ -->
+  <section class="lib-section" id="facilities">
+    <div class="section-inner">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span>FACILITIES</span>
+      </div>
+      <h2 class="section-h2">Everything you need for focused study</h2>
+      <p class="section-sub">Designed to remove distractions, maximize productivity, and support long study hours.</p>
+    </div>
+    <div class="facilities-mosaic">
+      <div class="facility-card" *ngFor="let facility of facilities">
+        <div class="facility-icon">
+          <mat-icon>{{ facility.icon }}</mat-icon>
+        </div>
+        <h3>{{ facility.title }}</h3>
+        <p>{{ facility.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PLANS ══════════════════════════════════════════ -->
+  <section class="lib-section lib-alt" id="plans">
+    <div class="lib-alt-inner">
+      <div class="section-inner">
+        <div class="section-label light">
+          <span class="label-line"></span>
+          <span>MEMBERSHIP PLANS</span>
+        </div>
+        <h2 class="section-h2 light">Choose the right plan for you</h2>
+        <p class="section-sub light">Flexible options from a single day to a full year — always best value.</p>
+      </div>
+      <div class="plans-grid">
+        <div class="plan-card" *ngFor="let plan of plans" [class.plan-popular]="plan.popular">
+          <div class="plan-popular-badge" *ngIf="plan.popular">MOST POPULAR</div>
+          <div class="plan-header">
+            <h3>{{ plan.name }}</h3>
+            <span class="plan-duration">{{ plan.duration }}</span>
+          </div>
+          <div class="plan-price">₹{{ plan.price }}</div>
+          <ul class="plan-features">
+            <li *ngFor="let feature of plan.features">
+              <mat-icon>check_circle</mat-icon>
+              <span>{{ feature }}</span>
+            </li>
+          </ul>
+          <button class="btn-plan" [class.btn-plan-accent]="plan.popular" (click)="navigateToInquiry()">
+            Select Plan
+          </button>
+        </div>
+      </div>
       <div class="trial-note">
         <mat-icon>local_offer</mat-icon>
         <span>First-time visitors get a <strong>FREE Trial Day Pass!</strong></span>
@@ -138,90 +119,109 @@
     </div>
   </section>
 
-  <!-- Why Choose Us -->
-  <section class="why-section">
-    <div class="container">
-      <h2 class="section-title">Why Students Choose Us?</h2>
-      <div class="reasons-grid">
-        <div class="reason-item">
-          <mat-icon color="primary">mood</mat-icon>
-          <h3>Peaceful Environment</h3>
-          <p>Completely noise-free zone for maximum concentration</p>
-        </div>
-        <div class="reason-item">
-          <mat-icon color="primary">schedule</mat-icon>
-          <h3>Flexible Timings</h3>
-          <p>Extended hours to suit your study schedule</p>
-        </div>
-        <div class="reason-item">
-          <mat-icon color="primary">currency_rupee</mat-icon>
-          <h3>Affordable Pricing</h3>
-          <p>Best value for money with multiple plan options</p>
-        </div>
-        <div class="reason-item">
-          <mat-icon color="primary">location_on</mat-icon>
-          <h3>Convenient Location</h3>
-          <p>Easily accessible with parking facility</p>
-        </div>
+  <!-- ══ DIGITAL LIBRARY ════════════════════════════════ -->
+  <section class="lib-section" id="digital">
+    <div class="section-inner">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span>DIGITAL LIBRARY</span>
+      </div>
+      <h2 class="section-h2">Thousands of resources, online</h2>
+      <p class="section-sub">Competitive exam prep, academic books, reference materials, and more — all in one digital hub.</p>
+    </div>
+    <div class="digital-categories">
+      <div class="category-chip"><mat-icon>auto_stories</mat-icon>Competitive Exams</div>
+      <div class="category-chip"><mat-icon>school</mat-icon>Academic Books</div>
+      <div class="category-chip"><mat-icon>description</mat-icon>Reference Materials</div>
+      <div class="category-chip"><mat-icon>history_edu</mat-icon>Previous Year Papers</div>
+      <div class="category-chip"><mat-icon>newspaper</mat-icon>Magazines &amp; Journals</div>
+    </div>
+    <div class="digital-cta">
+      <button class="btn-primary" (click)="navigateToResources()">
+        <mat-icon>search</mat-icon>Browse Books (Public Access)
+      </button>
+      <p class="login-note">
+        <mat-icon>info</mat-icon>
+        Login required to borrow books and access full member features
+      </p>
+    </div>
+  </section>
+
+  <!-- ══ WHY CHOOSE US ══════════════════════════════════ -->
+  <section class="lib-section lib-why" id="why">
+    <div class="section-inner">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span>WHY STUDENTS CHOOSE US</span>
+      </div>
+      <h2 class="section-h2">More than just a study hall</h2>
+    </div>
+    <div class="why-mosaic">
+      <div class="why-card">
+        <div class="why-icon"><mat-icon>mood</mat-icon></div>
+        <h3>Peaceful Environment</h3>
+        <p>Completely noise-free zone for maximum concentration and deep focus.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon"><mat-icon>schedule</mat-icon></div>
+        <h3>Flexible Timings</h3>
+        <p>Open 7 AM to 8 PM, seven days a week. No weekly off.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon"><mat-icon>currency_rupee</mat-icon></div>
+        <h3>Affordable Pricing</h3>
+        <p>Best value for money — daily pass starts at just ₹10.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon"><mat-icon>location_on</mat-icon></div>
+        <h3>Convenient Location</h3>
+        <p>Easily accessible with two-wheeler parking facility available.</p>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="cta-section">
-    <div class="container">
-      <h2>Ready to Start Your Study Journey?</h2>
-      <p>Visit us today or book your trial session</p>
-      <div class="cta-actions">
-        <button mat-raised-button color="primary" size="large" (click)="navigateToInquiry()">
-          <mat-icon>app_registration</mat-icon>
-          Register Now
-        </button>
-        <button mat-raised-button color="accent" size="large" (click)="contactWhatsApp()">
-          <mat-icon>chat</mat-icon>
-          Chat on WhatsApp
-        </button>
-        <button mat-stroked-button (click)="callNow()">
-          <mat-icon>call</mat-icon>
-          Call: 9506629814
-        </button>
+  <!-- ══ CTA BAND ════════════════════════════════════════ -->
+  <section class="lib-cta-band">
+    <div class="cta-glow cta-glow-l"></div>
+    <div class="cta-glow cta-glow-r"></div>
+    <div class="cta-inner">
+      <div class="cta-label">
+        <span class="label-line-light"></span>
+        <span>VISIT US TODAY</span>
       </div>
-    </div>
-  </section>
-
-  <!-- Contact Info -->
-  <section class="contact-info">
-    <div class="container">
-      <div class="info-grid">
-        <div class="info-item">
+      <h2>Start your study journey</h2>
+      <p>Register for membership, drop by for a free trial day, or reach us on WhatsApp.</p>
+      <div class="contact-grid">
+        <div class="contact-item">
           <mat-icon>location_on</mat-icon>
-          <div>
-            <h4>Address</h4>
-            <p>Shukulpur, Suriyawan<br>Bhadohi - 221404, UP</p>
-          </div>
+          <span>Near Union Bank, Mishra Bhawan, Mahajuda, Suriyawan, Bhadohi 221404</span>
         </div>
-        <div class="info-item">
-          <mat-icon>phone</mat-icon>
-          <div>
-            <h4>Phone</h4>
-            <p>+91 9506629814<br>+91 8090272727</p>
-          </div>
-        </div>
-        <div class="info-item">
+        <div class="contact-item">
           <mat-icon>access_time</mat-icon>
-          <div>
-            <h4>Timings</h4>
-            <p>Mon-Sat: 6 AM - 10 PM<br>Sunday: 6 AM - 8 PM</p>
-          </div>
+          <span>7 AM – 8 PM · No weekly off</span>
         </div>
-        <div class="info-item">
+        <div class="contact-item">
+          <mat-icon>phone</mat-icon>
+          <span>+91 9506629814  ·  +91 8090272727</span>
+        </div>
+        <div class="contact-item">
           <mat-icon>email</mat-icon>
-          <div>
-            <h4>Email</h4>
-            <p>surakshawalls&#64;gmail.com</p>
-          </div>
+          <a href="mailto:surakshawalls@gmail.com">surakshawalls&#64;gmail.com</a>
         </div>
+      </div>
+      <div class="cta-actions">
+        <button class="btn-cta-wa" (click)="contactWhatsApp()">
+          <mat-icon>chat</mat-icon>Chat on WhatsApp
+        </button>
+        <button class="btn-cta-call" (click)="callNow()">
+          <mat-icon>call</mat-icon>Call Now
+        </button>
+        <button *ngIf="!isLoggedIn" class="btn-cta-login" (click)="goToLogin()">
+          <mat-icon>login</mat-icon>Student Login
+        </button>
       </div>
     </div>
   </section>
+
 </div>
+

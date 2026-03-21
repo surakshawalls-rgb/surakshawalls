@@ -1,203 +1,241 @@
-<div class="software-page">
-  <header class="software-hero">
-    <div class="hero-shell">
-      <a class="back-link" routerLink="/">
-        <mat-icon>arrow_back</mat-icon>
-        Back to Suraksha Group
+<div class="sw-page">
+
+  <!-- ══ HERO ══════════════════════════════════════════ -->
+  <header class="sw-hero">
+    <div class="hero-noise"></div>
+    <div class="hero-grid-line"></div>
+    <div class="hero-inner">
+
+      <a class="breadcrumb-link" routerLink="/">
+        <mat-icon>arrow_back_ios_new</mat-icon>
+        Suraksha Group
       </a>
 
-      <div class="hero-main">
-        <div>
-          <p class="eyebrow">SURAKSHA SOFTWARE</p>
-          <h1>Enterprise-grade software development with industry-focused training.</h1>
-          <p class="hero-copy">
-            We design and deliver business-ready digital products for clients across web, mobile, and desktop.
-            Training programs are available on demand for students and professionals who want practical full stack skills.
+      <div class="hero-body">
+        <div class="hero-left">
+          <span class="hero-eyebrow">
+            <span class="eyebrow-dot"></span>
+            SURAKSHA SOFTWARE
+          </span>
+          <h1 class="hero-h1">
+            End-to-end digital solutions<br>
+            <span class="hero-accent">engineered for business.</span>
+          </h1>
+          <p class="hero-sub">
+            Websites. Software systems. Mobile apps. SEO. Branding. Training.
+            One accountable team from planning to production.
           </p>
-
-          <div class="hero-actions">
-            <button mat-flat-button class="cta-primary" (click)="switchFocus('development')">
-              Software Development
+          <div class="hero-cta-row">
+            <button class="btn-primary" (click)="switchFocus('development')">
+              <mat-icon>computer</mat-icon>Software Development
             </button>
-            <button mat-stroked-button class="cta-secondary" (click)="switchFocus('training')">
-              Training Institute
+            <button class="btn-ghost" (click)="switchFocus('training')">
+              <mat-icon>school</mat-icon>Training Institute
             </button>
           </div>
         </div>
 
-        <div class="hero-metrics">
-          <mat-card class="metric-card">
-            <strong>{{ developmentServices.length }}</strong>
-            <span>Development domains</span>
-          </mat-card>
-          <mat-card class="metric-card">
-            <strong>{{ clients.length }}</strong>
-            <span>Client websites</span>
-          </mat-card>
-          <mat-card class="metric-card">
-            <strong>{{ trainingTracks.length }}</strong>
-            <span>Training tracks</span>
-          </mat-card>
+        <div class="hero-right">
+          <div class="stat-grid">
+            <div class="stat-box" *ngFor="let s of heroStats">
+              <span class="stat-num">{{ s.value }}</span>
+              <span class="stat-label">{{ s.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- service tags ticker -->
+      <div class="ticker-wrap" aria-hidden="true">
+        <div class="ticker-track">
+          <span *ngFor="let tag of movingTags" class="ticker-item">
+            <mat-icon>arrow_forward_ios</mat-icon>{{ tag }}
+          </span>
+          <span *ngFor="let tag of movingTags" class="ticker-item">
+            <mat-icon>arrow_forward_ios</mat-icon>{{ tag }}
+          </span>
         </div>
       </div>
     </div>
   </header>
 
-  <section class="focus-strip">
-    <div class="focus-shell">
-      <p class="focus-title">Choose your focus</p>
-      <div class="focus-toggle" role="tablist" aria-label="Software focus mode">
-        <button
-          mat-button
-          role="tab"
-          [attr.aria-selected]="focusMode === 'development'"
-          [class.active]="focusMode === 'development'"
-          (click)="switchFocus('development')"
-        >
-          Client Software Development
-        </button>
-        <button
-          mat-button
-          role="tab"
-          [attr.aria-selected]="focusMode === 'training'"
-          [class.active]="focusMode === 'training'"
-          (click)="switchFocus('training')"
-        >
-          Software Training Institute
-        </button>
+  <!-- ══ NAV TABS ══════════════════════════════════════ -->
+  <nav class="sw-tab-bar" role="tablist">
+    <div class="tab-inner">
+      <button role="tab"
+        [class.tab-active]="focusMode === 'development'"
+        (click)="switchFocus('development')">
+        <mat-icon>integration_instructions</mat-icon>
+        Software Development
+      </button>
+      <button role="tab"
+        [class.tab-active]="focusMode === 'training'"
+        (click)="switchFocus('training')">
+        <mat-icon>cast_for_education</mat-icon>
+        Training Institute
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══ DEVELOPMENT MODE ═══════════════════════ -->
+  <ng-container *ngIf="focusMode === 'development'">
+
+    <!-- Services grid -->
+    <section class="sw-section">
+      <div class="section-inner">
+        <div class="section-label">
+          <span class="label-line"></span>
+          <span>OUR SERVICES</span>
+        </div>
+        <h2 class="section-h2">What we build for your business</h2>
+        <p class="section-sub">
+          A complete portfolio — from your brand's first website to full enterprise software platforms.
+        </p>
       </div>
-    </div>
-  </section>
 
-  <section *ngIf="focusMode === 'development'" id="development-services" class="content-section">
-    <div class="section-header">
-      <p class="section-kicker">Software Development</p>
-      <h2>Four specialised domains, one delivery team</h2>
-      <p>
-        Web portals, mobile apps, desktop tools, and end-to-end product builds &mdash; for businesses
-        that need clean execution, solid architecture, and long-term technical ownership.
-      </p>
-    </div>
-
-    <div class="cards-grid services-grid development-services-grid">
-      <mat-card class="info-card service-card" *ngFor="let service of developmentServices; let i = index">
-        <div class="service-header">
-          <div class="service-icon-badge">
+      <div class="services-mosaic">
+        <div class="svc-card"
+          *ngFor="let service of developmentServices; let i = index"
+          [class.svc-wide]="i === 0 || i === 3"
+          (click)="toggleService(i)">
+          <div class="svc-num">{{ (i + 1) | number:'2.0-0' }}</div>
+          <div class="svc-icon-ring">
             <mat-icon>{{ service.icon }}</mat-icon>
           </div>
-          <span class="service-index">0{{ i + 1 }}</span>
+          <h3 class="svc-title">{{ service.title }}</h3>
+          <p class="svc-desc">{{ service.description }}</p>
+          <div class="svc-deliverables" [class.open]="expandedServiceIndex === i">
+            <div class="svc-del-inner">
+              <div class="svc-del-item" *ngFor="let item of service.deliverables">
+                <mat-icon>check</mat-icon>{{ item }}
+              </div>
+            </div>
+          </div>
+          <div class="svc-toggle-row">
+            <span>{{ expandedServiceIndex === i ? 'Less' : 'Details' }}</span>
+            <mat-icon>{{ expandedServiceIndex === i ? 'remove' : 'add' }}</mat-icon>
+          </div>
         </div>
-        <h3 class="service-title">{{ service.title }}</h3>
-        <p class="service-copy">{{ service.description }}</p>
-        <div class="deliverable-tags">
-          <span class="deliverable-tag" *ngFor="let item of service.deliverables">{{ item }}</span>
+      </div>
+    </section>
+
+    <!-- Why us — split editorial -->
+    <section class="sw-section sw-alt">
+      <div class="split-editorial">
+        <div class="split-left">
+          <div class="section-label light">
+            <span class="label-line"></span>
+            <span>WHY SURAKSHA SOFTWARE</span>
+          </div>
+          <h2 class="section-h2 light">Built for outcomes,<br>not just deliveries.</h2>
+          <p class="section-sub light">
+            We don't just write code. We map your workflow, reduce friction, and deliver systems
+            that your team actually uses — on time, documented, and maintainable.
+          </p>
+          <div class="about-stats-row">
+            <div class="about-stat" *ngFor="let s of aboutStats">
+              <strong>{{ s.value }}</strong>
+              <span>{{ s.label }}</span>
+            </div>
+          </div>
         </div>
-      </mat-card>
-    </div>
-
-    <div class="development-layout">
-      <div class="plain-panel about-panel">
-        <p class="panel-kicker">About Us</p>
-        <h3>Software solutions designed for real business operations.</h3>
-        <p class="panel-copy">
-          Suraksha Software works with businesses that need dependable delivery, clean implementation,
-          and a team that understands both product quality and practical execution.
-        </p>
-
-        <div class="about-grid">
-          <div class="about-point" *ngFor="let item of aboutHighlights">
-            <div class="about-icon-wrap">
+        <div class="split-right">
+          <div class="pillar-card" *ngFor="let item of aboutHighlights; let i = index">
+            <div class="pillar-icon">
               <mat-icon>{{ item.icon }}</mat-icon>
             </div>
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.description }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="plain-panel process-panel">
-        <p class="panel-kicker">How We Work</p>
-        <h3>Clear delivery flow with measurable accountability.</h3>
-
-        <div class="process-list">
-          <div class="process-item" *ngFor="let step of deliverySteps; let i = index">
-            <span class="process-step">0{{ i + 1 }}</span>
-            <div>
-              <h4>{{ step.title }}</h4>
-              <p>{{ step.description }}</p>
+            <div class="pillar-body">
+              <h4>{{ item.title }}</h4>
+              <p>{{ item.description }}</p>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section *ngIf="focusMode === 'development'" class="content-section tinted">
-    <div class="section-header">
-      <p class="section-kicker">Client Portfolio</p>
-      <h2>Live websites delivered by our team</h2>
-      <p>Selected client projects currently active and maintained.</p>
-    </div>
-
-    <div class="client-grid">
-      <a class="client-card" *ngFor="let client of clients" [href]="client.url" target="_blank" rel="noopener">
-        <div class="client-card-header">
-          <h3>{{ client.name }}</h3>
-          <mat-icon>open_in_new</mat-icon>
+    <!-- How we work process -->
+    <section class="sw-section">
+      <div class="section-inner">
+        <div class="section-label">
+          <span class="label-line"></span>
+          <span>OUR PROCESS</span>
         </div>
-        <p>{{ client.summary }}</p>
-        <span class="client-url">{{ client.url }}</span>
-      </a>
-    </div>
-  </section>
-
-  <section *ngIf="focusMode === 'training'" id="training-curriculum" class="content-section">
-    <div class="section-header">
-      <p class="section-kicker">Training Institute</p>
-      <h2>Industry-structured training across five full stack tracks</h2>
-      <p>
-        Practical modules covering frontend, Java, Spring, Python with AI, and delivery workflow.
-        Each track builds toward a defined role with real project guidance and placement readiness.
-      </p>
-    </div>
-
-    <div class="track-list">
-      <div class="track-card" *ngFor="let track of trainingTracks; let i = index">
-        <div class="track-badge-col">
-          <div class="track-icon-badge">
-            <mat-icon>{{ track.icon }}</mat-icon>
+        <h2 class="section-h2">How we take your idea to production</h2>
+      </div>
+      <div class="process-timeline">
+        <div class="pt-step" *ngFor="let step of deliverySteps; let i = index; let last = last">
+          <div class="pt-index">{{ i + 1 }}</div>
+          <div class="pt-connector" *ngIf="!last"></div>
+          <div class="pt-card">
+            <h4>{{ step.title }}</h4>
+            <p>{{ step.description }}</p>
           </div>
-          <span class="track-number">0{{ i + 1 }}</span>
         </div>
-        <div class="track-content">
-          <h3>{{ track.title }}</h3>
-          <p class="track-desc">{{ track.description }}</p>
-          <div class="chip-wrap">
-            <span class="topic-chip" *ngFor="let topic of track.topics">{{ topic }}</span>
+      </div>
+    </section>
+
+  </ng-container>
+
+  <!-- ══ TRAINING MODE ═══════════════════════════ -->
+  <ng-container *ngIf="focusMode === 'training'">
+    <section class="sw-section">
+      <div class="section-inner">
+        <div class="section-label">
+          <span class="label-line"></span>
+          <span>TRAINING INSTITUTE</span>
+        </div>
+        <h2 class="section-h2">Five full-stack tracks. One career goal.</h2>
+        <p class="section-sub">
+          Industry-aligned curriculum. Hands-on projects. Placement preparation.
+          Each track ends with a defined career role.
+        </p>
+      </div>
+
+      <div class="track-grid">
+        <div class="track-tile" *ngFor="let track of trainingTracks; let i = index">
+          <div class="tile-top">
+            <div class="tile-icon">
+              <mat-icon>{{ track.icon }}</mat-icon>
+            </div>
+            <span class="tile-num">{{ (i + 1) | number:'2.0-0' }}</span>
           </div>
-          <div class="track-outcome">
-            <mat-icon>east</mat-icon>
+          <h3 class="tile-title">{{ track.title }}</h3>
+          <p class="tile-desc">{{ track.description }}</p>
+          <div class="tile-chips">
+            <span class="chip" *ngFor="let topic of track.topics">{{ topic }}</span>
+          </div>
+          <div class="tile-outcome">
+            <mat-icon>trending_flat</mat-icon>
             <span>{{ track.outcome }}</span>
           </div>
         </div>
       </div>
+    </section>
+  </ng-container>
+
+  <!-- ══ CTA BAND ════════════════════════════════════ -->
+  <section class="sw-cta-band">
+    <div class="cta-inner">
+      <div class="cta-left">
+        <p class="cta-eye">READY TO START?</p>
+        <h2 class="cta-h2" *ngIf="focusMode === 'development'">Let's build your next software product together.</h2>
+        <h2 class="cta-h2" *ngIf="focusMode === 'training'">Enroll in the next batch and launch your career.</h2>
+        <p class="cta-sub" *ngIf="focusMode === 'development'">
+          Share your requirements and we'll propose architecture, timeline, and cost — no commitment needed.
+        </p>
+        <p class="cta-sub" *ngIf="focusMode === 'training'">
+          Get batch dates, curriculum details, and the right track for your target role.
+        </p>
+      </div>
+      <div class="cta-right">
+        <a class="btn-cta-wa" href="https://wa.me/919506629814" target="_blank" rel="noopener">
+          <mat-icon>chat</mat-icon>Chat on WhatsApp
+        </a>
+        <a class="btn-cta-mail" href="mailto:surakshawalls@gmail.com">
+          <mat-icon>mail_outline</mat-icon>Send an Email
+        </a>
+      </div>
     </div>
   </section>
 
-  <section class="content-section contact-strip">
-    <mat-card class="contact-card">
-      <h2 *ngIf="focusMode === 'development'">Need a software product for your business?</h2>
-      <h2 *ngIf="focusMode === 'training'">Want to enroll in professional software training?</h2>
-      <p *ngIf="focusMode === 'development'">
-        Share your project goals and we will propose architecture, timeline, and execution plan.
-      </p>
-      <p *ngIf="focusMode === 'training'">
-        Contact us for batch schedule, curriculum details, and the right learning path for your target role.
-      </p>
-      <div class="hero-actions">
-        <a mat-flat-button class="cta-primary" href="https://wa.me/919506629814" target="_blank" rel="noopener">WhatsApp Now</a>
-        <a mat-stroked-button class="cta-secondary" href="mailto:surakshawalls@gmail.com">Email Us</a>
-      </div>
-    </mat-card>
-  </section>
 </div>

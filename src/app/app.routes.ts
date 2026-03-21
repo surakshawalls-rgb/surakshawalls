@@ -19,6 +19,18 @@ export const routes: Routes = [
     path: 'software',
     loadComponent: () => import('./pages/suraksha-software/suraksha-software.component').then(m => m.SurakshaSoftwareComponent)
   },
+  {
+    path: 'services',
+    loadComponent: () => import('./pages/suraksha-software/suraksha-software.component').then(m => m.SurakshaSoftwareComponent)
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./pages/suraksha-software/suraksha-software.component').then(m => m.SurakshaSoftwareComponent)
+  },
+  {
+    path: 'contact',
+    loadComponent: () => import('./pages/public-contact/public-contact.component').then(m => m.PublicContactComponent)
+  },
   { 
     path: 'library/resources', 
     loadComponent: () => import('./pages/public-resources/public-resources.component').then(m => m.PublicResourcesComponent)

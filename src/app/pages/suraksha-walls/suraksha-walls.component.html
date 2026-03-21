@@ -1,128 +1,185 @@
 <div class="walls-page">
+
+  <!-- ══ HERO ══════════════════════════════════════════ -->
   <header class="walls-hero">
-    <div class="hero-shell">
-      <a class="back-link" routerLink="/">
-        <mat-icon>arrow_back</mat-icon>
-        Back to Suraksha Group
-      </a>
+    <div class="hero-grid-line"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-inner">
 
-      <p class="eyebrow">Suraksha Walls</p>
-      <h1>Durable, cost-effective, and smart boundary wall solutions.</h1>
-      <p class="hero-copy">
-        At Suraksha Walls, we build dependable precast systems for farms, industries, homes, and institutions.
-        Our technology ensures strong protection with faster construction and practical long-term value.
-      </p>
+      <nav class="hero-breadcrumb">
+        <a routerLink="/" class="bc-link">
+          <mat-icon>arrow_back</mat-icon>Suraksha Group
+        </a>
+        <mat-icon class="bc-sep">chevron_right</mat-icon>
+        <span>Suraksha Walls</span>
+      </nav>
 
-      <div class="hero-actions">
-        <a mat-flat-button class="primary-btn" [href]="whatsAppOrderLink" target="_blank" rel="noopener">Order Now</a>
-        <a mat-stroked-button class="secondary-btn" [href]="officialWebsite" target="_blank" rel="noopener">Visit Website</a>
-        <a mat-stroked-button class="secondary-btn" routerLink="/quotation">Get Quotation</a>
+      <div class="hero-body">
+        <div class="hero-left">
+          <span class="hero-kicker">
+            <span class="kicker-dot"></span>SURAKSHA WALLS
+          </span>
+          <h1 class="hero-h1">
+            Durable.<br>
+            <span class="hero-accent">Cost-effective.</span><br>
+            Reliable.
+          </h1>
+          <p class="hero-sub">
+            Precast compound walls, RCC fencing, security add-ons, and readymade structures —
+            engineered for farms, industries, homes, and institutions.
+          </p>
+          <div class="hero-cta-row">
+            <a class="btn-primary" [href]="whatsAppOrderLink" target="_blank" rel="noopener">
+              <mat-icon>chat</mat-icon>Order on WhatsApp
+            </a>
+            <a class="btn-ghost" [href]="officialWebsite" target="_blank" rel="noopener">
+              <mat-icon>open_in_new</mat-icon>Visit Website
+            </a>
+            <a class="btn-ghost" routerLink="/quotation">
+              <mat-icon>request_quote</mat-icon>Get Quotation
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="stat-grid">
+            <div class="stat-box">
+              <span class="stat-num">4+</span>
+              <span class="stat-label">Service Types</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">10+</span>
+              <span class="stat-label">Years Active</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">100+</span>
+              <span class="stat-label">Projects Done</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">24×7</span>
+              <span class="stat-label">WhatsApp Support</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 
-  <section class="content-section">
-    <div class="section-header">
-      <p class="section-kicker">Our Services</p>
-      <h2>Complete precast and security solutions</h2>
-      <p>From boundary walls to ready structures, we provide practical site-ready execution.</p>
+  <!-- ══ SERVICES ══════════════════════════════════════ -->
+  <section class="walls-section" id="services">
+    <div class="section-inner">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span>OUR SERVICES</span>
+      </div>
+      <h2 class="section-h2">Complete precast &amp; security solutions</h2>
+      <p class="section-sub">From boundary walls to readymade structures — practical, site-ready execution.</p>
     </div>
-
-    <div class="service-grid">
-      <mat-card class="service-card" *ngFor="let service of services">
-        <div class="service-head">
-          <div class="icon-wrap">
-            <mat-icon>{{ service.icon }}</mat-icon>
-          </div>
-          <h3>{{ service.title }}</h3>
+    <div class="services-mosaic">
+      <div class="svc-card" *ngFor="let service of services">
+        <div class="svc-icon">
+          <mat-icon>{{ service.icon }}</mat-icon>
         </div>
-
-        <ul>
+        <h3>{{ service.title }}</h3>
+        <ul class="svc-list">
           <li *ngFor="let item of service.offerings">{{ item }}</li>
         </ul>
-      </mat-card>
+      </div>
     </div>
   </section>
 
-  <section class="content-section tinted">
-    <div class="section-header">
-      <p class="section-kicker">RCC Fencing and Precast Products</p>
-      <h2>Current pricing and order options</h2>
-      <p>Use the WhatsApp order button below each product to get immediate support.</p>
-    </div>
-
-    <div class="product-grid">
-      <mat-card class="product-card" *ngFor="let product of products">
-        <div class="product-top">
-          <h3>{{ product.name }}</h3>
-          <span class="price-tag">{{ product.price }}</span>
+  <!-- ══ PRODUCTS ══════════════════════════════════════ -->
+  <section class="walls-section walls-alt" id="products">
+    <div class="walls-alt-inner">
+      <div class="section-inner">
+        <div class="section-label light">
+          <span class="label-line"></span>
+          <span>PRICING &amp; PRODUCTS</span>
         </div>
-
-        <p class="specs">{{ product.specs }}</p>
-        <p class="description">{{ product.description }}</p>
-
-        <ul class="benefit-list">
-          <li *ngFor="let benefit of product.benefits">
-            <mat-icon>check_circle</mat-icon>
-            <span>{{ benefit }}</span>
-          </li>
-        </ul>
-
-        <a mat-flat-button class="order-btn" [href]="whatsAppOrderLink" target="_blank" rel="noopener">
-          <mat-icon>chat</mat-icon>
-          Order Now
-        </a>
-      </mat-card>
+        <h2 class="section-h2 light">RCC fencing and precast products</h2>
+        <p class="section-sub light">Current pricing. Use the WhatsApp button below each product to order immediately.</p>
+      </div>
+      <div class="product-grid">
+        <div class="product-card" *ngFor="let product of products">
+          <div class="product-header">
+            <h3>{{ product.name }}</h3>
+            <div class="price-badge">{{ product.price }}</div>
+          </div>
+          <p class="product-specs">{{ product.specs }}</p>
+          <p class="product-desc">{{ product.description }}</p>
+          <ul class="benefit-list">
+            <li *ngFor="let benefit of product.benefits">
+              <mat-icon>check_circle</mat-icon>
+              <span>{{ benefit }}</span>
+            </li>
+          </ul>
+          <a class="btn-order" [href]="whatsAppOrderLink" target="_blank" rel="noopener">
+            <mat-icon>chat</mat-icon>Order on WhatsApp
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="content-section">
-    <div class="section-header">
-      <p class="section-kicker">Why Choose Us</p>
-      <h2>Execution quality you can trust</h2>
+  <!-- ══ WHY CHOOSE US ══════════════════════════════════ -->
+  <section class="walls-section" id="why">
+    <div class="section-inner">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span>WHY CHOOSE US</span>
+      </div>
+      <h2 class="section-h2">Execution quality you can trust</h2>
     </div>
-
-    <div class="reasons-grid">
+    <div class="reasons-mosaic">
       <div class="reason-card" *ngFor="let reason of whyChooseUs; let i = index">
-        <span class="reason-index">0{{ i + 1 }}</span>
+        <span class="reason-num">0{{ i + 1 }}</span>
         <p>{{ reason }}</p>
       </div>
     </div>
   </section>
 
-  <section class="content-section contact-section">
-    <mat-card class="contact-card">
-      <div class="section-header">
-        <p class="section-kicker">Contact Us</p>
-        <h2>Suraksha Walls</h2>
+  <!-- ══ CTA BAND ════════════════════════════════════════ -->
+  <section class="walls-cta-band">
+    <div class="cta-glow cta-glow-l"></div>
+    <div class="cta-glow cta-glow-r"></div>
+    <div class="cta-inner">
+      <div class="cta-label">
+        <span class="label-line-light"></span>
+        <span>GET IN TOUCH</span>
       </div>
-
+      <h2>Ready to build?</h2>
+      <p>Order on WhatsApp, visit the website, or request a detailed quotation.</p>
       <div class="contact-grid">
-        <div>
-          <h3>Address</h3>
-          <p>Shukulpur, Baharaichi, Suriyawan Bhadohi 221404</p>
+        <div class="contact-item">
+          <mat-icon>location_on</mat-icon>
+          <span>Shukulpur, Baharaichi, Suriyawan Bhadohi 221404</span>
         </div>
-
-        <div>
-          <h3>Mobile / WhatsApp</h3>
-          <a [href]="whatsAppOrderLink" target="_blank" rel="noopener">9346842755</a>
+        <div class="contact-item">
+          <mat-icon>chat</mat-icon>
+          <a [href]="whatsAppOrderLink" target="_blank" rel="noopener">9346842755 (WhatsApp)</a>
         </div>
-
-        <div>
-          <h3>Email</h3>
-          <a href="mailto:surakshawalls@gmail.com">surakshawalls@gmail.com</a>
+        <div class="contact-item">
+          <mat-icon>email</mat-icon>
+          <a href="mailto:surakshawalls@gmail.com">surakshawalls&#64;gmail.com</a>
         </div>
-
-        <div>
-          <h3>Instagram</h3>
-          <p>@surakshawalls</p>
+        <div class="contact-item">
+          <mat-icon>language</mat-icon>
+          <a [href]="officialWebsite" target="_blank" rel="noopener">surakshawalls.shop</a>
         </div>
-
-        <div>
-          <h3>Website</h3>
-          <a [href]="officialWebsite" target="_blank" rel="noopener">https://www.surakshawalls.shop</a>
+        <div class="contact-item">
+          <mat-icon>tag</mat-icon>
+          <span>Instagram: @surakshawalls</span>
         </div>
       </div>
-    </mat-card>
+      <div class="cta-actions">
+        <a class="btn-cta-wa" [href]="whatsAppOrderLink" target="_blank" rel="noopener">
+          <mat-icon>chat</mat-icon>Order on WhatsApp
+        </a>
+        <a class="btn-cta-ghost" routerLink="/quotation">
+          <mat-icon>request_quote</mat-icon>Get Quotation
+        </a>
+      </div>
+    </div>
   </section>
+
 </div>

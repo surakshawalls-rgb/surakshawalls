@@ -1,0 +1,89 @@
+<div class="contact-page">
+  <section class="hero">
+    <div class="shell">
+      <a class="back-link" routerLink="/">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Home
+      </a>
+
+      <p class="eyebrow">CONTACT US</p>
+      <h1>Let's do business. Step into our place.</h1>
+      <p class="hero-copy">
+        Share your requirement and our team will respond with a practical execution plan, timeline, and next steps.
+      </p>
+    </div>
+  </section>
+
+  <section class="contact-layout">
+    <div class="shell layout-grid">
+      <mat-card class="form-card">
+        <h2>Enquiry Form</h2>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput [(ngModel)]="fullName" placeholder="Enter Name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Mobile</mat-label>
+          <input matInput [(ngModel)]="mobile" placeholder="Valid Contact Number" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput [(ngModel)]="email" placeholder="Valid Email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Subject</mat-label>
+          <input matInput [(ngModel)]="subject" placeholder="Subject" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Message</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            [(ngModel)]="message"
+            placeholder="What do you want to let us know?"
+          ></textarea>
+        </mat-form-field>
+
+        <button mat-flat-button class="submit-btn" (click)="submitInquiry()">
+          <mat-icon>send</mat-icon>
+          Send on WhatsApp
+        </button>
+      </mat-card>
+
+      <div class="info-stack">
+        <mat-card class="info-card">
+          <h3>Get Into Touch</h3>
+          <ul>
+            <li>
+              <mat-icon>place</mat-icon>
+              <span>Katra Bazar, Behind Radhe Shyam Cycle Store, Bhadohi - 221401 (U.P.) INDIA</span>
+            </li>
+            <li>
+              <mat-icon>call</mat-icon>
+              <span>(+91) 70521 50626, (+91) 85430 85480</span>
+            </li>
+            <li>
+              <mat-icon>mail</mat-icon>
+              <span>info@webstico.in, thewebstico@gmail.com</span>
+            </li>
+          </ul>
+        </mat-card>
+
+        <mat-card class="info-card">
+          <h3>Quick Navigation</h3>
+          <div class="links">
+            <a routerLink="/about">About Us</a>
+            <a routerLink="/services">Our Services</a>
+            <a routerLink="/software">Software Page</a>
+            <a routerLink="/library">Suraksha Library</a>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+</div>

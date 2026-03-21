@@ -1,94 +1,225 @@
-<div class="portal-page">
-  <header class="hero">
-    <div class="shell hero-shell">
-      <h1>One place for all Suraksha platforms.</h1>
+<div class="hp-page">
 
-      <div class="hero-actions">
-        <button mat-flat-button class="primary-btn" (click)="scrollToSection('platforms')">
-          <mat-icon>apps</mat-icon>
-          Open Platforms
-        </button>
-        <button mat-stroked-button class="secondary-btn" routerLink="/login">
-          <mat-icon>key</mat-icon>
-          Login Portal
-        </button>
+  <!-- ══ HERO ══════════════════════════════════════════ -->
+  <header class="hp-hero">
+    <div class="hero-grid-line"></div>
+    <div class="hero-noise"></div>
+    <div class="hero-inner">
+
+      <div class="hero-brand-row">
+        <span class="brand-badge">
+          <span class="brand-dot"></span>
+          SURAKSHA GROUP
+        </span>
+        <span class="brand-year">Est. 2016</span>
+      </div>
+
+      <div class="hero-body">
+        <div class="hero-left">
+          <h1 class="hero-h1">
+            SURAKSHA GROUP<br>
+            <span class="hero-accent">GATEWAY</span>
+          </h1>
+          <p class="hero-tagline">One home page. All Suraksha platforms in motion.</p>
+          <p class="hero-sub">
+            Quick access to Suraksha Walls, Suraksha Library, Suraksha Software, and other
+            active ventures — from one unified enterprise control hub.
+          </p>
+          <div class="hero-cta-row">
+            <button class="btn-primary" (click)="scrollToSection('platforms')">
+              <mat-icon>apps</mat-icon>Open Platforms
+            </button>
+            <button class="btn-ghost" (click)="scrollToSection('login')">
+              <mat-icon>login</mat-icon>Sign In
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <div class="stat-grid">
+            <div class="stat-box" *ngFor="let stat of stats">
+              <mat-icon class="stat-ico">{{ stat.icon }}</mat-icon>
+              <span class="stat-num">{{ stat.value }}</span>
+              <span class="stat-label">{{ stat.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ticker -->
+      <div class="ticker-wrap" aria-hidden="true">
+        <div class="ticker-track">
+          <span *ngFor="let tag of gatewayTags" class="ticker-item">
+            <mat-icon>arrow_forward_ios</mat-icon>{{ tag }}
+          </span>
+          <span *ngFor="let tag of gatewayTags" class="ticker-item">
+            <mat-icon>arrow_forward_ios</mat-icon>{{ tag }}
+          </span>
+        </div>
       </div>
     </div>
   </header>
 
-  <section class="platforms" id="platforms">
-    <div class="shell">
-      <div class="section-head">
-        <h2>Choose Your Platform</h2>
-        <p>Direct access to every active Suraksha destination.</p>
+  <!-- ══ WHY THIS GATEWAY ═══════════════════════════════ -->
+  <section class="hp-section hp-alt" id="spotlight">
+    <div class="split-editorial">
+      <div class="split-left">
+        <div class="section-label light">
+          <span class="label-line"></span>
+          <span>THE SURAKSHA ECOSYSTEM</span>
+        </div>
+        <h2 class="section-h2 light">Four platforms.<br>One connected group.</h2>
+        <p class="section-sub light">
+          From precast boundary walls to curated library spaces, digital software delivery,
+          and premium interior products — the Suraksha Group operates across industries
+          from one unified digital presence.
+        </p>
+        <div class="eco-pills">
+          <span class="eco-pill" *ngFor="let card of spotlightCards">
+            <mat-icon>{{ card.icon }}</mat-icon>{{ card.title }}
+          </span>
+        </div>
       </div>
+      <div class="split-right">
+        <div class="pillar-card" *ngFor="let card of spotlightCards">
+          <div class="pillar-icon">
+            <mat-icon>{{ card.icon }}</mat-icon>
+          </div>
+          <div class="pillar-body">
+            <h4>{{ card.title }}</h4>
+            <p>{{ card.copy }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <div class="platform-grid">
-        <mat-card
-          *ngFor="let platform of platforms"
-          class="platform-card"
-          [ngClass]="platform.toneClass"
-          (click)="navigateTo(platform)"
-        >
-          <div class="platform-icon-wrap">
+  <!-- ══ PLATFORMS ══════════════════════════════════════ -->
+  <section class="hp-section" id="platforms">
+    <div class="section-inner">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span>OUR PLATFORMS</span>
+      </div>
+      <h2 class="section-h2">Choose your platform</h2>
+      <p class="section-sub">
+        Animated tiles. Direct access. Instant movement to your destination.
+      </p>
+    </div>
+
+    <div class="platform-mosaic">
+      <div
+        class="platform-tile"
+        *ngFor="let platform of platforms; let i = index"
+        [ngClass]="platform.toneClass"
+        [class.tile-wide]="i === 0 || i === 2"
+        (click)="navigateTo(platform)"
+      >
+        <div class="tile-header">
+          <div class="tile-icon-ring">
             <mat-icon>{{ platform.icon }}</mat-icon>
           </div>
-          <mat-card-content>
-            <h3>{{ platform.name }}</h3>
-            <p class="platform-tagline">{{ platform.tagline }}</p>
-            <p class="platform-copy">{{ platform.description }}</p>
-          </mat-card-content>
-          <mat-card-actions>
-            <button mat-flat-button>
-              {{ platform.actionLabel }}
-              <mat-icon>arrow_forward</mat-icon>
-            </button>
-          </mat-card-actions>
-        </mat-card>
+          <span class="tile-seq">{{ (i + 1) | number:'2.0-0' }}</span>
+        </div>
+        <h3 class="tile-name">{{ platform.name }}</h3>
+        <p class="tile-tagline">{{ platform.tagline }}</p>
+        <p class="tile-desc">{{ platform.description }}</p>
+        <div class="tile-action">
+          <span>{{ platform.actionLabel }}</span>
+          <mat-icon>arrow_forward</mat-icon>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="access" id="access">
-    <div class="shell access-shell">
-      <mat-card class="access-card login-card">
-        <div class="access-header">
-          <mat-icon>admin_panel_settings</mat-icon>
-          <div>
-            <h3>Single Login Portal</h3>
-            <p>Students, staff, and admins can all continue from one secure login page.</p>
+  <!-- ══ SIGN IN ══════════════════════════════════════════ -->
+  <section class="hp-login-band" id="login">
+    <div class="hp-login-band-bg"></div>
+    <div class="login-gate">
+      <div class="login-gate-left">
+        <div class="section-label light">
+          <span class="label-line"></span>
+          <span>PLATFORM ACCESS</span>
+        </div>
+        <h2 class="section-h2 light">Sign in to your<br>Suraksha account</h2>
+        <p class="section-sub light">One account for all Suraksha platforms. Staff, Admin, and Students all login here — your role determines what you can access.</p>
+        <div class="role-chips">
+          <div class="role-chip">
+            <mat-icon>admin_panel_settings</mat-icon>
+            <span>Admin</span>
+          </div>
+          <div class="role-chip">
+            <mat-icon>badge</mat-icon>
+            <span>Staff / Employee</span>
+          </div>
+          <div class="role-chip">
+            <mat-icon>school</mat-icon>
+            <span>Student</span>
           </div>
         </div>
-        <button mat-flat-button class="login-card-btn" routerLink="/login">Go to Login</button>
-      </mat-card>
+      </div>
 
-      <mat-card class="access-card links-card">
-        <h3>Quick Links</h3>
-        <div class="quick-links">
-          <a routerLink="/suraksha-walls">Suraksha Walls Page</a>
-          <a routerLink="/software">Suraksha Software</a>
-          <a routerLink="/library">Suraksha Library</a>
-          <a href="https://www.softstepscarpet.store/" target="_blank" rel="noopener">Soft Step Carpet</a>
-          <a href="https://www.surakshawalls.shop/" target="_blank" rel="noopener">Official Suraksha Walls Website</a>
+      <div class="login-gate-right">
+        <div class="login-card">
+          <h3>Sign In</h3>
+          <form (ngSubmit)="onLogin()" class="hp-login-form">
+            <div class="hp-form-field">
+              <label>Email Address</label>
+              <div class="hp-input-wrap">
+                <mat-icon>email</mat-icon>
+                <input
+                  type="email"
+                  [(ngModel)]="loginEmail"
+                  name="loginEmail"
+                  placeholder="your@email.com"
+                  [disabled]="loginLoading"
+                  autocomplete="email"
+                  required>
+              </div>
+            </div>
+            <div class="hp-form-field">
+              <label>Password</label>
+              <div class="hp-input-wrap">
+                <mat-icon>lock</mat-icon>
+                <input
+                  type="password"
+                  [(ngModel)]="loginPassword"
+                  name="loginPassword"
+                  placeholder="Your password"
+                  [disabled]="loginLoading"
+                  autocomplete="current-password"
+                  required>
+              </div>
+            </div>
+            <div *ngIf="loginError" class="hp-error-box" role="alert">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{ loginError }}</span>
+            </div>
+            <button type="submit" class="btn-gate-signin" [disabled]="loginLoading">
+              <mat-icon>{{ loginLoading ? 'hourglass_empty' : 'login' }}</mat-icon>
+              {{ loginLoading ? 'Signing in...' : 'Sign In' }}
+            </button>
+          </form>
         </div>
-      </mat-card>
+      </div>
     </div>
   </section>
 
-  <footer class="portal-footer">
-    <div class="shell footer-shell">
-      <p>Suraksha Group</p>
-      <a href="https://www.surakshawalls.shop/" target="_blank" rel="noopener">Visit surakshawalls.shop</a>
+  <!-- ══ FOOTER ═════════════════════════════════════════ -->
+  <footer class="hp-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <p class="footer-brand">Suraksha Group</p>
+        <p class="footer-copy">© 2016–2026 Suraksha Software. All Rights Reserved.</p>
+      </div>
+      <div class="footer-links">
+        <a routerLink="/suraksha-walls">Walls</a>
+        <a routerLink="/library">Library</a>
+        <a routerLink="/software">Software</a>
+        <a routerLink="/login">Login</a>
+      </div>
     </div>
   </footer>
 
-  <div class="quick-dock">
-    <button mat-mini-fab class="dock-btn" (click)="scrollToSection('platforms')" aria-label="Open platforms">
-      <mat-icon>apps</mat-icon>
-    </button>
-    <button mat-mini-fab class="dock-btn" routerLink="/login" aria-label="Go to login">
-      <mat-icon>login</mat-icon>
-    </button>
-  </div>
 </div>
 

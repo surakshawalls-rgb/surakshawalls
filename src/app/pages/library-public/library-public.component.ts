@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -15,7 +15,7 @@ import { RegistrationDialogComponent } from '../library-grid/registration-dialog
 @Component({
   selector: 'app-library-public',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatTabsModule, MatDialogModule, MatSnackBarModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatTabsModule, MatDialogModule, MatSnackBarModule],
   templateUrl: './library-public.component.html',
   styleUrls: ['./library-public.component.css']
 })
