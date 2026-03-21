@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { PartnerService } from './partner.service';
 
 export interface WagePayment {
   id?: string;
@@ -40,8 +41,7 @@ export interface WorkerOutstanding {
   providedIn: 'root'
 })
 export class LaborPaymentService {
-
-  constructor(private supabase: SupabaseService) {}
+  constructor(private supabase: SupabaseService, private partnerService: PartnerService) {}
 
   /**
    * Get all workers with outstanding wages (using wage_payments table)
@@ -83,18 +83,23 @@ export class LaborPaymentService {
       // Build worker outstanding list
       return workers.map((worker: any) => {
         const workerWageEntries = wageEntries?.filter((e: any) => e.worker_id === worker.id) || [];
-        
+        // For total_paid, sum both paid_today and all wage_payments for this worker
+        let totalPaid = 0;
+        workerWageEntries.forEach((entry: any) => {
+          const entryPayments = wagePayments?.filter((p: any) => p.wage_entry_id === entry.id) || [];
+          const totalPaidLater = entryPayments.reduce((sum: number, p: any) => sum + p.amount_paid, 0);
+          totalPaid += (entry.paid_today || 0) + totalPaidLater;
+        });
         return {
           worker_id: worker.id,
           worker_name: worker.name,
           phone: worker.phone || '',
           total_earned: workerWageEntries.reduce((sum: number, e: any) => sum + (e.wage_earned || 0), 0),
-          total_paid: workerWageEntries.reduce((sum: number, e: any) => sum + (e.paid_today || 0), 0),
+          total_paid: totalPaid,
           outstanding: worker.cumulative_balance,
           wage_entries: workerWageEntries.map((entry: any) => {
             const entryPayments = wagePayments?.filter((p: any) => p.wage_entry_id === entry.id) || [];
             const totalPaidLater = entryPayments.reduce((sum: number, p: any) => sum + p.amount_paid, 0);
-            
             return {
               wage_entry_id: entry.id,
               work_date: entry.date,
@@ -152,8 +157,18 @@ export class LaborPaymentService {
 
       if (insertError) throw insertError;
 
-      // Record in firm_cash_ledger if paid from firm cash
-      if (!payment.paid_by_partner_id) {
+      if (payment.paid_by_partner_id) {
+        // Record as partner expense in firm_cash_ledger
+        await this.partnerService.insertExpense(
+          payment.payment_date,
+          payment.paid_by_partner_id,
+          'Wage Payment',
+          payment.amount_paid,
+          'labour',
+          payment.notes || ''
+        );
+      } else {
+        // Record in firm_cash_ledger if paid from firm cash
         await this.supabase.supabase
           .from('firm_cash_ledger')
           .insert([{
@@ -164,6 +179,26 @@ export class LaborPaymentService {
             description: `Wage payment${payment.notes ? ' - ' + payment.notes : ''}`
           }]);
       }
+
+      // --- Update total_paid in workers_master ---
+      // Sum paid_today from wage_entries and amount_paid from wage_payments
+      const { data: wageEntries, error: wageEntriesError } = await this.supabase.supabase
+        .from('wage_entries')
+        .select('paid_today')
+        .eq('worker_id', payment.worker_id);
+      if (wageEntriesError) throw wageEntriesError;
+      const { data: wagePayments, error: wagePaymentsError } = await this.supabase.supabase
+        .from('wage_payments')
+        .select('amount_paid')
+        .eq('worker_id', payment.worker_id);
+      if (wagePaymentsError) throw wagePaymentsError;
+      const totalPaidToday = (wageEntries || []).reduce((sum: number, e: any) => sum + (e.paid_today || 0), 0);
+      const totalPaidLater = (wagePayments || []).reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
+      const newTotalPaid = totalPaidToday + totalPaidLater;
+      await this.supabase.supabase
+        .from('workers_master')
+        .update({ total_paid: newTotalPaid })
+        .eq('id', payment.worker_id);
 
       return { success: true };
     } catch (error) {

@@ -125,29 +125,26 @@ export class PartnerComponent implements OnInit {
 
     this.startLoading();
 
-    const res = await this.db.insertExpense(
-      this.date,
-      this.partnerId,
-      this.title,
-      this.amount,
-      this.category,
-      this.category === 'Other' ? this.otherDescription : undefined
-    );
-
-    this.stopLoading();
-
-    if (res.error) {
-      console.error(res.error);
-      return alert("❌ Save Failed");
+    try {
+      await this.db.insertExpense(
+        this.date,
+        this.partnerId,
+        this.title,
+        this.amount,
+        this.category,
+        this.category === 'Other' ? this.otherDescription : undefined
+      );
+      this.stopLoading();
+      alert("✅ Saved");
+      this.title = '';
+      this.amount = null;
+      this.otherDescription = '';
+      await this.loadTable();
+    } catch (err) {
+      this.stopLoading();
+      console.error(err);
+      alert("❌ Save Failed");
     }
-
-    alert("✅ Saved");
-
-    this.title = '';
-    this.amount = null;
-    this.otherDescription = '';
-
-    await this.loadTable();
   }
 
   async loadTable() {

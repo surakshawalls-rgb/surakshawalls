@@ -350,6 +350,52 @@
         </div>
       </div>
     </div>
+
+    <!-- Partner Passbook (Expense History) -->
+    <div style="background: white; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 16px; margin-top: 24px;">
+      <h2 style="margin: 0 0 16px 0; color: #333; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+        <span style="background: #8b5cf6; color: white; padding: 5px; border-radius: 6px; font-size: 10px;">📒</span>
+        Partner Passbook (Expense History)
+      </h2>
+      <div style="margin-bottom: 16px;">
+        <label style="color: #333; font-weight: 500; font-size: 9px; margin-right: 8px;">Select Partner:</label>
+        <select [(ngModel)]="selectedPartner" (change)="onPartnerSelect()"
+                style="padding: 6px 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; font-size: 9px; font-weight: 400;">
+          <option value="">-- Select Partner --</option>
+          <option *ngFor="let partner of partners" [value]="partner.id">{{ partner.name }}</option>
+        </select>
+      </div>
+      <div *ngIf="passbookLoading" style="color: #666; font-size: 10px; padding: 12px 0;">⏳ Loading passbook...</div>
+      <div *ngIf="passbookError" style="color: #ef4444; font-size: 10px; padding: 12px 0;">❌ {{ passbookError }}</div>
+      <div *ngIf="!passbookLoading && !passbookError && selectedPartner">
+        <table style="width: 100%; border-collapse: collapse; background: #f5f5f5; border-radius: 8px;">
+          <thead>
+            <tr style="background: white;">
+              <th style="padding: 8px; text-align: left; color: #333; font-weight: 600; font-size: 9px; border-bottom: 2px solid #e0e0e0;">Date</th>
+              <th style="padding: 8px; text-align: left; color: #333; font-weight: 600; font-size: 9px; border-bottom: 2px solid #e0e0e0;">Amount</th>
+              <th style="padding: 8px; text-align: left; color: #333; font-weight: 600; font-size: 9px; border-bottom: 2px solid #e0e0e0;">Category</th>
+              <th style="padding: 8px; text-align: left; color: #333; font-weight: 600; font-size: 9px; border-bottom: 2px solid #e0e0e0;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of partnerPassbook; let i = index"
+                style="border-bottom: 1px solid #e0e0e0; transition: all 0.3s ease;"
+                onmouseover="this.style.background='white'"
+                onmouseout="this.style.background='transparent'">
+              <td style="padding: 8px; color: #666; font-weight: 400; font-size: 9px;">{{ entry.date | date: 'dd/MM/yyyy' }}</td>
+              <td style="padding: 8px; color: #333; font-weight: 600; font-size: 9px;">₹{{ entry.amount | number: '1.2-2' }}</td>
+              <td style="padding: 8px; color: #8b5cf6; font-weight: 500; font-size: 9px;">{{ entry.category }}</td>
+              <td style="padding: 8px; color: #666; font-size: 9px;">{{ entry.description || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="partnerPassbook.length === 0" style="text-align: center; padding: 30px 20px; color: #666;">
+          <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">📒</div>
+          <div style="font-size: 10px; font-weight: 500; margin-bottom: 5px; color: #333;">No Expenses Recorded</div>
+          <div style="font-size: 9px; color: #666;">Partner expenses will appear here once recorded</div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

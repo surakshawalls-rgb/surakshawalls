@@ -50,6 +50,9 @@ export class PartnerDashboardComponent implements OnInit {
   partners: PartnerInfo[] = [];
   settlements: Settlement[] = [];
   withdrawals: Withdrawal[] = [];
+  partnerPassbook: any[] = [];
+  passbookLoading = false;
+  passbookError = '';
   
   selectedMonth: string = new Date().toISOString().slice(0, 7);
   selectedPartner: string = '';
@@ -86,7 +89,32 @@ export class PartnerDashboardComponent implements OnInit {
           this.cd.detectChanges();
         });
       });
+      // Optionally load passbook for first partner
+      // this.loadPartnerPassbook();
     });
+  }
+  async loadPartnerPassbook() {
+    this.partnerPassbook = [];
+    this.passbookError = '';
+    if (!this.selectedPartner) return;
+    this.passbookLoading = true;
+    this.cd.detectChanges();
+    try {
+      // Use SupabaseService to call PartnerService.getPartnerPassbook
+      // If PartnerService is not injected, call supabase directly
+      const { data, error } = await this.db.supabase
+        .from('partner_expense')
+        .select('date, amount, category, description')
+        .eq('partner', this.selectedPartner)
+        .order('date', { ascending: false });
+      if (error) throw error;
+      this.partnerPassbook = data || [];
+    } catch (err) {
+      this.passbookError = 'Failed to load partner passbook';
+    } finally {
+      this.passbookLoading = false;
+      this.cd.detectChanges();
+    }
   }
 
   async refreshData() {
@@ -377,6 +405,12 @@ export class PartnerDashboardComponent implements OnInit {
 
   onMonthChange() {
     this.loadPartnerData();
+    // Optionally reload passbook if month filter is relevant
+    // this.loadPartnerPassbook();
+  }
+
+  onPartnerSelect() {
+    this.loadPartnerPassbook();
   }
 
   getNetCashDisplay(partner: PartnerInfo): string {
