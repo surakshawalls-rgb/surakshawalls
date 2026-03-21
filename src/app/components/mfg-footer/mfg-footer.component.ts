@@ -187,26 +187,33 @@ import { AuthService } from '../../services/auth.service';
     .mfg-link--library mat-icon { color: #10b981; }
     .mfg-link--library:hover { color: #10b981; background: rgba(16,185,129,0.09); }
 
-    /* Responsive — switch to CSS grid for clean alignment on small screens */
-    @media (max-width: 700px) {
+    /* Responsive — always 2 columns on mobile, with better spacing */
+    @media (max-width: 900px) {
       .mfg-footer-links {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        padding: 12px 16px 16px;
-        gap: 8px 0;
+        grid-template-columns: 1fr 1fr;
+        padding: 12px 10px 16px;
+        gap: 12px 16px;
       }
       .mfg-col {
         flex: unset;
-        padding: 6px 10px;
+        min-width: 0;
+        padding: 6px 6px;
       }
       .mfg-col--lib-border { border-left: none; }
     }
-    @media (max-width: 400px) {
+    @media (max-width: 500px) {
+      .mfg-footer-links {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 8px;
+      }
+      .mfg-footer-top { padding: 10px 6px 0; }
+      .mfg-copy { display: none; }
+    }
+    @media (max-width: 350px) {
       .mfg-footer-links {
         grid-template-columns: 1fr;
       }
-      .mfg-footer-top { padding: 14px 16px 0; }
-      .mfg-copy { display: none; }
     }
   `]
 })
