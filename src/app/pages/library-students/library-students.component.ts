@@ -15,6 +15,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { LibraryService, LibraryStudent, LibrarySeat } from '../../services/library.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { LibFooterComponent } from '../../components/lib-footer/lib-footer.component';
 import { AuthService } from '../../services/auth.service';
 import {
   buildLibraryReminderMessage,
@@ -45,7 +46,8 @@ interface StudentSeatInfo {
     MatCardModule,
     MatChipsModule,
     MatProgressBarModule,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    LibFooterComponent
   ],
   templateUrl: './library-students.component.html',
   styleUrls: ['./library-students.component.css']

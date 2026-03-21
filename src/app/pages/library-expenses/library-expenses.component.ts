@@ -13,6 +13,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatBadgeModule } from '@angular/material/badge';
+import { LibFooterComponent } from '../../components/lib-footer/lib-footer.component';
 
 @Component({
   selector: 'app-library-expenses',
@@ -27,7 +28,8 @@ import { MatBadgeModule } from '@angular/material/badge';
     MatChipsModule,
     MatTooltipModule,
     MatProgressBarModule,
-    MatBadgeModule
+    MatBadgeModule,
+    LibFooterComponent
   ],
   templateUrl: './library-expenses.component.html',
   styleUrls: ['./library-expenses.component.css']

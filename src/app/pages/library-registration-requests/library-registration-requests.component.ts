@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { LibFooterComponent } from '../../components/lib-footer/lib-footer.component';
 import {
   ApproveLibraryRegistrationRequestInput,
   LibraryRegistrationRequest,
@@ -15,7 +16,7 @@ import { SupabaseService } from '../../services/supabase.service';
 @Component({
   selector: 'app-library-registration-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, LibFooterComponent],
   templateUrl: './library-registration-requests.component.html',
   styleUrls: ['./library-registration-requests.component.css']
 })

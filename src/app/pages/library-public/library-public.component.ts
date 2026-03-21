@@ -11,11 +11,12 @@ import { format } from 'date-fns';
 import { AuthService } from '../../services/auth.service';
 import { LibrarySeat, LibraryService } from '../../services/library.service';
 import { RegistrationDialogComponent } from '../library-grid/registration-dialog.component';
+import { LibFooterComponent } from '../../components/lib-footer/lib-footer.component';
 
 @Component({
   selector: 'app-library-public',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatTabsModule, MatDialogModule, MatSnackBarModule],
+  imports: [CommonModule, RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatTabsModule, MatDialogModule, MatSnackBarModule, LibFooterComponent],
   templateUrl: './library-public.component.html',
   styleUrls: ['./library-public.component.css']
 })

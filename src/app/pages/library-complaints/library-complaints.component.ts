@@ -12,6 +12,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { LibraryService } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
+import { LibFooterComponent } from '../../components/lib-footer/lib-footer.component';
 
 interface Complaint {
   id: string;
@@ -43,7 +44,8 @@ interface Complaint {
     MatCardModule,
     MatDialogModule,
     MatSnackBarModule,
-    MatTabsModule
+    MatTabsModule,
+    LibFooterComponent
   ],
   templateUrl: './library-complaints.component.html',
   styleUrls: ['./library-complaints.component.css']
