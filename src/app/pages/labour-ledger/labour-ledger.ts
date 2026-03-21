@@ -1,9 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
 import { LaborPaymentService, WorkerOutstanding, WagePayment, WageEntryWithPayments } from '../../services/labor-payment.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
+import { AuthService } from '../../services/auth.service';
 
 interface Labour {
   labour_id: string;
@@ -31,7 +33,7 @@ interface PaymentRecord {
 @Component({
   selector: 'app-labour-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './labour-ledger.html',
   styleUrls: ['./labour-ledger.css']
 })
@@ -59,6 +61,21 @@ export class LabourLedgerComponent implements OnInit {
   
   // Filter
   statusFilter: string = 'all';
+
+  // Edit dialog
+  showEditDialog = false;
+  editingLabour: Labour | null = null;
+  editName = '';
+  editPhone = '';
+  editReason = '';
+  editSaving = false;
+
+  // Delete confirm dialog
+  showDeleteDialog = false;
+  deletingLabour: Labour | null = null;
+  deleteReason = '';
+  deleteConfirmText = '';
+  deleteSaving = false;
   
   // UI state
   loading = false;
@@ -68,7 +85,8 @@ export class LabourLedgerComponent implements OnInit {
   constructor(
     private db: SupabaseService,
     private laborPaymentService: LaborPaymentService,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private authService: AuthService
   ) {}
   
   ngOnInit() {
@@ -352,6 +370,124 @@ export class LabourLedgerComponent implements OnInit {
     this.selectedWorkerForHistory = null;
   }
   
+  // ── Edit Labour ───────────────────────────────────────────────────────────
+
+  openEditDialog(labour: Labour) {
+    this.editingLabour = labour;
+    this.editName = labour.name;
+    this.editPhone = labour.phone;
+    this.editReason = '';
+    this.showEditDialog = true;
+    this.cd.detectChanges();
+  }
+
+  closeEditDialog() {
+    this.showEditDialog = false;
+    this.editingLabour = null;
+    this.cd.detectChanges();
+  }
+
+  async saveEdit() {
+    if (!this.editingLabour) return;
+    if (!this.editName.trim() || this.editName.trim().length < 2) {
+      this.errorMessage = '⚠️ Labour name must be at least 2 characters.';
+      this.cd.detectChanges();
+      setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
+      return;
+    }
+    if (!this.editReason.trim()) {
+      this.errorMessage = '⚠️ Please provide a reason for this change.';
+      this.cd.detectChanges();
+      setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
+      return;
+    }
+
+    this.editSaving = true;
+    this.cd.detectChanges();
+    try {
+      const { error } = await this.db.supabase
+        .from('workers_master')
+        .update({ name: this.editName.trim(), phone: this.editPhone.trim() })
+        .eq('id', this.editingLabour.labour_id);
+
+      if (error) throw error;
+
+      this.successMessage = `✅ Labour record updated for "${this.editName.trim()}"`;
+      this.closeEditDialog();
+      await this.loadLabours();
+      this.cd.detectChanges();
+      setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 3000);
+    } catch (err) {
+      console.error('Error updating labour:', err);
+      this.errorMessage = '❌ Failed to update labour. Please try again.';
+      this.cd.detectChanges();
+      setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
+    } finally {
+      this.editSaving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  // ── Delete Labour ──────────────────────────────────────────────────────────
+
+  openDeleteDialog(labour: Labour) {
+    this.deletingLabour = labour;
+    this.deleteReason = '';
+    this.deleteConfirmText = '';
+    this.showDeleteDialog = true;
+    this.cd.detectChanges();
+  }
+
+  closeDeleteDialog() {
+    this.showDeleteDialog = false;
+    this.deletingLabour = null;
+    this.cd.detectChanges();
+  }
+
+  async confirmDelete() {
+    if (!this.deletingLabour) return;
+    if (!this.deleteReason.trim()) {
+      this.errorMessage = '⚠️ Please provide a reason for deletion.';
+      this.cd.detectChanges();
+      setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
+      return;
+    }
+
+    this.deleteSaving = true;
+    this.cd.detectChanges();
+    try {
+      // Soft-delete: set active = false so historical records are preserved
+      const { error } = await this.db.supabase
+        .from('workers_master')
+        .update({ active: false })
+        .eq('id', this.deletingLabour.labour_id);
+
+      if (error) throw error;
+
+      this.successMessage = `✅ Labour "${this.deletingLabour.name}" removed from active list.`;
+      this.closeDeleteDialog();
+      await this.loadLabours();
+      this.cd.detectChanges();
+      setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 3000);
+    } catch (err) {
+      console.error('Error deleting labour:', err);
+      this.errorMessage = '❌ Failed to remove labour. Please try again.';
+      this.cd.detectChanges();
+      setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
+    } finally {
+      this.deleteSaving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  canManageLabour(): boolean {
+    return this.authService.canEdit();
+  }
+
+  canDeleteLabour(): boolean {
+    return this.authService.isAdmin();
+  }
+
   getTotalEarned(): number {
     return this.getFilteredLabours().reduce((sum, l) => sum + l.total_earned, 0);
   }

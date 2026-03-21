@@ -5,6 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { PartnerService } from '../../services/partner.service';
 import { PartnerWithdrawComponent } from '../partner-withdraw-component/partner-withdraw-component';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 type ExpenseCategory =
   | 'Sariya'
@@ -20,7 +21,7 @@ type ExpenseCategory =
 @Component({
   selector: 'app-partner',
   standalone: true,
-  imports: [CommonModule, FormsModule, PartnerWithdrawComponent],
+  imports: [CommonModule, FormsModule, PartnerWithdrawComponent, MfgFooterComponent],
   templateUrl: './partner.html',
   styleUrls: ['./partner.css']
 })

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-lib-footer',
@@ -22,18 +23,57 @@ import { MatIconModule } from '@angular/material/icon';
         </div>
 
         <div class="footer-links">
+          <!-- Always visible to everyone -->
           <a routerLink="/library" class="footer-link">
             <mat-icon>home</mat-icon>Library Home
           </a>
           <a routerLink="/library-grid" class="footer-link">
             <mat-icon>view_module</mat-icon>Seat Grid
           </a>
-          <a routerLink="/library-dashboard" class="footer-link">
-            <mat-icon>dashboard</mat-icon>Dashboard
-          </a>
-          <a routerLink="/library-students" class="footer-link">
-            <mat-icon>school</mat-icon>Students
-          </a>
+
+          <!-- Admin/Manager: clickable. Student: disabled with tooltip -->
+          <ng-container *ngIf="!isStudent; else dashboardDisabled">
+            <a routerLink="/library-dashboard" class="footer-link">
+              <mat-icon>dashboard</mat-icon>Dashboard
+            </a>
+          </ng-container>
+          <ng-template #dashboardDisabled>
+            <span class="footer-link footer-link--disabled"
+                  title="Students are not allowed to access this section">
+              <mat-icon>dashboard</mat-icon>Dashboard
+              <mat-icon class="lock-icon">lock</mat-icon>
+            </span>
+          </ng-template>
+
+          <ng-container *ngIf="!isStudent; else studentsDisabled">
+            <a routerLink="/library-students" class="footer-link">
+              <mat-icon>school</mat-icon>Students
+            </a>
+          </ng-container>
+          <ng-template #studentsDisabled>
+            <span class="footer-link footer-link--disabled"
+                  title="Students are not allowed to access this section">
+              <mat-icon>school</mat-icon>Students
+              <mat-icon class="lock-icon">lock</mat-icon>
+            </span>
+          </ng-template>
+
+          <!-- Student-only quick links -->
+          <ng-container *ngIf="isStudent">
+            <div class="student-links-divider"></div>
+            <a routerLink="/library" class="footer-link footer-link--student">
+              <mat-icon>how_to_reg</mat-icon>Mark My Attendance
+            </a>
+            <a routerLink="/library-complaints" class="footer-link footer-link--student">
+              <mat-icon>report_problem</mat-icon>Lodge Complaint
+            </a>
+            <a routerLink="/library/resources" class="footer-link footer-link--student">
+              <mat-icon>auto_stories</mat-icon>Library Resources
+            </a>
+            <button type="button" (click)="reload()" class="footer-link footer-link--student footer-link--refresh">
+              <mat-icon>refresh</mat-icon>Refresh
+            </button>
+          </ng-container>
         </div>
 
         <div class="footer-contact">
@@ -63,7 +103,7 @@ import { MatIconModule } from '@angular/material/icon';
       background: linear-gradient(135deg, #050e1d 0%, #0d2137 60%, #062b17 100%);
       color: rgba(255, 255, 255, 0.75);
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      margin-top: 48px;
+      margin-top: 0;
       border-top: 1px solid rgba(255, 255, 255, 0.07);
     }
 
@@ -149,6 +189,48 @@ import { MatIconModule } from '@angular/material/icon';
       background: rgba(16, 185, 129, 0.1);
     }
 
+    /* Disabled nav links (admin-only pages - students see but can't use) */
+    .footer-link--disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: auto;
+    }
+    .footer-link--disabled:hover {
+      color: rgba(255, 255, 255, 0.6);
+      background: transparent;
+    }
+    .footer-link--disabled .lock-icon {
+      font-size: 12px;
+      width: 12px;
+      height: 12px;
+      line-height: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-left: 2px;
+    }
+
+    /* Student-only quick links */
+    .student-links-divider {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.15);
+      margin: 0 4px;
+      align-self: center;
+    }
+    .footer-link--student {
+      color: rgba(16, 185, 129, 0.8);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .footer-link--student:hover {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+    .footer-link--refresh {
+      background: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
     /* Contact */
     .footer-contact {
       display: flex;
@@ -196,5 +278,14 @@ import { MatIconModule } from '@angular/material/icon';
   `]
 })
 export class LibFooterComponent {
+  private auth = inject(AuthService);
   currentYear = new Date().getFullYear();
+
+  get isStudent(): boolean {
+    return this.auth.isLibraryViewer();
+  }
+
+  reload(): void {
+    window.location.reload();
+  }
 }

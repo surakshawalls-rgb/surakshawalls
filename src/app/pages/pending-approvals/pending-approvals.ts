@@ -6,6 +6,7 @@ import { filter, Subscription } from 'rxjs';
 import { SupabaseService } from '../../services/supabase.service';
 import { AuthService } from '../../services/auth.service';
 import { ProductionService } from '../../services/production.service';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 interface PendingEntry {
   id: string;
@@ -26,7 +27,7 @@ interface PendingEntry {
 @Component({
   selector: 'app-pending-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MfgFooterComponent],
   templateUrl: './pending-approvals.html',
   styleUrls: ['./pending-approvals.css']
 })

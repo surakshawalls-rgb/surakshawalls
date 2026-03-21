@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompanyCashService } from '../../services/company-cash.service';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-company-cash-component',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MfgFooterComponent],
   templateUrl: './company-cash-component.html',
   styleUrls: ['./company-cash-component.css'],
 })

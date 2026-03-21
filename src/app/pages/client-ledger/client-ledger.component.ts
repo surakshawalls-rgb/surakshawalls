@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ClientService, Client, ClientStatement } from '../../services/client.service';
 import { ClientPaymentService, ClientOutstanding, ClientPaymentRecord, SalesTransactionWithPayments } from '../../services/client-payment.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-client-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './client-ledger.component.html',
   styleUrls: ['./client-ledger.component.css']
 })

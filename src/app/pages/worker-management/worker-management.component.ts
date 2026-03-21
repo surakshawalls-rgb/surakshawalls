@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkerService } from '../../services/worker.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-worker-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './worker-management.component.html',
   styleUrls: ['./worker-management.component.css']
 })

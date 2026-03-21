@@ -4,11 +4,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-inventory-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './inventory-view.component.html',
   styleUrls: ['./inventory-view.component.css']
 })

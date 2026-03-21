@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { StockAuditService } from '../../services/stock-audit.service';
 import { InventoryService } from '../../services/inventory.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-stock-audit',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './stock-audit.component.html',
   styleUrls: ['./stock-audit.component.css']
 })

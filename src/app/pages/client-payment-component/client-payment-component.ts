@@ -16,6 +16,7 @@ import { ClientService } from '../../services/client.service';
 import { SalesService, SaleData } from '../../services/sales.service';
 import { PartnerService } from '../../services/partner.service';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 interface PaymentHistoryItem {
   id: string;
@@ -43,7 +44,8 @@ interface PaymentHistoryItem {
     MatTabsModule,
     MatBadgeModule,
     MatChipsModule,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    MfgFooterComponent,
   ],
   templateUrl: './client-payment-component.html',
   styleUrls: ['./client-payment-component-new.css']

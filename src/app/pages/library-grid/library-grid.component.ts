@@ -6,6 +6,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatBadgeModule } from '@angular/material/badge';
+import { MatIconModule } from '@angular/material/icon';
 import { LibraryService, LibrarySeat, LibraryStudent } from '../../services/library.service';
 import { AuthService } from '../../services/auth.service';
 import { SupabaseService } from '../../services/supabase.service';
@@ -28,7 +29,7 @@ import { LibFooterComponent } from '../../components/lib-footer/lib-footer.compo
 @Component({
   selector: 'app-library-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule, MatSnackBarModule, MatBadgeModule, MatDatepickerModule, MatNativeDateModule, BreadcrumbComponent, LibFooterComponent],
+  imports: [CommonModule, FormsModule, RouterLink, MatDialogModule, MatSnackBarModule, MatBadgeModule, MatIconModule, MatDatepickerModule, MatNativeDateModule, BreadcrumbComponent, LibFooterComponent],
   providers: [MatDatepickerModule, MatNativeDateModule],
   templateUrl: './library-grid.component.html',
   styleUrls: ['./library-grid.component.css']

@@ -3,10 +3,10 @@
 <div class="requests-page">
   <div class="page-header">
     <div>
-      <h1>📝 Membership Requests</h1>
+      <h1>ðŸ“ Membership Requests</h1>
       <p>Review public library registrations, verify manual payments, and assign seats.</p>
     </div>
-    <button class="btn btn-primary" (click)="refresh()">🔄 Refresh</button>
+    <button class="btn btn-primary" (click)="refresh()">ðŸ”„ Refresh</button>
   </div>
 
   <div class="stats-row">
@@ -45,7 +45,7 @@
   <div class="loading" *ngIf="loading">Loading membership requests...</div>
 
   <div class="empty-state" *ngIf="!loading && filteredRequests.length === 0">
-    <div class="empty-icon">📭</div>
+    <div class="empty-icon">ðŸ“­</div>
     <h3>No {{ filterStatus === 'all' ? '' : filterStatus + ' ' }}requests found</h3>
     <p>New public registration requests will appear here automatically.</p>
   </div>
@@ -55,7 +55,7 @@
       <div class="request-header">
         <div>
           <h3>{{ request.name }}</h3>
-          <p>{{ request.mobile }} • {{ getShiftLabel(request.requested_shift_type) }}</p>
+          <p>{{ request.mobile }} â€¢ {{ getShiftLabel(request.requested_shift_type) }}</p>
         </div>
         <span class="status-pill" [ngClass]="getStatusClass(request.status)">
           {{ request.status }}
@@ -64,10 +64,10 @@
 
       <div class="request-meta">
         <div><strong>Requested On:</strong> {{ formatDateTime(request.created_at) }}</div>
-        <div><strong>Membership:</strong> {{ formatDate(request.requested_start_date) }} → {{ formatDate(request.requested_end_date) }}</div>
+        <div><strong>Membership:</strong> {{ formatDate(request.requested_start_date) }} â†’ {{ formatDate(request.requested_end_date) }}</div>
         <div><strong>Payment Mode:</strong> {{ request.payment_mode | uppercase }}</div>
-        <div><strong>Reg Fee:</strong> ₹{{ request.registration_fee_amount || 0 }}</div>
-        <div><strong>Seat Fee:</strong> ₹{{ request.seat_fee_amount || 0 }}</div>
+        <div><strong>Reg Fee:</strong> â‚¹{{ request.registration_fee_amount || 0 }}</div>
+        <div><strong>Seat Fee:</strong> â‚¹{{ request.seat_fee_amount || 0 }}</div>
         <div *ngIf="request.assigned_seat_no"><strong>Assigned Seat:</strong> {{ request.assigned_seat_no }}</div>
         <div *ngIf="request.reviewed_at"><strong>Reviewed:</strong> {{ formatDateTime(request.reviewed_at) }}</div>
       </div>
@@ -87,8 +87,8 @@
       </div>
 
       <div class="request-actions" *ngIf="request.status === 'pending' && canManageRequests()">
-        <button class="btn btn-success" (click)="openApproveModal(request)">✅ Approve & Assign Seat</button>
-        <button class="btn btn-danger" (click)="openRejectModal(request)">❌ Reject</button>
+        <button class="btn btn-success" (click)="openApproveModal(request)">âœ… Approve & Assign Seat</button>
+        <button class="btn btn-danger" (click)="openRejectModal(request)">âŒ Reject</button>
       </div>
     </div>
   </div>
@@ -97,7 +97,7 @@
 <div class="modal-overlay" *ngIf="showApproveModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedRequest">
     <div class="modal-header">
-      <h3>✅ Approve Membership Request</h3>
+      <h3>âœ… Approve Membership Request</h3>
       <button class="close-btn" (click)="closeModal()">&times;</button>
     </div>
 
@@ -106,7 +106,7 @@
         <div><strong>Student:</strong> {{ selectedRequest.name }}</div>
         <div><strong>Mobile:</strong> {{ selectedRequest.mobile }}</div>
         <div><strong>Requested Shift:</strong> {{ getShiftLabel(selectedRequest.requested_shift_type) }}</div>
-        <div><strong>Requested Duration:</strong> {{ formatDate(selectedRequest.requested_start_date) }} → {{ formatDate(selectedRequest.requested_end_date) }}</div>
+        <div><strong>Requested Duration:</strong> {{ formatDate(selectedRequest.requested_start_date) }} â†’ {{ formatDate(selectedRequest.requested_end_date) }}</div>
       </div>
 
       <div class="form-grid">
@@ -124,12 +124,12 @@
         </div>
 
         <div class="form-field">
-          <label>Registration Fee (₹)</label>
+          <label>Registration Fee (â‚¹)</label>
           <input type="number" [(ngModel)]="approvalRegistrationFee" min="0">
         </div>
 
         <div class="form-field">
-          <label>Seat Fee (₹)</label>
+          <label>Seat Fee (â‚¹)</label>
           <input type="number" [(ngModel)]="approvalSeatFee" min="0">
         </div>
 
@@ -162,7 +162,7 @@
 <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedRequest">
     <div class="modal-header">
-      <h3>❌ Reject Membership Request</h3>
+      <h3>âŒ Reject Membership Request</h3>
       <button class="close-btn" (click)="closeModal()">&times;</button>
     </div>
 
@@ -189,5 +189,5 @@
 
 
 
-<app-lib-footer></app-lib-footer>
 </div>
+<app-lib-footer></app-lib-footer>

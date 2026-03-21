@@ -12,6 +12,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 import { 
   SupplierService, 
   Supplier, 
@@ -41,7 +42,8 @@ import { AuthService } from '../../services/auth.service';
     MatBadgeModule,
     MatChipsModule,
     MatDialogModule,
-    BreadcrumbComponent
+    BreadcrumbComponent,
+    MfgFooterComponent,
   ],
   templateUrl: './supplier-management.component.html',
   styleUrls: ['./supplier-management.component.css']

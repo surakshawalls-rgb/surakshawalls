@@ -17,15 +17,15 @@
 
   <!-- Controls -->
   <div class="controls-section">
-    <button (click)="showAddForm = !showAddForm" class="btn-primary">
-      {{ showAddForm ? '❌ Cancel' : '➕ Add Labour' }}
-    </button>
-
     <select [(ngModel)]="statusFilter" class="filter-select">
       <option value="all">All Labours</option>
       <option value="active">Active</option>
       <option value="inactive">Inactive</option>
     </select>
+
+    <button (click)="showAddForm = !showAddForm" class="btn-primary">
+      {{ showAddForm ? '❌ Cancel' : '➕ Add Labour' }}
+    </button>
   </div>
 
   <!-- Add Labour Form -->
@@ -100,11 +100,18 @@
               </span>
             </td>
             <td>
-              <button (click)="openPaymentForm(labour)" 
-                      [disabled]="labour.due_amount === 0"
-                      class="btn-pay">
-                💳 Pay
-              </button>
+              <div class="action-btns">
+                <button *ngIf="canManageLabour()"
+                        (click)="openEditDialog(labour)"
+                        class="btn-edit">
+                  ✏️ Edit
+                </button>
+                <button *ngIf="canDeleteLabour()"
+                        (click)="openDeleteDialog(labour)"
+                        class="btn-delete">
+                  🗑️ Remove
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -120,4 +127,109 @@
       </table>
     </div>
   </div>
+
+  <!-- ── Edit Labour Dialog ─────────────────────────────────────── -->
+  <div *ngIf="showEditDialog" class="dialog-overlay" (click)="closeEditDialog()">
+    <div class="dialog-box" (click)="$event.stopPropagation()">
+      <div class="dialog-header">
+        <h3>✏️ Edit Labour Details</h3>
+        <button (click)="closeEditDialog()" class="dialog-close">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <p class="dialog-sub">Updating: <strong>{{ editingLabour?.name }}</strong></p>
+
+        <div class="dialog-field">
+          <label>Name <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="editName" placeholder="Full name" class="dialog-input">
+        </div>
+        <div class="dialog-field">
+          <label>Mobile</label>
+          <input type="tel" [(ngModel)]="editPhone" placeholder="+91 XXXXX XXXXX" class="dialog-input">
+        </div>
+        <div class="dialog-field">
+          <label>Reason for Change <span class="required">*</span></label>
+          <textarea [(ngModel)]="editReason" rows="3"
+                    placeholder="e.g. Name correction, updated phone number…"
+                    class="dialog-input dialog-textarea"></textarea>
+          <small class="field-hint">Required for audit trail. This reason will be logged.</small>
+        </div>
+
+        <div class="dialog-approval-note">
+          <span>⚠️</span>
+          <span>Changes are applied immediately and logged for approval review.</span>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button (click)="closeEditDialog()" class="btn-cancel-dialog">Cancel</button>
+        <button (click)="saveEdit()" [disabled]="editSaving" class="btn-save-dialog">
+          {{ editSaving ? 'Saving…' : '✅ Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete Labour Dialog ───────────────────────────────────── -->
+  <div *ngIf="showDeleteDialog" class="dialog-overlay" (click)="closeDeleteDialog()">
+    <div class="dialog-box dialog-box--danger" (click)="$event.stopPropagation()">
+      <div class="dialog-header dialog-header--danger">
+        <h3>🗑️ Remove Labour Entry</h3>
+        <button (click)="closeDeleteDialog()" class="dialog-close dialog-close--light">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <p class="dialog-sub">You are removing: <strong>{{ deletingLabour?.name }}</strong></p>
+
+        <div class="delete-summary">
+          <div class="delete-stat">
+            <span class="delete-stat-label">Total Earned</span>
+            <span class="delete-stat-val">₹{{ deletingLabour?.total_earned | number:'1.0-2' }}</span>
+          </div>
+          <div class="delete-stat">
+            <span class="delete-stat-label">Total Paid</span>
+            <span class="delete-stat-val">₹{{ deletingLabour?.total_paid | number:'1.0-2' }}</span>
+          </div>
+          <div class="delete-stat" [class.stat-due]="(deletingLabour?.due_amount ?? 0) > 0">
+            <span class="delete-stat-label">Pending Due</span>
+            <span class="delete-stat-val">₹{{ deletingLabour?.due_amount | number:'1.0-2' }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="(deletingLabour?.due_amount ?? 0) > 0" class="delete-due-warning">
+          ⚠️ This labour still has a pending due. Clear the dues before removing if possible.
+        </div>
+
+        <div class="dialog-field">
+          <label>Reason for Removal <span class="required">*</span></label>
+          <textarea [(ngModel)]="deleteReason" rows="3"
+                    placeholder="e.g. Invalid entry, duplicate record, worker left…"
+                    class="dialog-input dialog-textarea"></textarea>
+        </div>
+
+        <div class="dialog-field">
+          <label>Type <strong>REMOVE</strong> to confirm <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="deleteConfirmText"
+                 placeholder="Type REMOVE"
+                 class="dialog-input confirm-input"
+                 autocomplete="off">
+          <small class="field-hint" *ngIf="deleteConfirmText && deleteConfirmText !== 'REMOVE'">
+            Must match exactly: REMOVE
+          </small>
+        </div>
+
+        <p class="delete-note">
+          The record will be <strong>deactivated</strong> (not permanently deleted) so payment history is preserved.
+        </p>
+      </div>
+      <div class="dialog-footer">
+        <button (click)="closeDeleteDialog()" class="btn-cancel-dialog">Cancel</button>
+        <button (click)="confirmDelete()"
+                [disabled]="deleteSaving || deleteConfirmText !== 'REMOVE' || !deleteReason.trim()"
+                class="btn-delete-confirm">
+          {{ deleteSaving ? 'Removing…' : '🗑️ Confirm Remove' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
+
+<app-mfg-footer></app-mfg-footer>

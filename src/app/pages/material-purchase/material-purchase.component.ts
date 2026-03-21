@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { MaterialPurchaseService } from '../../services/material-purchase.service';
 import { InventoryService } from '../../services/inventory.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-material-purchase',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './material-purchase.component.html',
   styleUrls: ['./material-purchase.component.css']
 })

@@ -20,6 +20,7 @@ import {
   UpdateManagedUserInput,
 } from '../../services/admin-user.service';
 import { NotificationService } from '../../services/notification.service';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 interface UserFormModel {
   email: string;
@@ -45,6 +46,7 @@ interface UserFormModel {
     MatTooltipModule,
     MatCheckboxModule,
     MatSelectModule,
+    MfgFooterComponent,
   ],
   templateUrl: './admin-user-management.component.html',
   styleUrls: ['./admin-user-management.component.css'],

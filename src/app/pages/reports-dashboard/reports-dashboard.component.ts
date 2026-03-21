@@ -9,6 +9,7 @@ import { LaborPaymentService, WorkerOutstanding, WageEntryWithPayments, WagePaym
 import { InventoryService } from '../../services/inventory.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 interface PaymentDialog {
   show: boolean;
@@ -38,7 +39,7 @@ interface PassbookDialog {
 @Component({
   selector: 'app-reports-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './reports-dashboard.component.html',
   styleUrls: ['./reports-dashboard.component.css']
 })

@@ -90,7 +90,7 @@
         <td mat-cell *matCellDef="let student">
           <div class="student-photo-small">
             <img *ngIf="student.photo_url" [src]="student.photo_url" alt="Photo">
-            <div *ngIf="!student.photo_url" class="no-photo-small">📷</div>
+            <div *ngIf="!student.photo_url" class="no-photo-small">ðŸ“·</div>
           </div>
         </td>
       </ng-container>
@@ -105,8 +105,8 @@
       <ng-container matColumnDef="gender">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Gender</th>
         <td mat-cell *matCellDef="let student">
-          <span *ngIf="student.gender === 'Male'">👨 Male</span>
-          <span *ngIf="student.gender === 'Female'">👩 Female</span>
+          <span *ngIf="student.gender === 'Male'">ðŸ‘¨ Male</span>
+          <span *ngIf="student.gender === 'Female'">ðŸ‘© Female</span>
           <span *ngIf="!student.gender">-</span>
         </td>
       </ng-container>
@@ -186,14 +186,14 @@
                     matTooltip="View Profile"
                     color="primary"
                     (click)="openProfileModal(student)">
-              👤
+              ðŸ‘¤
             </button>
             
             <button mat-icon-button 
                     matTooltip="Payment History"
                     color="primary"
                     (click)="openPaymentHistory(student)">
-              💳
+              ðŸ’³
             </button>
 
                 <button mat-icon-button
@@ -201,26 +201,26 @@
                   matTooltip="Mark Pending Payment Received"
                   color="accent"
                   (click)="markPendingPaymentReceived(student)">
-                  ₹
+                  â‚¹
                 </button>
             
             <button mat-icon-button 
                     matTooltip="WhatsApp"
                     (click)="sendWhatsApp(student)">
-              💬
+              ðŸ’¬
             </button>
             
             <button mat-icon-button 
                     matTooltip="Edit Student"
                     (click)="openEditModal(student)">
-              ✏️
+              âœï¸
             </button>
             
             <button *ngIf="canDelete()" mat-icon-button 
                     matTooltip="Delete Student"
                     color="warn"
                     (click)="deleteStudent(student)">
-              🗑️
+              ðŸ—‘ï¸
             </button>
           </div>
         </td>
@@ -260,7 +260,7 @@
   <div class="modal-overlay" *ngIf="showAddModal" (click)="closeModal()">
     <div class="modal-content large" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>➕ Add New Student</h3>
+        <h3>âž• Add New Student</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
@@ -362,7 +362,7 @@
       <div class="modal-footer">
         <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
         <button (click)="submitAddStudent()" [disabled]="uploadingPhoto" class="btn btn-primary">
-          {{ uploadingPhoto ? 'Uploading...' : '💾 Save Student' }}
+          {{ uploadingPhoto ? 'Uploading...' : 'ðŸ’¾ Save Student' }}
         </button>
       </div>
     </div>
@@ -372,7 +372,7 @@
   <div class="modal-overlay" *ngIf="showEditModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>✏️ Edit Student</h3>
+        <h3>âœï¸ Edit Student</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body" *ngIf="selectedStudent">
@@ -410,7 +410,7 @@
         <div class="form-group">
           <label>Joining Date</label>
           <input type="date" [(ngModel)]="selectedStudent.joining_date" class="form-control" (change)="onJoiningDateChange()">
-          <small class="form-text text-muted">💡 Changing joining date will automatically recalculate seat expiry dates</small>
+          <small class="form-text text-muted">ðŸ’¡ Changing joining date will automatically recalculate seat expiry dates</small>
         </div>
         <div class="form-group">
           <label>Status</label>
@@ -427,8 +427,8 @@
       </div>
       <div class="modal-footer">
         <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
-        <button *ngIf="selectedStudent" (click)="openChangeSeatModal(selectedStudent); showEditModal = false;" class="btn btn-info">🔄 Change Seat</button>
-        <button (click)="submitEditStudent()" class="btn btn-primary">💾 Update</button>
+        <button *ngIf="selectedStudent" (click)="openChangeSeatModal(selectedStudent); showEditModal = false;" class="btn btn-info">ðŸ”„ Change Seat</button>
+        <button (click)="submitEditStudent()" class="btn btn-primary">ðŸ’¾ Update</button>
       </div>
     </div>
   </div>
@@ -437,7 +437,7 @@
   <div class="modal-overlay" *ngIf="showPaymentHistoryModal" (click)="closeModal()">
     <div class="modal-content large" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>💳 Payment History - {{ selectedStudent?.name }}</h3>
+        <h3>ðŸ’³ Payment History - {{ selectedStudent?.name }}</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
@@ -476,7 +476,7 @@
   <div class="modal-overlay" *ngIf="showChangeSeatModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>🔄 Change Seat</h3>
+        <h3>ðŸ”„ Change Seat</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body" *ngIf="selectedStudent">
@@ -485,8 +485,8 @@
           <p><strong>Current Seat:</strong> {{ currentSeatNo }}</p>
           <p><strong>Shift Type:</strong> 
             <span *ngIf="currentShiftType === 'full_time'">Full Time</span>
-            <span *ngIf="currentShiftType === 'first_half'">🌅 Morning Shift</span>
-            <span *ngIf="currentShiftType === 'second_half'">🌃 Evening Shift</span>
+            <span *ngIf="currentShiftType === 'first_half'">ðŸŒ… Morning Shift</span>
+            <span *ngIf="currentShiftType === 'second_half'">ðŸŒƒ Evening Shift</span>
           </p>
         </div>
 
@@ -507,7 +507,7 @@
       <div class="modal-footer">
         <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
         <button (click)="confirmSeatChange()" [disabled]="!newSeatNumber" class="btn btn-primary">
-          🔄 Confirm Change
+          ðŸ”„ Confirm Change
         </button>
       </div>
     </div>
@@ -517,15 +517,15 @@
   <div class="modal-overlay" *ngIf="showAddShiftModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>➕ Add {{ newShiftType === 'first_half' ? 'Morning' : 'Evening' }} Shift</h3>
+        <h3>âž• Add {{ newShiftType === 'first_half' ? 'Morning' : 'Evening' }} Shift</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body" *ngIf="selectedStudent">
         <div class="change-seat-info">
           <h4>{{ selectedStudent.name }}</h4>
           <p><strong>Adding:</strong> 
-            <span *ngIf="newShiftType === 'first_half'">🌅 Morning Shift (6 AM - 12 PM)</span>
-            <span *ngIf="newShiftType === 'second_half'">🌃 Evening Shift (12 PM - 6 AM)</span>
+            <span *ngIf="newShiftType === 'first_half'">ðŸŒ… Morning Shift (6 AM - 12 PM)</span>
+            <span *ngIf="newShiftType === 'second_half'">ðŸŒƒ Evening Shift (12 PM - 6 AM)</span>
           </p>
           <p class="text-muted">Valid for 1 month from today</p>
         </div>
@@ -547,7 +547,7 @@
       <div class="modal-footer">
         <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
         <button (click)="confirmAddShift()" [disabled]="!newSeatNumber" class="btn btn-success">
-          ➕ Add Shift
+          âž• Add Shift
         </button>
       </div>
     </div>
@@ -557,7 +557,7 @@
   <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeModal()">
     <div class="modal-content profile-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>👨‍🎓 Student Profile</h3>
+        <h3>ðŸ‘¨â€ðŸŽ“ Student Profile</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       
@@ -565,7 +565,7 @@
         <div class="profile-layout">
           <div class="profile-photo-section">
             <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo" class="profile-photo-large">
-            <div *ngIf="!selectedStudent.photo_url" class="no-photo-large">📷</div>
+            <div *ngIf="!selectedStudent.photo_url" class="no-photo-large">ðŸ“·</div>
           </div>
           
           <div class="profile-info-section">
@@ -621,34 +621,34 @@
             </button>
             
             <button class="btn btn-success action-btn" (click)="openPayFeeModal(selectedStudent)">
-              💳 Pay Fee
+              ðŸ’³ Pay Fee
             </button>
             
             <!-- Row 2: Seat & Edit -->
             <button class="btn btn-info action-btn" (click)="openChangeSeatModal(selectedStudent)">
-              🔄 Change Seat
+              ðŸ”„ Change Seat
             </button>
             
             <button class="btn btn-secondary action-btn" (click)="openEditModal(selectedStudent); showProfileModal = false;">
-              ✏️ Edit Details
+              âœï¸ Edit Details
             </button>
             
             <!-- Row 3: Communications -->
             <button class="btn btn-success action-btn" (click)="sendWhatsAppReminder(selectedStudent)">
-              💬 WhatsApp Reminder
+              ðŸ’¬ WhatsApp Reminder
             </button>
             
             <button class="btn btn-warning action-btn" (click)="sendEmergencySOS(selectedStudent)">
-              🚨 Emergency SOS
+              ðŸš¨ Emergency SOS
             </button>
             
             <!-- Row 4: History & Release -->
             <button class="btn btn-info action-btn" (click)="openPaymentHistory(selectedStudent); showProfileModal = false;">
-              📜 Payment History
+              ðŸ“œ Payment History
             </button>
             
             <button class="btn btn-danger action-btn" (click)="releaseSeat(selectedStudent)">
-              🚪 Release Seat
+              ðŸšª Release Seat
             </button>
             
             <!-- Row 5: Add Shift (conditional) -->
@@ -665,14 +665,14 @@
 
   <!-- Profile Actions Bottom Left -->
   <div class="profile-actions" *ngIf="showEditModal && selectedStudent">
-    <button (click)="openPaymentHistory(selectedStudent)" class="btn-icon" title="Payment History">💳</button>
-    <button (click)="sendWhatsApp(selectedStudent)" class="btn-icon" title="WhatsApp">💬</button>
-    <button (click)="openEditModal(selectedStudent)" class="btn-icon" title="Edit">✏️</button>
-    <button *ngIf="canDelete()" (click)="deleteStudent(selectedStudent)" class="btn-icon danger" title="Delete">🗑️</button>
+    <button (click)="openPaymentHistory(selectedStudent)" class="btn-icon" title="Payment History">ðŸ’³</button>
+    <button (click)="sendWhatsApp(selectedStudent)" class="btn-icon" title="WhatsApp">ðŸ’¬</button>
+    <button (click)="openEditModal(selectedStudent)" class="btn-icon" title="Edit">âœï¸</button>
+    <button *ngIf="canDelete()" (click)="deleteStudent(selectedStudent)" class="btn-icon danger" title="Delete">ðŸ—‘ï¸</button>
   </div>
 
 
 
 
-<app-lib-footer></app-lib-footer>
 </div>
+<app-lib-footer></app-lib-footer>

@@ -7,11 +7,12 @@ import { PartnerWalletService } from '../../services/partner-wallet.service';
 import { StockSalesService } from '../../services/stock-sales.service';
 import { InventoryService } from '../../services/inventory.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, BreadcrumbComponent],
+  imports: [CommonModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })

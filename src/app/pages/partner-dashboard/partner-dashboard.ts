@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 interface PartnerInfo {
   id: string;
@@ -41,7 +42,7 @@ interface Withdrawal {
 @Component({
   selector: 'app-partner-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MfgFooterComponent],
   templateUrl: './partner-dashboard.html',
   styleUrls: ['./partner-dashboard.css']
 })

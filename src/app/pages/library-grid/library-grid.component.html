@@ -1,4 +1,4 @@
-<!-- src/app/pages/library-grid/library-grid.component.html -->
+﻿<!-- src/app/pages/library-grid/library-grid.component.html -->
 <app-breadcrumb></app-breadcrumb>
 <style>
 @keyframes spin {
@@ -10,7 +10,7 @@
 <div class="library-grid-container">
   <div class="header">
     <div>
-      <h2>📚 Suraksha Library - Seat Management</h2>
+      <h2><mat-icon style="vertical-align:middle;margin-right:6px">menu_book</mat-icon>Suraksha Library - Seat Management</h2>
       <!-- <p class="subtitle" *ngIf="authService.canEdit()">Click empty seats to register new students | Click occupied seats to view profiles</p> 
       <p class="subtitle" *ngIf="!authService.canEdit()">Viewing library seat occupancy and student attendance</p>-->
     </div>
@@ -18,42 +18,42 @@
     <!-- Statistics Summary -->
     <div class="stats-summary">
       <div class="stat-card">
-        <div class="stat-icon">🪑</div>
+        <div class="stat-icon"><mat-icon>chair</mat-icon></div>
         <div class="stat-content">
           <div class="stat-label">Free Full Day</div>
           <div class="stat-value">{{ getFreeFullDaySeatsCount() }}</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">✅</div>
+        <div class="stat-icon">âœ…</div>
         <div class="stat-content">
           <div class="stat-label">Occupied Full Day</div>
           <div class="stat-value">{{ getOccupiedFullDaySeatsCount() }}</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">⏰</div>
+        <div class="stat-icon">â°</div>
         <div class="stat-content">
           <div class="stat-label">Free Half Day</div>
           <div class="stat-value">{{ getFreeHalfDaySeatsCount() }}</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">⏱️</div>
+        <div class="stat-icon"><mat-icon>timer</mat-icon></div>
         <div class="stat-content">
           <div class="stat-label">Occupied Half Day</div>
           <div class="stat-value">{{ getOccupiedHalfDaySeatsCount() }}</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">👨</div>
+        <div class="stat-icon"><mat-icon>man</mat-icon></div>
         <div class="stat-content">
           <div class="stat-label">Total Boys</div>
           <div class="stat-value">{{ getTotalMalesCount() }}</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon">👩</div>
+        <div class="stat-icon"><mat-icon>woman</mat-icon></div>
         <div class="stat-content">
           <div class="stat-label">Total Girls</div>
           <div class="stat-value">{{ getTotalFemalesCount() }}</div>
@@ -63,23 +63,23 @@
     
     <div class="header-actions">
       <button (click)="openMyAttendanceModal()" class="btn btn-primary">
-        📝 Mark My Attendance
+        <mat-icon>how_to_reg</mat-icon> Mark My Attendance
       </button>
       <button (click)="openComplaintDialog()" class="btn btn-warning">
-        🚨 Lodge Complaint
+        <mat-icon>report_problem</mat-icon> Lodge Complaint
       </button>
       <button routerLink="/resources" class="btn btn-info">
-        📚 Library Resources
+        <mat-icon>auto_stories</mat-icon> Library Resources
       </button>
-      <button (click)="loadSeats()" class="btn-refresh">🔄 Refresh</button>
+      <button (click)="loadSeats()" class="btn-refresh"><mat-icon>refresh</mat-icon> Refresh</button>
       <button *ngIf="isAdmin()" routerLink="/library-complaints" class="btn btn-warning">
-        🚨 View Complaints
+        <mat-icon>report_problem</mat-icon> View Complaints
       </button>
       <button *ngIf="isAdmin()" routerLink="/library-bulk-whatsapp" class="btn btn-whatsapp">
-        💬 Bulk WhatsApp
+        <mat-icon>send</mat-icon> Bulk WhatsApp
       </button>
       <button *ngIf="isAdmin()" (click)="toggleBulkOperations()" class="btn-bulk">
-        📋 Bulk Operations
+        <mat-icon>checklist</mat-icon> Bulk Operations
       </button>
     </div>
   </div>
@@ -87,9 +87,9 @@
   <!-- Bulk Operations Panel (Admin Only) -->
   <div *ngIf="showBulkOperations && isAdmin()" class="bulk-operations-panel">
     <div class="bulk-header">
-      <h3>📋 Bulk Operations</h3>
+      <h3><mat-icon style="vertical-align:middle;margin-right:4px">checklist</mat-icon> Bulk Operations</h3>
       <button (click)="toggleBulkMode()" [class.active]="bulkMode" class="btn btn-secondary">
-        {{ bulkMode ? '✓ Selection Mode Active' : 'Enable Selection Mode' }}
+        {{ bulkMode ? 'âœ“ Selection Mode Active' : 'Enable Selection Mode' }}
       </button>
     </div>
 
@@ -112,10 +112,10 @@
 
       <div class="bulk-execute" *ngIf="selectedSeats.length > 0">
         <button (click)="executeBulkRelease()" [disabled]="saving" class="btn btn-danger">
-          🚪 Release {{ selectedSeats.length }} Seats
+          <mat-icon>logout</mat-icon> Release {{ selectedSeats.length }} Seats
         </button>
         <button (click)="sendBulkWhatsAppMessages()" class="btn btn-success">
-          💬 Open Bulk WhatsApp
+          <mat-icon>send</mat-icon> Open Bulk WhatsApp
         </button>
       </div>
     </div>
@@ -150,10 +150,10 @@
 
       <!-- Attendance Indicators (Left & Right) -->
       <div class="attendance-left" *ngIf="getCheckInTime(seat)">
-        🟢<br>{{ getCheckInTime(seat) }}
+        ðŸŸ¢<br>{{ getCheckInTime(seat) }}
       </div>
       <div class="attendance-right" *ngIf="getCheckOutTime(seat)">
-        🔴<br>{{ getCheckOutTime(seat) }}
+        ðŸ”´<br>{{ getCheckOutTime(seat) }}
       </div>
 
       <!-- FREE SEAT -->
@@ -168,7 +168,7 @@
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ getFullTimeStudentDisplay(seat) }}</div>
         <div class="seat-payment-pending" *ngIf="isStudentPaymentPending(seat.full_time_student)">
-          ₹{{ getStudentPendingPaymentAmount(seat.full_time_student) }} Pending
+          â‚¹{{ getStudentPendingPaymentAmount(seat.full_time_student) }} Pending
         </div>
       </ng-container>
       
@@ -178,17 +178,17 @@
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="dual-students">
           <div class="half-shift">
-            <div class="shift-label">🌅 1st</div>
+            <div class="shift-label">ðŸŒ… 1st</div>
             <div class="student-name">{{ getFirstHalfStudentDisplay(seat) }}</div>
             <div class="half-pending" *ngIf="isStudentPaymentPending(seat.first_half_student)">
-              ₹{{ getStudentPendingPaymentAmount(seat.first_half_student) }} Due
+              â‚¹{{ getStudentPendingPaymentAmount(seat.first_half_student) }} Due
             </div>
           </div>
           <div class="half-shift">
-            <div class="shift-label">🌃 2nd</div>
+            <div class="shift-label">ðŸŒƒ 2nd</div>
             <div class="student-name">{{ getSecondHalfStudentDisplay(seat) }}</div>
             <div class="half-pending" *ngIf="isStudentPaymentPending(seat.second_half_student)">
-              ₹{{ getStudentPendingPaymentAmount(seat.second_half_student) }} Due
+              â‚¹{{ getStudentPendingPaymentAmount(seat.second_half_student) }} Due
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ getFirstHalfStudentDisplay(seat) }}</div>
         <div class="seat-payment-pending" *ngIf="isStudentPaymentPending(seat.first_half_student)">
-          ₹{{ getStudentPendingPaymentAmount(seat.first_half_student) }} Pending
+          â‚¹{{ getStudentPendingPaymentAmount(seat.first_half_student) }} Pending
         </div>
       </ng-container>
       
@@ -210,7 +210,7 @@
         <div class="seat-number">{{ seat.seat_no }}</div>
         <div class="student-name">{{ getSecondHalfStudentDisplay(seat) }}</div>
         <div class="seat-payment-pending" *ngIf="isStudentPaymentPending(seat.second_half_student)">
-          ₹{{ getStudentPendingPaymentAmount(seat.second_half_student) }} Pending
+          â‚¹{{ getStudentPendingPaymentAmount(seat.second_half_student) }} Pending
         </div>
       </ng-container>
     </div>
@@ -220,7 +220,7 @@
   <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeModal()">
     <div class="modal-content" [class.wide-modal]="showBothStudents" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>👨‍🎓 Student Profile{{ showBothStudents ? 's' : '' }}</h3>
+        <h3><mat-icon style="vertical-align:middle;margin-right:4px">school</mat-icon> Student Profile{{ showBothStudents ? 's' : '' }}</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       
@@ -229,7 +229,7 @@
         <div class="profile-layout-3col">
           <div class="profile-photo-col">
             <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo">
-            <div *ngIf="!selectedStudent.photo_url" class="no-photo">📷</div>
+            <div *ngIf="!selectedStudent.photo_url" class="no-photo">ðŸ“·</div>
           </div>
           <div class="profile-info-col">
             <h4>{{ selectedStudent.name }}</h4>
@@ -259,42 +259,42 @@
             </button>
             <button (click)="openAttendanceReport(selectedStudent)" 
                     class="btn btn-compact btn-primary">
-              📊 View Attendance
+              ðŸ“Š View Attendance
             </button>
             <button *ngIf="authService.canEdit()" 
                     (click)="openFeePaymentModal(selectedStudent)" 
                     class="btn btn-compact btn-success">
-              💳 Pay Fee
+              ðŸ’³ Pay Fee
             </button>
             <button *ngIf="authService.canEdit() && isStudentPaymentPending(selectedStudent)"
                     (click)="markPendingPaymentReceived(selectedStudent)"
                     class="btn btn-compact btn-warning">
-              ₹ Clear Due
+              â‚¹ Clear Due
             </button>
             <button *ngIf="authService.canEdit() && selectedStudent"
                     (click)="openChangeSeatModal(selectedStudent, getCurrentShiftType())"
                     class="btn btn-compact btn-info">
-              🔄 Change Seat
+              ðŸ”„ Change Seat
             </button>
             <button (click)="sendWhatsAppReminder()" class="btn btn-compact btn-success">
-              💬 Reminder
+              ðŸ’¬ Reminder
             </button>
             <button *ngIf="authService.canEdit()" (click)="shareStudentLoginCredentials()" class="btn btn-compact btn-success">
-              📨 Share Login
+              ðŸ“¨ Share Login
             </button>
             <button (click)="viewLastReceipt()" class="btn btn-compact btn-info">
-              🧾 View Receipt
+              ðŸ§¾ View Receipt
             </button>
             <button (click)="sendEmergencySOS()" class="btn btn-compact btn-warning">
-              🚨 SOS
+              ðŸš¨ SOS
             </button>
             <button (click)="releaseSeatConfirm()" class="btn btn-compact btn-danger">
-              🚪 Release
+              ðŸšª Release
             </button>
             <button *ngIf="isOtherShiftAvailable() && authService.canEdit()" 
                     (click)="addStudentForOtherShift()" 
                     class="btn btn-compact btn-primary">
-              ➕ Add {{ getAvailableShiftName() }}
+              âž• Add {{ getAvailableShiftName() }}
             </button>
           </div>
         </div>
@@ -304,11 +304,11 @@
       <div class="modal-body dual-students" *ngIf="showBothStudents">
         <!-- First Half Student -->
         <div class="student-card" *ngIf="selectedStudent">
-          <div class="shift-badge morning">🌅 Morning</div>
+          <div class="shift-badge morning">ðŸŒ… Morning</div>
           <div class="profile-layout-3col">
             <div class="profile-photo-col">
               <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo">
-              <div *ngIf="!selectedStudent.photo_url" class="no-photo">📷</div>
+              <div *ngIf="!selectedStudent.photo_url" class="no-photo">ðŸ“·</div>
             </div>
             <div class="profile-info-col">
               <h4>{{ selectedStudent.name }}</h4>
@@ -338,37 +338,37 @@
               </button>
               <button (click)="openAttendanceReport(selectedStudent)" 
                       class="btn btn-compact btn-primary">
-                📊 Attendance
+                ðŸ“Š Attendance
               </button>
               <button *ngIf="authService.canEdit()" 
                       (click)="openFeePaymentModal(selectedStudent)" 
                       class="btn btn-compact btn-success">
-                💳 Fee
+                ðŸ’³ Fee
               </button>
               <button *ngIf="authService.canEdit() && isStudentPaymentPending(selectedStudent)"
                       (click)="markPendingPaymentReceived(selectedStudent)"
                       class="btn btn-compact btn-warning">
-                ₹ Clear Due
+                â‚¹ Clear Due
               </button>
               <button *ngIf="authService.canEdit()"
                       (click)="openChangeSeatModal(selectedStudent, 'first_half')" 
                       class="btn btn-compact btn-info">
-                🔄 Change
+                ðŸ”„ Change
               </button>
               <button (click)="sendWhatsAppReminder(selectedStudent)" class="btn btn-compact btn-success">
-                💬 Reminder
+                ðŸ’¬ Reminder
               </button>
               <button *ngIf="authService.canEdit()" (click)="shareStudentLoginCredentials(selectedStudent)" class="btn btn-compact btn-success">
-                📨 Share Login
+                ðŸ“¨ Share Login
               </button>
               <button (click)="viewLastReceiptForStudent(selectedStudent)" class="btn btn-compact btn-info">
-                🧾 Receipt
+                ðŸ§¾ Receipt
               </button>
               <button (click)="sendEmergencySOS(selectedStudent)" class="btn btn-compact btn-warning">
-                🚨 SOS
+                ðŸš¨ SOS
               </button>
               <button (click)="releaseSeatConfirm(selectedStudent, 'first_half')" class="btn btn-compact btn-danger">
-                🚪 Release
+                ðŸšª Release
               </button>
             </div>
           </div>
@@ -376,11 +376,11 @@
 
         <!-- Second Half Student -->
         <div class="student-card" *ngIf="selectedSecondStudent">
-          <div class="shift-badge evening">🌃 Evening</div>
+          <div class="shift-badge evening">ðŸŒƒ Evening</div>
           <div class="profile-layout-3col">
             <div class="profile-photo-col">
               <img *ngIf="selectedSecondStudent.photo_url" [src]="selectedSecondStudent.photo_url" alt="Student Photo">
-              <div *ngIf="!selectedSecondStudent.photo_url" class="no-photo">📷</div>
+              <div *ngIf="!selectedSecondStudent.photo_url" class="no-photo">ðŸ“·</div>
             </div>
             <div class="profile-info-col">
               <h4>{{ selectedSecondStudent.name }}</h4>
@@ -410,37 +410,37 @@
               </button>
               <button (click)="openAttendanceReport(selectedSecondStudent)" 
                       class="btn btn-compact btn-primary">
-                📊 Attendance
+                ðŸ“Š Attendance
               </button>
               <button *ngIf="authService.canEdit()" 
                       (click)="openFeePaymentModal(selectedSecondStudent)" 
                       class="btn btn-compact btn-success">
-                💳 Fee
+                ðŸ’³ Fee
               </button>
               <button *ngIf="authService.canEdit() && isStudentPaymentPending(selectedSecondStudent)"
                       (click)="markPendingPaymentReceived(selectedSecondStudent)"
                       class="btn btn-compact btn-warning">
-                ₹ Clear Due
+                â‚¹ Clear Due
               </button>
               <button *ngIf="authService.canEdit()"
                       (click)="openChangeSeatModal(selectedSecondStudent, 'second_half')" 
                       class="btn btn-compact btn-info">
-                🔄 Change
+                ðŸ”„ Change
               </button>
               <button (click)="sendWhatsAppReminder(selectedSecondStudent)" class="btn btn-compact btn-success">
-                💬 Reminder
+                ðŸ’¬ Reminder
               </button>
               <button *ngIf="authService.canEdit()" (click)="shareStudentLoginCredentials(selectedSecondStudent)" class="btn btn-compact btn-success">
-                📨 Share Login
+                ðŸ“¨ Share Login
               </button>
               <button (click)="viewLastReceiptForStudent(selectedSecondStudent)" class="btn btn-compact btn-info">
-                🧾 Receipt
+                ðŸ§¾ Receipt
               </button>
               <button (click)="sendEmergencySOS(selectedSecondStudent)" class="btn btn-compact btn-warning">
-                🚨 SOS
+                ðŸš¨ SOS
               </button>
               <button (click)="releaseSeatConfirm(selectedSecondStudent, 'second_half')" class="btn btn-compact btn-danger">
-                🚪 Release
+                ðŸšª Release
               </button>
             </div>
           </div>
@@ -453,7 +453,7 @@
   <div class="modal-overlay" *ngIf="showChangeSeatModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>🔄 Change Seat</h3>
+        <h3>ðŸ”„ Change Seat</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body" *ngIf="changingSeatStudent">
@@ -462,8 +462,8 @@
           <p><strong>Current Seat:</strong> {{ selectedSeat?.seat_no }}</p>
           <p><strong>Shift Type:</strong> 
             <span *ngIf="changingSeatShiftType === 'full_time'">Full Time</span>
-            <span *ngIf="changingSeatShiftType === 'first_half'">🌅 Morning Shift</span>
-            <span *ngIf="changingSeatShiftType === 'second_half'">🌃 Evening Shift</span>
+            <span *ngIf="changingSeatShiftType === 'first_half'">ðŸŒ… Morning Shift</span>
+            <span *ngIf="changingSeatShiftType === 'second_half'">ðŸŒƒ Evening Shift</span>
           </p>
         </div>
 
@@ -499,21 +499,21 @@
   <div class="modal-overlay" *ngIf="showFeePaymentModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>💳 Pay Fee - {{ selectedStudent?.name }}</h3>
+        <h3>ðŸ’³ Pay Fee - {{ selectedStudent?.name }}</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
           <label>Shift Type <span class="required">*</span></label>
           <select [(ngModel)]="additionalFeePayment.shift_type" (change)="onShiftTypeChange()" class="form-control">
-            <option value="full_time">🌞 Full Day (₹400)</option>
-            <option value="first_half">🌅 Morning Shift (₹250)</option>
-            <option value="second_half">🌃 Evening Shift (₹250)</option>
+            <option value="full_time">ðŸŒž Full Day (â‚¹400)</option>
+            <option value="first_half">ðŸŒ… Morning Shift (â‚¹250)</option>
+            <option value="second_half">ðŸŒƒ Evening Shift (â‚¹250)</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Amount (₹) <span class="required">*</span></label>
+          <label>Amount (â‚¹) <span class="required">*</span></label>
           <input type="number" [(ngModel)]="additionalFeePayment.amount_paid" class="form-control" min="1" readonly>
           <small class="text-muted">Amount is auto-set based on shift type</small>
         </div>
@@ -533,9 +533,9 @@
         <div class="form-group">
           <label>Payment Mode <span class="required">*</span></label>
           <select [(ngModel)]="additionalFeePayment.payment_mode" class="form-control">
-            <option value="cash">💵 Cash</option>
-            <option value="upi">📱 UPI</option>
-            <option value="card">💳 Card</option>
+            <option value="cash">ðŸ’µ Cash</option>
+            <option value="upi">ðŸ“± UPI</option>
+            <option value="card">ðŸ’³ Card</option>
           </select>
         </div>
 
@@ -549,10 +549,10 @@
           <div *ngIf="getCurrentExpiryDate()">
             <strong>Current Expiry:</strong> {{ getCurrentExpiryDate() | date:'dd MMM yyyy' }}
             <span *ngIf="isSubscriptionOverdue()" style="color: #dc3545; font-weight: bold;">
-              ⚠️ OVERDUE by {{ getDaysOverdue() }} days
+              âš ï¸ OVERDUE by {{ getDaysOverdue() }} days
             </span>
             <span *ngIf="!isSubscriptionOverdue() && getCurrentSubscriptionDaysRemaining() > 0" style="color: #28a745; font-weight: bold;">
-              ✅ {{ getCurrentSubscriptionDaysRemaining() }} days remaining
+              âœ… {{ getCurrentSubscriptionDaysRemaining() }} days remaining
             </span>
           </div>
           <div *ngIf="!getCurrentExpiryDate()" style="color: #856404;">
@@ -562,16 +562,16 @@
           <!-- New Subscription Details -->
           <strong>Payment Details:</strong><br>
           <small>
-            📅 Valid From: {{ getSubscriptionStartDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}<br>
-            📅 Valid Until: {{ calculateExpiryDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}<br>
-            📊 Duration: {{ getDaysInSubscription(additionalFeePayment.months) }} days
+            ðŸ“… Valid From: {{ getSubscriptionStartDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}<br>
+            ðŸ“… Valid Until: {{ calculateExpiryDate(additionalFeePayment.months) | date:'dd MMM yyyy' }}<br>
+            ðŸ“Š Duration: {{ getDaysInSubscription(additionalFeePayment.months) }} days
           </small>
         </div>
       </div>
       <div class="modal-footer">
         <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
         <button (click)="submitFeePayment()" [disabled]="saving" class="btn btn-success">
-          {{ saving ? 'Processing...' : '💳 Pay ₹' + additionalFeePayment.amount_paid }}
+          {{ saving ? 'Processing...' : 'ðŸ’³ Pay â‚¹' + additionalFeePayment.amount_paid }}
         </button>
       </div>
     </div>
@@ -581,13 +581,13 @@
   <div class="modal-overlay" *ngIf="showReceiptModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3>🧾 Payment Receipt</h3>
+        <h3>ðŸ§¾ Payment Receipt</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body" *ngIf="receiptData">
         <div class="receipt-container">
           <div class="receipt-header">
-            <h2>📚 Suraksha Library</h2>
+            <h2>ðŸ“š Suraksha Library</h2>
             <p>Fee Payment Receipt</p>
             <p class="receipt-number">Receipt No: {{ receiptData.receipt_no }}</p>
           </div>
@@ -633,7 +633,7 @@
 
           <div class="receipt-amount">
             <div class="amount-label">Amount Paid</div>
-            <div class="amount-value">₹{{ receiptData.amount_paid }}</div>
+            <div class="amount-value">â‚¹{{ receiptData.amount_paid }}</div>
           </div>
 
           <div class="receipt-footer">
@@ -644,10 +644,10 @@
       </div>
       <div class="modal-footer">
         <button (click)="printReceipt()" class="btn btn-primary">
-          🖨️ Print Receipt
+          ðŸ–¨ï¸ Print Receipt
         </button>
         <button (click)="shareReceiptOnWhatsApp()" class="btn btn-success">
-          📱 Share on WhatsApp
+          ðŸ“± Share on WhatsApp
         </button>
         <button (click)="closeModal()" class="btn btn-secondary">Close</button>
       </div>
@@ -659,5 +659,5 @@
 
 
 
-<app-lib-footer></app-lib-footer>
 </div>
+<app-lib-footer></app-lib-footer>

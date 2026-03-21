@@ -45,10 +45,6 @@
             <mat-icon>pending_actions</mat-icon>
             <span>Pending Approvals</span>
           </button>
-          <button mat-menu-item routerLink="/worker-management" routerLinkActive="active">
-            <mat-icon>engineering</mat-icon>
-            <span>Worker Management</span>
-          </button>
         </mat-menu>
 
         <!-- INVENTORY & STOCK -->
@@ -159,7 +155,7 @@
               <span>Students</span>
             </button>
             <button mat-menu-item routerLink="/library-registration-requests" routerLinkActive="active" *ngIf="authService.canEdit()">
-              <mat-icon>approval</mat-icon>
+              <mat-icon>how_to_reg</mat-icon>
               <span>Membership Requests</span>
             </button>
             <button mat-menu-item routerLink="/library-expenses" routerLinkActive="active">
@@ -169,7 +165,7 @@
           </ng-container>
           <ng-container *ngIf="authService.isAdmin()">
             <button mat-menu-item routerLink="/library-complaints" routerLinkActive="active">
-              <mat-icon>warning</mat-icon>
+              <mat-icon>feedback</mat-icon>
               <span>View Complaints</span>
             </button>
           </ng-container>
@@ -239,10 +235,6 @@
         <button mat-menu-item routerLink="/pending-approvals" *ngIf="authService.isAdmin()">
           <mat-icon>pending_actions</mat-icon>
           <span>Pending Approvals</span>
-        </button>
-        <button mat-menu-item routerLink="/worker-management">
-          <mat-icon>engineering</mat-icon>
-          <span>Worker Management</span>
         </button>
         <mat-divider></mat-divider>
         
@@ -346,7 +338,7 @@
             <span>Students</span>
           </button>
           <button mat-menu-item routerLink="/library-registration-requests" *ngIf="authService.canEdit()">
-            <mat-icon>approval</mat-icon>
+            <mat-icon>how_to_reg</mat-icon>
             <span>Membership Requests</span>
           </button>
           <button mat-menu-item routerLink="/library-expenses">
@@ -356,7 +348,7 @@
         </ng-container>
         <ng-container *ngIf="authService.isAdmin()">
           <button mat-menu-item routerLink="/library-complaints">
-            <mat-icon>warning</mat-icon>
+            <mat-icon>feedback</mat-icon>
             <span>View Complaints</span>
           </button>
         </ng-container>

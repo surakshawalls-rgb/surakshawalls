@@ -10,6 +10,7 @@ import { SalesService, SaleData } from '../../services/sales.service';
 import { ClientService, Client } from '../../services/client.service';
 import { InventoryService } from '../../services/inventory.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
 // ========== INTERFACES ==========
 
@@ -65,7 +66,7 @@ interface Partner {
 @Component({
   selector: 'app-daily-entry',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './daily-entry.html',
   styleUrls: ['./daily-entry.css']
 })
