@@ -208,6 +208,21 @@ export class PartnerDashboardComponent implements OnInit {
         });
       }
 
+      // Get partner labour payments from partner_expense (category: 'labour')
+      const { data: labourExpenses } = await this.db.supabase
+        .from('partner_expense')
+        .select('partner, amount, category')
+        .eq('category', 'labour');
+
+      if (labourExpenses) {
+        labourExpenses.forEach(e => {
+          if (e.partner && partnerMap.has(e.partner)) {
+            const partner = partnerMap.get(e.partner);
+            partner.labour_contributed += e.amount;
+          }
+        });
+      }
+
       // Calculate totals and profit share
       const totalRevenue = await this.getTotalRevenue();
       
