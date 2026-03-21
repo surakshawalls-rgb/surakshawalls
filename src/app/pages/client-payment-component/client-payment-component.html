@@ -19,7 +19,7 @@
       <div class="tab-content">
         <mat-card>
           <mat-card-header>
-            <mat-card-title>💰 Record Client Payment</mat-card-title>
+            <mat-card-title><mat-icon style="vertical-align:middle;">payments</mat-icon> Record Client Payment</mat-card-title>
           </mat-card-header>
           
           <mat-card-content>
@@ -35,7 +35,7 @@
                   <option [ngValue]="null">-- Select Client --</option>
                   <option *ngFor="let c of clients" [value]="c.id">
                     {{c.client_name}} 
-                    <span *ngIf="dueLedger[c.id] > 0" class="outstanding">(Outstanding: ₹{{dueLedger[c.id] | number:'1.0-0'}})</span>
+                    <span *ngIf="dueLedger[c.id] > 0" class="outstanding">(Outstanding: <mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{dueLedger[c.id] | number:'1.0-0'}})</span>
                   </option>
                 </select>
               </div>
@@ -46,13 +46,13 @@
               </div>
 
               <div class="form-field">
-                <label>Total Bill Amount (₹)</label>
+                <label>Total Bill Amount <mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon></label>
                 <input type="number" placeholder="0" [(ngModel)]="totalBill" class="form-control">
                 <small>Leave 0 if only recording payment against old dues</small>
               </div>
 
               <div class="form-field">
-                <label>Amount Paid Now (₹) *</label>
+                <label>Amount Paid Now <mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon> *</label>
                 <input type="number" placeholder="0" [(ngModel)]="paidAmount" class="form-control">
               </div>
 
@@ -149,7 +149,7 @@
                 <tr *ngFor="let client of overdueClients">
                   <td data-label="Client"><strong>{{client.client_name}}</strong></td>
                   <td data-label="Phone">{{client.phone || 'N/A'}}</td>
-                  <td data-label="Outstanding" class="amount-col">₹{{client.outstanding | number:'1.0-0'}}</td>
+                  <td data-label="Outstanding" class="amount-col"><mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{client.outstanding | number:'1.0-0'}}</td>
                   <td data-label="Last Purchase">{{formatDateToDDMMYYYY(client.last_purchase_date)}}</td>
                   <td data-label="Days Overdue">
                     <mat-chip color="warn">{{getDaysOverdue(client.last_purchase_date)}} days</mat-chip>
@@ -194,10 +194,10 @@
                 <tr *ngFor="let client of clients" [class.has-outstanding]="dueLedger[client.id] > 0">
                   <td data-label="Client"><strong>{{client.client_name}}</strong></td>
                   <td data-label="Phone">{{client.phone || 'N/A'}}</td>
-                  <td data-label="Total Billed" class="amount-col">₹{{client.total_billed | number:'1.0-0'}}</td>
-                  <td data-label="Total Paid" class="amount-col">₹{{client.total_paid | number:'1.0-0'}}</td>
+                  <td data-label="Total Billed" class="amount-col"><mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{client.total_billed | number:'1.0-0'}}</td>
+                  <td data-label="Total Paid" class="amount-col"><mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{client.total_paid | number:'1.0-0'}}</td>
                   <td data-label="Outstanding" class="amount-col outstanding-amount">
-                    <strong>₹{{dueLedger[client.id] || 0 | number:'1.0-0'}}</strong>
+                    <strong><mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{dueLedger[client.id] || 0 | number:'1.0-0'}}</strong>
                   </td>
                   <td>
                     <button mat-icon-button color="primary" *ngIf="dueLedger[client.id] > 0"
@@ -260,7 +260,7 @@
                 <tbody>
                   <tr *ngFor="let payment of paymentHistory">
                     <td data-label="Date">{{formatDateToDDMMYYYY(payment.payment_date)}}</td>
-                    <td data-label="Amount" class="amount-col"><strong>₹{{payment.amount_paid | number:'1.0-0'}}</strong></td>
+                    <td data-label="Amount" class="amount-col"><strong><mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{payment.amount_paid | number:'1.0-0'}}</strong></td>
                     <td data-label="Mode">
                       <mat-icon [inline]="true">{{getPaymentModeIcon(payment.payment_mode)}}</mat-icon>
                       {{payment.payment_mode.toUpperCase()}}

@@ -65,7 +65,7 @@
       <!-- Filters -->
       <div class="client-filters" style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center;">
         <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by name, phone, or city"
-               style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;">
+               style="flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px;" placeholder="Search by name or phone">
 
         <select [(ngModel)]="filterStatus" (change)="applyFilters()"
                 style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 9px; min-width: 180px;">
@@ -86,7 +86,7 @@
           <div class="client-table-header" style="display: grid; grid-template-columns: 1fr 150px 120px 120px 120px 120px 120px 150px; gap: 2px; background: #f5f5f5; padding: 10px; font-weight: 700; color: #333; font-size: 9px; text-transform: uppercase;">
             <div>Client Name</div>
             <div style="text-align: center;">Contact</div>
-            <div style="text-align: center;">City</div>
+            <div style="text-align: center;">Address</div>
             <div style="text-align: center;">Billed</div>
             <div style="text-align: center;">Paid</div>
             <div style="text-align: center;">Outstanding</div>
@@ -106,7 +106,7 @@
               </div>
             </div>
             <div class="client-detail client-contact" style="text-align: center; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666;">{{ client.phone || '-' }}</div>
-            <div class="client-detail client-city" style="text-align: center; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666;">{{ client.address || '-' }}</div>
+            <div class="client-detail client-address" style="text-align: center; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #666;">{{ client.address || '-' }}</div>
             <div class="client-detail client-billed" style="text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 9px; color: #1976d2;">₹{{ client.total_billed | number }}</div>
             <div class="client-detail client-paid" style="text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 9px; color: #10b981;">₹{{ client.total_paid | number }}</div>
             <div class="client-detail client-outstanding" style="text-align: center; display: flex; align-items: center; justify-content: center;">
@@ -201,11 +201,7 @@
                    onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
           </div>
           <div style="margin-bottom: 20px;">
-            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">City</label>
-            <input type="text" [(ngModel)]="formData.city" 
-                   style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
-                   onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
-                   onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+                 <!-- City field removed -->
           </div>
           <div style="margin-bottom: 20px;">
             <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Credit Limit (₹)</label>

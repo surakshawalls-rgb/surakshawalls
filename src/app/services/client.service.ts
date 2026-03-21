@@ -26,6 +26,7 @@ export interface ClientFormData {
   credit_limit?: number;
   credit_days?: number;
   active?: boolean;
+  // city?: string; // Removed, not in schema
 }
 
 export interface ClientStatement {

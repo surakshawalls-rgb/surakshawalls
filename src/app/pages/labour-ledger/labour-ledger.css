@@ -210,88 +210,90 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  border-spacing: 0;
+  font-size: 13px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 10px;
+  overflow: hidden;
+  table-layout: auto;
+}
+
+table th, table td {
+  padding: 3px 2px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+table th {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+table td {
+  font-size: 12.5px;
 }
 
 table thead {
-  background-color: #f8f9fa;
-  font-weight: 600;
+  background: linear-gradient(90deg, #667eea 0%, #1976d2 100%);
+  color: #fff;
 }
 
-table th,
-table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
+table tbody tr:nth-child(even) td {
+  background: #f7f8fa;
 }
 
-table tbody tr {
-  transition: background-color 0.2s ease;
+table tbody tr:hover td {
+  background: #e3eafe;
 }
 
-table tbody tr:hover {
-  background-color: #f8f9fa;
+table .amount {
+  text-align: center;
 }
 
-table tbody tr.overdue {
-  background-color: #fff3cd;
-}
-
-.amount {
-  text-align: right;
-  font-weight: 500;
-}
-
-.amount.paid {
+table .paid {
   color: #28a745;
 }
 
-.amount.due {
+table .due {
   color: #dc3545;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.status-badge {
-  padding: 4px 8px;
+table .status-badge {
+  padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
+  display: inline-block;
 }
 
-.status-active {
-  background-color: #d4edda;
-  color: #155724;
+table .action-btns {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
 }
 
-.status-inactive {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.btn-pay {
-  background-color: #17a2b8;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
+table .btn-edit, table .btn-delete {
   font-size: 12px;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  padding: 2px 7px;
 }
 
-.btn-pay:hover:not(:disabled) {
-  background-color: #138496;
+table .btn-edit {
+  background: #f59e0b;
+  color: #fff;
 }
 
-.btn-pay:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+table .btn-delete {
+  background: #ef4444;
+  color: #fff;
 }
 
-.total-row {
-  background-color: #e8f5e9;
-  font-weight: 600;
+table .btn-edit:hover { background: #d97706; }
+table .btn-delete:hover { background: #dc2626; }
+
+table .total-row {
+  background: #e8f5e9;
   border-top: 2px solid #4caf50;
 }
 

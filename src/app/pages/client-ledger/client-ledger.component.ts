@@ -54,7 +54,6 @@ export class ClientLedgerComponent implements OnInit {
     client_name: '',
     contact_number: '',
     address: '',
-    city: '',
     credit_limit: 50000,
     status: 'active' as 'active' | 'inactive'
   };
@@ -236,7 +235,6 @@ export class ClientLedgerComponent implements OnInit {
       client_name: '',
       contact_number: '',
       address: '',
-      city: '',
       credit_limit: 50000,
       status: 'active'
     };

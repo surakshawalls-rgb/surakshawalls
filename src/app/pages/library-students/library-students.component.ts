@@ -53,6 +53,12 @@ interface StudentSeatInfo {
   styleUrls: ['./library-students.component.css']
 })
 export class LibraryStudentsComponent implements OnInit {
+    // ...existing code...
+
+    shareLogin(student: LibraryStudent) {
+      // TODO: Implement share login functionality
+      alert('Share Login feature coming soon!');
+    }
   students: LibraryStudent[] = [];
   filteredStudents: LibraryStudent[] = [];
   dataSource: MatTableDataSource<LibraryStudent> = new MatTableDataSource<LibraryStudent>();

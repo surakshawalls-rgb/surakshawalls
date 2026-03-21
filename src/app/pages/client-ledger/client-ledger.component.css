@@ -544,7 +544,6 @@
   }
 
   .client-contact::before { content: "📱 Contact:"; }
-  .client-city::before { content: "📍 City:"; }
   .client-billed::before { content: "📊 Billed:"; }
   .client-paid::before { content: "✅ Paid:"; }
   .client-outstanding::before { content: "⚠️ Outstanding:"; }

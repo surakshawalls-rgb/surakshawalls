@@ -3,10 +3,10 @@
 <div class="requests-page">
   <div class="page-header">
     <div>
-      <h1>ðŸ“ Membership Requests</h1>
+      <h1><mat-icon style="vertical-align:middle;margin-right:6px">person_add</mat-icon> Membership Requests</h1>
       <p>Review public library registrations, verify manual payments, and assign seats.</p>
     </div>
-    <button class="btn btn-primary" (click)="refresh()">ðŸ”„ Refresh</button>
+    <button class="btn btn-primary" (click)="refresh()"><mat-icon>refresh</mat-icon> Refresh</button>
   </div>
 
   <div class="stats-row">
@@ -45,7 +45,7 @@
   <div class="loading" *ngIf="loading">Loading membership requests...</div>
 
   <div class="empty-state" *ngIf="!loading && filteredRequests.length === 0">
-    <div class="empty-icon">ðŸ“­</div>
+    <div class="empty-icon"><mat-icon style="font-size:2.5rem;">person_off</mat-icon></div>
     <h3>No {{ filterStatus === 'all' ? '' : filterStatus + ' ' }}requests found</h3>
     <p>New public registration requests will appear here automatically.</p>
   </div>
@@ -87,8 +87,8 @@
       </div>
 
       <div class="request-actions" *ngIf="request.status === 'pending' && canManageRequests()">
-        <button class="btn btn-success" (click)="openApproveModal(request)">âœ… Approve & Assign Seat</button>
-        <button class="btn btn-danger" (click)="openRejectModal(request)">âŒ Reject</button>
+        <button class="btn btn-success" (click)="openApproveModal(request)"><mat-icon>check_circle</mat-icon> Approve & Assign Seat</button>
+        <button class="btn btn-danger" (click)="openRejectModal(request)"><mat-icon>cancel</mat-icon> Reject</button>
       </div>
     </div>
   </div>
@@ -97,7 +97,7 @@
 <div class="modal-overlay" *ngIf="showApproveModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedRequest">
     <div class="modal-header">
-      <h3>âœ… Approve Membership Request</h3>
+      <h3><mat-icon style="vertical-align:middle;margin-right:4px">check_circle</mat-icon> Approve Membership Request</h3>
       <button class="close-btn" (click)="closeModal()">&times;</button>
     </div>
 
@@ -162,7 +162,7 @@
 <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()" *ngIf="selectedRequest">
     <div class="modal-header">
-      <h3>âŒ Reject Membership Request</h3>
+      <h3><mat-icon style="vertical-align:middle;margin-right:4px">cancel</mat-icon> Reject Membership Request</h3>
       <button class="close-btn" (click)="closeModal()">&times;</button>
     </div>
 

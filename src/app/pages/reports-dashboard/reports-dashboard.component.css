@@ -1,3 +1,47 @@
+/* === LABOUR LEDGER TABLE CUSTOM === */
+.labour-ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  background: #fff;
+  margin-top: 18px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.labour-ledger-table thead {
+  background: #374151;
+  color: #fff;
+}
+.labour-ledger-table th, .labour-ledger-table td {
+  padding: 9px 10px;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+.labour-ledger-table th {
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: #374151;
+  color: #fff;
+}
+.labour-ledger-table tbody tr:nth-child(even) {
+  background: #f3f4f6;
+}
+.labour-ledger-table tbody tr:nth-child(odd) {
+  background: #fff;
+}
+.labour-ledger-table tbody tr:hover {
+  background: #e5e7eb;
+}
+.labour-ledger-table .amount-highlight {
+  color: #d32f2f;
+  font-weight: 600;
+}
+.labour-ledger-table .action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 /* ========== REPORTS DASHBOARD - COMPACT STYLING ========== */
 
 .reports-dashboard {
