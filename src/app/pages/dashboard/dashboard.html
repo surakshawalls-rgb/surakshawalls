@@ -4,8 +4,8 @@
      style="min-height: 100vh; background: #ffffff; padding: 24px;">
 
   <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="margin: 0; font-size: 11px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+      <h2 style="margin: 0; font-size: 11px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
         <span style="background: #e0e0e0; padding: 8px; border-radius: 8px;">📊</span>
         Business Dashboard
       </h2>
@@ -23,7 +23,7 @@
         <span style="font-size: 9px;">💰</span>
         Revenue Summary
       </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
         <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
           <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Revenue</div>
           <div style="font-size: 18px; font-weight: 700; color: #10b981;">₹{{totalRevenue | number}}</div>
@@ -148,7 +148,7 @@
         <span style="font-size: 9px;">📈</span>
         Profit & Loss
       </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 16px;">
         <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
           <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Labour Expense</div>
           <div style="font-size: 18px; font-weight: 700; color: #ec4899;">₹{{labourTotal | number}}</div>

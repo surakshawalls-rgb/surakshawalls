@@ -2,8 +2,8 @@
   <div style="max-width: 1600px; margin: 0 auto;">
     <!-- Header -->
     <div style="background: #ffffff; border-radius: 16px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="flex: 1; min-width: 0;">
           <h2 style="margin: 0; color: #333; font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 10px;">
             <span style="background: #8b5cf6; color: white; padding: 6px; border-radius: 10px; font-size: 15px;">🤝</span>
             Partner Dashboard
@@ -11,7 +11,7 @@
           <p style="margin: 6px 0 0 40px; color: #666; font-size: 9px; font-weight: 400;">Track partner contributions, profits, and settlements</p>
         </div>
         <button (click)="refreshData()" [disabled]="loading"
-                style="padding: 8px 16px; background: #1976d2; color: white; border: none; border-radius: 8px; font-size: 9px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; opacity: 1;"
+                style="padding: 8px 20px; background: #1976d2; color: white; border: none; border-radius: 8px; font-size: 9px; font-weight: 500; cursor: pointer; transition: all 0.3s ease; flex-shrink: 0; white-space: nowrap; opacity: 1;"
                 [style.opacity]="loading ? '0.6' : '1'"
                 [style.cursor]="loading ? 'not-allowed' : 'pointer'"
                 onmouseover="if(!this.disabled) { this.style.background='#1565c0'; }"

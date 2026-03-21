@@ -114,7 +114,7 @@ import { AuthService } from '../../services/auth.service';
     .mfg-brand-tag  { font-size: 0.68rem; color: rgba(255,255,255,0.35); }
     .mfg-copy       { font-size: 0.7rem; color: rgba(255,255,255,0.25); white-space: nowrap; }
 
-    /* ── Flexbox links row — auto-adapts when columns are hidden ── */
+    /* ── Links grid — flexbox, wraps naturally ── */
     .mfg-footer-links {
       max-width: 1400px;
       margin: 0 auto;
@@ -122,7 +122,7 @@ import { AuthService } from '../../services/auth.service';
       display: flex;
       flex-wrap: wrap;
       align-items: start;
-      align-items: start;
+      gap: 0;
     }
 
     /* Column headings */
@@ -154,8 +154,7 @@ import { AuthService } from '../../services/auth.service';
 
     /* Individual columns — flex children, grow equally */
     .mfg-col {
-      flex: 1 1 155px;
-      min-width: 130px;
+      flex: 1 1 150px;
       display: flex;
       flex-direction: column;
       gap: 1px;
@@ -177,7 +176,6 @@ import { AuthService } from '../../services/auth.service';
       padding: 3px 6px;
       border-radius: 5px;
       transition: all 0.15s ease;
-      white-space: nowrap;
     }
     .mfg-link mat-icon {
       font-size: 13px; width: 13px; height: 13px;
@@ -189,16 +187,24 @@ import { AuthService } from '../../services/auth.service';
     .mfg-link--library mat-icon { color: #10b981; }
     .mfg-link--library:hover { color: #10b981; background: rgba(16,185,129,0.09); }
 
-    /* Responsive */
+    /* Responsive — switch to CSS grid for clean alignment on small screens */
     @media (max-width: 700px) {
-      .mfg-col--lib-border { border-left: none; }
-      .mfg-col { flex-basis: 140px; }
-    }
-    @media (max-width: 560px) {
       .mfg-footer-links {
-        padding: 10px 16px 14px;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        padding: 12px 16px 16px;
+        gap: 8px 0;
       }
-      .mfg-col { flex-basis: calc(50% - 16px); }
+      .mfg-col {
+        flex: unset;
+        padding: 6px 10px;
+      }
+      .mfg-col--lib-border { border-left: none; }
+    }
+    @media (max-width: 400px) {
+      .mfg-footer-links {
+        grid-template-columns: 1fr;
+      }
       .mfg-footer-top { padding: 14px 16px 0; }
       .mfg-copy { display: none; }
     }
