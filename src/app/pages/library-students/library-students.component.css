@@ -1648,3 +1648,279 @@ textarea.form-control {
     width: auto !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ENTERPRISE DESIGN OVERRIDE — Library Students
+   Applied over existing styles for premium admin aesthetics
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+:host {
+  --c-bg: #f4f7fb;
+  --c-surface: #ffffff;
+  --c-ink: #0f1f38;
+  --c-muted: #4a607e;
+  --c-border: #dde6f0;
+  --c-brand: #059669;
+  --c-brand-d: #047857;
+  --c-brand-l: #ecfdf5;
+  --c-accent: #10b981;
+  --c-hero: #050e1d;
+}
+
+/* -- Page Shell -- */
+.students-container-modern {
+  background: var(--c-bg) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  padding: 0 !important;
+}
+
+/* -- Dark Hero Header -- */
+.header-section {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 55%, #062b17 100%) !important;
+  padding: 32px 40px !important;
+  margin-bottom: 32px !important;
+  box-shadow: 0 4px 32px rgba(5,14,29,0.35) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+}
+
+.page-title {
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.page-title .back-button {
+  color: rgba(255,255,255,0.65) !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 10px !important;
+}
+.page-title .back-button:hover {
+  background: rgba(255,255,255,0.15) !important;
+  color: #ffffff !important;
+  transform: translateX(-2px) !important;
+}
+
+.page-title mat-icon {
+  color: #10b981 !important;
+}
+
+/* Stats Row inside header (if present) */
+.header-section .stats-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* -- Header action buttons -- */
+.header-actions button {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* Alert messages */
+.alert {
+  border-radius: 12px !important;
+  margin: 0 40px 20px !important;
+}
+.alert-success {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border-left: 4px solid #22c55e !important;
+}
+.alert-error {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-left: 4px solid #ef4444 !important;
+}
+
+/* Section padding */
+.filters-card {
+  margin: 0 40px 24px !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 12px rgba(15,31,56,0.06) !important;
+}
+.filters-card .mat-mdc-card-title {
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--c-ink) !important;
+}
+.filters-card .mat-mdc-card-title mat-icon {
+  color: var(--c-brand) !important;
+}
+
+/* -- Search & Filter Inputs -- */
+.search-input,
+.filter-select {
+  border: 1.5px solid var(--c-border) !important;
+  border-radius: 10px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  color: var(--c-ink) !important;
+  background: var(--c-surface) !important;
+}
+.search-input:focus,
+.filter-select:focus {
+  outline: none !important;
+  border-color: var(--c-brand) !important;
+  box-shadow: 0 0 0 3px rgba(5,150,105,0.12) !important;
+}
+
+/* Mat form fields */
+mat-form-field.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: var(--c-border);
+  --mdc-outlined-text-field-focus-outline-color: var(--c-brand);
+}
+
+/* -- Students Table Container -- */
+.table-container {
+  margin: 0 40px 32px !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 12px rgba(15,31,56,0.06) !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+}
+
+/* -- Mat Table -- */
+.mat-mdc-table {
+  background: transparent !important;
+  width: 100% !important;
+}
+.mat-mdc-header-row {
+  background: #f8fafc !important;
+  border-bottom: 2px solid var(--c-border) !important;
+}
+.mat-mdc-header-cell {
+  color: var(--c-muted) !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 14px !important;
+  border-bottom: none !important;
+}
+.mat-mdc-row {
+  transition: background 0.15s ease !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+.mat-mdc-row:hover {
+  background: #f0fdf4 !important;
+}
+.mat-mdc-cell {
+  color: var(--c-ink) !important;
+  font-size: 0.875rem !important;
+  padding: 12px 14px !important;
+  border-bottom: none !important;
+}
+
+/* -- Paginator -- */
+mat-paginator {
+  border-top: 1px solid var(--c-border) !important;
+  background: #fafbfc !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* -- Status Chips -- */
+.mat-mdc-chip {
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* -- Student Photo -- */
+.student-photo {
+  border-radius: 50% !important;
+  border: 2px solid var(--c-border) !important;
+  object-fit: cover !important;
+}
+
+/* -- Empty State -- */
+.empty-state {
+  text-align: center !important;
+  padding: 64px 24px !important;
+  color: var(--c-muted) !important;
+}
+.empty-state mat-icon {
+  font-size: 56px !important;
+  width: 56px !important;
+  height: 56px !important;
+  color: var(--c-border) !important;
+  margin-bottom: 16px !important;
+}
+.empty-state h3 {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: var(--c-ink) !important;
+  margin-bottom: 8px !important;
+}
+
+/* -- Action Buttons in Table -- */
+.mat-mdc-icon-button {
+  color: var(--c-muted) !important;
+  transition: all 0.2s ease !important;
+}
+.mat-mdc-icon-button:hover {
+  color: var(--c-brand) !important;
+  background: var(--c-brand-l) !important;
+}
+
+/* -- Modal Overlays -- */
+.modal-overlay {
+  background: rgba(5,14,29,0.72) !important;
+  backdrop-filter: blur(4px) !important;
+}
+.modal-content {
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 24px 64px rgba(5,14,29,0.3) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.modal-header {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 100%) !important;
+  border-radius: 20px 20px 0 0 !important;
+  padding: 20px 24px !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+.modal-header h2,
+.modal-header h3 {
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+}
+.close-btn,
+.modal-close {
+  color: rgba(255,255,255,0.6) !important;
+}
+.close-btn:hover,
+.modal-close:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #ffffff !important;
+}
+
+/* -- LAYOUT FIX: restore container padding, inset dark hero -- */
+.students-container-modern {
+  padding: 24px !important;
+}
+.header-section {
+  border-radius: 20px !important;
+  margin-bottom: 24px !important;
+}
+.filters-card,
+.table-container,
+.alert {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}

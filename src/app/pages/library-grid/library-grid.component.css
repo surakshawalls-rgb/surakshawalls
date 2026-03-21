@@ -2008,3 +2008,284 @@ textarea {
 .modal-content {
   position: relative;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ENTERPRISE DESIGN OVERRIDE — Library Grid
+   Applied over existing BookMyShow styles for premium admin look
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+:host {
+  --c-bg: #f4f7fb;
+  --c-surface: #ffffff;
+  --c-ink: #0f1f38;
+  --c-muted: #4a607e;
+  --c-border: #dde6f0;
+  --c-brand: #059669;
+  --c-brand-d: #047857;
+  --c-brand-l: #ecfdf5;
+  --c-accent: #10b981;
+  --c-hero: #050e1d;
+}
+
+/* -- Page Shell -- */
+.library-grid-container {
+  background: var(--c-bg) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* -- Dark Hero Header -- */
+.header {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 55%, #062b17 100%) !important;
+  border-radius: 20px !important;
+  padding: 24px 28px !important;
+  margin-bottom: 20px !important;
+  box-shadow: 0 4px 32px rgba(5, 14, 29, 0.4), 0 1px 0 rgba(255,255,255,0.04) inset !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.header h2 {
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.875rem !important;
+}
+
+/* -- Enterprise Glass Stat Cards (inside dark header) -- */
+.stats-summary .stat-card {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  padding: 10px 14px !important;
+  box-shadow: none !important;
+}
+
+.stats-summary .stat-card:hover {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.15), 0 4px 12px rgba(0,0,0,0.25) !important;
+  transform: translateY(-2px) !important;
+}
+
+.stats-summary .stat-label {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.7rem !important;
+}
+
+.stats-summary .stat-value {
+  color: #ffffff !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+}
+
+.stats-summary .stat-icon {
+  font-size: 20px !important;
+}
+
+/* -- Header Action Buttons -- */
+.header .btn-primary {
+  background: var(--c-brand) !important;
+}
+.header .btn-primary:hover {
+  background: var(--c-brand-d) !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35) !important;
+  transform: translateY(-1px) !important;
+}
+.header .btn-refresh,
+.header .btn-info,
+.header .btn-success {
+  background: #10b981 !important;
+}
+.header .btn-refresh:hover,
+.header .btn-info:hover,
+.header .btn-success:hover {
+  background: #059669 !important;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* -- Seat Grid Container -- */
+.grid-container {
+  background: #ffffff !important;
+  border: 1px solid var(--c-border) !important;
+  border-radius: 20px !important;
+  padding: 24px !important;
+  box-shadow: 0 2px 16px rgba(15, 31, 56, 0.06) !important;
+  margin-bottom: 0 !important;
+}
+
+/* -- Seat Grid Legend & Header text -- */
+.grid-container h3 {
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--c-ink) !important;
+  letter-spacing: -0.01em !important;
+  margin-bottom: 16px !important;
+}
+
+/* -- Seat Boxes: slightly upgraded borders and shadows -- */
+.seat-box {
+  border-radius: 10px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 1px 3px rgba(15,31,56,0.06) !important;
+}
+.seat-box:hover {
+  box-shadow: 0 6px 18px rgba(15,31,56,0.12) !important;
+  transform: translateY(-3px) !important;
+}
+.seat-box.available {
+  background: #f0fdf4 !important;
+  border-color: #4ade80 !important;
+  box-shadow: 0 1px 4px rgba(74, 222, 128, 0.15) !important;
+}
+.seat-box.available:hover {
+  background: #dcfce7 !important;
+  border-color: #22c55e !important;
+}
+.seat-box.full-day-occupied {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+.seat-box.first-half-occupied {
+  background: #fffbeb !important;
+  border-color: #fbbf24 !important;
+}
+.seat-box.second-half-occupied {
+  background: #eff6ff !important;
+  border-color: #60a5fa !important;
+}
+.seat-box.both-halves-occupied {
+  background: #faf5ff !important;
+  border-color: #a78bfa !important;
+}
+.seat-box.selected {
+  background: #059669 !important;
+  border-color: #047857 !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.25) !important;
+}
+
+/* -- Bulk Operations Panel -- */
+.bulk-operations-panel {
+  background: #ffffff !important;
+  border: 1px solid var(--c-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 2px 8px rgba(15, 31, 56, 0.05) !important;
+}
+.bulk-header h3 {
+  color: var(--c-ink) !important;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* -- Alert Messages -- */
+.alert {
+  border-radius: 12px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.alert-success {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border-color: #bbf7d0 !important;
+}
+.alert-error {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
+}
+
+/* -- Enterprise Modal -- */
+.modal-overlay {
+  background: rgba(5, 14, 29, 0.72) !important;
+  backdrop-filter: blur(4px) !important;
+}
+.modal-content {
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 24px 64px rgba(5, 14, 29, 0.3) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.modal-content.large {
+  border-radius: 20px !important;
+}
+.modal-header {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 100%) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 20px 20px 0 0 !important;
+  padding: 20px 24px !important;
+}
+.modal-header h3 {
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
+}
+.close-btn {
+  color: rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.2s ease !important;
+}
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+.modal-body {
+  padding: 24px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* -- Form elements inside modals -- */
+.modal-body input[type="text"],
+.modal-body input[type="number"],
+.modal-body input[type="date"],
+.modal-body select,
+.modal-body textarea {
+  border: 1.5px solid var(--c-border) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  color: var(--c-ink) !important;
+  background: var(--c-surface) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  width: 100%;
+  box-sizing: border-box;
+}
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+  outline: none !important;
+  border-color: var(--c-brand) !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12) !important;
+}
+.modal-body label {
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: var(--c-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 4px !important;
+  display: block !important;
+}
+
+/* -- Seat Selector Grid (in modals) -- */
+.modal-body .seat-selector-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)) !important;
+  gap: 8px !important;
+}
+
+/* -- Receipt Style -- */
+.receipt-section {
+  background: var(--c-bg) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  border: 1px solid var(--c-border) !important;
+}

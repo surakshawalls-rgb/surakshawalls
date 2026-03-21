@@ -830,3 +830,282 @@
   font-size: 0.8125rem;
   color: #666;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   ENTERPRISE DESIGN OVERRIDE — Library Dashboard
+   Applied over existing styles for premium admin aesthetics
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+:host {
+  --c-bg: #f4f7fb;
+  --c-surface: #ffffff;
+  --c-ink: #0f1f38;
+  --c-muted: #4a607e;
+  --c-border: #dde6f0;
+  --c-brand: #059669;
+  --c-brand-d: #047857;
+  --c-brand-l: #ecfdf5;
+  --c-accent: #10b981;
+  --c-hero: #050e1d;
+}
+
+/* -- Page Shell -- */
+.dashboard-container-modern {
+  background: var(--c-bg) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  padding: 0 !important;
+}
+
+/* -- Dark Hero Header Zone -- */
+.dashboard-header {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 55%, #062b17 100%) !important;
+  margin-bottom: 32px !important;
+  padding: 32px 40px !important;
+  box-shadow: 0 4px 32px rgba(5, 14, 29, 0.35) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.header-content {
+  max-width: 1400px !important;
+  margin: 0 auto !important;
+}
+
+.page-title {
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+  margin: 0 0 6px 0 !important;
+}
+
+.page-title mat-icon {
+  color: #10b981 !important;
+  font-size: 2rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.page-subtitle {
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.9rem !important;
+  margin: 0 !important;
+}
+
+/* Back button in dark header */
+.back-button {
+  color: rgba(255, 255, 255, 0.65) !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 10px !important;
+  transition: all 0.2s ease !important;
+}
+.back-button:hover {
+  background: rgba(255,255,255,0.15) !important;
+  color: #ffffff !important;
+  transform: translateX(-2px) !important;
+}
+
+/* Content wrapper padding */
+.dashboard-container-modern > *:not(.dashboard-header) {
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+/* Fix for inner sections */
+.stats-grid-modern {
+  max-width: 1400px !important;
+  margin: 0 auto 32px !important;
+  padding: 0 40px !important;
+}
+
+.stats-grid-modern.primary-kpi {
+  padding: 0 40px !important;
+  max-width: 1400px !important;
+  margin: 0 auto 40px !important;
+}
+
+/* Section padding normalization */
+mat-card.section-card {
+  margin: 0 40px 24px !important;
+  max-width: calc(1400px - 80px) !important;
+}
+
+/* -- Enterprise KPI Stat Cards -- */
+.stat-card-modern {
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 12px rgba(15,31,56,0.07) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  background: #ffffff !important;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+}
+.stat-card-modern:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 12px 32px rgba(15,31,56,0.14) !important;
+  border-color: var(--c-brand) !important;
+}
+.stat-card-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--c-brand), var(--c-accent));
+}
+.stat-card-modern.blue::before {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+.stat-card-modern.orange::before {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+.stat-card-modern.green::before {
+  background: linear-gradient(90deg, #059669, #10b981);
+}
+.stat-card-modern.purple::before {
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+.stat-card-modern.red::before {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+}
+.stat-card-modern.teal::before {
+  background: linear-gradient(90deg, #0891b2, #22d3ee);
+}
+
+.stat-card-modern mat-card-content {
+  padding: 24px !important;
+}
+.card-icon {
+  border-radius: 14px !important;
+  padding: 12px !important;
+}
+.card-icon.blue { background: rgba(59,130,246,0.1) !important; color: #3b82f6 !important; }
+.card-icon.orange { background: rgba(245,158,11,0.1) !important; color: #f59e0b !important; }
+.card-icon.green { background: rgba(5,150,105,0.1) !important; color: #059669 !important; }
+.card-icon.purple { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.card-icon.red { background: rgba(220,38,38,0.1) !important; color: #dc2626 !important; }
+.card-icon.teal { background: rgba(8,145,178,0.1) !important; color: #0891b2 !important; }
+
+.card-label {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: var(--c-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+}
+.card-value {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 2rem !important;
+  font-weight: 800 !important;
+  color: var(--c-ink) !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.1 !important;
+  margin-top: 4px !important;
+}
+
+/* -- Section Cards -- */
+mat-card {
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 12px rgba(15,31,56,0.06) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+mat-card mat-card-header {
+  padding: 20px 24px 0 !important;
+}
+mat-card mat-card-title {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  color: var(--c-ink) !important;
+  letter-spacing: -0.01em !important;
+}
+mat-card mat-card-subtitle {
+  color: var(--c-muted) !important;
+  font-size: 0.85rem !important;
+}
+mat-card mat-card-content {
+  padding: 16px 24px 24px !important;
+}
+
+/* -- Mat Table Enterprise Styling -- */
+.mat-mdc-table {
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  width: 100% !important;
+}
+.mat-mdc-header-row {
+  background: #f8fafc !important;
+  border-bottom: 2px solid var(--c-border) !important;
+}
+.mat-mdc-header-cell {
+  color: var(--c-muted) !important;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  border-bottom: none !important;
+}
+.mat-mdc-row {
+  transition: background 0.15s ease !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+.mat-mdc-row:hover {
+  background: #f0fdf4 !important;
+}
+.mat-mdc-cell {
+  color: var(--c-ink) !important;
+  font-size: 0.875rem !important;
+  padding: 14px 16px !important;
+  border-bottom: none !important;
+}
+
+/* -- Mat Chip -- */
+.mat-mdc-chip {
+  border-radius: 8px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  min-height: 26px !important;
+}
+
+/* -- Progress Bars -- */
+mat-progress-bar {
+  border-radius: 99px !important;
+  height: 6px !important;
+}
+
+/* -- Loading state -- */
+.loading-container mat-progress-bar {
+  border-radius: 99px !important;
+}
+.loading-container p {
+  color: var(--c-muted) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* -- Alert -- */
+.alert-danger {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-radius: 12px !important;
+  border-left: 4px solid #ef4444 !important;
+}
+
+/* -- LAYOUT FIX: restore container padding, inset dark hero -- */
+.dashboard-container-modern {
+  padding: 24px !important;
+}
+.dashboard-header {
+  border-radius: 20px !important;
+  margin-bottom: 28px !important;
+}
+.stats-grid-modern,
+.stats-grid-modern.primary-kpi {
+  padding: 0 !important;
+}

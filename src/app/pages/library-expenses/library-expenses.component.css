@@ -715,3 +715,370 @@ textarea.form-control {
     font-size: 1.125rem;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ENTERPRISE DESIGN OVERRIDE — Library Expenses
+   Applied over existing styles for premium admin aesthetics
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+:host {
+  --c-bg: #f4f7fb;
+  --c-surface: #ffffff;
+  --c-ink: #0f1f38;
+  --c-muted: #4a607e;
+  --c-border: #dde6f0;
+  --c-brand: #059669;
+  --c-brand-d: #047857;
+  --c-brand-l: #ecfdf5;
+  --c-accent: #10b981;
+  --c-hero: #050e1d;
+}
+
+/* -- Page Shell -- */
+.expenses-container-modern {
+  background: var(--c-bg) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  min-height: 100vh !important;
+  padding: 0 !important;
+}
+
+/* -- Dark Hero Header -- */
+.header-section {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 55%, #062b17 100%) !important;
+  padding: 28px 40px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 16px !important;
+  margin-bottom: 0 !important;
+  box-shadow: 0 4px 32px rgba(5,14,29,0.35) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+.page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.6rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.02em !important;
+}
+.page-title mat-icon {
+  color: #10b981 !important;
+  font-size: 1.8rem !important;
+  width: 1.8rem !important;
+  height: 1.8rem !important;
+}
+.page-title .back-button {
+  color: rgba(255,255,255,0.65) !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 10px !important;
+}
+.page-title .back-button:hover {
+  background: rgba(255,255,255,0.15) !important;
+  color: #ffffff !important;
+  transform: translateX(-2px) !important;
+}
+.page-title span {
+  color: #ffffff !important;
+}
+
+.header-actions {
+  display: flex !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+.header-actions button {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+/* Content sections padding */
+.stats-grid-modern,
+.filter-card,
+.table-card,
+.table-wrapper,
+.alert {
+  margin: 28px 40px 0 !important;
+}
+
+/* -- Alert Messages -- */
+.alert {
+  border-radius: 12px !important;
+  padding: 14px 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-weight: 500 !important;
+}
+.alert-success {
+  background: #f0fdf4 !important;
+  color: #166534 !important;
+  border-left: 4px solid #22c55e !important;
+}
+.alert-error {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
+  border-left: 4px solid #ef4444 !important;
+}
+.alert mat-icon {
+  color: inherit !important;
+}
+
+/* -- Enterprise Stats Grid -- */
+.stats-grid-modern {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 20px !important;
+  margin-bottom: 0 !important;
+}
+
+.stat-card-modern {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 12px rgba(15,31,56,0.06) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  transition: all 0.25s ease !important;
+  cursor: default !important;
+}
+.stat-card-modern:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 12px 32px rgba(15,31,56,0.12) !important;
+}
+.stat-card-modern::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 4px !important;
+}
+.stat-card-modern.blue::before { background: linear-gradient(90deg, #3b82f6, #60a5fa) !important; }
+.stat-card-modern.orange::before { background: linear-gradient(90deg, #f59e0b, #fbbf24) !important; }
+.stat-card-modern.green::before { background: linear-gradient(90deg, #059669, #10b981) !important; }
+.stat-card-modern.purple::before { background: linear-gradient(90deg, #7c3aed, #a78bfa) !important; }
+
+.stat-card-modern mat-card-content {
+  padding: 20px 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.card-icon {
+  border-radius: 14px !important;
+  padding: 12px !important;
+  flex-shrink: 0 !important;
+}
+.card-icon.blue { background: rgba(59,130,246,0.1) !important; color: #3b82f6 !important; }
+.card-icon.orange { background: rgba(245,158,11,0.1) !important; color: #f59e0b !important; }
+.card-icon.green { background: rgba(5,150,105,0.1) !important; color: #059669 !important; }
+.card-icon.purple { background: rgba(124,58,237,0.1) !important; color: #7c3aed !important; }
+.card-icon mat-icon { font-size: 24px !important; }
+
+.card-content { flex: 1 !important; }
+.card-label {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: var(--c-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  margin-bottom: 4px !important;
+}
+.card-value {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  color: var(--c-ink) !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.1 !important;
+}
+
+/* -- Filter Card / Section -- */
+.filter-card,
+mat-card.filter-card {
+  border-radius: 16px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 8px rgba(15,31,56,0.05) !important;
+  margin-top: 24px !important;
+}
+.filter-card mat-card-title {
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--c-ink) !important;
+}
+
+/* -- Mat Table -- */
+mat-card {
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 2px 12px rgba(15,31,56,0.06) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+mat-card mat-card-title {
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  color: var(--c-ink) !important;
+}
+
+.mat-mdc-table {
+  background: transparent !important;
+  width: 100% !important;
+}
+.mat-mdc-header-row {
+  background: #f8fafc !important;
+  border-bottom: 2px solid var(--c-border) !important;
+}
+.mat-mdc-header-cell {
+  color: var(--c-muted) !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 12px 16px !important;
+  border-bottom: none !important;
+}
+.mat-mdc-row {
+  transition: background 0.15s ease !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+.mat-mdc-row:hover {
+  background: #f0fdf4 !important;
+}
+.mat-mdc-cell {
+  color: var(--c-ink) !important;
+  font-size: 0.875rem !important;
+  padding: 13px 16px !important;
+  border-bottom: none !important;
+}
+
+/* Amount cell */
+.amount-cell {
+  font-weight: 600 !important;
+  color: #dc2626 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+/* -- Category Chips -- */
+.mat-mdc-chip {
+  border-radius: 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+}
+
+/* -- Paginator -- */
+mat-paginator {
+  border-top: 1px solid var(--c-border) !important;
+  background: #fafbfc !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* -- Add Expense Modal -- */
+.modal-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(5,14,29,0.72) !important;
+  backdrop-filter: blur(4px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+  padding: 20px !important;
+}
+.modal-content {
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: 0 24px 64px rgba(5,14,29,0.3) !important;
+  max-width: 500px !important;
+  width: 100% !important;
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+  font-family: 'Inter', sans-serif !important;
+}
+.modal-header {
+  background: linear-gradient(135deg, #050e1d 0%, #0d2137 100%) !important;
+  padding: 20px 24px !important;
+  border-radius: 20px 20px 0 0 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+}
+.modal-header h2,
+.modal-header h3 {
+  color: #ffffff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  font-size: 1.1rem !important;
+}
+.modal-body {
+  padding: 24px !important;
+}
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+  border: 1.5px solid var(--c-border) !important;
+  border-radius: 10px !important;
+  padding: 10px 14px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  color: var(--c-ink) !important;
+  background: var(--c-surface) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+  outline: none !important;
+  border-color: var(--c-brand) !important;
+  box-shadow: 0 0 0 3px rgba(5,150,105,0.12) !important;
+}
+.modal-body label {
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: var(--c-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  display: block !important;
+  margin-bottom: 5px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-section { padding: 24px 16px !important; }
+  .stats-grid-modern,
+  .filter-card,
+  .table-card,
+  .table-wrapper { margin-left: 16px !important; margin-right: 16px !important; }
+}
+
+/* -- LAYOUT FIX -- */
+.expenses-container-modern {
+  padding: 0 !important;
+}
+.stats-grid-modern.stats-grid-modern,
+.filter-card,
+mat-card {
+  margin-left: 24px !important;
+  margin-right: 24px !important;
+}
+.stats-grid-modern {
+  margin-top: 24px !important;
+  margin-bottom: 0 !important;
+}
+.alert {
+  margin-left: 24px !important;
+  margin-right: 24px !important;
+}
