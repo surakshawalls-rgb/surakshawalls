@@ -157,8 +157,19 @@ export class LaborPaymentService {
 
       if (insertError) throw insertError;
 
+      // Always record in firm_cash_ledger as wage expense
+      await this.supabase.supabase
+        .from('firm_cash_ledger')
+        .insert([{
+          date: payment.payment_date,
+          type: 'payment',
+          amount: payment.amount_paid,
+          category: 'wage',
+          description: `Wage payment${payment.notes ? ' - ' + payment.notes : ''}`
+        }]);
+
+      // If paid by partner, also record as partner expense
       if (payment.paid_by_partner_id) {
-        // Record as partner expense in firm_cash_ledger
         await this.partnerService.insertExpense(
           payment.payment_date,
           payment.paid_by_partner_id,
@@ -167,24 +178,13 @@ export class LaborPaymentService {
           'labour',
           payment.notes || ''
         );
-      } else {
-        // Record in firm_cash_ledger if paid from firm cash
-        await this.supabase.supabase
-          .from('firm_cash_ledger')
-          .insert([{
-            date: payment.payment_date,
-            type: 'payment',
-            amount: payment.amount_paid,
-            category: 'wage_payment',
-            description: `Wage payment${payment.notes ? ' - ' + payment.notes : ''}`
-          }]);
       }
 
-      // --- Update total_paid in workers_master ---
+      // --- Update total_paid and cumulative_balance in workers_master ---
       // Sum paid_today from wage_entries and amount_paid from wage_payments
       const { data: wageEntries, error: wageEntriesError } = await this.supabase.supabase
         .from('wage_entries')
-        .select('paid_today')
+        .select('paid_today, wage_earned')
         .eq('worker_id', payment.worker_id);
       if (wageEntriesError) throw wageEntriesError;
       const { data: wagePayments, error: wagePaymentsError } = await this.supabase.supabase
@@ -195,9 +195,11 @@ export class LaborPaymentService {
       const totalPaidToday = (wageEntries || []).reduce((sum: number, e: any) => sum + (e.paid_today || 0), 0);
       const totalPaidLater = (wagePayments || []).reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
       const newTotalPaid = totalPaidToday + totalPaidLater;
+      const totalEarned = (wageEntries || []).reduce((sum: number, e: any) => sum + (e.wage_earned || 0), 0);
+      const newOutstanding = totalEarned - newTotalPaid;
       await this.supabase.supabase
         .from('workers_master')
-        .update({ total_paid: newTotalPaid })
+        .update({ total_paid: newTotalPaid, cumulative_balance: newOutstanding })
         .eq('id', payment.worker_id);
 
       return { success: true };
