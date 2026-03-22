@@ -124,12 +124,18 @@
               </span>
             </div>
             <div class="client-detail client-credit-limit" style="text-align: center; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 9px; color: #f59e0b;">₹{{ client.credit_limit | number }}</div>
-            <div class="client-actions" style="text-align: center; display: flex; align-items: center; justify-content: center;">
+            <div class="client-actions" style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
               <button (click)="viewStatement(client)" 
                       style="padding: 6px 10px; background: #1976d2; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 8px;"
                       onmouseover="this.style.background='#1565c0'"
                       onmouseout="this.style.background='#1976d2'">
                 📊 Statement
+              </button>
+              <button (click)="deleteClient(client.id)"
+                      style="padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 8px;"
+                      onmouseover="this.style.background='#b91c1c'"
+                      onmouseout="this.style.background='#ef4444'">
+                🗑️ Delete
               </button>
             </div>
           </div>
@@ -188,7 +194,7 @@
           </div>
           <div style="margin-bottom: 20px;">
             <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Contact Number</label>
-            <input type="tel" [(ngModel)]="formData.contact_number" 
+            <input type="tel" [(ngModel)]="formData.phone" 
                    style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
                    onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
                    onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
@@ -211,13 +217,13 @@
                    onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
           </div>
           <div style="margin-bottom: 32px;">
-            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Status</label>
-            <select [(ngModel)]="formData.status" 
+            <label style="display: block; color: #374151; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem;">Active</label>
+            <select [(ngModel)]="formData.active" 
                     style="width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.3s ease;"
                     onfocus="this.style.borderColor='#667eea'; this.style.boxShadow='0 0 0 3px rgba(102, 126, 234, 0.1)'"
                     onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option [ngValue]="true">Active</option>
+              <option [ngValue]="false">Inactive</option>
             </select>
           </div>
         </div>

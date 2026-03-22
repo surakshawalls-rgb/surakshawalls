@@ -441,7 +441,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
       this.loading = true;
       const result = await this.clientService.addClient({
         client_name: this.newClientName.trim(),
-        contact_number: this.newClientPhone.trim() || '',
+        phone: this.newClientPhone.trim() || '',
         address: this.newClientAddress.trim() || '',
         city: '',
         credit_limit: 50000,

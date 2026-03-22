@@ -52,10 +52,10 @@ export class ClientLedgerComponent implements OnInit {
   // Form
   formData = {
     client_name: '',
-    contact_number: '',
+    phone: '',
     address: '',
     credit_limit: 50000,
-    status: 'active' as 'active' | 'inactive'
+    active: true
   };
 
   // UI State
@@ -233,10 +233,10 @@ export class ClientLedgerComponent implements OnInit {
   resetForm() {
     this.formData = {
       client_name: '',
-      contact_number: '',
+      phone: '',
       address: '',
       credit_limit: 50000,
-      status: 'active'
+      active: true
     };
   }
 
@@ -353,5 +353,26 @@ export class ClientLedgerComponent implements OnInit {
     if (client.outstanding > client.credit_limit) return 'exceeding';
     if (client.outstanding > 0) return 'outstanding';
     return 'clear';
+  }
+
+  async deleteClient(clientId: string) {
+    if (!confirm('Are you sure you want to delete this client?')) return;
+    try {
+      this.saving = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+      const result = await this.clientService.deleteClient(clientId);
+      if (result.success) {
+        this.successMessage = 'Client deleted successfully!';
+        await this.loadData();
+      } else {
+        this.errorMessage = result.error || 'Failed to delete client';
+      }
+    } catch (error: any) {
+      console.error('[ClientLedger] deleteClient error:', error);
+      this.errorMessage = 'Error: ' + error.message;
+    } finally {
+      this.saving = false;
+    }
   }
 }
