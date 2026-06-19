@@ -218,6 +218,11 @@
                   <mat-option *ngFor="let h of wallHeights" [value]="h">{{h}} feet</mat-option>
                 </mat-select>
               </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Labour Cost (₹)</mat-label>
+                <input matInput type="number" [(ngModel)]="manualLabourCost">
+              </mat-form-field>
             </div>
 
             <div *ngIf="manualOption === 'fencing'" class="manual-fencing">
@@ -232,8 +237,13 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Total Barbed Wire Price (₹)</mat-label>
+                <mat-label>Total Barbed Wire Cost (₹)</mat-label>
                 <input matInput type="number" [(ngModel)]="manualWireCost">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Labour Cost (₹)</mat-label>
+                <input matInput type="number" [(ngModel)]="manualLabourCost">
               </mat-form-field>
             </div>
           </div>
@@ -283,25 +293,26 @@
                 <span>{{ quotation.perimeterFeet }} feet ({{ quotation.perimeter }} m)</span>
               </div>
             </div>
-            <div class="spec-item" *ngIf="productType === 'boundary-wall'">
+            <div class="spec-item" *ngIf="quotation?.productType === 'Precast Boundary Wall'">
               <mat-icon>square_foot</mat-icon>
               <div>
                 <strong>Wall Area ({{ quotation.wallHeight || wallHeight }} ft height)</strong>
                 <span>{{ quotation.wallArea }} sq ft</span>
               </div>
             </div>
-            <div class="spec-item" *ngIf="productType === 'barbed-fencing'">
+            <div class="spec-item" *ngIf="quotation?.productType === 'Barbed Wire Fencing'">
               <mat-icon>foundation</mat-icon>
               <div>
                 <strong>Poles Required</strong>
                 <span>{{ quotation.poles }} pieces (10 ft spacing)</span>
               </div>
             </div>
-            <div class="spec-item" *ngIf="productType === 'barbed-fencing'">
+            <div class="spec-item" *ngIf="quotation?.productType === 'Barbed Wire Fencing'">
               <mat-icon>trending_flat</mat-icon>
               <div>
                 <strong>Barbed Wire</strong>
-                <span>{{ quotation.wireWeight }} kg (3 rows)</span>
+                <span *ngIf="quotation.wireWeight">{{ quotation.wireWeight }} kg (3 rows)</span>
+                <span *ngIf="!quotation.wireWeight">₹{{ quotation.wireCost }} total</span>
               </div>
             </div>
           </div>
@@ -310,21 +321,26 @@
           <div class="cost-section">
             <h4>Cost Breakdown</h4>
             
-            <div *ngIf="productType === 'boundary-wall'">
+            <div *ngIf="quotation?.productType === 'Precast Boundary Wall'">
               <div class="cost-item">
                 <span>Wall @ ₹{{ quotation.wallRate }}/sq ft × {{ quotation.wallArea }} sq ft</span>
                 <strong>₹{{ quotation.wallCost?.toLocaleString('en-IN') }}</strong>
               </div>
+              <div class="cost-item labour">
+                <span>Labour Cost</span>
+                <strong>₹{{ quotation.labourCost?.toLocaleString('en-IN') }}</strong>
+              </div>
               <div class="cost-note">Includes: Material + Labour + Transportation</div>
             </div>
 
-            <div *ngIf="productType === 'barbed-fencing'">
+            <div *ngIf="quotation?.productType === 'Barbed Wire Fencing'">
               <div class="cost-item">
                 <span>RCC Poles ({{ quotation.poles }} pcs × ₹{{ quotation.poleRate }})</span>
                 <strong>₹{{ quotation.poleCost?.toLocaleString('en-IN') }}</strong>
               </div>
               <div class="cost-item">
-                <span>Barbed Wire ({{ quotation.wireWeight }} kg × ₹{{ quotation.wireRate }})</span>
+                <span *ngIf="quotation.wireWeight">Barbed Wire ({{ quotation.wireWeight }} kg × ₹{{ quotation.wireRate }})</span>
+                <span *ngIf="!quotation.wireWeight">Barbed Wire Total Cost</span>
                 <strong>₹{{ quotation.wireCost?.toLocaleString('en-IN') }}</strong>
               </div>
               <div class="cost-item subtotal">
@@ -332,10 +348,9 @@
                 <strong>₹{{ quotation.materialCost.toLocaleString('en-IN') }}</strong>
               </div>
               <div class="cost-item labour">
-                <span>Labour ({{ quotation.labourDays }} days × ₹{{ quotation.labourRate }})</span>
+                <span>Labour Cost</span>
                 <strong>₹{{ quotation.labourCost?.toLocaleString('en-IN') }}</strong>
               </div>
-              <div class="cost-note">Labour charged separately</div>
             </div>
           </div>
 

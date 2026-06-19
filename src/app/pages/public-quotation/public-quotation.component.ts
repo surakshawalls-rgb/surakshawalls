@@ -81,6 +81,7 @@ export class PublicQuotationComponent {
   manualPolesCount: number = 0;
   manualPoleRate: number = 0;
   manualWireCost: number = 0;
+  manualLabourCost: number = 0;
   
   // Multiple fields support
   fields: FieldEntry[] = [];
@@ -279,6 +280,8 @@ export class PublicQuotationComponent {
       if (this.manualOption === 'boundary') {
         const wallAreaSqFt = totalPerimeterFeet * this.wallHeight;
         const wallCost = Math.round(wallAreaSqFt * (Number(this.manualBoundaryRate) || 0));
+        const labourCost = Number(this.manualLabourCost) || 0;
+        const totalCost = wallCost + labourCost;
 
         this.quotation = {
           productType: 'Precast Boundary Wall',
@@ -291,18 +294,21 @@ export class PublicQuotationComponent {
           wallArea: Math.round(wallAreaSqFt),
           wallRate: Number(this.manualBoundaryRate) || 0,
           wallCost: wallCost,
+          labourDays: 0,
+          labourRate: 0,
+          labourCost: labourCost,
           materialCost: wallCost,
-          totalCost: wallCost
+          totalCost: totalCost
         };
 
         return;
       } else {
         // manual fencing
         const numberOfPoles = Number(this.manualPolesCount) || 0;
-        const poleCost = numberOfPoles * (Number(this.manualPoleRate) || 0);
+        const poleRate = Number(this.manualPoleRate) || 0;
+        const poleCost = numberOfPoles * poleRate;
         const wireCost = Number(this.manualWireCost) || 0;
-        const labourDays = Math.ceil(totalPerimeterFeet / 100);
-        const labourCost = labourDays * this.LABOUR_RATE;
+        const labourCost = Number(this.manualLabourCost) || 0;
         const materialCost = poleCost + wireCost;
         const totalCost = materialCost + labourCost;
 
@@ -314,13 +320,13 @@ export class PublicQuotationComponent {
           perimeter: Math.round(totalPerimeterMeters * 10) / 10,
           perimeterFeet: Math.round(totalPerimeterFeet),
           poles: numberOfPoles,
-          poleRate: Number(this.manualPoleRate) || 0,
+          poleRate: poleRate,
           poleCost: poleCost,
           wireWeight: 0,
           wireRate: 0,
           wireCost: wireCost,
-          labourDays: labourDays,
-          labourRate: this.LABOUR_RATE,
+          labourDays: 0,
+          labourRate: 0,
           labourCost: labourCost,
           materialCost: materialCost,
           totalCost: totalCost
@@ -364,8 +370,15 @@ export class PublicQuotationComponent {
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.wallCost?.toLocaleString('en-IN')}</td>
         </tr>
         <tr>
-          <td colspan="4" style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">Material + Labour + Transportation</td>
-          <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.materialCost.toLocaleString('en-IN')}</td>
+          <td style="padding: 12px; border: 1px solid #ddd;">2</td>
+          <td style="padding: 12px; border: 1px solid #ddd;">Labour Cost</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">-</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">-</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.labourCost?.toLocaleString('en-IN')}</td>
+        </tr>
+        <tr>
+          <td colspan="4" style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">Total Estimated Cost</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.totalCost.toLocaleString('en-IN')}</td>
         </tr>
       `;
     } else {
@@ -380,8 +393,8 @@ export class PublicQuotationComponent {
         <tr>
           <td style="padding: 12px; border: 1px solid #ddd;">2</td>
           <td style="padding: 12px; border: 1px solid #ddd;">Barbed Wire (3 rows)</td>
-          <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${this.quotation.wireWeight} kg</td>
-          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">₹${this.quotation.wireRate}</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${this.quotation.wireWeight ? this.quotation.wireWeight + ' kg' : '-'}</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">${this.quotation.wireWeight ? '₹' + this.quotation.wireRate : '-'}</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">₹${this.quotation.wireCost?.toLocaleString('en-IN')}</td>
         </tr>
         <tr>
