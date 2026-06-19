@@ -213,7 +213,7 @@ export class PublicQuotationComponent {
     
     const totalPerimeterMeters = totalPerimeterFeet * 0.3048;
 
-    if (this.quotation?.productType === 'Precast Boundary Wall') {
+    if (this.productType === 'boundary-wall') {
       // Boundary Wall Calculation (use selected wall height)
       const wallAreaSqFt = totalPerimeterFeet * this.wallHeight;
       const wallCost = Math.round(wallAreaSqFt * this.BOUNDARY_WALL_RATE);
@@ -592,8 +592,6 @@ export class PublicQuotationComponent {
 
           <div class="site-layout">
             <h4>📏 ${this.quotation?.productType === 'Precast Boundary Wall' ? 'Wall Specifications' : 'Fencing Specifications'}</h4>
-          <div class="site-layout">
-            <h4>📏 ${this.productType === 'boundary-wall' ? 'Wall Specifications' : 'Fencing Specifications'}</h4>
             <div style="display: flex; gap: 30px; align-items: center;">
               <div style="flex: 1;">
                 <div style="padding: 15px; background: #dbeafe; border-radius: 8px; border-left: 4px solid #3b82f6;">
