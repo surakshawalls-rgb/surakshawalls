@@ -15,7 +15,7 @@
           <mat-icon>category</mat-icon>
           Step 1: Choose Product Type
         </h3>
-        <mat-radio-group [(ngModel)]="calculationType" (change)="resetCalculator()">
+        <mat-radio-group class="product-type-group" [(ngModel)]="calculationType" (change)="resetCalculator()">
           <mat-radio-button value="boundary" class="radio-option">
             <div class="radio-content">
               <strong>🏗️ Precast Boundary Wall</strong>
