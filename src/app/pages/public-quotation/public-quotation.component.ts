@@ -354,7 +354,7 @@ export class PublicQuotationComponent {
 
     let itemsRows = '';
     
-    if (this.productType === 'boundary-wall') {
+    if (this.quotation?.productType === 'Precast Boundary Wall') {
       itemsRows = `
         <tr>
           <td style="padding: 12px; border: 1px solid #ddd;">1</td>
@@ -591,13 +591,13 @@ export class PublicQuotationComponent {
           </div>
 
           <div class="site-layout">
-            <h4>📏 ${this.productType === 'boundary-wall' ? 'Wall Specifications' : 'Fencing Specifications'}</h4>
+            <h4>📏 ${this.quotation?.productType === 'Precast Boundary Wall' ? 'Wall Specifications' : 'Fencing Specifications'}</h4>
           <div class="site-layout">
             <h4>📏 ${this.productType === 'boundary-wall' ? 'Wall Specifications' : 'Fencing Specifications'}</h4>
             <div style="display: flex; gap: 30px; align-items: center;">
               <div style="flex: 1;">
                 <div style="padding: 15px; background: #dbeafe; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                  ${this.productType === 'boundary-wall' 
+                  ${this.quotation?.productType === 'Precast Boundary Wall' 
                     ? `<div style="margin: 8px 0;"><strong>Wall Height:</strong> ${this.quotation.wallHeight || this.wallHeight} feet</div>
                        <div style="margin: 8px 0;"><strong>Wall Area:</strong> <span class="highlight">${this.quotation.wallArea} sq ft</span></div>
                        <div style="margin: 8px 0;"><strong>Rate:</strong> ₹${this.quotation.wallRate}/sq ft</div>`
@@ -627,7 +627,7 @@ export class PublicQuotationComponent {
           </table>
 
           <div class="total-section">
-            ${this.productType === 'barbed-fencing' ? `
+            ${this.quotation?.productType === 'Barbed Wire Fencing' ? `
             <div class="total-row">
               <span>Material Cost:</span>
               <span><strong>₹${this.quotation.materialCost.toLocaleString('en-IN')}</strong></span>
@@ -667,12 +667,12 @@ export class PublicQuotationComponent {
           <div class="terms">
             <h3>📋 Terms & Conditions:</h3>
             <ul>
-              ${this.productType === 'boundary-wall' 
-                ? `<li><strong>Rate includes:</strong> Material, Installation, Labour, and Transportation</li>
+                ${this.quotation?.productType === 'Precast Boundary Wall' 
+                 ? `<li><strong>Rate includes:</strong> Material, Installation, Labour, and Transportation</li>
                    <li><strong>Material:</strong> High-quality RCC precast boundary wall panels with steel reinforcement</li>
                    <li><strong>Installation:</strong> Professional installation by experienced team</li>
                    <li><strong>Warranty:</strong> 2 years on manufacturing defects</li>`
-                : `<li><strong>Material Cost:</strong> RCC Fencing Poles and Barbed Wire (as itemized above)</li>
+                 : `<li><strong>Material Cost:</strong> RCC Fencing Poles and Barbed Wire (as itemized above)</li>
                    <li><strong>Labour Charges:</strong> ₹${this.quotation.labourRate}/day charged separately (estimated ${this.quotation.labourDays} days)</li>
                    <li><strong>Installation:</strong> Includes pole setting, wire stretching, and 3-row barbed wire</li>
                    <li><strong>Wire Quality:</strong> High-tensile galvanized barbed wire</li>`
