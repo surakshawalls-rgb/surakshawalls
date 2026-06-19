@@ -1,0 +1,62 @@
+.change-seat-dialog-card {
+  max-width: 420px;
+  margin: 0 auto;
+}
+.student-info {
+  margin-bottom: 16px;
+}
+.available-seats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.seat-option {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  background: #fafafa;
+  min-width: 60px;
+  text-align: center;
+  transition: border 0.2s, background 0.2s;
+}
+.seat-option.selected {
+  border: 2px solid #1976d2;
+  background: #e3f2fd;
+}
+.form-group {
+  margin-bottom: 16px;
+}
+mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+mat-radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+mat-radio-button {
+  margin-right: 8px;
+}
+.text-muted {
+  color: #888;
+  font-size: 0.95em;
+  margin-top: 8px;
+}
+@media (max-width: 500px) {
+  .change-seat-dialog-card {
+    max-width: 98vw;
+    padding: 0;
+  }
+  .available-seats-grid {
+    gap: 4px;
+  }
+  .seat-option {
+    padding: 6px 8px;
+    min-width: 40px;
+  }
+}
