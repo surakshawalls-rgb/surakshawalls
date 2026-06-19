@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatRadioModule } from '@angular/material/radio';
 import { Router } from '@angular/router';
 
 interface LandSize {
@@ -62,6 +63,7 @@ interface QuotationResult {
     MatSelectModule,
     MatInputModule,
     MatFormFieldModule
+    ,MatRadioModule
   ],
   templateUrl: './public-quotation.component.html',
   styleUrls: ['./public-quotation.component.css']
@@ -75,9 +77,9 @@ export class PublicQuotationComponent {
   wallHeight: number = 6; // Default 6 feet
   // Manual mode
   manualOption: 'boundary' | 'fencing' = 'boundary';
-  manualBoundaryRate: number = this.BOUNDARY_WALL_RATE;
+  manualBoundaryRate: number = 0;
   manualPolesCount: number = 0;
-  manualPoleRate: number = this.POLE_RATE;
+  manualPoleRate: number = 0;
   manualWireCost: number = 0;
   
   // Multiple fields support
@@ -132,7 +134,11 @@ export class PublicQuotationComponent {
     { label: '4-bigha', biswa: 80, displayText: '4 Bigha (80 Biswa)' }
   ];
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) {
+    // initialize manual rates after constants are defined
+    this.manualBoundaryRate = this.BOUNDARY_WALL_RATE;
+    this.manualPoleRate = this.POLE_RATE;
+  }
 
   addField() {
     if (this.measurementType === 'area') {
