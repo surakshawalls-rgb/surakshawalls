@@ -28,6 +28,12 @@
               <span>RCC poles with barbed wire - Economical solution</span>
             </div>
           </mat-radio-button>
+          <mat-radio-button value="manual" class="radio-option">
+            <div class="radio-content">
+              <strong>✏️ Manual Quotation</strong>
+              <span>Enter custom rates or pole counts to build a custom quote</span>
+            </div>
+          </mat-radio-button>
         </mat-radio-group>
       </div>
 
@@ -103,6 +109,51 @@
               <strong>Installation:</strong> Professional setup included
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="calculationType === 'manual'">
+        <h3>
+          <mat-icon>edit</mat-icon>
+          Manual Quotation Inputs
+        </h3>
+
+        <mat-radio-group [(ngModel)]="manualOption">
+          <mat-radio-button value="boundary">Boundary Wall (enter rate)</mat-radio-button>
+          <mat-radio-button value="fencing">Barbed Fencing (enter poles & prices)</mat-radio-button>
+        </mat-radio-group>
+
+        <div *ngIf="manualOption === 'boundary'" class="manual-boundary">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Rate (₹ per sq. ft)</mat-label>
+            <input matInput type="number" [(ngModel)]="manualBoundaryRate">
+            <mat-hint>Enter custom boundary wall rate (₹/sq ft)</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Wall Height (feet)</mat-label>
+            <mat-select [(ngModel)]="wallHeight">
+              <mat-option *ngFor="let height of availableHeights" [value]="height">{{height}} feet</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="manualOption === 'fencing'" class="manual-fencing">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Number of Poles</mat-label>
+            <input matInput type="number" [(ngModel)]="manualPolesCount">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Price per Pole (₹)</mat-label>
+            <input matInput type="number" [(ngModel)]="manualPolePrice">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Barbed Wire Total Price (₹)</mat-label>
+            <input matInput type="number" [(ngModel)]="manualWireCost">
+            <mat-hint>Enter total wire price (user provided)</mat-hint>
+          </mat-form-field>
         </div>
       </div>
 

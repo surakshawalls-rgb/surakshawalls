@@ -30,10 +30,18 @@ import { MatDividerModule } from '@angular/material/divider';
 })
 export class QuotationComponent {
   // Form inputs
-  calculationType: 'boundary' | 'fencing' = 'boundary';
+  calculationType: 'boundary' | 'fencing' | 'manual' = 'boundary';
   landSize: number = 1; // in biswa
   wallHeight: number = 6; // in feet (for boundary walls)
   customLandSize: boolean = false;
+  // Manual mode sub-option: behaves like either a boundary or fencing quote
+  manualOption: 'boundary' | 'fencing' = 'boundary';
+
+  // Manual inputs (used when calculationType === 'manual')
+  manualBoundaryRate: number = 85; // ₹/sq ft
+  manualPolesCount: number = 0;
+  manualPolePrice: number = 0;
+  manualWireCost: number = 0; // total wire cost entered manually
   
   // Results
   totalCost: number = 0;
@@ -59,11 +67,59 @@ export class QuotationComponent {
     
     if (this.calculationType === 'boundary') {
       this.calculateBoundaryWall();
-    } else {
+    } else if (this.calculationType === 'fencing') {
       this.calculateFencing();
+    } else {
+      this.calculateManual();
     }
     
     this.showResults = true;
+  }
+
+  calculateManual() {
+    const perimeter = this.getPerimeter(this.landSize);
+    this.calculationDetails = {};
+    // Manual boundary
+    if (this.manualOption === 'boundary') {
+      const ratePerSqFt = Number(this.manualBoundaryRate) || 0;
+      const totalArea = perimeter * this.wallHeight;
+      this.totalCost = Math.round(totalArea * ratePerSqFt);
+
+      this.calculationDetails = {
+        'Land Size': `${this.landSize} biswa`,
+        'Perimeter': `${perimeter} feet`,
+        'Wall Height': `${this.wallHeight} feet`,
+        'Total Wall Area': `${totalArea} sq ft`,
+        'Rate': `₹${ratePerSqFt}/sq ft (user provided)`,
+        'Total Cost': `₹${this.totalCost.toLocaleString('en-IN')}`
+      };
+      return;
+    }
+
+    // Manual fencing
+    const totalPoles = Number(this.manualPolesCount) || 0;
+    const poleCost = totalPoles * (Number(this.manualPolePrice) || 0);
+    const wireCost = Number(this.manualWireCost) || 0;
+
+    // Labour cost: keep existing labour formula for consistency
+    let labourCost = 0;
+    if (this.landSize === 1) {
+      labourCost = 1000;
+    } else {
+      labourCost = 1800 + (Math.max(0, this.landSize - 2) * 700);
+    }
+
+    this.totalCost = Math.round(poleCost + wireCost + labourCost);
+
+    this.calculationDetails = {
+      'Land Size': `${this.landSize} biswa`,
+      'Perimeter': `${perimeter} feet`,
+      'Total Poles (user)': `${totalPoles}`,
+      'Pole Cost (user provided)': `₹${poleCost.toLocaleString('en-IN')}`,
+      'Barbed Wire (user provided)': `₹${wireCost.toLocaleString('en-IN')}`,
+      'Labour & Installation': `₹${labourCost.toLocaleString('en-IN')}`,
+      'Total Cost': `₹${this.totalCost.toLocaleString('en-IN')}`
+    };
   }
 
   calculateBoundaryWall() {
@@ -144,23 +200,28 @@ export class QuotationComponent {
     this.showResults = false;
     this.totalCost = 0;
     this.calculationDetails = {};
+    // reset manual inputs
+    this.manualOption = 'boundary';
+    this.manualBoundaryRate = 85;
+    this.manualPolesCount = 0;
+    this.manualPolePrice = 0;
+    this.manualWireCost = 0;
   }
 
   sendWhatsAppQuote() {
     let message = '';
-    
-    if (this.calculationType === 'boundary') {
+    if (this.calculationType === 'boundary' || (this.calculationType === 'manual' && this.manualOption === 'boundary')) {
       message = `Hi, I calculated a quote for Boundary Wall (Precast):\n\n`;
       message += `📏 Land Size: ${this.landSize} biswa\n`;
       message += `📐 Perimeter: ${this.getPerimeter(this.landSize)} feet\n`;
       message += `📊 Height: ${this.wallHeight} feet\n`;
       message += `💰 Estimated Cost: ₹${this.totalCost.toLocaleString('en-IN')}\n`;
       message += `\nPlease provide detailed quote and schedule site visit.`;
-    } else {
+    } else if (this.calculationType === 'fencing' || (this.calculationType === 'manual' && this.manualOption === 'fencing')) {
       message = `Hi, I calculated a quote for Fencing (Barbed Wire):\n\n`;
       message += `📏 Land Size: ${this.landSize} biswa\n`;
       message += `📐 Perimeter: ${this.getPerimeter(this.landSize)} feet\n`;
-      message += `🔨 Poles Required: ${this.calculationDetails['Total Poles']}\n`;
+      message += `🔨 Poles Required: ${this.calculationDetails['Total Poles'] || this.calculationDetails['Total Poles (user)'] || this.manualPolesCount}\n`;
       message += `💰 Estimated Cost: ₹${this.totalCost.toLocaleString('en-IN')}\n`;
       message += `\nPlease provide detailed quote and schedule site visit.`;
     }
@@ -170,7 +231,8 @@ export class QuotationComponent {
   }
 
   scheduleVisit() {
-    const message = `Hi, I would like to schedule a FREE site visit for:\n\n${this.calculationType === 'boundary' ? '🏗️ Boundary Wall (Precast)' : '🚧 Fencing (Barbed Wire)'}\n📏 Land Size: ${this.landSize} biswa\n\nPlease contact me to arrange a convenient time.`;
+    const productLabel = (this.calculationType === 'boundary' || (this.calculationType === 'manual' && this.manualOption === 'boundary')) ? '🏗️ Boundary Wall (Precast)' : '🚧 Fencing (Barbed Wire)';
+    const message = `Hi, I would like to schedule a FREE site visit for:\n\n${productLabel}\n📏 Land Size: ${this.landSize} biswa\n\nPlease contact me to arrange a convenient time.`;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/9346842755?text=${encodedMessage}`, '_blank');
   }
