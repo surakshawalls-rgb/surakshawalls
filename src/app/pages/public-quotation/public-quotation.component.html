@@ -83,6 +83,17 @@
                 </div>
                 <mat-icon>{{ productType === 'barbed-fencing' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
               </div>
+              
+              <div class="product-option" 
+                   [class.selected]="productType === 'manual'"
+                   (click)="productType = 'manual'; fields = []; quotation = null">
+                <div class="product-icon">✏️</div>
+                <div class="product-details">
+                  <strong>Manual Quotation</strong>
+                  <span>Enter custom rates or pole counts</span>
+                </div>
+                <mat-icon>{{ productType === 'manual' ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+              </div>
             </div>
           </div>
 
@@ -184,6 +195,46 @@
             <div class="helper-note">
               <mat-icon>info</mat-icon>
               <span>In UP Bhadohi: 1 Biswa ≈ 1,350 sq ft | 1 Bigha = 20 Biswa</span>
+            </div>
+          </div>
+
+          <!-- Manual Inputs (when Manual product selected) -->
+          <div class="form-section" *ngIf="productType === 'manual'">
+            <h3>Manual Quotation Options</h3>
+            <mat-radio-group [(ngModel)]="manualOption">
+              <mat-radio-button value="boundary">Boundary Wall (enter rate)</mat-radio-button>
+              <mat-radio-button value="fencing">Barbed Fencing (enter poles & prices)</mat-radio-button>
+            </mat-radio-group>
+
+            <div *ngIf="manualOption === 'boundary'" class="manual-boundary">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Rate (₹ per sq. ft)</mat-label>
+                <input matInput type="number" [(ngModel)]="manualBoundaryRate">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Wall Height (feet)</mat-label>
+                <mat-select [(ngModel)]="wallHeight">
+                  <mat-option *ngFor="let h of wallHeights" [value]="h">{{h}} feet</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div *ngIf="manualOption === 'fencing'" class="manual-fencing">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Number of Poles</mat-label>
+                <input matInput type="number" [(ngModel)]="manualPolesCount">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Price per Pole (₹)</mat-label>
+                <input matInput type="number" [(ngModel)]="manualPoleRate">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Total Barbed Wire Price (₹)</mat-label>
+                <input matInput type="number" [(ngModel)]="manualWireCost">
+              </mat-form-field>
             </div>
           </div>
 

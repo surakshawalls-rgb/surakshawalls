@@ -68,11 +68,17 @@ interface QuotationResult {
 })
 export class PublicQuotationComponent {
   // Form inputs
-  productType: 'boundary-wall' | 'barbed-fencing' = 'boundary-wall';
+  productType: 'boundary-wall' | 'barbed-fencing' | 'manual' = 'boundary-wall';
   measurementType: 'area' | 'perimeter' = 'area';
   presetLandSize: string = '1-biswa';
   customPerimeter: number | null = null;
   wallHeight: number = 6; // Default 6 feet
+  // Manual mode
+  manualOption: 'boundary' | 'fencing' = 'boundary';
+  manualBoundaryRate: number = this.BOUNDARY_WALL_RATE;
+  manualPolesCount: number = 0;
+  manualPoleRate: number = this.POLE_RATE;
+  manualWireCost: number = 0;
   
   // Multiple fields support
   fields: FieldEntry[] = [];
@@ -201,7 +207,7 @@ export class PublicQuotationComponent {
     
     const totalPerimeterMeters = totalPerimeterFeet * 0.3048;
 
-    if (this.productType === 'boundary-wall') {
+    if (this.quotation?.productType === 'Precast Boundary Wall') {
       // Boundary Wall Calculation (use selected wall height)
       const wallAreaSqFt = totalPerimeterFeet * this.wallHeight;
       const wallCost = Math.round(wallAreaSqFt * this.BOUNDARY_WALL_RATE);
@@ -220,7 +226,11 @@ export class PublicQuotationComponent {
         materialCost: wallCost,
         totalCost: wallCost
       };
-    } else {
+
+      return;
+    }
+
+    if (this.productType === 'barbed-fencing') {
       // Barbed Wire Fencing Calculation
       const numberOfPoles = Math.ceil(totalPerimeterFeet / this.POLE_DISTANCE) + this.fields.length;
       const poleCost = numberOfPoles * this.POLE_RATE;
@@ -255,6 +265,63 @@ export class PublicQuotationComponent {
         materialCost: materialCost,
         totalCost: totalCost
       };
+
+      return;
+    }
+
+    if (this.productType === 'manual') {
+      if (this.manualOption === 'boundary') {
+        const wallAreaSqFt = totalPerimeterFeet * this.wallHeight;
+        const wallCost = Math.round(wallAreaSqFt * (Number(this.manualBoundaryRate) || 0));
+
+        this.quotation = {
+          productType: 'Precast Boundary Wall',
+          fields: [...this.fields],
+          totalBiswa: totalBiswa,
+          totalArea: Math.round(totalAreaSqFt),
+          perimeter: Math.round(totalPerimeterMeters * 10) / 10,
+          perimeterFeet: Math.round(totalPerimeterFeet),
+          wallHeight: this.wallHeight,
+          wallArea: Math.round(wallAreaSqFt),
+          wallRate: Number(this.manualBoundaryRate) || 0,
+          wallCost: wallCost,
+          materialCost: wallCost,
+          totalCost: wallCost
+        };
+
+        return;
+      } else {
+        // manual fencing
+        const numberOfPoles = Number(this.manualPolesCount) || 0;
+        const poleCost = numberOfPoles * (Number(this.manualPoleRate) || 0);
+        const wireCost = Number(this.manualWireCost) || 0;
+        const labourDays = Math.ceil(totalPerimeterFeet / 100);
+        const labourCost = labourDays * this.LABOUR_RATE;
+        const materialCost = poleCost + wireCost;
+        const totalCost = materialCost + labourCost;
+
+        this.quotation = {
+          productType: 'Barbed Wire Fencing',
+          fields: [...this.fields],
+          totalBiswa: totalBiswa,
+          totalArea: Math.round(totalAreaSqFt),
+          perimeter: Math.round(totalPerimeterMeters * 10) / 10,
+          perimeterFeet: Math.round(totalPerimeterFeet),
+          poles: numberOfPoles,
+          poleRate: Number(this.manualPoleRate) || 0,
+          poleCost: poleCost,
+          wireWeight: 0,
+          wireRate: 0,
+          wireCost: wireCost,
+          labourDays: labourDays,
+          labourRate: this.LABOUR_RATE,
+          labourCost: labourCost,
+          materialCost: materialCost,
+          totalCost: totalCost
+        };
+
+        return;
+      }
     }
   }
 
