@@ -51,7 +51,6 @@
             placeholder="Search by name or mobile..." 
             class="search-input">
         </div>
-        
         <div class="filter-field">
           <label>Status</label>
           <select [(ngModel)]="filterStatus" (change)="onFilterChange()" class="filter-select">
@@ -357,7 +356,7 @@
             <label>Notes</label>
             <textarea [(ngModel)]="newStudent.notes" class="form-control" rows="2"></textarea>
           </div>
-        </div>
+        <!-- orphaned closing div removed -->
       </div>
       <div class="modal-footer">
         <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
@@ -370,116 +369,38 @@
     </div>
   </div>
 
-  <!-- Edit Student Modal -->
-  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeModal()">
+
+  <!-- Change Seat Modal -->
+  <div class="modal-overlay" *ngIf="showChangeSeatModal" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3><mat-icon>edit</mat-icon> Edit Student</h3>
-        <button (click)="closeModal()" class="close-btn">&times;</button>
-      </div>
-      <div class="modal-body" *ngIf="selectedStudent">
-        <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" [(ngModel)]="selectedStudent.name" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Mobile</label>
-          <input type="tel" [(ngModel)]="selectedStudent.mobile" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Emergency Contact</label>
-          <input type="tel" [(ngModel)]="selectedStudent.emergency_contact" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Emergency Contact Name</label>
-          <input type="text" [(ngModel)]="selectedStudent.emergency_contact_name" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Address</label>
-          <textarea [(ngModel)]="selectedStudent.address" class="form-control" rows="2"></textarea>
-        </div>
-        <div class="form-group">
-          <label>Date of Birth</label>
-          <input type="date" [(ngModel)]="selectedStudent.dob" class="form-control">
-        </div>
-        <div class="form-group">
-          <label>Gender</label>
-          <select [(ngModel)]="selectedStudent.gender" class="form-control">
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Joining Date</label>
-          <input type="date" [(ngModel)]="selectedStudent.joining_date" class="form-control" (change)="onJoiningDateChange()">
-          <small class="form-text text-muted">ðŸ’¡ Changing joining date will automatically recalculate seat expiry dates</small>
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select [(ngModel)]="selectedStudent.status" class="form-control">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="suspended">Suspended</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Notes</label>
-          <textarea [(ngModel)]="selectedStudent.notes" class="form-control" rows="2"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
-        <button *ngIf="selectedStudent" (click)="openChangeSeatModal(selectedStudent); showEditModal = false;" class="btn btn-info">
-          <mat-icon>event_seat</mat-icon> Change Seat
-        </button>
-        <button (click)="submitEditStudent()" class="btn btn-primary">
-          <mat-icon>save</mat-icon> Update
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Payment History Modal -->
-  <div class="modal-overlay" *ngIf="showPaymentHistoryModal" (click)="closeModal()">
-    <div class="modal-content large" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3><mat-icon>receipt_long</mat-icon> Payment History - {{ selectedStudent?.name }}</h3>
-        <button (click)="closeModal()" class="close-btn">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div *ngIf="paymentHistory.length === 0" class="empty-state">
-          <p>No payment history</p>
-        </div>
-        <table *ngIf="paymentHistory.length > 0" class="data-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Seat</th>
-              <th>Shift</th>
-              <th>Amount</th>
-              <th>Valid From</th>
-              <th>Valid Until</th>
-            </tr>
-
-  <!-- Add Shift Modal -->
-  <div class="modal-overlay" *ngIf="showAddShiftModal" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3><mat-icon>add</mat-icon> Add {{ newShiftType === 'first_half' ? 'Morning' : 'Evening' }} Shift</h3>
+        <h3><mat-icon>event_seat</mat-icon> Change/Assign Seat</h3>
         <button (click)="closeModal()" class="close-btn">&times;</button>
       </div>
       <div class="modal-body" *ngIf="selectedStudent">
         <div class="change-seat-info">
           <h4>{{ selectedStudent.name }}</h4>
-          <p><strong>Adding:</strong> 
-            <span *ngIf="newShiftType === 'first_half'"><mat-icon>wb_sunny</mat-icon> Morning Shift (6 AM - 12 PM)</span>
-            <span *ngIf="newShiftType === 'second_half'"><mat-icon>nights_stay</mat-icon> Evening Shift (12 PM - 6 AM)</span>
-          </p>
-          <p class="text-muted">Valid for 1 month from today</p>
+          <p *ngIf="currentSeatNo">Current Seat: <strong>{{ currentSeatNo }}</strong></p>
+          <p *ngIf="currentShiftType">Current Shift: <strong>{{ getShiftLabel(currentShiftType) }}</strong></p>
         </div>
-
-        <div class="form-group">
-          <label>Select Seat for New Shift *</label>
+        <!-- Shift type selection if student has no seat -->
+        <div *ngIf="!currentShiftType" class="form-group full-width">
+          <label>Select Shift Type <span class="required">*</span></label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="shiftType" value="full_time" (change)="onShiftTypeSelected('full_time')"> Full Time
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="shiftType" value="first_half" (change)="onShiftTypeSelected('first_half')"> Morning
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="shiftType" value="second_half" (change)="onShiftTypeSelected('second_half')"> Evening
+            </label>
+          </div>
+        </div>
+        <!-- Available seats grid -->
+        <div class="form-group full-width" *ngIf="currentShiftType">
+          <label>Select New Seat <span class="required">*</span></label>
           <div class="available-seats-grid">
             <div *ngFor="let seat of availableSeats"
                  class="seat-option"
@@ -489,132 +410,23 @@
               <div class="seat-option-status">Available</div>
             </div>
           </div>
-          <p *ngIf="availableSeats.length === 0" class="text-muted">No seats available for this shift</p>
+          <p class="text-muted" *ngIf="availableSeats.length === 0">
+            No available seats for this shift type
+          </p>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
-        <button (click)="confirmAddShift()" [disabled]="!newSeatNumber" class="btn btn-success">
-          <mat-icon>add</mat-icon> Add Shift
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Student Profile Modal -->
-  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeModal()">
-    <div class="modal-content profile-modal" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3><mat-icon>school</mat-icon> Student Profile</h3>
-        <button (click)="closeModal()" class="close-btn">&times;</button>
-      </div>
-      
-      <div class="modal-body" *ngIf="selectedStudent">
-        <div class="profile-layout">
-          <div class="profile-photo-section">
-            <img *ngIf="selectedStudent.photo_url" [src]="selectedStudent.photo_url" alt="Student Photo" class="profile-photo-large">
-            <div *ngIf="!selectedStudent.photo_url" class="no-photo-large"><mat-icon>photo_camera</mat-icon></div>
-          </div>
-          
-          <div class="profile-info-section">
-            <h4 class="profile-name">{{ selectedStudent.name }}</h4>
-            
-            <div class="info-grid">
-              <div class="info-item">
-                <strong>Mobile:</strong> {{ selectedStudent.mobile }}
-              </div>
-              <div class="info-item">
-                <strong>Address:</strong> {{ selectedStudent.address }}
-              </div>
-              <div class="info-item">
-                <strong>Emergency Contact:</strong> {{ selectedStudent.emergency_contact }}
-              </div>
-              <div class="info-item">
-                <strong>Emergency Name:</strong> {{ selectedStudent.emergency_contact_name || 'N/A' }}
-              </div>
-              <div class="info-item">
-                <strong>Joining Date:</strong> {{ formatDate(selectedStudent.joining_date || '') }}
-              </div>
-              <div class="info-item">
-                <strong>DOB:</strong> {{ selectedStudent.dob ? formatDate(selectedStudent.dob) : 'N/A' }}
-              </div>
-              <div class="info-item">
-                <strong>Gender:</strong> {{ selectedStudent.gender }}
-              </div>
-              <div class="info-item">
-                <strong>Status:</strong> 
-                <span class="badge" [ngClass]="getStatusBadgeClass(selectedStudent.status || 'active')">
-                  {{ selectedStudent.status }}
-                </span>
-              </div>
-              <div class="info-item">
-                <strong>Registration Fee:</strong> {{ formatCurrency(selectedStudent.registration_fee_paid || 0) }}
-              </div>
-              <div class="info-item full-width" *ngIf="selectedStudent.notes">
-                <strong>Notes:</strong> {{ selectedStudent.notes }}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="profile-actions-section">
-          <h4>Quick Actions</h4>
-          <div class="action-buttons-grid">
-            <!-- Row 1: Attendance & Fee -->
-            <button class="btn btn-primary action-btn"
-                    [class]="getAttendanceButtonClass(selectedStudent.id)"
-                    (click)="toggleAttendance(selectedStudent)"
-                    [disabled]="isCheckedOut(selectedStudent.id)">
-              <mat-icon>visibility</mat-icon> View Attendance
-            </button>
-            <button class="btn btn-success action-btn" (click)="openPayFeeModal(selectedStudent)">
-              <mat-icon>payments</mat-icon> Pay Fee
-            </button>
-            <!-- Row 2: Seat & Edit -->
-            <button class="btn btn-info action-btn" (click)="openChangeSeatModal(selectedStudent)">
-              <mat-icon>event_seat</mat-icon> Change Seat
-            </button>
-            <button class="btn btn-secondary action-btn" (click)="openEditModal(selectedStudent); showProfileModal = false;">
-              <mat-icon>edit</mat-icon> Edit Details
-            </button>
-            <!-- Row 3: Communications -->
-            <button class="btn btn-success action-btn" (click)="sendWhatsAppReminder(selectedStudent)">
-              <mat-icon>notifications</mat-icon> Reminder
-            </button>
-            <button class="btn btn-info action-btn" (click)="shareLogin(selectedStudent)">
-              <mat-icon>share</mat-icon> Share Login
-            </button>
-            <!-- Row 4: Receipt, SOS, Release -->
-            <button class="btn btn-info action-btn" (click)="openPaymentHistory(selectedStudent); showProfileModal = false;">
-              <mat-icon>receipt_long</mat-icon> View Receipt
-            </button>
-            <button class="btn btn-warning action-btn" (click)="sendEmergencySOS(selectedStudent)">
-              <mat-icon>report</mat-icon> SOS
-            </button>
-            <button class="btn btn-danger action-btn" (click)="releaseSeat(selectedStudent)">
-              <mat-icon>logout</mat-icon> Release
-            </button>
-            <!-- Row 5: Add Shift (conditional) -->
-            <button class="btn btn-primary action-btn add-shift-btn" 
-                    (click)="openAddShiftModal(selectedStudent)"
-                    *ngIf="canShowAddShiftButton">
-              <mat-icon>add</mat-icon> {{ addShiftButtonText }}
-            </button>
-          </div>
+        <div class="modal-footer">
+          <button (click)="closeModal()" class="btn btn-secondary">Cancel</button>
+          <button (click)="confirmSeatChange()" class="btn btn-primary" [disabled]="!newSeatNumber || !currentShiftType">
+            Confirm Change
+          </button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Profile Actions Bottom Left -->
-  <div class="profile-actions" *ngIf="showEditModal && selectedStudent">
-    <button (click)="openPaymentHistory(selectedStudent)" class="btn-icon" title="Payment History"><mat-icon>receipt_long</mat-icon></button>
-    <button (click)="sendWhatsApp(selectedStudent)" class="btn-icon" title="WhatsApp"><mat-icon>chat</mat-icon></button>
-    <button (click)="openEditModal(selectedStudent)" class="btn-icon" title="Edit"><mat-icon>edit</mat-icon></button>
-    <button *ngIf="canDelete()" (click)="deleteStudent(selectedStudent)" class="btn-icon danger" title="Delete"><mat-icon>delete</mat-icon></button>
-  </div>
+</div>
 
 
+  <!-- Profile Actions Bottom Left (removed: handled by dialogs) -->
 
-
-<app-lib-footer></app-lib-footer>
+  <!-- Footer only when all modals/dialogs are closed -->
+  <app-lib-footer *ngIf="!showAddModal && !showChangeSeatModal && !showProfileModal && !showAddShiftModal"></app-lib-footer>

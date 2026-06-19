@@ -1418,7 +1418,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 900 !important;
+  z-index: 3000 !important;
+    z-index: 3100 !important;
   padding: 20px;
   animation: fadeInOverlay 0.3s ease-out;
 }
@@ -1878,10 +1879,6 @@ mat-paginator {
 }
 
 /* -- Modal Overlays -- */
-.modal-overlay {
-  background: rgba(5,14,29,0.72) !important;
-  backdrop-filter: blur(4px) !important;
-}
 .modal-content {
   border-radius: 20px !important;
   border: 1px solid var(--c-border) !important;

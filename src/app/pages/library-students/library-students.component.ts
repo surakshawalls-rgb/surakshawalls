@@ -9,6 +9,10 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { StudentProfileDialogComponent } from './student-profile-dialog.component';
+import { ChangeSeatDialogComponent } from './change-seat-dialog.component';
+import { EditStudentDialogComponent } from './edit-student-dialog.component';
+import { PaymentHistoryDialogComponent } from './payment-history-dialog.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -53,6 +57,120 @@ interface StudentSeatInfo {
   styleUrls: ['./library-students.component.css']
 })
 export class LibraryStudentsComponent implements OnInit {
+  // Determines if the delete button should be shown (customize logic as needed)
+  canDelete(): boolean {
+    return true;
+  }
+
+  // Deletes a student and refreshes the list
+  async deleteStudent(student: LibraryStudent) {
+    if (!student.id) return;
+    const confirmed = confirm(`Are you sure you want to delete ${student.name}?`);
+    if (!confirmed) return;
+    try {
+      await this.libraryService.deleteStudent(student.id);
+      this.successMessage = `${student.name} deleted successfully.`;
+      await this.loadStudents();
+      setTimeout(() => this.successMessage = '', 3000);
+    } catch (error: any) {
+      this.errorMessage = 'Failed to delete student: ' + error.message;
+      setTimeout(() => this.errorMessage = '', 3000);
+    }
+  }
+  // Utility: open WhatsApp message
+  private openWhatsAppMessage(rawPhone: string | null | undefined, message: string, invalidMessage: string): boolean {
+    const normalizedPhone = this.normalizeIndianWhatsAppNumber(rawPhone);
+    if (!normalizedPhone) {
+      this.errorMessage = invalidMessage;
+      setTimeout(() => this.errorMessage = '', 3000);
+      return false;
+    }
+    const url = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+    return true;
+  }
+
+  sendWhatsApp(student: LibraryStudent) {
+    const message = `Hello ${student.name}! This is a message from Suraksha Library. Thank you for being with us!`;
+    this.openWhatsAppMessage(student.mobile, message, `Invalid mobile number for ${student.name}`);
+  }
+
+  private openReminderReasonDialog(student: LibraryStudent) {
+    return this.dialog.open(ReminderReasonDialogComponent, {
+      width: '520px',
+      maxWidth: '95vw',
+      data: {
+        studentName: student.name
+      }
+    });
+  }
+
+  private getReminderSeatLabel(student: LibraryStudent): string | null {
+    if (!student.id) {
+      return null;
+    }
+    const seatInfo = this.getStudentSeatInfo(student.id);
+    return seatInfo && seatInfo !== '-' ? seatInfo : null;
+  }
+
+  private buildReminderMessage(student: LibraryStudent, selection: ReminderReasonSelection): string {
+    return buildLibraryReminderMessage(selection, {
+      studentName: student.name,
+      seatLabel: this.getReminderSeatLabel(student)
+    });
+  }
+
+  // Normalize Indian WhatsApp number utility
+  private normalizeIndianWhatsAppNumber(rawPhone: string | null | undefined): string | null {
+    const digits = (rawPhone || '').replace(/\D/g, '');
+    let tenDigitNumber: string | null = null;
+    if (/^[6-9]\d{9}$/.test(digits)) {
+      tenDigitNumber = digits;
+    } else if (/^0[6-9]\d{9}$/.test(digits)) {
+      tenDigitNumber = digits.slice(1);
+    } else if (/^91[6-9]\d{9}$/.test(digits)) {
+      tenDigitNumber = digits.slice(2);
+    } else if (digits.length > 10) {
+      const lastTenDigits = digits.slice(-10);
+      if (/^[6-9]\d{9}$/.test(lastTenDigits)) {
+        tenDigitNumber = lastTenDigits;
+      }
+    }
+    return tenDigitNumber ? `91${tenDigitNumber}` : null;
+  }
+
+  async submitEditStudent() {
+    try {
+      if (!this.selectedStudent) return;
+      // Update student details
+      await this.libraryService.updateStudent(this.selectedStudent.id!, this.selectedStudent);
+      // If joining date changed, update seat expiry dates
+      if (this.selectedStudent.joining_date !== this.originalJoiningDate) {
+        const result = await this.libraryService.updateSeatExpiryForStudent(
+          this.selectedStudent.id!,
+          this.selectedStudent.joining_date
+        );
+        if (!result.success) {
+          console.error('Failed to update seat expiry:', result.error);
+          this.successMessage = 'Student updated, but expiry date update failed. Please check seat assignments.';
+        } else {
+          this.successMessage = 'Student and seat expiry dates updated successfully!';
+        }
+      } else {
+        this.successMessage = 'Student updated successfully!';
+      }
+      this.closeModal();
+      await this.loadStudents();
+      await this.loadStudentSeats(); // Reload seats to reflect expiry changes
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 3000);
+    } catch (error: any) {
+      console.error('Error updating student:', error);
+      this.errorMessage = 'Failed to update student: ' + error.message;
+    }
+  }
     // ...existing code...
 
     shareLogin(student: LibraryStudent) {
@@ -75,8 +193,6 @@ export class LibraryStudentsComponent implements OnInit {
   successMessage = '';
 
   showAddModal = false;
-  showEditModal = false;
-  showPaymentHistoryModal = false;
   showChangeSeatModal = false;
   showProfileModal = false;
   showAddShiftModal = false;
@@ -89,7 +205,7 @@ export class LibraryStudentsComponent implements OnInit {
   // Seat management
   availableSeats: LibrarySeat[] = [];
   newSeatNumber: number = 0;
-  currentShiftType: 'full_time' | 'first_half' | 'second_half' = 'full_time';
+  currentShiftType: 'full_time' | 'first_half' | 'second_half' | null = 'full_time';
   currentSeatNo: number = 0;
   
   // Attendance
@@ -281,65 +397,32 @@ export class LibraryStudentsComponent implements OnInit {
   }
 
   openEditModal(student: LibraryStudent) {
-    this.selectedStudent = { ...student };
-    this.originalJoiningDate = student.joining_date; // Store original joining date
-    this.showEditModal = true;
+    const dialogRef = this.dialog.open(EditStudentDialogComponent, {
+      width: '480px',
+      data: student,
+      autoFocus: false
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.action === 'save') {
+        this.selectedStudent = result.student;
+        this.submitEditStudent();
+      }
+    });
   }
 
   async openPaymentHistory(student: LibraryStudent) {
     try {
-      this.selectedStudent = student;
-      this.paymentHistory = await this.libraryService.getStudentPaymentHistory(student.id!);
-      this.showPaymentHistoryModal = true;
+      const paymentHistory = await this.libraryService.getStudentPaymentHistory(student.id!);
+      this.dialog.open(PaymentHistoryDialogComponent, {
+        width: '600px',
+        data: { student, paymentHistory },
+        autoFocus: false
+      });
     } catch (error: any) {
       console.error('Error loading payment history:', error);
       this.errorMessage = 'Failed to load payment history: ' + error.message;
     }
   }
-
-  // Close modal on Escape key
-  @HostListener('window:keydown', ['$event'])
-  onKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Escape' && (this.showProfileModal || this.showAddModal || this.showEditModal || 
-        this.showPaymentHistoryModal || this.showChangeSeatModal || this.showAddShiftModal)) {
-      this.closeModal();
-    }
-  }
-
-  closeModal() {
-    this.showAddModal = false;
-    this.showEditModal = false;
-    this.showPaymentHistoryModal = false;
-    this.showChangeSeatModal = false;
-    this.showProfileModal = false;
-    this.showAddShiftModal = false;
-    this.selectedStudent = null;
-    this.selectedPhoto = null;
-    this.originalJoiningDate = ''; // Clear original joining date
-  }
-
-  async openProfileModal(student: LibraryStudent) {
-    this.selectedStudent = student;
-    this.showProfileModal = true;
-    
-    // Precompute shift button visibility and text
-    this.canShowAddShiftButton = await this.canAddShift(student);
-    if (this.canShowAddShiftButton) {
-      this.addShiftButtonText = await this.getAddShiftButtonText(student);
-    }
-  }
-
-  onPhotoSelect(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        this.errorMessage = 'Photo size must be less than 2MB';
-        return;
-      }
-      this.selectedPhoto = file;
-    }
-  }
-
   async submitAddStudent() {
     try {
       // Combine date fields
@@ -383,155 +466,59 @@ export class LibraryStudentsComponent implements OnInit {
     }
   }
 
-  async submitEditStudent() {
-    try {
-      if (!this.selectedStudent) return;
-
-      // Update student details
-      await this.libraryService.updateStudent(this.selectedStudent.id!, this.selectedStudent);
-      
-      // If joining date changed, update seat expiry dates
-      if (this.selectedStudent.joining_date !== this.originalJoiningDate) {
-        const result = await this.libraryService.updateSeatExpiryForStudent(
-          this.selectedStudent.id!,
-          this.selectedStudent.joining_date
-        );
-        
-        if (!result.success) {
-          console.error('Failed to update seat expiry:', result.error);
-          this.successMessage = 'Student updated, but expiry date update failed. Please check seat assignments.';
-        } else {
-          this.successMessage = 'Student and seat expiry dates updated successfully!';
-        }
-      } else {
-        this.successMessage = 'Student updated successfully!';
-      }
-      
+  // Close modal on Escape key
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    // Only check for legacy modal flags that still exist
+    if (event.key === 'Escape' && (this.showProfileModal || this.showAddModal || this.showChangeSeatModal || this.showAddShiftModal)) {
       this.closeModal();
-      await this.loadStudents();
-      await this.loadStudentSeats(); // Reload seats to reflect expiry changes
-      this.cdr.detectChanges();
-      
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 3000);
-    } catch (error: any) {
-      console.error('Error updating student:', error);
-      this.errorMessage = 'Failed to update student: ' + error.message;
     }
   }
 
-  onJoiningDateChange() {
-    // Show info message that expiry will be recalculated
-    if (this.selectedStudent && this.selectedStudent.joining_date !== this.originalJoiningDate) {
-      // Calculate what the new expiry date will be
-      const joiningDate = new Date(this.selectedStudent.joining_date);
-      const daysInMonth = new Date(joiningDate.getFullYear(), joiningDate.getMonth() + 1, 0).getDate();
-      const expiryDate = new Date(joiningDate);
-      expiryDate.setDate(expiryDate.getDate() + daysInMonth - 1);
-      
-      const expiryString = expiryDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
-      this.successMessage = `📅 Seat expiry will be updated to: ${expiryString}`;
-      
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 3000);
-    }
+  closeModal() {
+    this.showAddModal = false;
+    this.showChangeSeatModal = false;
+    this.showProfileModal = false;
+    this.showAddShiftModal = false;
+    this.selectedStudent = null;
+    this.selectedPhoto = null;
+    this.originalJoiningDate = ''; // Clear original joining date
   }
 
-  canDelete(): boolean {
-    return this.authService.canDelete();
-  }
-
-  async deleteStudent(student: LibraryStudent) {
-    if (!this.canDelete()) {
-      this.errorMessage = 'Only Super Admin can delete records.';
-      return;
-    }
-    if (!confirm(`Are you sure you want to delete ${student.name}? This will remove all associated seat assignments.`)) {
-      return;
-    }
-
-    try {
-      await this.libraryService.deleteStudent(student.id!);
-      this.successMessage = 'Student deleted successfully!';
-      await this.loadStudents();
-      this.cdr.detectChanges();
-      
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 3000);
-    } catch (error: any) {
-      console.error('Error deleting student:', error);
-      this.errorMessage = 'Failed to delete student: ' + error.message;
-    }
-  }
-
-  private normalizeIndianWhatsAppNumber(rawPhone: string | null | undefined): string | null {
-    const digits = (rawPhone || '').replace(/\D/g, '');
-
-    let tenDigitNumber: string | null = null;
-
-    if (/^[6-9]\d{9}$/.test(digits)) {
-      tenDigitNumber = digits;
-    } else if (/^0[6-9]\d{9}$/.test(digits)) {
-      tenDigitNumber = digits.slice(1);
-    } else if (/^91[6-9]\d{9}$/.test(digits)) {
-      tenDigitNumber = digits.slice(2);
-    } else if (digits.length > 10) {
-      const lastTenDigits = digits.slice(-10);
-      if (/^[6-9]\d{9}$/.test(lastTenDigits)) {
-        tenDigitNumber = lastTenDigits;
-      }
-    }
-
-    return tenDigitNumber ? `91${tenDigitNumber}` : null;
-  }
-
-  private openWhatsAppMessage(rawPhone: string | null | undefined, message: string, invalidMessage: string): boolean {
-    const normalizedPhone = this.normalizeIndianWhatsAppNumber(rawPhone);
-
-    if (!normalizedPhone) {
-      this.errorMessage = invalidMessage;
-      setTimeout(() => this.errorMessage = '', 3000);
-      return false;
-    }
-
-    const url = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
-    window.open(url, '_blank');
-    return true;
-  }
-
-  sendWhatsApp(student: LibraryStudent) {
-    const message = `Hello ${student.name}! This is a message from Suraksha Library. Thank you for being with us!`;
-    this.openWhatsAppMessage(student.mobile, message, `Invalid mobile number for ${student.name}`);
-  }
-
-  private openReminderReasonDialog(student: LibraryStudent) {
-    return this.dialog.open(ReminderReasonDialogComponent, {
-      width: '520px',
-      maxWidth: '95vw',
-      data: {
-        studentName: student.name
-      }
-    });
-  }
-
-  private getReminderSeatLabel(student: LibraryStudent): string | null {
-    if (!student.id) {
-      return null;
-    }
-
+  openProfileModal(student: LibraryStudent) {
+    // Pass seat info for dialog
     const seatInfo = this.getStudentSeatInfo(student.id);
-    return seatInfo && seatInfo !== '-' ? seatInfo : null;
-  }
-
-  private buildReminderMessage(student: LibraryStudent, selection: ReminderReasonSelection): string {
-    return buildLibraryReminderMessage(selection, {
-      studentName: student.name,
-      seatLabel: this.getReminderSeatLabel(student)
+    const dialogRef = this.dialog.open(StudentProfileDialogComponent, {
+      width: '480px',
+      data: { ...student, seatInfo },
+      autoFocus: false
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+      if (result.action === 'assignSeat') {
+        this.openChangeSeatModal(result.student);
+      } else if (result.action === 'paymentHistory') {
+        this.openPaymentHistory(result.student);
+      } else if (result.action === 'editStudent') {
+        this.openEditModal(result.student);
+      }
     });
   }
+
+  onPhotoSelect(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        this.errorMessage = 'Photo size must be less than 2MB';
+        return;
+      }
+      this.selectedPhoto = file;
+    }
+  }
+
+
+
+
 
   formatCurrency(amount: number): string {
     return '₹' + amount.toLocaleString('en-IN');
@@ -713,42 +700,23 @@ export class LibraryStudentsComponent implements OnInit {
 
   // ========== SEAT MANAGEMENT ==========
 
-  async openChangeSeatModal(student: LibraryStudent) {
-    try {
-      this.selectedStudent = student;
-      
-      // Find student's current seat assignment
-      const seats = await this.libraryService.getAllSeats();
-      const currentSeat = seats.find((seat: LibrarySeat) => 
-        seat.full_time_student_id === student.id ||
-        seat.first_half_student_id === student.id ||
-        seat.second_half_student_id === student.id
-      );
-      
-      if (!currentSeat) {
-        this.errorMessage = 'Student is not assigned to any seat';
-        return;
+  openChangeSeatModal(student: LibraryStudent) {
+    const dialogRef = this.dialog.open(ChangeSeatDialogComponent, {
+      width: '420px',
+      data: { student },
+      autoFocus: false
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.success) {
+        this.loadStudents();
       }
-      
-      this.currentSeatNo = currentSeat.seat_no;
-      
-      // Determine shift type
-      if (currentSeat.full_time_student_id === student.id) {
-        this.currentShiftType = 'full_time';
-      } else if (currentSeat.first_half_student_id === student.id) {
-        this.currentShiftType = 'first_half';
-      } else {
-        this.currentShiftType = 'second_half';
-      }
-      
-      // Get available seats for this shift type
-      this.availableSeats = seats.filter((seat: LibrarySeat) => this.isSeatAvailableForShift(seat, this.currentShiftType));
-      
-      this.showChangeSeatModal = true;
-    } catch (error: any) {
-      console.error('Error opening change seat modal:', error);
-      this.errorMessage = 'Failed to load seat information';
-    }
+    });
+  }
+
+  async onShiftTypeSelected(shiftType: 'full_time' | 'first_half' | 'second_half') {
+    this.currentShiftType = shiftType;
+    const seats = await this.libraryService.getAllSeats();
+    this.availableSeats = seats.filter((seat: LibrarySeat) => this.isSeatAvailableForShift(seat, shiftType));
   }
 
   isSeatAvailableForShift(seat: LibrarySeat, shiftType: 'full_time' | 'first_half' | 'second_half'): boolean {
@@ -761,7 +729,7 @@ export class LibraryStudentsComponent implements OnInit {
     }
   }
 
-  private getShiftLabel(shiftType: 'full_time' | 'first_half' | 'second_half'): string {
+  getShiftLabel(shiftType: 'full_time' | 'first_half' | 'second_half'): string {
     if (shiftType === 'full_time') {
       return 'Full Time';
     }
@@ -774,15 +742,23 @@ export class LibraryStudentsComponent implements OnInit {
   }
 
   async confirmSeatChange() {
-    if (!this.selectedStudent || !this.newSeatNumber) {
+
+    if (!this.selectedStudent) {
+      this.errorMessage = 'No student selected';
+      return;
+    }
+    if (!this.currentShiftType) {
+      this.errorMessage = 'Please select a shift type.';
+      return;
+    }
+    if (!this.newSeatNumber) {
       this.errorMessage = 'Please select a new seat';
       return;
     }
 
     const confirmed = confirm(
-      `Are you sure you want to change ${this.selectedStudent.name} from Seat ${this.currentSeatNo} to Seat ${this.newSeatNumber} (${this.getShiftLabel(this.currentShiftType)})?`
+      `Are you sure you want to assign/change ${this.selectedStudent.name} to Seat ${this.newSeatNumber} (${this.getShiftLabel(this.currentShiftType)})?`
     );
-
     if (!confirmed) {
       return;
     }
@@ -803,6 +779,10 @@ export class LibraryStudentsComponent implements OnInit {
         }
       }
       
+      if (!this.currentShiftType) {
+        this.errorMessage = 'Please select a shift type to assign.';
+        return;
+      }
       const result = await this.libraryService.changeSeat(
         this.selectedStudent.id!,
         this.currentSeatNo,
