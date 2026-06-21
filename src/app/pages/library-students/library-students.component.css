@@ -1154,8 +1154,16 @@
   transition: background-color 0.2s ease;
 }
 
+.students-table .student-row:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+.students-table .student-row:nth-child(even) {
+  background-color: #f2f4f7;
+}
+
 .student-row:hover {
-  background-color: #f5f7fa;
+  background-color: #eaf1f8;
   cursor: pointer;
 }
 

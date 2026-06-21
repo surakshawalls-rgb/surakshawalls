@@ -1,4 +1,4 @@
-﻿<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb *ngIf="!embedded"></app-breadcrumb>
 <div class="unified-daily-entry-container">
   
   <!-- HEADER -->
@@ -6,10 +6,10 @@
     <div class="header-content">
       <div class="header-left">
         <h1 class="page-title">
-          <span class="icon"></span>
+          <mat-icon class="icon">fact_check</mat-icon>
           Unified Daily Entry
         </h1>
-        <p class="page-subtitle">Complete daily operations: Production • Labor • Sales • Expenses • Production/Transport Damage</p>
+        <p class="page-subtitle">Complete daily operations: Production • Labor • Sales • Expenses • Production or Transport Damage</p>
       </div>
       <div class="header-right">
         <input type="date" [(ngModel)]="entryDate" class="date-picker">
@@ -20,33 +20,61 @@
   <!-- MESSAGES -->
   <div class="messages-container" *ngIf="successMessage || errorMessage">
     <div class="success-alert" *ngIf="successMessage">
-      <span class="alert-icon"></span>
+      <mat-icon class="alert-icon">check_circle</mat-icon>
       {{ successMessage }}
     </div>
     <div class="error-alert" *ngIf="errorMessage" style="white-space: pre-line; text-align: left;">
-      <span class="alert-icon">⚠️</span>
+      <mat-icon class="alert-icon">error</mat-icon>
       <div style="flex: 1;">{{ errorMessage }}</div>
     </div>
   </div>
+
+  <mat-tab-group class="daily-entry-tabs" animationDuration="200ms" (selectedIndexChange)="onSectionTabChange($event)">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>precision_manufacturing</mat-icon>
+        Production
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>groups</mat-icon>
+        Attendance and Entry
+      </ng-template>
+    </mat-tab>
+    <mat-tab *ngIf="!isLabourStaff()">
+      <ng-template mat-tab-label>
+        <mat-icon>point_of_sale</mat-icon>
+        Sales
+      </ng-template>
+    </mat-tab>
+    <mat-tab *ngIf="!isLabourStaff()">
+      <ng-template mat-tab-label>
+        <mat-icon>receipt_long</mat-icon>
+        Expenses
+      </ng-template>
+    </mat-tab>
+    <mat-tab *ngIf="!isLabourStaff()">
+      <ng-template mat-tab-label>
+        <mat-icon>report_problem</mat-icon>
+        Damage
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
 
     <!-- ========== SECTION 1: PRODUCTION ========== -->
-    <div class="section-card">
+    <div class="section-card" *ngIf="activeSection === 'production'">
       <div class="section-header production-header">
         <div class="section-title">
-          <span class="section-icon"></span>
+          <mat-icon class="section-icon">precision_manufacturing</mat-icon>
           <h2>Production</h2>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" [(ngModel)]="hasProduction">
-          <span class="toggle-slider"></span>
-          <span class="toggle-label">Production Today?</span>
-        </label>
       </div>
 
-      <div class="section-body" *ngIf="hasProduction">
+      <div class="section-body">
         <div class="form-grid">
           <div class="form-group">
             <label>Product</label>
@@ -104,19 +132,19 @@
                   <div class="materials-breakdown" *ngIf="item.material_calc">
                     <span [class.stock-sufficient]="item.material_calc.stock_check.cement_available" 
                           [class.stock-insufficient]="!item.material_calc.stock_check.cement_available">
-                      <span class="stock-icon">{{ item.material_calc.stock_check.cement_available ? '✅' : '❌' }}</span>
+                      <span class="stock-icon">{{ item.material_calc.stock_check.cement_available ? 'Available' : 'Shortage' }}</span>
                       Cement: {{ item.material_calc.materials.cement | number:'1.2-2' }} bags
                       <span class="stock-info">(Available: {{ item.material_calc.current_stock.cement | number:'1.2-2' }})</span>
                     </span>
                     <span [class.stock-sufficient]="item.material_calc.stock_check.aggregates_available" 
                           [class.stock-insufficient]="!item.material_calc.stock_check.aggregates_available">
-                      <span class="stock-icon">{{ item.material_calc.stock_check.aggregates_available ? '✅' : '❌' }}</span>
+                      <span class="stock-icon">{{ item.material_calc.stock_check.aggregates_available ? 'Available' : 'Shortage' }}</span>
                       Aggregates: {{ item.material_calc.materials.aggregates | number:'1.2-2' }} cft
                       <span class="stock-info">(Available: {{ item.material_calc.current_stock.aggregates | number:'1.2-2' }})</span>
                     </span>
                     <span [class.stock-sufficient]="item.material_calc.stock_check.sariya_available" 
                           [class.stock-insufficient]="!item.material_calc.stock_check.sariya_available">
-                      <span class="stock-icon">{{ item.material_calc.stock_check.sariya_available ? '✅' : '❌' }}</span>
+                      <span class="stock-icon">{{ item.material_calc.stock_check.sariya_available ? 'Available' : 'Shortage' }}</span>
                       Sariya: {{ item.material_calc.materials.sariya | number:'1.2-2' }} kg
                       <span class="stock-info">(Available: {{ item.material_calc.current_stock.sariya | number:'1.2-2' }})</span>
                     </span>
@@ -147,20 +175,24 @@
           <span class="empty-icon"></span>
           <p>No production items added yet</p>
         </div>
-      </div>
 
-      <div class="empty-state" *ngIf="!hasProduction">
-        <span class="empty-icon">🏭</span>
-        <p>No production today</p>
-        <small>Enable the toggle above if you have production to record</small>
+        <div class="section-submit-bar">
+          <button (click)="submitProductionSection()"
+                  [disabled]="saving || loading || productionItems.length === 0"
+                  class="btn btn-submit btn-section-submit">
+            <span *ngIf="!saving">Submit Production</span>
+            <span *ngIf="saving">Saving...</span>
+          </button>
+          <p class="section-submit-hint">Saves only production entries for this date.</p>
+        </div>
       </div>
     </div>
 
     <!-- ========== SECTION 2: LABOR ========== -->
-    <div class="section-card">
+    <div class="section-card" *ngIf="activeSection === 'labor'">
       <div class="section-header labor-header">
         <div class="section-title">
-          <span class="section-icon"></span>
+          <mat-icon class="section-icon">groups</mat-icon>
           <h2>Labor</h2>
         </div>
         <span class="section-badge">{{ workerEntries.length }} workers</span>
@@ -186,15 +218,14 @@
           <div class="form-group">
             <label>Attendance Type</label>
             <select [(ngModel)]="selectedAttendanceType" (change)="onAttendanceTypeChange()" class="form-control">
-              <option value="Full Day">Full Day (400)</option>
-              <option value="Half Day">Half Day (200)</option>
-              <option value="Outdoor">Outdoor (450)</option>
+              <option value="Full Day">Full Day (500)</option>
+              <option value="Half Day">Half Day (500)</option>
               <option value="Custom">Custom Amount</option>
             </select>
           </div>
 
           <div class="form-group" *ngIf="selectedAttendanceType === 'Custom'">
-            <label>Wage Amount ()</label>
+            <label>Wage Amount (INR)</label>
             <input type="number" [(ngModel)]="customWageAmount" min="1" placeholder="0" class="form-control">
           </div>
 
@@ -269,24 +300,29 @@
           <span class="empty-icon"></span>
           <p>No workers added yet</p>
         </div>
+
+        <div class="section-submit-bar">
+          <button (click)="submitLaborSection()"
+                  [disabled]="saving || loading || workerEntries.length === 0"
+                  class="btn btn-submit btn-section-submit">
+            <span *ngIf="!saving">Submit Labor Entry</span>
+            <span *ngIf="saving">Saving...</span>
+          </button>
+          <p class="section-submit-hint">Saves only attendance and wage entries for this date.</p>
+        </div>
       </div>
     </div>
 
     <!-- ========== SECTION 3: SALES ========== -->
-    <div class="section-card" *ngIf="!isLabourStaff()">
+    <div class="section-card" *ngIf="!isLabourStaff() && activeSection === 'sales'">
       <div class="section-header sales-header">
         <div class="section-title">
-          <span class="section-icon"></span>
+          <mat-icon class="section-icon">point_of_sale</mat-icon>
           <h2>Sales</h2>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" [(ngModel)]="hasSalesToday">
-          <span class="toggle-slider"></span>
-          <span class="toggle-label">Sale Today?</span>
-        </label>
       </div>
 
-      <div class="section-body" *ngIf="hasSalesToday">
+      <div class="section-body">
         <!-- Client Selection -->
         <div class="form-grid">
           <div class="form-group col-span-2">
@@ -298,13 +334,13 @@
                      placeholder="Enter name or phone (or leave empty for all)"
                      class="form-control">
               <button (click)="searchClients()" class="btn btn-sm btn-primary" title="Search Clients">
-                <span>🔍 Search</span>
+                <span>Search</span>
               </button>
               <button (click)="clearClientSearch()" 
                       *ngIf="selectedClientId"
                       class="btn btn-sm btn-secondary" 
                       title="Clear Selection">
-                <span>✖ Clear</span>
+                <span>Clear</span>
               </button>
               <button (click)="showQuickAddClient = true" class="btn btn-sm btn-secondary" title="Quick Add Client">
                 <span>+ New</span>
@@ -320,7 +356,7 @@
             <div *ngIf="showClientResults" class="client-results-container">
               <div class="client-results-header">
                 <strong>Search Results ({{ filteredClients.length }})</strong>
-                <button (click)="showClientResults = false" class="btn-close">✖</button>
+                <button (click)="showClientResults = false" class="btn-close">Close</button>
               </div>
               <div class="client-results-table">
                 <table class="table">
@@ -373,7 +409,7 @@
             </div>
 
             <div class="form-group">
-              <label>Rate ()</label>
+              <label>Rate (INR)</label>
               <input type="number" [(ngModel)]="salesRate" min="1" placeholder="0" class="form-control">
             </div>
 
@@ -444,7 +480,7 @@
           <h3 class="subsection-title">Delivery Expenses</h3>
           <div class="form-grid">
             <div class="form-group">
-              <label>Transport ()</label>
+              <label>Transport (INR)</label>
               <input type="number" [(ngModel)]="transportExpense" min="0" placeholder="0" class="form-control">
             </div>
             <div class="form-group">
@@ -458,7 +494,7 @@
             </div>
 
             <div class="form-group">
-              <label>Snacks ()</label>
+              <label>Snacks (INR)</label>
               <input type="number" [(ngModel)]="snacksExpense" min="0" placeholder="0" class="form-control">
             </div>
             <div class="form-group">
@@ -472,7 +508,7 @@
             </div>
 
             <div class="form-group">
-              <label>Other ()</label>
+              <label>Other (INR)</label>
               <input type="number" [(ngModel)]="otherDeliveryExpense" min="0" placeholder="0" class="form-control">
             </div>
             <div class="form-group">
@@ -488,20 +524,25 @@
           <div class="expense-total" *ngIf="getTotalDeliveryExpenses() > 0">
             Total Delivery Expenses: <strong>{{ formatCurrency(getTotalDeliveryExpenses()) }}</strong>
           </div>
-        </div>
-      </div>
 
-      <div class="empty-state" *ngIf="!hasSalesToday">
-        <span class="empty-icon"></span>
-        <p>Toggle "Sale Today?" to record sales</p>
+          <div class="section-submit-bar">
+            <button (click)="submitSalesSection()"
+                    [disabled]="saving || loading || !selectedClientId || salesItems.length === 0"
+                    class="btn btn-submit btn-section-submit">
+              <span *ngIf="!saving">Submit Sales</span>
+              <span *ngIf="saving">Saving...</span>
+            </button>
+            <p class="section-submit-hint">Saves sales, client payment details, and delivery expenses for this date.</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ========== SECTION 4: OTHER EXPENSES ========== -->
-    <div class="section-card" *ngIf="!isLabourStaff()">
+    <div class="section-card" *ngIf="!isLabourStaff() && activeSection === 'expenses'">
       <div class="section-header expenses-header">
         <div class="section-title">
-          <span class="section-icon"></span>
+          <mat-icon class="section-icon">receipt_long</mat-icon>
           <h2>Other Expenses</h2>
         </div>
         <span class="section-badge">{{ otherExpenses.length }} items</span>
@@ -527,7 +568,7 @@
           </div>
 
           <div class="form-group">
-            <label>Amount ()</label>
+            <label>Amount (INR)</label>
             <input type="number" [(ngModel)]="expenseAmount" min="1" placeholder="0" class="form-control">
           </div>
 
@@ -588,24 +629,29 @@
           <span class="empty-icon"></span>
           <p>No expenses added yet</p>
         </div>
+
+        <div class="section-submit-bar">
+          <button (click)="submitExpensesSection()"
+                  [disabled]="saving || loading || otherExpenses.length === 0"
+                  class="btn btn-submit btn-section-submit">
+            <span *ngIf="!saving">Submit Expenses</span>
+            <span *ngIf="saving">Saving...</span>
+          </button>
+          <p class="section-submit-hint">Saves only other expenses for this date.</p>
+        </div>
       </div>
     </div>
 
     <!-- ========== SECTION 5: PRODUCTION DAMAGE / TRANSPORT DAMAGE ========== -->
-    <div class="section-card" *ngIf="!isLabourStaff()">
+    <div class="section-card" *ngIf="!isLabourStaff() && activeSection === 'damage'">
       <div class="section-header loss-header">
         <div class="section-title">
-          <span class="section-icon">⚠️</span>
+          <mat-icon class="section-icon">report_problem</mat-icon>
           <h2>Production Damage / Transport Damage</h2>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" [(ngModel)]="hasYardLoss">
-          <span class="toggle-slider"></span>
-          <span class="toggle-label">Any Damage Today?</span>
-        </label>
       </div>
 
-      <div class="section-body" *ngIf="hasYardLoss">
+      <div class="section-body">
         <div class="form-grid">
           <div class="form-group">
             <label>Product Damaged</label>
@@ -625,9 +671,9 @@
           <div class="form-group">
             <label>Damage Stage <span class="required">*</span></label>
             <select [(ngModel)]="yardLossStage" class="form-control">
-              <option value="stacking">🏗️ Stacking (Production Area)</option>
-              <option value="loading">📦 Loading (Yard to Vehicle)</option>
-              <option value="transport">🚛 Transport (In Transit)</option>
+              <option value="stacking">Stacking (Production Area)</option>
+              <option value="loading">Loading (Yard to Vehicle)</option>
+              <option value="transport">Transport (In Transit)</option>
             </select>
           </div>
 
@@ -647,7 +693,7 @@
             <button (click)="addYardLossItem()" 
                     [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossStage || !yardLossReason"
                     class="btn btn-primary">
-              ⚠️ Add Damaged Item
+              Add Damaged Item
             </button>
           </div>
         </div>
@@ -669,9 +715,9 @@
                 <td><strong>{{ item.product_name }}</strong></td>
                 <td><span class="badge badge-danger">{{ item.quantity }}</span></td>
                 <td>
-                  <span *ngIf="item.stage === 'stacking'">🏗️ Stacking</span>
-                  <span *ngIf="item.stage === 'loading'">📦 Loading</span>
-                  <span *ngIf="item.stage === 'transport'">🚛 Transport</span>
+                  <span *ngIf="item.stage === 'stacking'">Stacking</span>
+                  <span *ngIf="item.stage === 'loading'">Loading</span>
+                  <span *ngIf="item.stage === 'transport'">Transport</span>
                 </td>
                 <td>{{ item.reason }}</td>
                 <td>
@@ -681,107 +727,16 @@
             </tbody>
           </table>
         </div>
-      </div>
 
-      <div class="empty-state" *ngIf="!hasYardLoss">
-        <span class="empty-icon">✅</span>
-        <p>No damage or loss today</p>
-      </div>
-    </div>
-
-    <!-- ========== LABOUR STAFF SUBMIT SECTION ========== -->
-    <div class="summary-card" *ngIf="isLabourStaff()">
-      <h2 class="summary-title">
-        <span class="summary-icon">💾</span>
-        Submit Entry
-      </h2>
-
-      <!-- Notes -->
-      <div class="notes-section">
-        <label>Notes (Optional)</label>
-        <textarea [(ngModel)]="notes" 
-                  rows="3" 
-                  placeholder="Add any additional notes for today's entry..."
-                  class="form-control"></textarea>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="submit-section">
-        <button (click)="submitDailyEntry()" 
-                [disabled]="saving || loading"
-                class="btn btn-submit">
-          <span *ngIf="!saving">💾 Submit Daily Entry</span>
-          <span *ngIf="saving">⏳ Saving...</span>
-        </button>
-        <p class="submit-hint">Production and Labor data will be saved.</p>
-      </div>
-    </div>
-
-    <!-- ========== SECTION 6: SUMMARY & SUBMIT ========== -->
-    <div class="summary-card" *ngIf="!isLabourStaff()">
-      <h2 class="summary-title">
-        <span class="summary-icon"></span>
-        Daily Summary
-      </h2>
-
-      <div class="summary-grid">
-        <div class="summary-item">
-          <span class="summary-label">Material Costs:</span>
-          <span class="summary-value">{{ formatCurrency(getTotalProductionCost()) }}</span>
+        <div class="section-submit-bar">
+          <button (click)="submitDamageSection()"
+                  [disabled]="saving || loading || yardLossItems.length === 0"
+                  class="btn btn-submit btn-section-submit">
+            <span *ngIf="!saving">Submit Damage</span>
+            <span *ngIf="saving">Saving...</span>
+          </button>
+          <p class="section-submit-hint">Saves only damage and finished-goods loss entries for this date.</p>
         </div>
-        <div class="summary-item">
-          <span class="summary-label">Labor Costs:</span>
-          <span class="summary-value">{{ formatCurrency(getTotalLaborCost()) }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Delivery Expenses:</span>
-          <span class="summary-value">{{ formatCurrency(getTotalDeliveryExpenses()) }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Other Expenses:</span>
-          <span class="summary-value">{{ formatCurrency(getTotalOtherExpenses()) }}</span>
-        </div>
-      </div>
-
-      <div class="summary-divider"></div>
-
-      <div class="summary-totals">
-        <div class="summary-row">
-          <span class="total-label">Grand Total (Expenses):</span>
-          <span class="total-value expense-total">{{ formatCurrency(getGrandTotal()) }}</span>
-        </div>
-        <div class="summary-row" *ngIf="hasSalesToday">
-          <span class="total-label">Total Revenue:</span>
-          <span class="total-value revenue-total">{{ formatCurrency(totalRevenue) }}</span>
-        </div>
-        <div class="summary-row net-profit-row" *ngIf="hasSalesToday">
-          <span class="total-label">Net Profit:</span>
-          <span class="total-value" [class.profit-positive]="getNetProfit() >= 0" 
-                                     [class.profit-negative]="getNetProfit() < 0">
-            {{ formatCurrency(getNetProfit()) }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Notes -->
-      <div class="notes-section">
-        <label>Notes (Optional)</label>
-        <textarea [(ngModel)]="notes" 
-                  rows="3" 
-                  placeholder="Add any additional notes for today's entry..."
-                  class="form-control"></textarea>
-      </div>
-
-
-      <!-- Submit Button -->
-      <div class="submit-section">
-        <button (click)="submitDailyEntry()" 
-                [disabled]="saving || loading"
-                class="btn btn-submit">
-          <span *ngIf="!saving"> Submit Daily Entry</span>
-          <span *ngIf="saving"> Saving...</span>
-        </button>
-        <p class="submit-hint">All data will be saved atomically. Production, sales, and expenses will update respective tables.</p>
       </div>
     </div>
 
@@ -845,4 +800,4 @@
   </div>
 </div>
 
-<app-mfg-footer></app-mfg-footer>
+<app-mfg-footer *ngIf="!embedded"></app-mfg-footer>

@@ -1,0 +1,37 @@
+<app-domain-workspace-shell
+  title="Stock Workspace"
+  subtitle="Inventory, purchase, and stock audit in one page"
+  icon="inventory_2">
+
+  <mat-tab-group animationDuration="200ms" dynamicHeight>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>inventory</mat-icon>
+        Inventory
+      </ng-template>
+      <ng-template matTabContent>
+        <app-inventory-view [embedded]="true"></app-inventory-view>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>add_shopping_cart</mat-icon>
+        Purchase
+      </ng-template>
+      <ng-template matTabContent>
+        <app-material-purchase [embedded]="true"></app-material-purchase>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>rule</mat-icon>
+        Audit
+      </ng-template>
+      <ng-template matTabContent>
+        <app-stock-audit [embedded]="true"></app-stock-audit>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</app-domain-workspace-shell>

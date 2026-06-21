@@ -1,298 +1,247 @@
-<style>
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-</style>
-
-<div style="min-height: 100vh; background: #ffffff; padding: 24px;">
-
-  <!-- Header -->
-  <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h2 style="margin: 0; font-size: 11px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 12px;">
-        <span style="background: #e0e0e0; padding: 8px; border-radius: 8px;">🏭</span>
-        {{ language==='EN' ? 'Production & Selling' : 'उत्पादन और विक्रय' }}
-      </h2>
-      <button (click)="toggleLang()" 
-              style="background: #1976d2; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 9px;"
-              onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 25px rgba(255,255,255,0.2)'"
-              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-        🌐 {{language}}
+<div class="production-page">
+  <mat-card class="page-header-card">
+    <div class="header-row">
+      <div>
+        <h2>Production Workspace</h2>
+        <p>Record production, sales, and damage in one place.</p>
+      </div>
+      <button mat-stroked-button color="primary" (click)="sendWhatsApp()">
+        <mat-icon>share</mat-icon>
+        Share Summary
       </button>
     </div>
+  </mat-card>
+
+  <mat-tab-group animationDuration="200ms" [selectedIndex]="activeTab === 'production' ? 0 : activeTab === 'selling' ? 1 : 2" (selectedIndexChange)="activeTab = $event === 0 ? 'production' : $event === 1 ? 'selling' : 'damage'">
+    <mat-tab label="Production">
+      <div class="tab-body">
+        <mat-card>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Date</mat-label>
+              <input matInput type="date" [(ngModel)]="date" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Filter by date</mat-label>
+              <input matInput type="date" [(ngModel)]="filterDate" (change)="applyFilter()" />
+            </mat-form-field>
+            <button mat-stroked-button color="primary" (click)="refreshTable()">
+              <mat-icon>refresh</mat-icon>
+              Reload
+            </button>
+          </div>
+
+          <div class="counter-grid">
+            <mat-card class="counter-card" *ngFor="let item of items">
+              <div class="counter-label">{{ item.label }}</div>
+              <div class="counter-row">
+                <button mat-mini-fab color="warn" (click)="dec(item.key)">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <div class="counter-value">{{ production[item.key] }}</div>
+                <button mat-mini-fab color="primary" (click)="inc(item.key)">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </mat-card>
+          </div>
+
+          <div class="actions-row">
+            <button mat-raised-button color="primary" (click)="saveProduction()">
+              <mat-icon>save</mat-icon>
+              Save Production
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table mat-table [dataSource]="filtered" class="mat-elevation-z0 production-table">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let row">{{ formatDateToDDMMYYYY(row.date) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="fencing_pole">
+                <th mat-header-cell *matHeaderCellDef>Fencing</th>
+                <td mat-cell *matCellDef="let row">{{ row.fencing_pole }}</td>
+              </ng-container>
+              <ng-container matColumnDef="plain_plate">
+                <th mat-header-cell *matHeaderCellDef>Plain</th>
+                <td mat-cell *matCellDef="let row">{{ row.plain_plate }}</td>
+              </ng-container>
+              <ng-container matColumnDef="jumbo_pillar">
+                <th mat-header-cell *matHeaderCellDef>Jumbo</th>
+                <td mat-cell *matCellDef="let row">{{ row.jumbo_pillar }}</td>
+              </ng-container>
+              <ng-container matColumnDef="round_plate">
+                <th mat-header-cell *matHeaderCellDef>Round</th>
+                <td mat-cell *matCellDef="let row">{{ row.round_plate }}</td>
+              </ng-container>
+              <ng-container matColumnDef="biscuit_plate">
+                <th mat-header-cell *matHeaderCellDef>Biscuit</th>
+                <td mat-cell *matCellDef="let row">{{ row.biscuit_plate }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef>Action</th>
+                <td mat-cell *matCellDef="let row">
+                  <button mat-icon-button color="warn" *ngIf="canDelete()" (click)="deleteProduction(row.id)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="productionColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: productionColumns; let i = index" [class.row-even]="i % 2 === 0" [class.row-odd]="i % 2 === 1"></tr>
+            </table>
+          </div>
+
+          <div class="pager-row">
+            <button mat-stroked-button (click)="prevPage()" [disabled]="page === 0">Previous</button>
+            <span>Page {{ page + 1 }}</span>
+            <button mat-stroked-button (click)="nextPage()">Next</button>
+          </div>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Sales">
+      <div class="tab-body">
+        <mat-card>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Date</mat-label>
+              <input matInput type="date" [(ngModel)]="sellingDate" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Client Name</mat-label>
+              <input matInput [(ngModel)]="sellingClient" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Item Type</mat-label>
+              <mat-select [(ngModel)]="sellingItem">
+                <mat-option *ngFor="let item of items" [value]="item.key">{{ item.label }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Quantity</mat-label>
+              <input matInput type="number" [(ngModel)]="sellingQuantity" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Price (INR)</mat-label>
+              <input matInput type="number" [(ngModel)]="sellingPrice" />
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="saveSelling()">
+              <mat-icon>save</mat-icon>
+              Save Sale
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table mat-table [dataSource]="sellingRecords" class="mat-elevation-z0 production-table">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let row">{{ formatDateToDDMMYYYY(row.date) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="client">
+                <th mat-header-cell *matHeaderCellDef>Client</th>
+                <td mat-cell *matCellDef="let row">{{ row.client }}</td>
+              </ng-container>
+              <ng-container matColumnDef="item">
+                <th mat-header-cell *matHeaderCellDef>Item</th>
+                <td mat-cell *matCellDef="let row">{{ getItemLabel(row.item) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="quantity">
+                <th mat-header-cell *matHeaderCellDef>Qty</th>
+                <td mat-cell *matCellDef="let row">{{ row.quantity }}</td>
+              </ng-container>
+              <ng-container matColumnDef="price">
+                <th mat-header-cell *matHeaderCellDef>Price</th>
+                <td mat-cell *matCellDef="let row">INR {{ row.price }}</td>
+              </ng-container>
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef>Total</th>
+                <td mat-cell *matCellDef="let row">INR {{ row.quantity * row.price }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef>Action</th>
+                <td mat-cell *matCellDef="let row">
+                  <button mat-icon-button color="warn" *ngIf="canDelete()" (click)="deleteSelling(row.id)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="sellingColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: sellingColumns; let i = index" [class.row-even]="i % 2 === 0" [class.row-odd]="i % 2 === 1"></tr>
+            </table>
+          </div>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Damage">
+      <div class="tab-body">
+        <mat-card>
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Date</mat-label>
+              <input matInput type="date" [(ngModel)]="damageDate" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Item Type</mat-label>
+              <mat-select [(ngModel)]="damageItem">
+                <mat-option *ngFor="let item of items" [value]="item.key">{{ item.label }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Quantity</mat-label>
+              <input matInput type="number" [(ngModel)]="damageQuantity" />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="wide-field">
+              <mat-label>Reason</mat-label>
+              <input matInput [(ngModel)]="damageReason" />
+            </mat-form-field>
+            <button mat-raised-button color="primary" (click)="saveDamage()">
+              <mat-icon>save</mat-icon>
+              Save Damage
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table mat-table [dataSource]="damageRecords" class="mat-elevation-z0 production-table">
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let row">{{ formatDateToDDMMYYYY(row.date) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="item">
+                <th mat-header-cell *matHeaderCellDef>Item</th>
+                <td mat-cell *matCellDef="let row">{{ getItemLabel(row.item) }}</td>
+              </ng-container>
+              <ng-container matColumnDef="quantity">
+                <th mat-header-cell *matHeaderCellDef>Qty</th>
+                <td mat-cell *matCellDef="let row">{{ row.quantity }}</td>
+              </ng-container>
+              <ng-container matColumnDef="reason">
+                <th mat-header-cell *matHeaderCellDef>Reason</th>
+                <td mat-cell *matCellDef="let row">{{ row.reason }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef>Action</th>
+                <td mat-cell *matCellDef="let row">
+                  <button mat-icon-button color="warn" *ngIf="canDelete()" (click)="deleteDamage(row.id)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="damageColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: damageColumns; let i = index" [class.row-even]="i % 2 === 0" [class.row-odd]="i % 2 === 1"></tr>
+            </table>
+          </div>
+        </mat-card>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <div class="loader-overlay" *ngIf="loading">
+    <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
   </div>
-
-  <!-- Modern Tab Navigation -->
-  <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 4px; margin-bottom: 16px; display: flex; gap: 4px;">
-    <button 
-      [style.background]="activeTab === 'production' ? '#10b981' : '#f5f5f5'"
-      [style.color]="activeTab === 'production' ? 'white' : '#666'"
-      (click)="activeTab = 'production'"
-      style="flex: 1; padding: 10px 16px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 9px;"
-      onmouseover="if(this.style.background.includes('#f5f5f5')) { this.style.background='#e0e0e0'; }"
-      onmouseout="if(this.style.background.includes('#e0e0e0')) { this.style.background='#f5f5f5'; }">
-      🏭 {{language==='EN'?'Production':'उत्पादन'}}
-    </button>
-    <button 
-      [style.background]="activeTab === 'selling' ? '#3b82f6' : '#f5f5f5'"
-      [style.color]="activeTab === 'selling' ? 'white' : '#666'"
-      (click)="activeTab = 'selling'"
-      style="flex: 1; padding: 10px 16px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 9px;"
-      onmouseover="if(this.style.background.includes('#f5f5f5')) { this.style.background='#e0e0e0'; }"
-      onmouseout="if(this.style.background.includes('#e0e0e0')) { this.style.background='#f5f5f5'; }">
-      💰 {{language==='EN'?'Selling':'विक्रय'}}
-    </button>
-    <button 
-      [style.background]="activeTab === 'damage' ? '#ef4444' : '#f5f5f5'"
-      [style.color]="activeTab === 'damage' ? 'white' : '#666'"
-      (click)="activeTab = 'damage'"
-      style="flex: 1; padding: 10px 16px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 9px;"
-      onmouseover="if(this.style.background.includes('#f5f5f5')) { this.style.background='#e0e0e0'; }"
-      onmouseout="if(this.style.background.includes('#e0e0e0')) { this.style.background='#f5f5f5'; }">
-      ⚠️ {{language==='EN'?'Damage':'क्षति'}}
-    </button>
-  </div>
-
-  <!-- PRODUCTION TAB -->
-  <ng-container *ngIf="activeTab === 'production'">
-    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 16px; margin-bottom: 16px;">
-
-      <!-- Date Input -->
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 8px;">
-          {{language==='EN'?'Date':'तारीख'}}
-        </label>
-        <input type="date" [(ngModel)]="date" 
-               style="width: 100%; max-width: 250px; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 4px; background: #ffffff; font-size: 9px; transition: all 0.3s ease;"
-               onfocus="this.style.borderColor='#1976d2'; this.style.boxShadow='0 0 0 2px rgba(25, 118, 210, 0.1)'"
-               onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-      </div>
-
-      <!-- Production Counters -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
-        <div *ngFor="let item of items" 
-             style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; transition: all 0.3s ease;"
-             onmouseover="this.style.borderColor='#1976d2'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
-             onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-          
-          <div style="text-align: center; color: #333; font-weight: 600; font-size: 9px; margin-bottom: 12px;">
-            {{ language==='EN'?item.labelEN:item.labelHI }}
-          </div>
-
-          <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-            <button (click)="dec(item.key)" 
-                    style="width: 32px; height: 32px; background: #ef4444; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-weight: 700;"
-                    onmouseover="this.style.background='#dc2626'"
-                    onmouseout="this.style.background='#ef4444'">
-              ➖
-            </button>
-            
-            <div style="background: #f5f5f5; color: #333; font-size: 16px; font-weight: 700; padding: 8px 16px; border-radius: 4px; min-width: 60px; text-align: center; border: 1px solid #e0e0e0;">
-              {{production[item.key]}}
-            </div>
-            
-            <button (click)="inc(item.key)" 
-                    style="width: 32px; height: 32px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; font-weight: 700;"
-                    onmouseover="this.style.background='#059669'"
-                    onmouseout="this.style.background='#10b981'">
-              ➕
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Save Button -->
-      <button (click)="saveProduction()" 
-              style="background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;"
-              onmouseover="this.style.background='#1565c0'"
-              onmouseout="this.style.background='#1976d2'">
-        💾 Save Production
-      </button>
-
-      <!-- Filters -->
-      <div style="background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 4px; padding: 12px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-        <div style="display: flex; flex-direction: column; gap: 4px;">
-          <label style="color: #333; font-weight: 600; font-size: 9px;">Filter by Date</label>
-          <input type="date" [(ngModel)]="filterDate" (change)="applyFilter()" 
-                 style="padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 4px; background: #ffffff; font-size: 9px; transition: all 0.3s ease;"
-                 onfocus="this.style.borderColor='#1976d2'; this.style.boxShadow='0 0 0 2px rgba(25, 118, 210, 0.1)'"
-                 onblur="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none'">
-        </div>
-        <button (click)="refreshTable()" 
-                style="background: #ffffff; color: #666; border: 1px solid #e0e0e0; padding: 8px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 16px; font-size: 9px;"
-                onmouseover="this.style.background='#f5f5f5'; this.style.borderColor='#1976d2'"
-                onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e0e0e0'">
-          🔄 Reload
-        </button>
-      </div>
-
-      <!-- Modern Production Table -->
-      <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 16px;">
-        <div style="background: #f5f5f5; padding: 10px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 100px; gap: 8px; font-weight: 700; color: #333; font-size: 9px;">
-          <div>Date</div>
-          <div>Fencing</div>
-          <div>Plain</div>
-          <div>Jumbo</div>
-          <div>Round</div>
-          <div>Biscuit</div>
-          <div style="text-align: center;">Action</div>
-        </div>
-        
-        <div *ngFor="let r of filtered; let i = index"
-          style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 100px; gap: 8px; padding: 10px; border-bottom: 1px solid #e0e0e0; color: #333; transition: all 0.3s ease; font-size: 9px;"
-          [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'"
-          onmouseover="this.style.background='#f0f0f0'"
-          onmouseout="this.style.background=''">
-          <div>{{formatDateToDDMMYYYY(r.date)}}</div>
-          <div style="font-weight: 600;">{{r.fencing_pole}}</div>
-          <div style="font-weight: 600;">{{r.plain_plate}}</div>
-          <div style="font-weight: 600;">{{r.jumbo_pillar}}</div>
-          <div style="font-weight: 600;">{{r.round_plate}}</div>
-          <div style="font-weight: 600;">{{r.biscuit_plate}}</div>
-          <div style="text-align: center;">
-            <button *ngIf="canDelete()" (click)="deleteProduction(r.id)" title="Delete" 
-                    style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; font-size: 8px;"
-                    onmouseover="this.style.background='#dc2626'"
-                    onmouseout="this.style.background='#ef4444'">
-              🗑️
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Modern Pagination -->
-      <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 16px;">
-        <button (click)="prevPage()" 
-                style="background: #ffffff; color: #666; border: 1px solid #e0e0e0; padding: 8px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; font-size: 9px;"
-                onmouseover="this.style.background='#f5f5f5'; this.style.borderColor='#1976d2'"
-                onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e0e0e0'">
-          ⬅ Prev
-        </button>
-        <div style="background: #f5f5f5; color: #333; padding: 8px 16px; border-radius: 4px; font-weight: 600; border: 1px solid #e0e0e0; font-size: 9px;">
-          Page {{page+1}}
-        </div>
-        <button (click)="nextPage()" 
-                style="background: #ffffff; color: #666; border: 1px solid #e0e0e0; padding: 8px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; font-size: 9px;"
-                onmouseover="this.style.background='#f5f5f5'; this.style.borderColor='#1976d2'"
-                onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e0e0e0'">
-          Next ➡
-        </button>
-      </div>
-
-    </div>
-  </ng-container>
-
-  <!-- SELLING TAB -->
-  <ng-container *ngIf="activeTab === 'selling'">
-    <div class="tab-content">
-
-      <h3>{{language==='EN'?'Record Sale':'विक्रय रिकॉर्ड'}}</h3>
-
-      <label>{{language==='EN'?'Date':'तारीख'}}</label>
-      <input type="date" [(ngModel)]="sellingDate">
-
-      <label>{{language==='EN'?'Client Name':'क्लाइंट का नाम'}}</label>
-      <input type="text" [(ngModel)]="sellingClient" [placeholder]="language==='EN'?'Client name':'क्लाइंट का नाम'">
-
-      <label>{{language==='EN'?'Item Type':'आइटम प्रकार'}}</label>
-      <select [(ngModel)]="sellingItem">
-        <option value="fencingPole">Fencing Pole</option>
-        <option value="plainPlate">Plain Plate</option>
-        <option value="jumboPillar">Jumbo Pillar</option>
-        <option value="roundPlate">Round Plate</option>
-        <option value="biscuitPlate">Biscuit Plate</option>
-      </select>
-
-      <label>{{language==='EN'?'Quantity':'मात्रा'}}</label>
-      <input type="number" [(ngModel)]="sellingQuantity" [placeholder]="language==='EN'?'Quantity':'मात्रा'">
-
-      <label>{{language==='EN'?'Price (per unit)':'कीमत (प्रति इकाई)'}}</label>
-      <input type="number" [(ngModel)]="sellingPrice" [placeholder]="language==='EN'?'Price':'कीमत'">
-
-      <button class="save-btn" (click)="saveSelling()">💾 {{language==='EN'?'Save Sale':'बिक्रय सहेजें'}}</button>
-
-      <!-- Selling Records Table -->
-      <h3>{{language==='EN'?'Sales Records':'विक्रय रिकॉर्ड'}}</h3>
-      <table class="prod-table">
-        <tr>
-          <th>Date</th>
-          <th>Client</th>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Price</th>
-          <th>Total</th>
-          <th>Action</th>
-        </tr>
-        <tr *ngFor="let s of sellingRecords; let i = index">
-          <td>{{formatDateToDDMMYYYY(s.date)}}</td>
-          <td>{{s.client}}</td>
-          <td>{{s.item}}</td>
-          <td>{{s.quantity}}</td>
-          <td>₹{{s.price}}</td>
-          <td>₹{{s.quantity * s.price}}</td>
-          <td>
-            <button *ngIf="canDelete()" class="delete-btn" (click)="deleteSelling(s.id)" title="Delete">🗑️</button>
-          </td>
-        </tr>
-      </table>
-
-    </div>
-  </ng-container>
-
-  <!-- DAMAGE TAB -->
-  <ng-container *ngIf="activeTab === 'damage'">
-    <div class="tab-content">
-
-      <h3>{{language==='EN'?'Record Damage':'क्षति रिकॉर्ड'}}</h3>
-
-      <label>{{language==='EN'?'Date':'तारीख'}}</label>
-      <input type="date" [(ngModel)]="damageDate">
-
-      <label>{{language==='EN'?'Item Type':'आइटम प्रकार'}}</label>
-      <select [(ngModel)]="damageItem">
-        <option value="fencingPole">Fencing Pole</option>
-        <option value="plainPlate">Plain Plate</option>
-        <option value="jumboPillar">Jumbo Pillar</option>
-        <option value="roundPlate">Round Plate</option>
-        <option value="biscuitPlate">Biscuit Plate</option>
-      </select>
-
-      <label>{{language==='EN'?'Quantity Damaged':'क्षतिग्रस्त मात्रा'}}</label>
-      <input type="number" [(ngModel)]="damageQuantity" [placeholder]="language==='EN'?'Quantity':'मात्रा'">
-
-      <label>{{language==='EN'?'Reason':'कारण'}}</label>
-      <input type="text" [(ngModel)]="damageReason" [placeholder]="language==='EN'?'Reason for damage':'क्षति का कारण'">
-
-      <button class="save-btn" (click)="saveDamage()">⚠️ {{language==='EN'?'Record Damage':'क्षति दर्ज करें'}}</button>
-
-      <!-- Damage Records Table -->
-      <h3>{{language==='EN'?'Damage Records':'क्षति रिकॉर्ड'}}</h3>
-      <table class="prod-table">
-        <tr>
-          <th>Date</th>
-          <th>Item</th>
-          <th>Qty</th>
-          <th>Reason</th>
-          <th>Action</th>
-        </tr>
-        <tr *ngFor="let d of damageRecords; let i = index">
-          <td>{{formatDateToDDMMYYYY(d.date)}}</td>
-          <td>{{d.item}}</td>
-          <td>{{d.quantity}}</td>
-          <td>{{d.reason}}</td>
-          <td>
-            <button *ngIf="canDelete()" class="delete-btn" (click)="deleteDamage(d.id)" title="Delete">🗑️</button>
-          </td>
-        </tr>
-      </table>
-
-    </div>
-  </ng-container>
-
 </div>
-
-<div *ngIf="loading" class="loader-overlay">
-  <div class="loader-box">⏳ Loading...</div>
-</div>
-

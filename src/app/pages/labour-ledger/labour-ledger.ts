@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SupabaseService } from '../../services/supabase.service';
@@ -38,6 +38,8 @@ interface PaymentRecord {
   styleUrls: ['./labour-ledger.css']
 })
 export class LabourLedgerComponent implements OnInit {
+
+  @Input() embedded = false;
 
   labourList: Labour[] = [];
   workersWithOutstanding: WorkerOutstanding[] = [];
@@ -105,7 +107,7 @@ export class LabourLedgerComponent implements OnInit {
     this.cd.detectChanges();
     try {
       await Promise.all([this.loadLabours(), this.loadWorkersWithOutstanding(), this.loadPartners()]);
-      this.successMessage = '✅ Data refreshed successfully!';
+      this.successMessage = 'Data refreshed successfully.';
       this.cd.detectChanges();
       setTimeout(() => {
         this.successMessage = '';
@@ -113,7 +115,7 @@ export class LabourLedgerComponent implements OnInit {
       }, 3000);
     } catch (error) {
       console.error('Error refreshing data:', error);
-      this.errorMessage = '❌ Failed to refresh data';
+      this.errorMessage = 'Failed to refresh data.';
       this.cd.detectChanges();
     } finally {
       this.loading = false;
@@ -187,13 +189,13 @@ export class LabourLedgerComponent implements OnInit {
   
   async addNewLabour() {
     if (!this.newLabourName) {
-      this.errorMessage = '⚠️ Labour name is required';
+      this.errorMessage = 'Labour name is required.';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
     if (this.newLabourName.length < 2) {
-      this.errorMessage = '⚠️ Labour name must be at least 2 characters';
+      this.errorMessage = 'Labour name must be at least 2 characters.';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
@@ -212,7 +214,7 @@ export class LabourLedgerComponent implements OnInit {
       
       if (error) throw error;
       
-      this.successMessage = `✅ Labour record created for ${this.newLabourName}`;
+      this.successMessage = `Labour record created for ${this.newLabourName}.`;
       this.newLabourName = '';
       this.newLabourPhone = '';
       this.showAddForm = false;
@@ -225,7 +227,7 @@ export class LabourLedgerComponent implements OnInit {
       }, 3000);
     } catch (error) {
       console.error('Error adding labour:', error);
-      this.errorMessage = '❌ Failed to add labour. Please try again.';
+      this.errorMessage = 'Failed to add labour. Please try again.';
       this.cd.detectChanges();
     } finally {
       this.loading = false;
@@ -256,19 +258,19 @@ export class LabourLedgerComponent implements OnInit {
   
   async recordPayment() {
     if (!this.selectedWageEntryId) {
-      this.errorMessage = '⚠️ Please select a wage entry';
+      this.errorMessage = 'Please select a wage entry.';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
     if (!this.paymentAmount || this.paymentAmount <= 0) {
-      this.errorMessage = '⚠️ Enter a valid payment amount';
+      this.errorMessage = 'Enter a valid payment amount.';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
     }
     if (!this.paidByPartnerId) {
-      this.errorMessage = '⚠️ Select which partner is paying';
+      this.errorMessage = 'Select which partner is paying.';
       this.cd.detectChanges();
       setTimeout(() => this.errorMessage = '', 3000);
       return;
@@ -291,7 +293,7 @@ export class LabourLedgerComponent implements OnInit {
       const result = await this.laborPaymentService.recordPayment(payment);
       
       if (result.success) {
-        this.successMessage = `✅ Payment of ₹${this.paymentAmount.toFixed(2)} recorded for ${this.selectedLabourName}`;
+        this.successMessage = `Payment of INR ${this.paymentAmount.toFixed(2)} recorded for ${this.selectedLabourName}.`;
         this.showPaymentForm = false;
         this.paymentAmount = 0;
         this.selectedWageEntryId = '';
@@ -304,7 +306,7 @@ export class LabourLedgerComponent implements OnInit {
           this.cd.detectChanges();
         }, 3000);
       } else {
-        this.errorMessage = `❌ ${result.error || 'Failed to record payment'}`;
+        this.errorMessage = `${result.error || 'Failed to record payment'}`;
         this.cd.detectChanges();
         setTimeout(() => {
           this.errorMessage = '';
@@ -313,7 +315,7 @@ export class LabourLedgerComponent implements OnInit {
       }
     } catch (error) {
       console.error('Error recording payment:', error);
-      this.errorMessage = '❌ Failed to record payment. Please try again.';
+      this.errorMessage = 'Failed to record payment. Please try again.';
       this.cd.detectChanges();
     } finally {
       this.loading = false;
@@ -322,7 +324,7 @@ export class LabourLedgerComponent implements OnInit {
   }
 
   async clearAllOutstanding(wageEntry: WageEntryWithPayments, workerOutstanding: WorkerOutstanding) {
-    if (!confirm(`Clear all outstanding ₹${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}?`)) {
+    if (!confirm(`Clear all outstanding INR ${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}?`)) {
       return;
     }
 
@@ -338,7 +340,7 @@ export class LabourLedgerComponent implements OnInit {
       );
 
       if (result.success) {
-        this.successMessage = `✅ Cleared outstanding ₹${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}`;
+        this.successMessage = `Cleared outstanding INR ${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}.`;
         this.cd.detectChanges();
         await this.loadWorkersWithOutstanding();
         
@@ -347,12 +349,12 @@ export class LabourLedgerComponent implements OnInit {
           this.cd.detectChanges();
         }, 3000);
       } else {
-        this.errorMessage = `❌ ${result.error || 'Failed to clear outstanding'}`;
+        this.errorMessage = `${result.error || 'Failed to clear outstanding'}`;
         this.cd.detectChanges();
       }
     } catch (error) {
       console.error('Error clearing outstanding:', error);
-      this.errorMessage = '❌ Failed to clear outstanding';
+      this.errorMessage = 'Failed to clear outstanding.';
       this.cd.detectChanges();
     } finally {
       this.loading = false;
@@ -370,7 +372,7 @@ export class LabourLedgerComponent implements OnInit {
     this.selectedWorkerForHistory = null;
   }
   
-  // ── Edit Labour ───────────────────────────────────────────────────────────
+  // Edit labour
 
   openEditDialog(labour: Labour) {
     this.editingLabour = labour;
@@ -390,13 +392,13 @@ export class LabourLedgerComponent implements OnInit {
   async saveEdit() {
     if (!this.editingLabour) return;
     if (!this.editName.trim() || this.editName.trim().length < 2) {
-      this.errorMessage = '⚠️ Labour name must be at least 2 characters.';
+      this.errorMessage = 'Labour name must be at least 2 characters.';
       this.cd.detectChanges();
       setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
       return;
     }
     if (!this.editReason.trim()) {
-      this.errorMessage = '⚠️ Please provide a reason for this change.';
+      this.errorMessage = 'Please provide a reason for this change.';
       this.cd.detectChanges();
       setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
       return;
@@ -412,14 +414,14 @@ export class LabourLedgerComponent implements OnInit {
 
       if (error) throw error;
 
-      this.successMessage = `✅ Labour record updated for "${this.editName.trim()}"`;
+      this.successMessage = `Labour record updated for "${this.editName.trim()}".`;
       this.closeEditDialog();
       await this.loadLabours();
       this.cd.detectChanges();
       setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 3000);
     } catch (err) {
       console.error('Error updating labour:', err);
-      this.errorMessage = '❌ Failed to update labour. Please try again.';
+      this.errorMessage = 'Failed to update labour. Please try again.';
       this.cd.detectChanges();
       setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
     } finally {
@@ -428,7 +430,7 @@ export class LabourLedgerComponent implements OnInit {
     }
   }
 
-  // ── Delete Labour ──────────────────────────────────────────────────────────
+  // Delete labour
 
   openDeleteDialog(labour: Labour) {
     this.deletingLabour = labour;
@@ -447,7 +449,7 @@ export class LabourLedgerComponent implements OnInit {
   async confirmDelete() {
     if (!this.deletingLabour) return;
     if (!this.deleteReason.trim()) {
-      this.errorMessage = '⚠️ Please provide a reason for deletion.';
+      this.errorMessage = 'Please provide a reason for deletion.';
       this.cd.detectChanges();
       setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
       return;
@@ -464,14 +466,14 @@ export class LabourLedgerComponent implements OnInit {
 
       if (error) throw error;
 
-      this.successMessage = `✅ Labour "${this.deletingLabour.name}" removed from active list.`;
+      this.successMessage = `Labour "${this.deletingLabour.name}" removed from active list.`;
       this.closeDeleteDialog();
       await this.loadLabours();
       this.cd.detectChanges();
       setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 3000);
     } catch (err) {
       console.error('Error deleting labour:', err);
-      this.errorMessage = '❌ Failed to remove labour. Please try again.';
+      this.errorMessage = 'Failed to remove labour. Please try again.';
       this.cd.detectChanges();
       setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
     } finally {

@@ -237,6 +237,11 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Barbed Wire Quantity (kg)</mat-label>
+                <input matInput type="number" [(ngModel)]="manualWireWeight">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Total Barbed Wire Cost (₹)</mat-label>
                 <input matInput type="number" [(ngModel)]="manualWireCost">
               </mat-form-field>
@@ -245,6 +250,50 @@
                 <mat-label>Labour Cost (₹)</mat-label>
                 <input matInput type="number" [(ngModel)]="manualLabourCost">
               </mat-form-field>
+            </div>
+
+            <div class="form-section">
+              <h4>Additional Expenses</h4>
+              <p>Add any other expense if required, such as transport, site clearing, or special services.</p>
+              <button mat-stroked-button color="primary" (click)="showExpenseForm = !showExpenseForm">
+                <mat-icon>{{ showExpenseForm ? 'remove' : 'add' }}</mat-icon>
+                {{ showExpenseForm ? 'Hide Additional Expense' : 'Add Other Expense' }}
+              </button>
+
+              <div *ngIf="showExpenseForm" class="expense-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Expense Name</mat-label>
+                  <input matInput [(ngModel)]="newExpenseName" placeholder="e.g. Site clearing">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Expense Cost (₹)</mat-label>
+                  <input matInput type="number" [(ngModel)]="newExpenseCost" placeholder="e.g. 1500">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Description (optional)</mat-label>
+                  <input matInput [(ngModel)]="newExpenseDescription" placeholder="e.g. Labour for clearing vegetation">
+                </mat-form-field>
+
+                <button mat-raised-button color="accent" (click)="addExpense()">
+                  <mat-icon>add</mat-icon>
+                  Add Expense
+                </button>
+              </div>
+
+              <div *ngIf="otherExpenses.length > 0" class="expense-list">
+                <h5>Added Expenses</h5>
+                <div class="expense-item" *ngFor="let expense of otherExpenses">
+                  <div>
+                    <strong>{{ expense.name }}</strong> - ₹{{ expense.cost | number }}
+                    <p *ngIf="expense.description">{{ expense.description }}</p>
+                  </div>
+                  <button mat-icon-button color="warn" (click)="removeExpense(expense.id)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -350,6 +399,18 @@
               <div class="cost-item labour">
                 <span>Labour Cost</span>
                 <strong>₹{{ quotation.labourCost?.toLocaleString('en-IN') }}</strong>
+              </div>
+            </div>
+
+            <div *ngIf="quotation?.otherExpenses?.length" class="cost-item extra-expenses">
+              <strong>Additional Expenses</strong>
+              <div *ngFor="let expense of quotation.otherExpenses || []" class="expense-line">
+                <span>{{ expense.name }}{{ expense.description ? ' - ' + expense.description : '' }}</span>
+                <strong>₹{{ expense.cost.toLocaleString('en-IN') }}</strong>
+              </div>
+              <div class="cost-item subtotal">
+                <span>Total Extra Expenses</span>
+                <strong>₹{{ quotation.extraExpensesCost?.toLocaleString('en-IN') }}</strong>
               </div>
             </div>
           </div>

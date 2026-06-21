@@ -107,6 +107,11 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.authService.hasAccess('library');
   }
 
+  public isLibraryRoute(): boolean {
+    const currentUrl = this.router.url || '';
+    return currentUrl.startsWith('/library');
+  }
+
   public hasFullLibraryAccess(): boolean {
     return this.authService.isAdmin() || 
            this.authService.isEditor() || 

@@ -521,7 +521,7 @@ export class LibraryStudentsComponent implements OnInit {
 
 
   formatCurrency(amount: number): string {
-    return '₹' + amount.toLocaleString('en-IN');
+    return 'INR ' + amount.toLocaleString('en-IN');
   }
 
   formatDate(date: string): string {

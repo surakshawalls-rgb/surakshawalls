@@ -1,6 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTabsModule } from '@angular/material/tabs';
 import { SupabaseService } from '../../services/supabase.service';
 import { AuthService } from '../../services/auth.service';
 import { ProductionService, WorkerWage, ProductionData } from '../../services/production.service';
@@ -9,6 +11,8 @@ import { WorkerService, Worker, WAGE_RATES } from '../../services/worker.service
 import { SalesService, SaleData } from '../../services/sales.service';
 import { ClientService, Client } from '../../services/client.service';
 import { InventoryService } from '../../services/inventory.service';
+import { PartnerService } from '../../services/partner.service';
+import { FirmCashService } from '../../services/firm-cash.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
 
@@ -23,7 +27,7 @@ interface ProductionItem {
 
 interface WorkerEntry {
   worker: Worker;
-  attendance_type: 'Full Day' | 'Half Day' | 'Outdoor' | 'Custom';
+  attendance_type: 'Full Day' | 'Half Day' | 'Custom';
   wage_earned: number;
   paid_today: number;
   is_paid: boolean;
@@ -44,17 +48,21 @@ interface DeliveryExpense {
 }
 
 interface OtherExpense {
+  id?: string;
   category: 'Snacks' | 'Diesel' | 'Maintenance' | 'Medical' | 'Transport' | 'Other';
   description: string;
   amount: number;
   paid_by_partner_id: string;
+  persisted?: boolean;
 }
 
 interface YardLossItem {
+  id?: string;
   product_name: string;
   quantity: number;
   stage: 'stacking' | 'loading' | 'transport';
   reason: string; // Production defect, Transport damage, Loading damage, etc.
+  persisted?: boolean;
 }
 
 interface Partner {
@@ -66,15 +74,18 @@ interface Partner {
 @Component({
   selector: 'app-daily-entry',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
+  imports: [CommonModule, FormsModule, MatTabsModule, MatIconModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './daily-entry.html',
   styleUrls: ['./daily-entry.css']
 })
 export class UnifiedDailyEntryComponent implements OnInit {
 
+  @Input() embedded = false;
+
   // ========== GENERAL ==========
   entryDate: string = '';
   notes: string = '';
+  activeSection: 'production' | 'labor' | 'sales' | 'expenses' | 'damage' = 'production';
   
   // ========== SECTION 1: PRODUCTION ==========
   hasProduction: boolean = false;
@@ -90,7 +101,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   workerEntries: WorkerEntry[] = [];
   availableWorkers: Worker[] = [];
   selectedWorkerId: string = '';
-  selectedAttendanceType: 'Full Day' | 'Half Day' | 'Outdoor' | 'Custom' = 'Full Day';
+  selectedAttendanceType: 'Full Day' | 'Half Day' | 'Custom' = 'Full Day';
   customWageAmount: number = 0;
   isPaid: boolean = false;
   paidByPartnerId: string = '';
@@ -162,11 +173,14 @@ export class UnifiedDailyEntryComponent implements OnInit {
     private salesService: SalesService,
     private clientService: ClientService,
     private inventoryService: InventoryService,
+    private partnerService: PartnerService,
+    private firmCashService: FirmCashService,
     private cd: ChangeDetectorRef
   ) {}
   
   async ngOnInit() {
     this.entryDate = new Date().toISOString().split('T')[0];
+    this.activeSection = 'production';
     this.loading = true;
     try {
       await Promise.all([
@@ -175,6 +189,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
         this.loadClients(),
         this.loadPartners(),
         this.loadInventory()
+      ]);
+      await Promise.all([
+        this.loadSavedOtherExpensesForDate(),
+        this.loadSavedYardLossForDate()
       ]);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -186,6 +204,13 @@ export class UnifiedDailyEntryComponent implements OnInit {
   }
   
   // ========== DATA LOADING ==========
+
+  onSectionTabChange(index: number) {
+    const sections = this.isLabourStaff()
+      ? ['production', 'labor']
+      : ['production', 'labor', 'sales', 'expenses', 'damage'];
+    this.activeSection = (sections[index] as 'production' | 'labor' | 'sales' | 'expenses' | 'damage') || 'production';
+  }
   
   async loadProducts() {
     try {
@@ -224,16 +249,12 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   async loadPartners() {
     try {
-      const { data, error } = await this.db.supabase
-        .from('partner_master')
-        .select('id, partner_name, share_percentage');
-      if (error) throw error;
-      
-      // Map database fields to interface fields
+      const data = await this.partnerService.getAllPartners();
+
       this.partners = (data || []).map((p: any) => ({
-        partner_id: p.id,
-        name: p.partner_name,
-        profit_share: p.share_percentage
+        partner_id: p.id || p.partner_id,
+        name: p.partner_name || p.name,
+        profit_share: p.share_percentage || p.profit_share || 0
       }));
       
       if (this.partners.length > 0) {
@@ -257,6 +278,57 @@ export class UnifiedDailyEntryComponent implements OnInit {
       });
     } catch (error) {
       console.error('Error loading inventory:', error);
+    }
+  }
+
+  async loadSavedOtherExpensesForDate() {
+    try {
+      const { data, error } = await this.db.supabase
+        .from('firm_cash_ledger')
+        .select('id, amount, partner_id, description')
+        .eq('date', this.entryDate)
+        .eq('type', 'payment')
+        .eq('category', 'operational')
+        .ilike('description', 'DailyEntry Expense:%')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      this.otherExpenses = (data || []).map((row: any) => ({
+        id: row.id,
+        category: 'Other',
+        description: String(row.description || '').replace(/^DailyEntry Expense:\s*/i, ''),
+        amount: row.amount,
+        paid_by_partner_id: row.partner_id || '',
+        persisted: true
+      }));
+    } catch (error) {
+      console.error('Error loading saved daily expenses:', error);
+    }
+  }
+
+  async loadSavedYardLossForDate() {
+    try {
+      const { data, error } = await this.db.supabase
+        .from('yard_loss')
+        .select('id, product_name, quantity, stage, reason')
+        .eq('date', this.entryDate)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      this.yardLossItems = (data || []).map((row: any) => ({
+        id: row.id,
+        product_name: row.product_name,
+        quantity: row.quantity,
+        stage: row.stage,
+        reason: row.reason,
+        persisted: true
+      }));
+
+      this.hasYardLoss = this.yardLossItems.length > 0 || this.hasYardLoss;
+    } catch (error) {
+      console.error('Error loading saved yard loss entries:', error);
     }
   }
   
@@ -295,7 +367,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
         return;
       }
       
-      // ✅ VALIDATE STOCK AVAILABILITY
+      // Validate stock availability before adding production entry.
       if (!materialCalc.stock_check.all_available) {
         const shortages: string[] = [];
         
@@ -320,7 +392,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
           shortages.push(`Sariya (Steel): Need ${needed.toFixed(2)} kg, but only ${available.toFixed(2)} kg available (Short: ${shortage.toFixed(2)} kg)`);
         }
         
-        this.showError(`⚠️ Insufficient Stock:\n\n${shortages.join('\n\n')}\n\nPlease purchase materials first or reduce production quantity.`);
+        this.showError(`Insufficient stock:\n\n${shortages.join('\n\n')}\n\nPlease purchase materials first or reduce production quantity.`);
         return;
       }
       
@@ -331,7 +403,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
         material_calc: materialCalc
       });
       
-      this.showSuccess(`${this.selectedProduct} added to production`);
+      this.showSuccess(`${this.selectedProduct} added to draft. Click Submit Production to save.`);
       this.productQuantity = 0;
     } catch (error) {
       console.error('Error adding production item:', error);
@@ -404,7 +476,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
       paid_by_partner_id: this.isPaid ? this.paidByPartnerId : undefined
     });
     
-    this.showSuccess(`${worker.name} added`);
+    this.showSuccess(`${worker.name} added to draft. Click Submit Labor Entry to save.`);
     this.isPaid = false;
     this.selectedAttendanceType = 'Full Day';
     this.customWageAmount = 0;
@@ -557,7 +629,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
     });
     
     this.calculateRevenue();
-    this.showSuccess('Sales item added');
+    this.showSuccess('Sales item added to draft. Click Submit Sales to save.');
     this.salesQuantity = 0;
     this.cd.detectChanges();
   }
@@ -640,13 +712,17 @@ export class UnifiedDailyEntryComponent implements OnInit {
       paid_by_partner_id: this.expensePaidBy
     });
     
-    this.showSuccess('Expense added');
+    this.showSuccess('Expense added to draft. Click Submit Expenses to save.');
     this.expenseDescription = '';
     this.expenseAmount = 0;
     this.cd.detectChanges();
   }
   
   removeOtherExpense(index: number) {
+    if (this.otherExpenses[index]?.persisted) {
+      this.showError('Saved expenses cannot be removed from this screen.');
+      return;
+    }
     this.otherExpenses.splice(index, 1);
     this.cd.detectChanges();
   }
@@ -683,7 +759,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
       reason: reason
     });
     
-    this.showSuccess('Yard loss item added');
+    this.showSuccess('Damage item added to draft. Click Submit Damage to save.');
     this.yardLossQuantity = 0;
     this.yardLossStage = 'loading';
     this.yardLossReason = '';
@@ -691,6 +767,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
   }
   
   removeYardLossItem(index: number) {
+    if (this.yardLossItems[index]?.persisted) {
+      this.showError('Saved damage entries cannot be removed from this screen.');
+      return;
+    }
     this.yardLossItems.splice(index, 1);
     this.cd.detectChanges();
   }
@@ -708,6 +788,351 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   getNetProfit(): number {
     return this.totalRevenue - this.getGrandTotal();
+  }
+
+  private getWorkerPayload() {
+    return this.workerEntries.map(we => ({
+      worker_id: we.worker.id,
+      worker_name: we.worker.name,
+      attendance_type: we.attendance_type,
+      wage_earned: we.wage_earned,
+      paid_today: we.paid_today,
+      paid_by_partner_id: we.paid_by_partner_id
+    }));
+  }
+
+  private async persistProductionEntries(includeWorkers: boolean) {
+    if (this.productionItems.length === 0) {
+      throw new Error('Add at least one production item');
+    }
+
+    for (const prodItem of this.productionItems) {
+      const materialCalc = await this.recipeService.calculateMaterialsNeeded(
+        prodItem.product_name,
+        prodItem.product_variant,
+        prodItem.quantity
+      );
+
+      if (!materialCalc || !materialCalc.stock_check.all_available) {
+        const shortages: string[] = [];
+        if (materialCalc && !materialCalc.stock_check.cement_available) {
+          shortages.push(`Cement: ${materialCalc.materials.cement.toFixed(2)} bags needed, ${materialCalc.current_stock.cement.toFixed(2)} available`);
+        }
+        if (materialCalc && !materialCalc.stock_check.aggregates_available) {
+          shortages.push(`Aggregates: ${materialCalc.materials.aggregates.toFixed(2)} cft needed, ${materialCalc.current_stock.aggregates.toFixed(2)} available`);
+        }
+        if (materialCalc && !materialCalc.stock_check.sariya_available) {
+          shortages.push(`Steel: ${materialCalc.materials.sariya.toFixed(2)} kg needed, ${materialCalc.current_stock.sariya.toFixed(2)} available`);
+        }
+        throw new Error(`Insufficient stock for ${prodItem.product_name}:\n${shortages.join('\n')}`);
+      }
+    }
+
+    for (const prodItem of this.productionItems) {
+      const productionData: ProductionData = {
+        date: this.entryDate,
+        product_name: prodItem.product_name,
+        product_variant: prodItem.product_variant,
+        success_quantity: prodItem.quantity,
+        rejected_quantity: 0,
+        workers: includeWorkers ? this.getWorkerPayload() : [],
+        is_job_work: false,
+        notes: this.notes
+      };
+
+      const result = await this.retryOnLockError(async () => {
+        return await this.productionService.saveProduction(productionData);
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save production');
+      }
+    }
+  }
+
+  private async persistSalesEntries() {
+    if (!this.selectedClientId) {
+      throw new Error('Select a client for sales');
+    }
+    if (this.salesItems.length === 0) {
+      throw new Error('Add at least one sales item');
+    }
+
+    this.addDeliveryExpense();
+
+    for (const salesItem of this.salesItems) {
+      const salesData: SaleData = {
+        date: this.entryDate,
+        client_id: this.selectedClientId,
+        product_name: salesItem.product_name,
+        product_variant: null,
+        quantity: salesItem.quantity,
+        rate_per_unit: salesItem.rate,
+        payment_type: this.amountReceived >= this.totalRevenue ? 'full' : this.amountReceived > 0 ? 'partial' : 'credit',
+        paid_amount: this.amountReceived,
+        collected_by_partner_id: this.partners[0]?.partner_id || undefined,
+        deposited_to_firm: true
+      };
+
+      const result = await this.retryOnLockError(async () => {
+        return await this.salesService.createSale(salesData);
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save sales');
+      }
+    }
+
+    for (const deliveryExpense of this.deliveryExpenses) {
+      const result = await this.retryOnLockError(async () => {
+        return await this.firmCashService.recordPayment(
+          this.entryDate,
+          deliveryExpense.amount,
+          'operational',
+          `Delivery expense - ${deliveryExpense.category}`,
+          deliveryExpense.paid_by_partner_id || undefined
+        );
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save delivery expense');
+      }
+    }
+  }
+
+  private async persistOtherExpensesEntries() {
+    const draftExpenses = this.otherExpenses.filter(expense => !expense.persisted);
+
+    if (draftExpenses.length === 0) {
+      throw new Error('Add at least one expense');
+    }
+
+    for (const expense of draftExpenses) {
+      const result = await this.retryOnLockError(async () => {
+        return await this.firmCashService.recordPayment(
+          this.entryDate,
+          expense.amount,
+          'operational',
+          `DailyEntry Expense: ${expense.description || expense.category}`,
+          expense.paid_by_partner_id || undefined
+        );
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save expense');
+      }
+    }
+  }
+
+  private async persistDamageEntries() {
+    const draftLossItems = this.yardLossItems.filter(item => !item.persisted);
+
+    if (draftLossItems.length === 0) {
+      throw new Error('Add at least one damage item');
+    }
+
+    for (const lossItem of draftLossItems) {
+      await this.retryOnLockError(async () => {
+        const { error } = await this.db.supabase
+          .from('yard_loss')
+          .insert([{
+            date: this.entryDate,
+            product_name: lossItem.product_name,
+            product_variant: null,
+            quantity: lossItem.quantity,
+            stage: lossItem.stage,
+            reason: lossItem.reason
+          }]);
+        if (error) throw error;
+      });
+
+      const { error: rpcError } = await this.db.supabase.rpc('increment_finished_goods', {
+        p_product_name: lossItem.product_name,
+        p_product_variant: null,
+        p_quantity: -lossItem.quantity
+      });
+      if (rpcError) throw rpcError;
+    }
+  }
+
+  private async persistLaborEntries() {
+    if (this.workerEntries.length === 0) {
+      throw new Error('Add at least one worker entry');
+    }
+
+    const wageResult = await this.productionService.saveWorkerWagesOnly(
+      this.getWorkerPayload(),
+      this.entryDate
+    );
+    if (!wageResult.success) {
+      throw new Error(wageResult.error || 'Failed to save worker wages');
+    }
+  }
+
+  private formatSubmitError(error: any): string {
+    const errorString = error?.toString() || '';
+    const errorMessage = error?.message || '';
+
+    if (errorString.includes('NavigatorLockAcquireTimeoutError') ||
+        errorMessage.includes('NavigatorLockAcquireTimeoutError') ||
+        error?.name === 'NavigatorLockAcquireTimeoutError') {
+      return `Database lock error. Please:
+1. Close all other tabs with this app
+2. Press F12 > Application > Clear storage
+3. Click "Clear site data" and refresh
+Then try again.`;
+    }
+
+    return `Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`;
+  }
+
+  private resetProductionSection() {
+    this.hasProduction = false;
+    this.productionItems = [];
+    this.productQuantity = 0;
+  }
+
+  private resetLaborSection() {
+    this.workerEntries = [];
+    this.isPaid = false;
+    this.selectedAttendanceType = 'Full Day';
+    this.customWageAmount = 0;
+  }
+
+  private resetSalesSection() {
+    this.hasSalesToday = false;
+    this.selectedClientId = '';
+    this.clientSearchTerm = '';
+    this.filteredClients = [];
+    this.showClientResults = false;
+    this.salesItems = [];
+    this.totalRevenue = 0;
+    this.amountReceived = 0;
+    this.pendingAmount = 0;
+    this.transportExpense = 0;
+    this.snacksExpense = 0;
+    this.otherDeliveryExpense = 0;
+    this.deliveryExpenses = [];
+  }
+
+  private resetOtherExpensesSection() {
+    this.expenseDescription = '';
+    this.expenseAmount = 0;
+    this.selectedExpenseCategory = 'Snacks';
+  }
+
+  private resetDamageSection() {
+    this.selectedYardLossProduct = '';
+    this.yardLossQuantity = 0;
+    this.yardLossStage = 'loading';
+    this.yardLossReason = '';
+  }
+
+  async submitProductionSection() {
+    if (!this.entryDate) {
+      this.showError('Select entry date');
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await this.persistProductionEntries(false);
+      this.resetProductionSection();
+      this.showSuccess(`Production saved for ${this.entryDate}`);
+    } catch (error: any) {
+      this.errorMessage = this.formatSubmitError(error);
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  async submitLaborSection() {
+    if (!this.entryDate) {
+      this.showError('Select entry date');
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await this.persistLaborEntries();
+      this.resetLaborSection();
+      this.showSuccess(`Labor entry saved for ${this.entryDate}`);
+    } catch (error: any) {
+      this.errorMessage = this.formatSubmitError(error);
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  async submitSalesSection() {
+    if (!this.entryDate) {
+      this.showError('Select entry date');
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await this.persistSalesEntries();
+      this.resetSalesSection();
+      this.showSuccess(`Sales saved for ${this.entryDate}`);
+    } catch (error: any) {
+      this.errorMessage = this.formatSubmitError(error);
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  async submitExpensesSection() {
+    if (!this.entryDate) {
+      this.showError('Select entry date');
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await this.persistOtherExpensesEntries();
+      await this.loadSavedOtherExpensesForDate();
+      this.resetOtherExpensesSection();
+      this.showSuccess(`Expenses saved for ${this.entryDate}`);
+    } catch (error: any) {
+      this.errorMessage = this.formatSubmitError(error);
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  async submitDamageSection() {
+    if (!this.entryDate) {
+      this.showError('Select entry date');
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await this.persistDamageEntries();
+      await this.loadSavedYardLossForDate();
+      this.resetDamageSection();
+      this.showSuccess(`Damage entry saved for ${this.entryDate}`);
+    } catch (error: any) {
+      this.errorMessage = this.formatSubmitError(error);
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
   }
   
   // Helper: Retry operation with exponential backoff on lock errors
@@ -779,171 +1204,33 @@ export class UnifiedDailyEntryComponent implements OnInit {
     try {
       // 1. Save Production Entries (if any)
       if (this.hasProduction && this.productionItems.length > 0) {
-        // Re-validate stock before saving (in case stock changed)
-        for (const prodItem of this.productionItems) {
-          const materialCalc = await this.recipeService.calculateMaterialsNeeded(
-            prodItem.product_name,
-            prodItem.product_variant,
-            prodItem.quantity
-          );
-          
-          if (!materialCalc || !materialCalc.stock_check.all_available) {
-            const shortages: string[] = [];
-            if (materialCalc && !materialCalc.stock_check.cement_available) {
-              shortages.push(`Cement: ${materialCalc.materials.cement.toFixed(2)} bags needed, ${materialCalc.current_stock.cement.toFixed(2)} available`);
-            }
-            if (materialCalc && !materialCalc.stock_check.aggregates_available) {
-              shortages.push(`Aggregates: ${materialCalc.materials.aggregates.toFixed(2)} cft needed, ${materialCalc.current_stock.aggregates.toFixed(2)} available`);
-            }
-            if (materialCalc && !materialCalc.stock_check.sariya_available) {
-              shortages.push(`Steel: ${materialCalc.materials.sariya.toFixed(2)} kg needed, ${materialCalc.current_stock.sariya.toFixed(2)} available`);
-            }
-            throw new Error(`Insufficient stock for ${prodItem.product_name}:\n${shortages.join('\n')}`);
-          }
-        }
-        
-        for (const prodItem of this.productionItems) {
-          const productionData: ProductionData = {
-            date: this.entryDate,
-            product_name: prodItem.product_name,
-            product_variant: prodItem.product_variant,
-            success_quantity: prodItem.quantity,
-            rejected_quantity: 0,
-            workers: this.workerEntries.map(we => ({
-              worker_id: we.worker.id,
-              worker_name: we.worker.name,
-              attendance_type: we.attendance_type,
-              wage_earned: we.wage_earned,
-              paid_today: we.paid_today,
-              paid_by_partner_id: we.paid_by_partner_id
-            })),
-            is_job_work: false,
-            notes: this.notes
-          };
-          
-          // Wrap in retry logic
-          const result = await this.retryOnLockError(async () => {
-            return await this.productionService.saveProduction(productionData);
-          });
-          
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to save production');
-          }
-        }
+        await this.persistProductionEntries(true);
       }
-      
+
       // 2. Save sales transaction
       if (this.hasSalesToday && this.salesItems.length > 0) {
-        for (const salesItem of this.salesItems) {
-          const salesData: SaleData = {
-            date: this.entryDate,
-            client_id: this.selectedClientId,
-            product_name: salesItem.product_name,
-            product_variant: null,
-            quantity: salesItem.quantity,
-            rate_per_unit: salesItem.rate,
-            payment_type: this.amountReceived >= this.totalRevenue ? 'full' : this.amountReceived > 0 ? 'partial' : 'credit',
-            paid_amount: this.amountReceived,
-            collected_by_partner_id: this.partners[0]?.partner_id || undefined,
-            deposited_to_firm: true
-          };
-          
-          // Wrap in retry logic
-          const result = await this.retryOnLockError(async () => {
-            return await this.salesService.createSale(salesData);
-          });
-          
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to save sales');
-          }
-        }
-        
-        // Record delivery expenses in firm_cash_ledger
-        for (const deliveryExpense of this.deliveryExpenses) {
-          await this.retryOnLockError(async () => {
-            const { error } = await this.db.supabase
-              .from('firm_cash_ledger')
-              .insert([{
-                date: this.entryDate,
-                type: 'payment',
-                category: 'operational',
-                amount: deliveryExpense.amount,
-                partner_id: deliveryExpense.paid_by_partner_id || null,
-                deposited_to_firm: false,
-                description: `Delivery expense - ${deliveryExpense.category}`
-            }]);
-            if (error) throw error;
-          });
-        }
+        await this.persistSalesEntries();
       }
-      
+
       // 3. Save other expenses
-      for (const expense of this.otherExpenses) {
-        await this.retryOnLockError(async () => {
-          const { error } = await this.db.supabase
-            .from('firm_cash_ledger')
-            .insert([{
-              date: this.entryDate,
-              type: 'payment',
-              category: 'operational',
-              amount: expense.amount,
-              partner_id: expense.paid_by_partner_id || null,
-              deposited_to_firm: false,
-              description: expense.description || expense.category
-            }]);
-          if (error) throw error;
-        });
+      if (this.otherExpenses.length > 0) {
+        await this.persistOtherExpensesEntries();
       }
-      
+
       // 4. Save production/transport damage (yard loss)
       if (this.hasYardLoss && this.yardLossItems.length > 0) {
-        for (const lossItem of this.yardLossItems) {
-          await this.retryOnLockError(async () => {
-            const { error } = await this.db.supabase
-              .from('yard_loss')
-              .insert([{
-                date: this.entryDate,
-                product_name: lossItem.product_name,
-                product_variant: null,
-                quantity: lossItem.quantity,
-                stage: lossItem.stage,
-                reason: lossItem.reason
-              }]);
-            if (error) throw error;
-          });
-            
-          // Deduct from finished goods inventory
-          const { error: rpcError } = await this.db.supabase.rpc('increment_finished_goods', {
-            p_product_name: lossItem.product_name,
-            p_product_variant: null,
-            p_quantity: -lossItem.quantity
-          });
-          if (rpcError) throw rpcError;
-        }
+        await this.persistDamageEntries();
       }
 
       // 5. Save worker wages for attendance-only days (no production)
       // When production exists, wages are already saved inside saveProduction(). Skip to avoid duplicates.
       if (!this.hasProduction || this.productionItems.length === 0) {
         if (this.workerEntries.length > 0) {
-          const wageResult = await this.productionService.saveWorkerWagesOnly(
-            this.workerEntries.map(we => ({
-              worker_id: we.worker.id,
-              worker_name: we.worker.name,
-              attendance_type: we.attendance_type,
-              wage_earned: we.wage_earned,
-              paid_today: we.paid_today,
-              paid_by_partner_id: we.paid_by_partner_id
-            })),
-            this.entryDate
-          );
-          if (!wageResult.success) {
-            throw new Error(wageResult.error || 'Failed to save worker wages');
-          }
+          await this.persistLaborEntries();
         }
       }
 
-      this.successMessage = `✅ Daily entry for ${this.entryDate} saved successfully!`;
+      this.successMessage = `Daily entry for ${this.entryDate} saved successfully.`;
       console.log('Daily entry saved successfully');
       
       // Reset form after 2 seconds
@@ -956,20 +1243,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
       console.error('Error details:', JSON.stringify(error, null, 2));
       
       // Check for Supabase lock error
-      const errorString = error?.toString() || '';
-      const errorMessage = error?.message || '';
-      
-      if (errorString.includes('NavigatorLockAcquireTimeoutError') || 
-          errorMessage.includes('NavigatorLockAcquireTimeoutError') ||
-          error?.name === 'NavigatorLockAcquireTimeoutError') {
-        this.errorMessage = `❌ Database lock error. Please:
-1. Close all other tabs with this app
-2. Press F12 → Application → Clear storage
-3. Click "Clear site data" and refresh
-Then try again.`;
-      } else {
-        this.errorMessage = `❌ Error: ${error instanceof Error ? error.message : JSON.stringify(error)}`;
-      }
+      this.errorMessage = this.formatSubmitError(error);
     } finally {
       this.saving = false;
       this.cd.detectChanges();
@@ -1044,7 +1318,7 @@ Then try again.`;
         throw error;
       }
       
-      this.successMessage = `✅ Entry submitted for admin approval! Entry Date: ${this.entryDate}`;
+      this.successMessage = `Entry submitted for admin approval. Entry Date: ${this.entryDate}`;
       console.log('Entry submitted for approval:', data);
       
       // Reset form after 2 seconds
@@ -1054,7 +1328,7 @@ Then try again.`;
       
     } catch (error: any) {
       console.error('Error submitting for approval:', error);
-      this.errorMessage = `❌ Error: ${error.message || 'Failed to submit'}`;
+      this.errorMessage = `Error: ${error.message || 'Failed to submit'}`;
     } finally {
       this.saving = false;
       this.cd.detectChanges();
@@ -1091,7 +1365,7 @@ Then try again.`;
   // ========== UI HELPERS ==========
   
   showSuccess(message: string) {
-    this.successMessage = `✅ ${message}`;
+    this.successMessage = message;
     this.cd.detectChanges();
     setTimeout(() => {
       this.successMessage = '';
@@ -1100,7 +1374,7 @@ Then try again.`;
   }
   
   showError(message: string) {
-    this.errorMessage = `❌ ${message}`;
+    this.errorMessage = message;
     this.cd.detectChanges();
     setTimeout(() => {
       this.errorMessage = '';
@@ -1143,7 +1417,7 @@ Then try again.`;
   }
   
   formatCurrency(amount: number): string {
-    return `₹${amount.toFixed(2)}`;
+    return `INR ${amount.toFixed(2)}`;
   }
   
   // Check if current user is labour staff

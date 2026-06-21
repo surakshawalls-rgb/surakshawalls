@@ -43,7 +43,8 @@ export class PartnerWithdrawComponent implements OnInit {
     try {
       const { data, error } = await this.db['supabase'].supabase
         .from('partner_master')
-        .select('id, partner_name');
+        .select('id, partner_name')
+        .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%');
       
       if (!error && data) {
         this.partners = data;

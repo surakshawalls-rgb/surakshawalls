@@ -1,13 +1,13 @@
-<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb *ngIf="!embedded"></app-breadcrumb>
 <div class="labour-ledger-container">
   <!-- Top Bar -->
   <div class="top-bar">
     <div>
-      <h1>👷 Labour Ledger</h1>
+      <h1>Labour Ledger</h1>
       <p>Manage worker payments and dues</p>
     </div>
     <button (click)="refreshData()" [disabled]="loading" class="btn-refresh">
-      {{ loading ? '⏳ Loading...' : '🔄 Refresh' }}
+      {{ loading ? 'Loading...' : 'Refresh' }}
     </button>
   </div>
 
@@ -24,7 +24,7 @@
     </select>
 
     <button (click)="showAddForm = !showAddForm" class="btn-primary">
-      {{ showAddForm ? '❌ Cancel' : '➕ Add Labour' }}
+      {{ showAddForm ? 'Cancel' : 'Add Labour' }}
     </button>
   </div>
 
@@ -48,7 +48,7 @@
   <div *ngIf="showPaymentForm" class="form-section">
     <h2>Record Payment for {{ selectedLabourName }}</h2>
     <div class="input-group">
-      <label>Amount (₹):</label>
+      <label>Amount (INR):</label>
       <input type="number" [(ngModel)]="paymentAmount" class="input-field">
     </div>
     <div class="input-group">
@@ -89,9 +89,9 @@
           <tr *ngFor="let labour of getFilteredLabours()" [class.overdue]="labour.due_amount > 0">
             <td data-label="Name">{{ labour.name }}</td>
             <td data-label="Phone">{{ labour.phone || '-' }}</td>
-            <td data-label="Total Earned" class="amount">₹{{ labour.total_earned | number:'1.0-2' }}</td>
-            <td data-label="Total Paid" class="amount paid">₹{{ labour.total_paid | number:'1.0-2' }}</td>
-            <td data-label="Due Amount" class="amount" [class.due]="labour.due_amount > 0">₹{{ labour.due_amount | number:'1.0-2' }}</td>
+            <td data-label="Total Earned" class="amount">INR {{ labour.total_earned | number:'1.0-2' }}</td>
+            <td data-label="Total Paid" class="amount paid">INR {{ labour.total_paid | number:'1.0-2' }}</td>
+            <td data-label="Due Amount" class="amount" [class.due]="labour.due_amount > 0">INR {{ labour.due_amount | number:'1.0-2' }}</td>
             <td data-label="Status">
               <span [class.status-active]="labour.status === 'active'" 
                     [class.status-inactive]="labour.status === 'inactive'"
@@ -104,12 +104,12 @@
                 <button *ngIf="canManageLabour()"
                         (click)="openEditDialog(labour)"
                         class="btn-edit">
-                  ✏️ Edit
+                  Edit
                 </button>
                 <button *ngIf="canDeleteLabour()"
                         (click)="openDeleteDialog(labour)"
                         class="btn-delete">
-                  🗑️ Remove
+                  Remove
                 </button>
               </div>
             </td>
@@ -118,9 +118,9 @@
         <tfoot>
           <tr class="total-row">
             <td colspan="2"><strong>TOTALS</strong></td>
-            <td class="amount"><strong>₹{{ getTotalEarned() | number:'1.0-2' }}</strong></td>
-            <td class="amount"><strong>₹{{ getTotalPaid() | number:'1.0-2' }}</strong></td>
-            <td class="amount"><strong>₹{{ getTotalDue() | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>INR {{ getTotalEarned() | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>INR {{ getTotalPaid() | number:'1.0-2' }}</strong></td>
+            <td class="amount"><strong>INR {{ getTotalDue() | number:'1.0-2' }}</strong></td>
             <td colspan="2"></td>
           </tr>
         </tfoot>
@@ -128,11 +128,11 @@
     </div>
   </div>
 
-  <!-- ── Edit Labour Dialog ─────────────────────────────────────── -->
+  <!-- Edit Labour Dialog -->
   <div *ngIf="showEditDialog" class="dialog-overlay" (click)="closeEditDialog()">
     <div class="dialog-box" (click)="$event.stopPropagation()">
       <div class="dialog-header">
-        <h3>✏️ Edit Labour Details</h3>
+        <h3>Edit Labour Details</h3>
         <button (click)="closeEditDialog()" class="dialog-close">&times;</button>
       </div>
       <div class="dialog-body">
@@ -149,30 +149,30 @@
         <div class="dialog-field">
           <label>Reason for Change <span class="required">*</span></label>
           <textarea [(ngModel)]="editReason" rows="3"
-                    placeholder="e.g. Name correction, updated phone number…"
+                    placeholder="e.g. Name correction, updated phone number"
                     class="dialog-input dialog-textarea"></textarea>
           <small class="field-hint">Required for audit trail. This reason will be logged.</small>
         </div>
 
         <div class="dialog-approval-note">
-          <span>⚠️</span>
+          <span>Info:</span>
           <span>Changes are applied immediately and logged for approval review.</span>
         </div>
       </div>
       <div class="dialog-footer">
         <button (click)="closeEditDialog()" class="btn-cancel-dialog">Cancel</button>
         <button (click)="saveEdit()" [disabled]="editSaving" class="btn-save-dialog">
-          {{ editSaving ? 'Saving…' : '✅ Save Changes' }}
+          {{ editSaving ? 'Saving...' : 'Save Changes' }}
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ── Delete Labour Dialog ───────────────────────────────────── -->
+  <!-- Delete Labour Dialog -->
   <div *ngIf="showDeleteDialog" class="dialog-overlay" (click)="closeDeleteDialog()">
     <div class="dialog-box dialog-box--danger" (click)="$event.stopPropagation()">
       <div class="dialog-header dialog-header--danger">
-        <h3>🗑️ Remove Labour Entry</h3>
+        <h3>Remove Labour Entry</h3>
         <button (click)="closeDeleteDialog()" class="dialog-close dialog-close--light">&times;</button>
       </div>
       <div class="dialog-body">
@@ -181,26 +181,26 @@
         <div class="delete-summary">
           <div class="delete-stat">
             <span class="delete-stat-label">Total Earned</span>
-            <span class="delete-stat-val">₹{{ deletingLabour?.total_earned | number:'1.0-2' }}</span>
+            <span class="delete-stat-val">INR {{ deletingLabour?.total_earned | number:'1.0-2' }}</span>
           </div>
           <div class="delete-stat">
             <span class="delete-stat-label">Total Paid</span>
-            <span class="delete-stat-val">₹{{ deletingLabour?.total_paid | number:'1.0-2' }}</span>
+            <span class="delete-stat-val">INR {{ deletingLabour?.total_paid | number:'1.0-2' }}</span>
           </div>
           <div class="delete-stat" [class.stat-due]="(deletingLabour?.due_amount ?? 0) > 0">
             <span class="delete-stat-label">Pending Due</span>
-            <span class="delete-stat-val">₹{{ deletingLabour?.due_amount | number:'1.0-2' }}</span>
+            <span class="delete-stat-val">INR {{ deletingLabour?.due_amount | number:'1.0-2' }}</span>
           </div>
         </div>
 
         <div *ngIf="(deletingLabour?.due_amount ?? 0) > 0" class="delete-due-warning">
-          ⚠️ This labour still has a pending due. Clear the dues before removing if possible.
+          This labour still has a pending due. Clear dues before removing if possible.
         </div>
 
         <div class="dialog-field">
           <label>Reason for Removal <span class="required">*</span></label>
           <textarea [(ngModel)]="deleteReason" rows="3"
-                    placeholder="e.g. Invalid entry, duplicate record, worker left…"
+                    placeholder="e.g. Invalid entry, duplicate record, worker left"
                     class="dialog-input dialog-textarea"></textarea>
         </div>
 
@@ -224,7 +224,7 @@
         <button (click)="confirmDelete()"
                 [disabled]="deleteSaving || deleteConfirmText !== 'REMOVE' || !deleteReason.trim()"
                 class="btn-delete-confirm">
-          {{ deleteSaving ? 'Removing…' : '🗑️ Confirm Remove' }}
+          {{ deleteSaving ? 'Removing...' : 'Confirm Remove' }}
         </button>
       </div>
     </div>
@@ -232,4 +232,4 @@
 
 </div>
 
-<app-mfg-footer></app-mfg-footer>
+<app-mfg-footer *ngIf="!embedded"></app-mfg-footer>

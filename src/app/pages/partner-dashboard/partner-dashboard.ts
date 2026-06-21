@@ -147,7 +147,8 @@ export class PartnerDashboardComponent implements OnInit {
       // Get partners from partner_master table
       const { data: partners, error } = await this.db.supabase
         .from('partner_master')
-        .select('*');
+        .select('*')
+        .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%');
 
       if (error) throw error;
 
@@ -280,7 +281,8 @@ export class PartnerDashboardComponent implements OnInit {
       // Get partner names from partner_master
       const { data: partnersData } = await this.db.supabase
         .from('partner_master')
-        .select('id, partner_name');
+        .select('id, partner_name')
+        .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%');
 
       const partnerNames = new Map<string, string>();
       partnersData?.forEach(p => partnerNames.set(p.id, p.partner_name));
@@ -314,7 +316,7 @@ export class PartnerDashboardComponent implements OnInit {
 
       this.withdrawals = withdrawalsData?.map(w => {
         // Extract partner name from description as primary source
-        // Format: "Partner Withdrawal: Pappu Maurya withdrew ₹1000 - No notes"
+        // Format: "Partner Withdrawal: Pradeep withdrew ₹1000 - No notes"
         let partnerName = 'Unknown Partner';
         let notes = '';
         

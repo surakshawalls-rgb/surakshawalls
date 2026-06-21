@@ -1,11 +1,11 @@
 <!-- Comprehensive Reports Dashboard with Dialog-based Actions -->
-<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb *ngIf="!embedded"></app-breadcrumb>
 <div class="reports-dashboard">
   
   <!-- Header -->
   <div class="dashboard-header">
     <div class="header-left">
-      <h1>📊 Reports & Due Management</h1>
+      <h1>Reports and Due Management</h1>
       <p>Manage payments, collections, and view comprehensive reports</p>
     </div>
   </div>
@@ -19,16 +19,16 @@
   <!-- Tab Navigation -->
   <div class="tab-nav">
     <button class="tab-btn" [class.active]="activeTab === 'workers'" (click)="switchTab('workers')">
-      👷 Workers / Labor
+      Workers / Labor
     </button>
-    <button class="tab-btn" [class.active]="activeTab === 'clients'" (click)="switchTab('clients')">
-      👥 Clients
+    <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'clients'" (click)="switchTab('clients')">
+      Clients
     </button>
-    <button class="tab-btn" [class.active]="activeTab === 'partners'" (click)="switchTab('partners')">
-      🤝 Partners
+    <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'partners'" (click)="switchTab('partners')">
+      Partners
     </button>
-    <button class="tab-btn" [class.active]="activeTab === 'company'" (click)="switchTab('company')">
-      🏢 Company Overview
+    <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'company'" (click)="switchTab('company')">
+      Company Overview
     </button>
   </div>
 
@@ -102,7 +102,7 @@
 
     <ng-template #noWorkersOutstanding>
       <div class="empty-state">
-        <span class="empty-icon">✅</span>
+        <span class="empty-icon"></span>
         <h3>No Outstanding Payments</h3>
         <p>All workers have been paid in full!</p>
       </div>
@@ -110,7 +110,7 @@
   </div>
 
   <!-- ========== CLIENTS TAB ========== -->
-  <div class="tab-content" *ngIf="activeTab === 'clients' && !loading">
+  <div class="tab-content" *ngIf="!labourOnly && activeTab === 'clients' && !loading">
     <div class="content-header">
       <h2>Client Outstanding Collections</h2>
       <div class="stats">
@@ -170,7 +170,7 @@
 
     <ng-template #noClientsOutstanding>
       <div class="empty-state">
-        <span class="empty-icon">✅</span>
+        <span class="empty-icon"></span>
         <h3>No Outstanding Collections</h3>
         <p>All clients have paid in full!</p>
       </div>
@@ -178,7 +178,7 @@
   </div>
 
   <!-- ========== PARTNERS TAB ========== -->
-  <div class="tab-content" *ngIf="activeTab === 'partners' && !loading">
+  <div class="tab-content" *ngIf="!labourOnly && activeTab === 'partners' && !loading">
     <div class="content-header">
       <h2>Partners Information</h2>
     </div>
@@ -212,7 +212,7 @@
 
     <ng-template #noPartners>
       <div class="empty-state">
-        <span class="empty-icon">🤝</span>
+        <span class="empty-icon"></span>
         <h3>No Partners</h3>
         <p>No partner records found</p>
       </div>
@@ -220,55 +220,55 @@
   </div>
 
   <!-- ========== COMPANY OVERVIEW TAB ========== -->
-  <div class="tab-content" *ngIf="activeTab === 'company' && !loading">
+  <div class="tab-content" *ngIf="!labourOnly && activeTab === 'company' && !loading">
     <h2>Company Overview</h2>
 
     <!-- Summary Cards -->
     <div class="summary-grid">
       <div class="summary-card revenue">
-        <div class="card-icon">💰</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Total Revenue</small>
           <strong>{{ formatCurrency(companyStats.totalRevenue) }}</strong>
         </div>
       </div>
       <div class="summary-card expense">
-        <div class="card-icon">💸</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Total Expenses</small>
           <strong>{{ formatCurrency(companyStats.totalExpenses) }}</strong>
         </div>
       </div>
       <div class="summary-card profit">
-        <div class="card-icon">📈</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Net Profit</small>
           <strong>{{ formatCurrency(companyStats.netProfit) }}</strong>
         </div>
       </div>
       <div class="summary-card outstanding">
-        <div class="card-icon">👷</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Worker Outstanding</small>
           <strong>{{ formatCurrency(companyStats.totalWorkerOutstanding) }}</strong>
         </div>
       </div>
       <div class="summary-card receivable">
-        <div class="card-icon">👥</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Client Outstanding</small>
           <strong>{{ formatCurrency(companyStats.totalClientOutstanding) }}</strong>
         </div>
       </div>
       <div class="summary-card stock">
-        <div class="card-icon">📦</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Material Stock Value</small>
           <strong>{{ formatCurrency(companyStats.totalMaterialStock) }}</strong>
         </div>
       </div>
       <div class="summary-card inventory">
-        <div class="card-icon">🏗️</div>
+        <div class="card-icon"></div>
         <div class="card-content">
           <small>Finished Stock Value</small>
           <strong>{{ formatCurrency(companyStats.totalFinishedStock) }}</strong>
@@ -280,7 +280,7 @@
     <div class="detail-sections">
       <!-- Material Stock -->
       <div class="detail-card">
-        <h3>📦 Material Stock</h3>
+        <h3>Material Stock</h3>
         <div class="mini-table" *ngIf="materialStock.length > 0">
           <table>
             <thead>
@@ -307,7 +307,7 @@
 
       <!-- Finished Goods -->
       <div class="detail-card">
-        <h3>🏗️ Finished Goods Inventory</h3>
+        <h3>Finished Goods Inventory</h3>
         <div class="mini-table" *ngIf="finishedStock.length > 0">
           <table>
             <thead>
@@ -341,10 +341,10 @@
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>
-        <span *ngIf="paymentDialog.type === 'worker'">💰 Pay Worker</span>
-        <span *ngIf="paymentDialog.type === 'client'">💵 Collect from Client</span>
+        <span *ngIf="paymentDialog.type === 'worker'">Pay Worker</span>
+        <span *ngIf="paymentDialog.type === 'client'">Collect from Client</span>
       </h3>
-      <button class="btn-close" (click)="closePaymentDialog()">✕</button>
+      <button class="btn-close" (click)="closePaymentDialog()">X</button>
     </div>
     <div class="modal-body">
       <div class="info-row">
@@ -399,11 +399,11 @@
         <div style="display: flex; gap: 16px; padding: 8px 0;">
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="radio" name="depositedToFirm" [value]="true" [(ngModel)]="paymentDialog.depositedToFirm" style="cursor: pointer;">
-            <span style="font-weight: 600;">✅ Yes, Deposited</span>
+            <span style="font-weight: 600;">Yes, Deposited</span>
           </label>
           <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
             <input type="radio" name="depositedToFirm" [value]="false" [(ngModel)]="paymentDialog.depositedToFirm" style="cursor: pointer;">
-            <span style="font-weight: 600;">⏳ Not Yet</span>
+            <span style="font-weight: 600;">Not Yet</span>
           </label>
         </div>
         <small style="color: #6b7280; font-size: 0.85rem; display: block; margin-top: 4px;">Track if partner has deposited the collected amount to firm account</small>
@@ -435,8 +435,8 @@
 <div class="modal-overlay" *ngIf="passbookDialog.show" (click)="closePassbookDialog()">
   <div class="modal-content modal-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>📖 Worker Passbook - {{ passbookDialog.workerName }}</h3>
-      <button class="btn-close" (click)="closePassbookDialog()">✕</button>
+      <h3>Worker Passbook - {{ passbookDialog.workerName }}</h3>
+      <button class="btn-close" (click)="closePassbookDialog()">X</button>
     </div>
     <div class="modal-body">
       <div class="passbook-content" *ngIf="passbookDialog.entries.length > 0; else noEntries">
@@ -474,7 +474,7 @@
       </div>
       <ng-template #noEntries>
         <div class="empty-state">
-          <span class="empty-icon">📖</span>
+          <span class="empty-icon"></span>
           <p>No wage entries found</p>
         </div>
       </ng-template>
@@ -485,4 +485,4 @@
   </div>
 </div>
 
-<app-mfg-footer></app-mfg-footer>
+<app-mfg-footer *ngIf="!embedded"></app-mfg-footer>

@@ -1,0 +1,37 @@
+<app-domain-workspace-shell
+  title="Labour Workspace"
+  subtitle="Add, edit, delete, attendance, pay full/partial, and passbook in one page"
+  icon="groups">
+
+  <mat-tab-group animationDuration="200ms" dynamicHeight>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>badge</mat-icon>
+        Labour Master
+      </ng-template>
+      <ng-template matTabContent>
+        <app-labour-ledger [embedded]="true"></app-labour-ledger>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>payments</mat-icon>
+        Outstanding & Passbook
+      </ng-template>
+      <ng-template matTabContent>
+        <app-reports-dashboard [embedded]="true" [labourOnly]="true"></app-reports-dashboard>
+      </ng-template>
+    </mat-tab>
+
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>event_note</mat-icon>
+        Attendance & Entry
+      </ng-template>
+      <ng-template matTabContent>
+        <app-daily-entry [embedded]="true"></app-daily-entry>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</app-domain-workspace-shell>

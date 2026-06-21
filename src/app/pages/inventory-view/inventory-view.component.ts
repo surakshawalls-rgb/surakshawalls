@@ -1,5 +1,5 @@
 // src/app/pages/inventory-view/inventory-view.component.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InventoryService } from '../../services/inventory.service';
@@ -14,6 +14,7 @@ import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.compo
   styleUrls: ['./inventory-view.component.css']
 })
 export class InventoryViewComponent implements OnInit {
+  @Input() embedded = false;
   finishedGoods: any[] = [];
   rawMaterials: any[] = [];
   lowStockAlerts: any[] = [];

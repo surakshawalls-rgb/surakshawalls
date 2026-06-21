@@ -1,5 +1,5 @@
 ﻿<!-- PRIVATE VIEW: Logged In Users -->
-<div class="app-container" *ngIf="authService.isLoggedIn">
+<div class="app-container" [class.non-library-theme]="!isLibraryRoute()" *ngIf="authService.isLoggedIn">
   <mat-toolbar color="primary" class="app-toolbar">
     <!-- Mobile Menu Button -->
     <button mat-icon-button 
@@ -22,153 +22,96 @@
         <mat-icon>home</mat-icon>
       </button>
 
-      <!-- Labour Staff: ONLY Daily Entry -->
-      <ng-container *ngIf="isLabourStaff()">
-        <button mat-button routerLink="/daily-entry" routerLinkActive="active" class="nav-button">
-          <span>Daily Entry</span>
+      <ng-container *ngIf="hasManufacturingAccess() || isLabourStaff()">
+        <button mat-button routerLink="/dashboard" routerLinkActive="active" class="nav-button nav-primary-action" *ngIf="hasManufacturingAccess()">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
         </button>
-      </ng-container>
+        <button mat-button routerLink="/labour-workspace" routerLinkActive="active" class="nav-button nav-primary-action" *ngIf="isLabourStaff()">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </button>
 
-      <!-- Manufacturing Section (Excludes Labour Staff) -->
-      <ng-container *ngIf="hasManufacturingAccess()">
-        <!-- ⭐ OPERATIONS -->
-        <button mat-button [matMenuTriggerFor]="operationsMenu" class="nav-button">
+        <button mat-button [matMenuTriggerFor]="addMenu" class="nav-button nav-add-btn">
+          <mat-icon>add</mat-icon>
           <span>Operations</span>
           <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
         </button>
-        <mat-menu #operationsMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/daily-entry" routerLinkActive="active">
-            <mat-icon>edit_note</mat-icon>
-            <span>Daily Entry</span>
+        <mat-menu #addMenu="matMenu" class="nav-dropdown">
+          <button mat-menu-item routerLink="/labour-workspace">
+            <mat-icon>groups</mat-icon>
+            <span>Labour Workspace</span>
           </button>
-          <button mat-menu-item routerLink="/pending-approvals" routerLinkActive="active" *ngIf="authService.isAdmin()">
-            <mat-icon>pending_actions</mat-icon>
-            <span>Pending Approvals</span>
-          </button>
-        </mat-menu>
-
-        <!-- INVENTORY & STOCK -->
-        <button mat-button [matMenuTriggerFor]="inventoryMenu" class="nav-button">
-          <span>Inventory</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #inventoryMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/inventory" routerLinkActive="active">
-            <mat-icon>inventory_2</mat-icon>
-            <span>Current Stock</span>
-          </button>
-          <button mat-menu-item routerLink="/stock-audit" routerLinkActive="active">
-            <mat-icon>fact_check</mat-icon>
-            <span>Stock Audit</span>
-          </button>
-          <button mat-menu-item routerLink="/material-purchase" routerLinkActive="active">
-            <mat-icon>shopping_cart</mat-icon>
-            <span>Material Purchase</span>
-          </button>
-          <button mat-menu-item routerLink="/supplier-management" routerLinkActive="active">
-            <mat-icon>local_shipping</mat-icon>
-            <span>Supplier Management</span>
-          </button>
-        </mat-menu>
-
-        <!-- FINANCE -->
-        <button mat-button [matMenuTriggerFor]="financeMenu" class="nav-button">
-          <span>Finance</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #financeMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/client-ledger" routerLinkActive="active">
-            <mat-icon>people</mat-icon>
-            <span>Client Ledger</span>
-          </button>
-          <button mat-menu-item routerLink="/client-payment" routerLinkActive="active">
+          <button mat-menu-item routerLink="/client-payment" *ngIf="!isLabourStaff()">
             <mat-icon>payments</mat-icon>
-            <span>Client Payments</span>
+            <span>Revenue Collection</span>
           </button>
-          <button mat-menu-item routerLink="/labour-ledger" routerLinkActive="active">
+          <button mat-menu-item routerLink="/production-workspace">
+            <mat-icon>precision_manufacturing</mat-icon>
+            <span>Production Workspace</span>
+          </button>
+          <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
+            <mat-icon>inventory_2</mat-icon>
+            <span>Stock Workspace</span>
+          </button>
+          <button mat-menu-item routerLink="/company-cash" *ngIf="authService.isAdmin()">
             <mat-icon>account_balance_wallet</mat-icon>
-            <span>Labour Ledger</span>
+            <span>Partner Withdrawals</span>
           </button>
         </mat-menu>
 
-        <!-- REPORTS & ANALYTICS -->
-        <button mat-button [matMenuTriggerFor]="reportsMenu" class="nav-button">
+        <button mat-button [matMenuTriggerFor]="reportsMenuSimple" class="nav-button">
+          <mat-icon>assessment</mat-icon>
           <span>Reports</span>
           <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
         </button>
-        <mat-menu #reportsMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/dashboard" routerLinkActive="active">
-            <mat-icon>dashboard</mat-icon>
-            <span>Dashboard</span>
+        <mat-menu #reportsMenuSimple="matMenu" class="nav-dropdown">
+          <button mat-menu-item routerLink="/labour-workspace" *ngIf="!isLabourStaff()">
+            <mat-icon>menu_book</mat-icon>
+            <span>Labour Ledger</span>
           </button>
-          <button mat-menu-item routerLink="/reports-dashboard" routerLinkActive="active">
-            <mat-icon>assessment</mat-icon>
-            <span>Business Reports</span>
+          <button mat-menu-item routerLink="/partner-dashboard" *ngIf="authService.isAdmin()">
+            <mat-icon>book</mat-icon>
+            <span>Partner Ledger</span>
           </button>
-        </mat-menu>
-      </ng-container>
-
-      <!-- Partner & Admin Section -->
-      <ng-container *ngIf="authService.isAdmin()">
-        <button mat-button [matMenuTriggerFor]="partnerMenu" class="nav-button">
-          <span>Admin</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #partnerMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/partner-dashboard" routerLinkActive="active">
-            <mat-icon>dashboard</mat-icon>
-            <span>Partner Dashboard</span>
+          <button mat-menu-item routerLink="/reports-dashboard" *ngIf="!isLabourStaff()">
+            <mat-icon>bar_chart</mat-icon>
+            <span>Revenue and Dues</span>
           </button>
-          <button mat-menu-item routerLink="/partner" routerLinkActive="active">
-            <mat-icon>handshake</mat-icon>
-            <span>Partner Settings</span>
+          <button mat-menu-item routerLink="/production-workspace" *ngIf="!isLabourStaff()">
+            <mat-icon>factory</mat-icon>
+            <span>Production Overview</span>
           </button>
-          <button mat-menu-item routerLink="/company-cash" routerLinkActive="active">
+          <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
             <mat-icon>account_balance</mat-icon>
-            <span>Company Cash</span>
-          </button>
-          <button mat-menu-item routerLink="/admin-user-management" routerLinkActive="active">
-            <mat-icon>manage_accounts</mat-icon>
-            <span>User Management</span>
+            <span>Stock and Balance</span>
           </button>
         </mat-menu>
       </ng-container>
 
-      <!-- Library Section -->
       <ng-container *ngIf="hasLibraryAccess()">
-        <button mat-button [matMenuTriggerFor]="libraryMenu" class="nav-button">
+        <button mat-button [matMenuTriggerFor]="libraryQuickMenu" class="nav-button">
+          <mat-icon>menu_book</mat-icon>
           <span>Library</span>
           <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
         </button>
-        <mat-menu #libraryMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/library-grid" routerLinkActive="active">
+        <mat-menu #libraryQuickMenu="matMenu" class="nav-dropdown">
+          <button mat-menu-item routerLink="/library-grid">
             <mat-icon>grid_on</mat-icon>
-            <span>Seat Grid</span>
+            <span>Seating Grid</span>
           </button>
-          <ng-container *ngIf="hasFullLibraryAccess()">
-            <button mat-menu-item routerLink="/library-dashboard" routerLinkActive="active">
-              <mat-icon>dashboard</mat-icon>
-              <span>Library Dashboard</span>
-            </button>
-            <button mat-menu-item routerLink="/library-students" routerLinkActive="active">
-              <mat-icon>school</mat-icon>
-              <span>Students</span>
-            </button>
-            <button mat-menu-item routerLink="/library-registration-requests" routerLinkActive="active" *ngIf="authService.canEdit()">
-              <mat-icon>how_to_reg</mat-icon>
-              <span>Membership Requests</span>
-            </button>
-            <button mat-menu-item routerLink="/library-expenses" routerLinkActive="active">
-              <mat-icon>payments</mat-icon>
-              <span>Expenses</span>
-            </button>
-          </ng-container>
-          <ng-container *ngIf="authService.isAdmin()">
-            <button mat-menu-item routerLink="/library-complaints" routerLinkActive="active">
-              <mat-icon>feedback</mat-icon>
-              <span>View Complaints</span>
-            </button>
-          </ng-container>
+          <button mat-menu-item routerLink="/library-dashboard" *ngIf="hasFullLibraryAccess()">
+            <mat-icon>dashboard</mat-icon>
+            <span>Dashboard</span>
+          </button>
+          <button mat-menu-item routerLink="/library-students" *ngIf="hasFullLibraryAccess()">
+            <mat-icon>school</mat-icon>
+            <span>Students</span>
+          </button>
+          <button mat-menu-item routerLink="/library-expenses" *ngIf="hasFullLibraryAccess()">
+            <mat-icon>payments</mat-icon>
+            <span>Expenses</span>
+          </button>
         </mat-menu>
       </ng-container>
     </nav>
@@ -183,181 +126,103 @@
       {{ currentUser?.full_name || currentUser?.email }}
     </span>
     
-    <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    
-    <mat-menu #userMenu="matMenu" xPosition="before">
-      <button mat-menu-item disabled>
-        <mat-icon>person</mat-icon>
-        <span>{{ currentUser?.full_name || currentUser?.email }}</span>
-      </button>
-      <mat-divider></mat-divider>
-      <button mat-menu-item (click)="sendTestNotification()" *ngIf="authService.isAdmin() && isLocalhostEnvironment">
-        <mat-icon>notifications_active</mat-icon>
-        <span>Test Notifications</span>
-      </button>
-      <mat-divider *ngIf="authService.isAdmin() && isLocalhostEnvironment"></mat-divider>
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>exit_to_app</mat-icon>
-        <span>Logout</span>
-      </button>
-    </mat-menu>
-
-    <!-- Mobile Full Menu -->
     <mat-menu #mobileMenu="matMenu" class="mobile-nav-menu">
-      <!-- Home Button -->
       <button mat-menu-item routerLink="/home">
         <mat-icon>home</mat-icon>
         <span>Home</span>
       </button>
-      <mat-divider></mat-divider>
-      
-      <!-- Labour Staff: ONLY Daily Entry -->
-      <ng-container *ngIf="isLabourStaff()">
-        <button mat-menu-item routerLink="/daily-entry">
-          <mat-icon>edit_note</mat-icon>
-          <span>Daily Entry</span>
-        </button>
-      </ng-container>
 
-      <!-- Manufacturing Section (Excludes Labour Staff) -->
-      <ng-container *ngIf="hasManufacturingAccess()">
-        <!-- OPERATIONS -->
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>settings</mat-icon>
-          <span>OPERATIONS</span>
-        </button>
-        <button mat-menu-item routerLink="/daily-entry">
-          <mat-icon>edit_note</mat-icon>
-          <span>Daily Entry</span>
-        </button>
-        <button mat-menu-item routerLink="/pending-approvals" *ngIf="authService.isAdmin()">
-          <mat-icon>pending_actions</mat-icon>
-          <span>Pending Approvals</span>
-        </button>
-        <mat-divider></mat-divider>
-        
-        <!-- INVENTORY -->
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>inventory_2</mat-icon>
-          <span>INVENTORY</span>
-        </button>
-        <button mat-menu-item routerLink="/inventory">
-          <mat-icon>inventory_2</mat-icon>
-          <span>Current Stock</span>
-        </button>
-        <button mat-menu-item routerLink="/stock-audit">
-          <mat-icon>fact_check</mat-icon>
-          <span>Stock Audit</span>
-        </button>
-        <button mat-menu-item routerLink="/material-purchase">
-          <mat-icon>shopping_cart</mat-icon>
-          <span>Material Purchase</span>
-        </button>
-        <button mat-menu-item routerLink="/supplier-management">
-          <mat-icon>local_shipping</mat-icon>
-          <span>Supplier Management</span>
-        </button>
-        <mat-divider></mat-divider>
-        
-        <!-- FINANCE -->
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>account_balance</mat-icon>
-          <span>FINANCE</span>
-        </button>
-        <button mat-menu-item routerLink="/client-ledger">
-          <mat-icon>people</mat-icon>
-          <span>Client Ledger</span>
-        </button>
-        <button mat-menu-item routerLink="/client-payment">
-          <mat-icon>payments</mat-icon>
-          <span>Client Payments</span>
-        </button>
-        <button mat-menu-item routerLink="/labour-ledger">
-          <mat-icon>account_balance_wallet</mat-icon>
-          <span>Labour Ledger</span>
-        </button>
-        <mat-divider></mat-divider>
-        
-        <!-- REPORTS -->
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>assessment</mat-icon>
-          <span>REPORTS</span>
-        </button>
-        <button mat-menu-item routerLink="/dashboard">
+      <ng-container *ngIf="hasManufacturingAccess() || isLabourStaff()">
+        <button mat-menu-item routerLink="/dashboard" *ngIf="hasManufacturingAccess()">
           <mat-icon>dashboard</mat-icon>
           <span>Dashboard</span>
         </button>
-        <button mat-menu-item routerLink="/reports-dashboard">
-          <mat-icon>assessment</mat-icon>
-          <span>Business Reports</span>
+        <button mat-menu-item routerLink="/labour-workspace" *ngIf="isLabourStaff()">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
         </button>
-      </ng-container>
-      
-      <ng-container *ngIf="authService.isAdmin()">
+
         <mat-divider></mat-divider>
         <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>admin_panel_settings</mat-icon>
-          <span>ADMIN</span>
+          <mat-icon>add_circle</mat-icon>
+          <span>Operations</span>
         </button>
-        <button mat-menu-item routerLink="/partner-dashboard">
-          <mat-icon>dashboard</mat-icon>
-          <span>Partner Dashboard</span>
+        <button mat-menu-item routerLink="/labour-workspace">
+          <mat-icon>groups</mat-icon>
+          <span>Labour Workspace</span>
         </button>
-        <button mat-menu-item routerLink="/partner">
-          <mat-icon>handshake</mat-icon>
-          <span>Partner Settings</span>
+        <button mat-menu-item routerLink="/client-payment" *ngIf="!isLabourStaff()">
+          <mat-icon>payments</mat-icon>
+          <span>Revenue Collection</span>
         </button>
-        <button mat-menu-item routerLink="/company-cash">
+        <button mat-menu-item routerLink="/production-workspace">
+          <mat-icon>precision_manufacturing</mat-icon>
+          <span>Production Workspace</span>
+        </button>
+        <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Stock Workspace</span>
+        </button>
+        <button mat-menu-item routerLink="/company-cash" *ngIf="authService.isAdmin()">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <span>Partner Withdrawals</span>
+        </button>
+
+        <mat-divider></mat-divider>
+        <button mat-menu-item disabled class="menu-section-header">
+          <mat-icon>assessment</mat-icon>
+          <span>Reports</span>
+        </button>
+        <button mat-menu-item routerLink="/labour-workspace" *ngIf="!isLabourStaff()">
+          <mat-icon>menu_book</mat-icon>
+          <span>Labour Ledger</span>
+        </button>
+        <button mat-menu-item routerLink="/partner-dashboard" *ngIf="authService.isAdmin()">
+          <mat-icon>book</mat-icon>
+          <span>Partner Ledger</span>
+        </button>
+        <button mat-menu-item routerLink="/reports-dashboard" *ngIf="!isLabourStaff()">
+          <mat-icon>bar_chart</mat-icon>
+          <span>Revenue and Dues</span>
+        </button>
+        <button mat-menu-item routerLink="/production-workspace" *ngIf="!isLabourStaff()">
+          <mat-icon>factory</mat-icon>
+          <span>Production Overview</span>
+        </button>
+        <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
           <mat-icon>account_balance</mat-icon>
-          <span>Company Cash</span>
-        </button>
-        <button mat-menu-item routerLink="/admin-user-management">
-          <mat-icon>manage_accounts</mat-icon>
-          <span>User Management</span>
+          <span>Stock and Balance</span>
         </button>
       </ng-container>
+
       <ng-container *ngIf="hasLibraryAccess()">
         <mat-divider></mat-divider>
         <button mat-menu-item disabled class="menu-section-header">
           <mat-icon>local_library</mat-icon>
-          <span>LIBRARY</span>
+          <span>Library</span>
         </button>
         <button mat-menu-item routerLink="/library-grid">
           <mat-icon>grid_on</mat-icon>
-          <span>Seat Grid</span>
+          <span>Seating Grid</span>
         </button>
-        <ng-container *ngIf="hasFullLibraryAccess()">
-          <button mat-menu-item routerLink="/library-dashboard">
-            <mat-icon>dashboard</mat-icon>
-            <span>Library Dashboard</span>
-          </button>
-          <button mat-menu-item routerLink="/library-students">
-            <mat-icon>school</mat-icon>
-            <span>Students</span>
-          </button>
-          <button mat-menu-item routerLink="/library-registration-requests" *ngIf="authService.canEdit()">
-            <mat-icon>how_to_reg</mat-icon>
-            <span>Membership Requests</span>
-          </button>
-          <button mat-menu-item routerLink="/library-expenses">
-            <mat-icon>payments</mat-icon>
-            <span>Expenses</span>
-          </button>
-        </ng-container>
-        <ng-container *ngIf="authService.isAdmin()">
-          <button mat-menu-item routerLink="/library-complaints">
-            <mat-icon>feedback</mat-icon>
-            <span>View Complaints</span>
-          </button>
-        </ng-container>
+        <button mat-menu-item routerLink="/library-dashboard" *ngIf="hasFullLibraryAccess()">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </button>
+        <button mat-menu-item routerLink="/library-students" *ngIf="hasFullLibraryAccess()">
+          <mat-icon>school</mat-icon>
+          <span>Students</span>
+        </button>
+        <button mat-menu-item routerLink="/library-expenses" *ngIf="hasFullLibraryAccess()">
+          <mat-icon>payments</mat-icon>
+          <span>Expenses</span>
+        </button>
       </ng-container>
     </mat-menu>
   </mat-toolbar>
 
-  <div class="main-content">
-    <div class="content-wrapper">
+  <div class="main-content" [class.non-library-theme]="!isLibraryRoute()">
+    <div class="content-wrapper" [class.non-library-theme]="!isLibraryRoute()">
       <router-outlet></router-outlet>
     </div>
   </div>

@@ -103,7 +103,7 @@
         <div class="product-card" *ngFor="let product of products">
           <div class="product-header">
             <h3>{{ product.name }}</h3>
-            <div class="price-badge">{{ product.price }}</div>
+            <div class="price-badge" *ngIf="product.price">{{ product.price }}</div>
           </div>
           <p class="product-specs">{{ product.specs }}</p>
           <p class="product-desc">{{ product.description }}</p>

@@ -1,0 +1,10 @@
+mat-tab-group {
+  padding: 8px;
+}
+
+::ng-deep .mat-mdc-tab .mdc-tab__text-label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-weight: 600;
+}

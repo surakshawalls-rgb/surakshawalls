@@ -302,8 +302,16 @@
   transition: background 0.2s;
 }
 
+.expenses-table .mat-mdc-row:nth-child(odd) {
+  background: #ffffff;
+}
+
+.expenses-table .mat-mdc-row:nth-child(even) {
+  background: #f2f4f7;
+}
+
 .expenses-table .mat-mdc-row:hover {
-  background: #f5f7fa;
+  background: #eaf1f8;
 }
 
 /* Category and Payment Chips */

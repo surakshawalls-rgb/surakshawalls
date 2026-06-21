@@ -1,5 +1,5 @@
 // src/app/pages/material-purchase/material-purchase.component.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialPurchaseService } from '../../services/material-purchase.service';
@@ -15,6 +15,7 @@ import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.compo
   styleUrls: ['./material-purchase.component.css']
 })
 export class MaterialPurchaseComponent implements OnInit {
+  @Input() embedded = false;
   // Form data
   date: string = new Date().toISOString().split('T')[0];
   materialName: string = '';
@@ -76,6 +77,7 @@ export class MaterialPurchaseComponent implements OnInit {
       const { data, error } = await this.inventoryService['supabase'].supabase
         .from('partner_master')
         .select('id, partner_name')
+        .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%')
         .order('partner_name');
       
       if (error) throw error;

@@ -64,6 +64,22 @@ export const routes: Routes = [
     canActivate: [authGuard, manufacturingGuard] 
   },
 
+  { 
+    path: 'labour-workspace', 
+    loadComponent: () => import('./pages/workspaces/labour-workspace.component').then(m => m.LabourWorkspaceComponent),
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+  },
+  { 
+    path: 'production-workspace', 
+    loadComponent: () => import('./pages/workspaces/production-workspace.component').then(m => m.ProductionWorkspaceComponent),
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+  },
+  { 
+    path: 'stock-workspace', 
+    loadComponent: () => import('./pages/workspaces/stock-workspace.component').then(m => m.StockWorkspaceComponent),
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+  },
+
   // 📊 REPORTS & LEDGERS
   { 
     path: 'pending-approvals', 
@@ -77,8 +93,8 @@ export const routes: Routes = [
   },
   { 
     path: 'labour-ledger', 
-    loadComponent: () => import('./pages/labour-ledger/labour-ledger').then(m => m.LabourLedgerComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'labour-workspace',
+    pathMatch: 'full'
   },
   { 
     path: 'reports-dashboard', 
@@ -89,23 +105,23 @@ export const routes: Routes = [
   // 🏭 MANAGEMENT & OPERATIONS
   { 
     path: 'worker-management', 
-    loadComponent: () => import('./pages/worker-management/worker-management.component').then(m => m.WorkerManagementComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'labour-workspace',
+    pathMatch: 'full'
   },
   { 
     path: 'material-purchase', 
-    loadComponent: () => import('./pages/material-purchase/material-purchase.component').then(m => m.MaterialPurchaseComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'stock-workspace',
+    pathMatch: 'full'
   },
   { 
     path: 'inventory', 
-    loadComponent: () => import('./pages/inventory-view/inventory-view.component').then(m => m.InventoryViewComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'stock-workspace',
+    pathMatch: 'full'
   },
   { 
     path: 'stock-audit', 
-    loadComponent: () => import('./pages/stock-audit/stock-audit.component').then(m => m.StockAuditComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'stock-workspace',
+    pathMatch: 'full'
   },
 
   // DEPRECATED - Use daily-entry instead

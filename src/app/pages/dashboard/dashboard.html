@@ -1,199 +1,89 @@
 <app-breadcrumb></app-breadcrumb>
 
-<div class="dashboard-container" 
-     style="min-height: 100vh; background: #ffffff; padding: 24px;">
+<div class="dashboard-container" style="padding: 16px;">
+  <div class="top-bar">
+    <h2>Business Dashboard</h2>
+    <button (click)="loadDashboard()" [disabled]="loading">Refresh</button>
+  </div>
 
-  <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-      <h2 style="margin: 0; font-size: 11px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
-        <span style="background: #e0e0e0; padding: 8px; border-radius: 8px;">📊</span>
-        Business Dashboard
-      </h2>
-      <button (click)="loadDashboard()" class="btn btn-primary"
-              style="background: #1976d2; color: white; border: none; padding: 10px 16px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 9px;"
-              [disabled]="loading">
-        <span *ngIf="loading" style="width: 16px; height: 16px; border: 2px solid white; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></span>
-        <span *ngIf="!loading">🔄</span> Refresh
-      </button>
+  <div class="metrics-row">
+    <div class="metric-card success">
+      <div class="metric-label">Current Cash</div>
+      <p class="metric-value">₹{{ cashBalance | number }}</p>
     </div>
-
-    <!-- Revenue Summary Card -->
-    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="margin: 0 0 16px 0; font-size: 10px; font-weight: 700; color: #10b981; border-bottom: 2px solid #10b981; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 9px;">💰</span>
-        Revenue Summary
-      </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Revenue</div>
-          <div style="font-size: 18px; font-weight: 700; color: #10b981;">₹{{totalRevenue | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Received</div>
-          <div style="font-size: 18px; font-weight: 700; color: #10b981;">₹{{totalReceived | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Due</div>
-          <div style="font-size: 18px; font-weight: 700; color: #10b981;">₹{{totalDue | number}}</div>
-        </div>
-      </div>
+    <div class="metric-card success">
+      <div class="metric-label">Total Revenue</div>
+      <p class="metric-value">₹{{ totalRevenue | number }}</p>
     </div>
-
-    <!-- Partner Wallet Card -->
-    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="margin: 0 0 16px 0; font-size: 10px; font-weight: 700; color: #8b5cf6; border-bottom: 2px solid #8b5cf6; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 9px;">🤝</span>
-        Partner Wallet Holding
-      </h3>
-      <div *ngIf="partnerWallets && partnerWallets.length > 0; else noPartners" 
-           style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0; font-weight: 600; background: #f5f5f5; padding: 10px; font-size: 9px; color: #333;">
-          <div>Partner Name</div>
-          <div style="text-align: center;">Balance (₹)</div>
-          <div style="text-align: center;">Status</div>
-        </div>
-        <div *ngFor="let p of partnerWallets; let i = index" 
-             style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0; padding: 10px; border-bottom: 1px solid #e0e0e0; transition: all 0.3s ease; font-size: 9px;"
-             [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'"
-             onmouseover="this.style.background='#f0f0f0'"
-             onmouseout="this.style.background=''">
-          <div style="color: #333;">{{p.partnerName}}</div>
-          <div style="text-align: center; font-weight: 600; color: #8b5cf6;">{{p.balance | number}}</div>
-          <div style="text-align: center;">
-            <span style="padding: 2px 8px; background: #e9d5ff; color: #7c3aed; border-radius: 4px; font-size: 8px; font-weight: 600;">{{p.status}}</span>
-          </div>
-        </div>
-      </div>
-      <ng-template #noPartners>
-        <div style="background: #f9f9f9; padding: 24px; border-radius: 4px; text-align: center; border: 1px solid #e0e0e0;">
-          <div style="font-size: 24px; margin-bottom: 8px; opacity: 0.6;">🚫</div>
-          <div style="font-size: 9px; color: #666;">No partner data available</div>
-        </div>
-      </ng-template>
+    <div class="metric-card warning">
+      <div class="metric-label">Pending Client Due</div>
+      <p class="metric-value">₹{{ totalDue | number }}</p>
     </div>
-
-    <!-- Client Due Ledger Card -->
-    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="margin: 0 0 16px 0; font-size: 10px; font-weight: 700; color: #3b82f6; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 9px;">📒</span>
-        Client Due Ledger
-      </h3>
-      <div *ngIf="dueLedger && dueLedger.length > 0; else noDue" 
-           style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden;">
-        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0; font-weight: 600; background: #f5f5f5; padding: 10px; font-size: 9px; color: #333;">
-          <div>Client Name</div>
-          <div style="text-align: center;">Total Billed</div>
-          <div style="text-align: center;">Total Paid</div>
-          <div style="text-align: center;">Due Amount</div>
-        </div>
-        <div *ngFor="let c of dueLedger; let i = index" 
-             style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 0; padding: 10px; border-bottom: 1px solid #e0e0e0; transition: all 0.3s ease; font-size: 9px;"
-             [style.background]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'"
-             onmouseover="this.style.background='#f0f0f0'"
-             onmouseout="this.style.background=''">
-          <div style="color: #333;">{{c.clientName}}</div>
-          <div style="text-align: center; color: #666;">₹{{c.totalBilled | number}}</div>
-          <div style="text-align: center; color: #10b981;">₹{{c.totalPaid | number}}</div>
-          <div style="text-align: center; font-weight: 700;">
-            <span style="padding: 2px 8px; background: #fee2e2; color: #dc2626; border-radius: 4px; font-size: 8px; font-weight: 600;">₹{{c.due | number}}</span>
-          </div>
-        </div>
-      </div>
-      <ng-template #noDue>
-        <div style="background: #f9f9f9; padding: 24px; border-radius: 4px; text-align: center; border: 1px solid #e0e0e0;">
-          <div style="font-size: 24px; margin-bottom: 8px; opacity: 0.6;">✅</div>
-          <div style="font-size: 9px; color: #666;">No client data available</div>
-        </div>
-      </ng-template>
+    <div class="metric-card warning">
+      <div class="metric-label">Labour Payments</div>
+      <p class="metric-value">₹{{ totalLabourCost | number }}</p>
     </div>
-
-    <!-- Production Stock Card -->
-    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="margin: 0 0 16px 0; font-size: 10px; font-weight: 700; color: #f59e0b; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 9px;">🏭</span>
-        Total Production Stock
-      </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 16px; margin-bottom: 4px;">🚧</div>
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Fencing Pole</div>
-          <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">{{production.fencing_pole | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 16px; margin-bottom: 4px;">🍽️</div>
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Plain Plate</div>
-          <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">{{production.plain_plate | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 16px; margin-bottom: 4px;">🏢</div>
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Jumbo Pillar</div>
-          <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">{{production.jumbo_pillar | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 16px; margin-bottom: 4px;">⚪</div>
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Round Plate</div>
-          <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">{{production.round_plate | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 16px; margin-bottom: 4px;">🍪</div>
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Biscuit Plate</div>
-          <div style="font-size: 18px; font-weight: 700; color: #f59e0b;">{{production.biscuit_plate | number}}</div>
-        </div>
-      </div>
+    <div class="metric-card warning">
+      <div class="metric-label">Partner Expense</div>
+      <p class="metric-value">₹{{ totalPartnerExpense | number }}</p>
     </div>
-
-    <!-- Profit/Loss Card -->
-    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-radius: 4px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-      <h3 style="margin: 0 0 16px 0; font-size: 10px; font-weight: 700; color: #ec4899; border-bottom: 2px solid #ec4899; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 9px;">📈</span>
-        Profit & Loss
-      </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-bottom: 16px;">
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Labour Expense</div>
-          <div style="font-size: 18px; font-weight: 700; color: #ec4899;">₹{{labourTotal | number}}</div>
-        </div>
-        <div style="background: #ffffff; border: 1px solid #e0e0e0; padding: 12px; border-radius: 4px; text-align: center;">
-          <div style="font-size: 9px; color: #666; margin-bottom: 4px;">Total Partner Expense</div>
-          <div style="font-size: 18px; font-weight: 700; color: #ec4899;">₹{{partnerExpenseTotal | number}}</div>
-        </div>
-      </div>
-      <div style="background: #f9f9f9; padding: 16px; border-radius: 4px; text-align: center; border: 2px solid #e0e0e0;">
-        <div style="font-size: 9px; color: #666; margin-bottom: 8px; font-weight: 600;">Net Amount</div>
-        <h2 style="margin: 0; font-size: 24px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;"
-            [style.color]="profitLoss > 0 ? '#10b981' : '#ef4444'">
-          <span style="font-size: 18px;">{{profitLoss > 0 ? '📈' : '📉'}}</span>
-          ₹{{profitLoss | number}}
-        </h2>
-        <div style="margin-top: 8px; font-size: 9px; font-weight: 600;"
-             [style.color]="profitLoss > 0 ? '#10b981' : '#ef4444'">
-          {{profitLoss > 0 ? 'Profit' : 'Loss'}}
-        </div>
-      </div>
+    <div class="metric-card danger">
+      <div class="metric-label">Partner Withdrawals</div>
+      <p class="metric-value">₹{{ totalPartnerWithdrawal | number }}</p>
+    </div>
+    <div class="metric-card" [class.success]="profitLoss >= 0" [class.danger]="profitLoss < 0">
+      <div class="metric-label">Net Position</div>
+      <p class="metric-value">₹{{ profitLoss | number }}</p>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" 
-       style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-    <div style="background: #ffffff; padding: 24px; border-radius: 4px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border: 1px solid #e0e0e0;">
-      <div style="width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top: 3px solid #1976d2; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px;"></div>
-      <div style="font-size: 10px; font-weight: 600; color: #333;">Loading Dashboard...</div>
-    </div>
+  <div class="card">
+    <h3>Stock Summary</h3>
+    <table class="simple-table">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Fencing Pole</td><td>{{ production.fencing_pole | number }}</td></tr>
+        <tr><td>Plain Plate</td><td>{{ production.plain_plate | number }}</td></tr>
+        <tr><td>Jumbo Pillar</td><td>{{ production.jumbo_pillar | number }}</td></tr>
+        <tr><td>Round Plate</td><td>{{ production.round_plate | number }}</td></tr>
+        <tr><td>Biscuit Plate</td><td>{{ production.biscuit_plate | number }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Top Client Dues</h3>
+    <table class="simple-table" *ngIf="dueLedger.length > 0; else noDueData">
+      <thead>
+        <tr>
+          <th>Client</th>
+          <th>Total</th>
+          <th>Paid</th>
+          <th>Due</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of dueLedger | slice:0:10">
+          <td>{{ c.clientName }}</td>
+          <td>₹{{ c.totalBilled | number }}</td>
+          <td>₹{{ c.totalPaid | number }}</td>
+          <td><span class="status-badge status-owed">₹{{ c.due | number }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noDueData>
+      <div class="no-data"><p class="no-data-message">No client dues.</p></div>
+    </ng-template>
+  </div>
+
+  <div *ngIf="loading" class="no-data">
+    <p class="no-data-message">Loading dashboard...</p>
   </div>
 </div>
-
-<style>
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 0%; }
-  25% { background-position: 100% 0%; }
-  50% { background-position: 100% 100%; }
-  75% { background-position: 0% 100%; }
-}
-</style>
 
 <app-mfg-footer></app-mfg-footer>

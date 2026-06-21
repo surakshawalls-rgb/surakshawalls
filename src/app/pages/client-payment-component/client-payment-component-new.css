@@ -94,6 +94,59 @@ textarea.form-control {
   font-size: 12px;
 }
 
+.client-search-results {
+  margin-top: 8px;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.client-option {
+  width: 100%;
+  border: none;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid #edf1f5;
+}
+
+.client-option:last-child {
+  border-bottom: none;
+}
+
+.client-option:hover {
+  background: #f6f9fc;
+}
+
+.client-option small {
+  display: block;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.empty-option {
+  color: #6b7280;
+  cursor: default;
+}
+
+.selected-client-banner {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #eef6ff;
+  border: 1px solid #cfe0f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 /* Table Styles */
 .data-table {
   width: 100%;
@@ -122,8 +175,16 @@ textarea.form-control {
   color: #333;
 }
 
+.data-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: #f2f4f7;
+}
+
 .data-table tbody tr:hover {
-  background: #f9f9f9;
+  background: #eaf1f8;
 }
 
 .data-table tr.has-outstanding {

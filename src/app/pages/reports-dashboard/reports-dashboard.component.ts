@@ -1,5 +1,5 @@
 // src/app/pages/reports-dashboard/reports-dashboard.component.ts  
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkerService, Worker } from '../../services/worker.service';
@@ -44,6 +44,9 @@ interface PassbookDialog {
   styleUrls: ['./reports-dashboard.component.css']
 })
 export class ReportsDashboardComponent implements OnInit {
+
+  @Input() embedded = false;
+  @Input() labourOnly = false;
   
   // Active tab
   activeTab: 'workers' | 'clients' | 'partners' | 'company' = 'workers';
@@ -110,6 +113,9 @@ export class ReportsDashboardComponent implements OnInit {
   async ngOnInit() {
    await this.loadPartnersList();
    await this.loadWorkersData();
+   if (this.labourOnly) {
+     this.activeTab = 'workers';
+   }
   }
   
   // ========== TAB NAVIGATION ==========
@@ -310,7 +316,7 @@ export class ReportsDashboardComponent implements OnInit {
         await this.collectFromClient();
       }
       
-      this.successMessage = '✅ Payment processed successfully!';
+      this.successMessage = 'Payment processed successfully.';
       this.closePaymentDialog();
       
       // Reload data
@@ -468,7 +474,7 @@ export class ReportsDashboardComponent implements OnInit {
   // ========== UTILITY METHODS ==========
   
   formatCurrency(amount: number): string {
-    return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return `INR ${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
   
   formatDate(dateString: string): string {

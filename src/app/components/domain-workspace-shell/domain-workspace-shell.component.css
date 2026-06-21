@@ -1,0 +1,53 @@
+.workspace-shell {
+  display: block;
+}
+
+.workspace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: linear-gradient(90deg, #ffffff 0%, #f5f9ff 100%);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 14px;
+}
+
+.workspace-title-block {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.workspace-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.workspace-title-block h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.workspace-title-block p {
+  margin: 2px 0 0 0;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.workspace-body {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}

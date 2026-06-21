@@ -1,9 +1,9 @@
 <!-- src/app/pages/inventory-view/inventory-view.component.html -->
-<app-breadcrumb></app-breadcrumb>
+<app-breadcrumb *ngIf="!embedded"></app-breadcrumb>
 <div class="page-container">
   <!-- Header -->
   <div class="page-header">
-    <h2 class="page-title">📦 Inventory Management</h2>
+    <h2 class="page-title">Inventory Management</h2>
     <p class="page-subtitle">Monitor stock levels and inventory value</p>
   </div>
 
@@ -23,12 +23,12 @@
 
       <div style="background: white; border: 1px solid #e0e0e0; border-left: 4px solid #4CAF50; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: 600; text-transform: uppercase;">Finished Goods Value</div>
-        <div style="font-size: 1.8rem; font-weight: 700; color: #333;">₹{{ inventoryValuation.total_finished_goods_value | number }}</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #333;">INR {{ inventoryValuation.total_finished_goods_value | number }}</div>
       </div>
 
       <div style="background: white; border: 1px solid #e0e0e0; border-left: 4px solid #FF9800; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
         <div style="font-size: 0.85rem; color: #666; margin-bottom: 8px; font-weight: 600; text-transform: uppercase;">Raw Materials Value</div>
-        <div style="font-size: 1.8rem; font-weight: 700; color: #333;">₹{{ inventoryValuation.total_materials_value | number }}</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: #333;">INR {{ inventoryValuation.total_materials_value | number }}</div>
       </div>
 
       <div *ngIf="lowStockAlerts.length > 0" style="background: white; border: 1px solid #e0e0e0; border-left: 4px solid #F44336; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
@@ -39,7 +39,7 @@
 
     <!-- Low Stock Alerts -->
     <div *ngIf="lowStockAlerts.length > 0" class="form-container" style="margin-bottom: 24px; background: #fff8f8; border-left: 4px solid #F44336;">
-      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">⚠️ Low Stock Alerts</h3>
+      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">Low Stock Alerts</h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
         <div *ngFor="let alert of lowStockAlerts" style="background: white; border: 1px solid #ffcdd2; padding: 16px; border-radius: 8px;">
           <div style="font-weight: 700; font-size: 1rem; margin-bottom: 8px; color: #d32f2f;">{{ alert.product_name }}</div>
@@ -53,7 +53,7 @@
 
     <!-- Finished Goods Inventory -->
     <div class="form-container">
-      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">🏭 Finished Goods Inventory</h3>
+      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">Finished Goods Inventory</h3>
       <div style="overflow-x: auto;">
         <table class="inventory-table" style="width: 100%; border-collapse: collapse; background: white;">
           <thead style="background: #1976d2; color: white;">
@@ -75,9 +75,9 @@
                 [attr.data-bg]="i % 2 === 0 ? '#ffffff' : '#f9f9f9'">
               <td class="inventory-product-name" style="padding: 12px; font-weight: 600; color: #333;">{{ item.product_name }}</td>
               <td class="inventory-detail inventory-stock" style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ item.current_stock }} units</td>
-              <td class="inventory-detail inventory-unit-cost" style="padding: 12px; text-align: right; color: #666;">₹{{ item.unit_cost | number }}</td>
-              <td class="inventory-detail inventory-selling-price" style="padding: 12px; text-align: right; color: #4CAF50; font-weight: 600;">₹{{ item.selling_price | number }}</td>
-              <td class="inventory-detail inventory-stock-value" style="padding: 12px; text-align: right; color: #333; font-weight: 700;">₹{{ (item.current_stock * item.unit_cost) | number }}</td>
+              <td class="inventory-detail inventory-unit-cost" style="padding: 12px; text-align: right; color: #666;">INR {{ item.unit_cost | number }}</td>
+              <td class="inventory-detail inventory-selling-price" style="padding: 12px; text-align: right; color: #4CAF50; font-weight: 600;">INR {{ item.selling_price | number }}</td>
+              <td class="inventory-detail inventory-stock-value" style="padding: 12px; text-align: right; color: #333; font-weight: 700;">INR {{ (item.current_stock * item.unit_cost) | number }}</td>
               <td class="inventory-detail inventory-status" style="padding: 12px; text-align: center;">
                 <span style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-block;"
                       [style.background]="item.current_stock === 0 ? '#ffebee' : item.current_stock <= item.reorder_level ? '#fff3e0' : '#e8f5e9'"
@@ -93,7 +93,7 @@
 
     <!-- Raw Materials Stock -->
     <div class="form-container">
-      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">🏗️ Raw Materials Stock</h3>
+      <h3 style="margin: 0 0 20px 0; color: #333; font-size: 1.2rem; font-weight: 700;">Raw Materials Stock</h3>
       <div style="overflow-x: auto;">
         <table class="inventory-table" style="width: 100%; border-collapse: collapse; background: white;">
           <thead style="background: #1976d2; color: white;">
@@ -116,8 +116,8 @@
               <td class="inventory-product-name" style="padding: 12px; font-weight: 600; color: #333;">{{ material.material_name }}</td>
               <td class="inventory-detail inventory-stock" style="padding: 12px; text-align: center; font-weight: 600; color: #2196F3;">{{ material.current_stock | number }}</td>
               <td class="inventory-detail material-unit" style="padding: 12px; text-align: center; color: #666;">{{ material.unit }}</td>
-              <td class="inventory-detail inventory-unit-cost" style="padding: 12px; text-align: right; color: #666;">₹{{ material.unit_cost | number }}</td>
-              <td class="inventory-detail inventory-stock-value" style="padding: 12px; text-align: right; color: #333; font-weight: 700;">₹{{ (material.current_stock * material.unit_cost) | number }}</td>
+              <td class="inventory-detail inventory-unit-cost" style="padding: 12px; text-align: right; color: #666;">INR {{ material.unit_cost | number }}</td>
+              <td class="inventory-detail inventory-stock-value" style="padding: 12px; text-align: right; color: #333; font-weight: 700;">INR {{ (material.current_stock * material.unit_cost) | number }}</td>
               <td class="inventory-detail inventory-status" style="padding: 12px; text-align: center;">
                 <span style="padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-block;"
                       [style.background]="material.current_stock === 0 ? '#ffebee' : material.current_stock <= material.reorder_level ? '#fff3e0' : '#e8f5e9'"
@@ -133,4 +133,4 @@
   </div>
 </div>
 
-<app-mfg-footer></app-mfg-footer>
+<app-mfg-footer *ngIf="!embedded"></app-mfg-footer>

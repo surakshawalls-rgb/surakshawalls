@@ -1,6 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTableModule } from '@angular/material/table';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProductionService } from '../../services/production.service';
 import { formatDateToDDMMYYYY } from '../../services/date-formatter';
 import { AuthService } from '../../services/auth.service';
@@ -15,19 +25,34 @@ export type ProductionKey =
 @Component({
   selector: 'app-production',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatTabsModule,
+    MatIconModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatTableModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule
+  ],
   templateUrl: './production.html',
   styleUrls: ['./production.css']
 })
 export class ProductionComponent implements OnInit {
 
-  constructor(private db: ProductionService, private cd: ChangeDetectorRef, private authService: AuthService) {}
+  constructor(
+    private db: ProductionService,
+    private cd: ChangeDetectorRef,
+    private authService: AuthService,
+    private snackBar: MatSnackBar
+  ) {}
 
   // Tabs
   activeTab: 'production' | 'selling' | 'damage' = 'production';
-
-  language: 'EN' | 'HI' = 'EN';
-  toggleLang() { this.language = this.language === 'EN' ? 'HI' : 'EN'; }
 
   date = new Date().toISOString().split('T')[0];
   sellingDate = new Date().toISOString().split('T')[0];
@@ -55,11 +80,11 @@ export class ProductionComponent implements OnInit {
   damageReason: string = '';
 
   items = [
-    { key: 'fencingPole', labelEN: 'Fencing Pole', labelHI: 'फेंसिंग पोल' },
-    { key: 'plainPlate', labelEN: 'Plain Plate', labelHI: 'सादा प्लेट' },
-    { key: 'jumboPillar', labelEN: 'Jumbo Pillar', labelHI: 'जंबो पिलर' },
-    { key: 'roundPlate', labelEN: 'Round Plate', labelHI: 'राउंड प्लेट' },
-    { key: 'biscuitPlate', labelEN: 'Biscuit Plate', labelHI: 'बिस्किट प्लेट' }
+    { key: 'fencingPole', label: 'Fencing Pole' },
+    { key: 'plainPlate', label: 'Plain Plate' },
+    { key: 'jumboPillar', label: 'Jumbo Pillar' },
+    { key: 'roundPlate', label: 'Round Plate' },
+    { key: 'biscuitPlate', label: 'Biscuit Plate' }
   ] as const;
 
   records: any[] = [];
@@ -74,6 +99,18 @@ export class ProductionComponent implements OnInit {
   loading = false;
   loadingTimeout: any;
 
+  productionColumns: string[] = [
+    'date',
+    'fencing_pole',
+    'plain_plate',
+    'jumbo_pillar',
+    'round_plate',
+    'biscuit_plate',
+    'action'
+  ];
+  sellingColumns: string[] = ['date', 'client', 'item', 'quantity', 'price', 'total', 'action'];
+  damageColumns: string[] = ['date', 'item', 'quantity', 'reason', 'action'];
+
   async ngOnInit() {
     console.log('[ProductionComponent] ngOnInit');
     await this.loadTable();
@@ -84,7 +121,6 @@ export class ProductionComponent implements OnInit {
   inc(key: ProductionKey) { this.production[key]++; }
   dec(key: ProductionKey) { if (this.production[key] > 0) this.production[key]--; }
 
-  // 🔥 SAFE LOADER WRAPPER
   private startLoading() {
     this.loading = true;
     this.cd.detectChanges();
@@ -93,7 +129,7 @@ export class ProductionComponent implements OnInit {
     this.loadingTimeout = setTimeout(() => {
       this.loading = false;
       this.cd.detectChanges();
-      console.warn("Loading auto-stopped (timeout)");
+      this.notify('Loading timeout reached. Please retry.', 'warn');
     }, 10000);
   }
 
@@ -103,7 +139,6 @@ export class ProductionComponent implements OnInit {
     this.cd.detectChanges();
   }
 
-  // 💾 SAVE
   async saveProduction() {
     this.startLoading();
 
@@ -123,11 +158,11 @@ export class ProductionComponent implements OnInit {
 
       if (res.error) {
         console.error('[ProductionComponent] saveProduction error ->', res.error);
-        alert("❌ Save Failed");
+        this.notify('Failed to save production entry.', 'error');
         return;
       }
 
-      alert("✅ Production Saved");
+      this.notify('Production entry saved successfully.', 'success');
       await this.loadTable(); // AUTO REFRESH
     }
     finally {
@@ -135,7 +170,6 @@ export class ProductionComponent implements OnInit {
     }
   }
 
-  // 📊 LOAD TABLE
   async loadTable() {
     this.startLoading();
 
@@ -157,7 +191,6 @@ export class ProductionComponent implements OnInit {
     }
   }
 
-  // FILTER DATE
   async applyFilter() {
     this.startLoading();
 
@@ -198,9 +231,8 @@ export class ProductionComponent implements OnInit {
     return this.authService.canDelete();
   }
 
-  // 🗑️ DELETE FUNCTIONS
   async deleteProduction(id: number) {
-    if (!this.canDelete()) { alert('Only Super Admin can delete records.'); return; }
+    if (!this.canDelete()) { this.notify('Only super admin can delete records.', 'warn'); return; }
     if (!confirm('Are you sure you want to delete this production record?')) return;
 
     this.startLoading();
@@ -210,10 +242,10 @@ export class ProductionComponent implements OnInit {
       console.log('[ProductionComponent] deleteProduction res ->', res);
       if (res.error) {
         console.error('[ProductionComponent] deleteProduction error ->', res.error);
-        alert("❌ Delete Failed");
+        this.notify('Failed to delete production record.', 'error');
         return;
       }
-      alert("✅ Production Record Deleted");
+      this.notify('Production record deleted.', 'success');
       await this.loadTable();
     }
     finally {
@@ -222,7 +254,7 @@ export class ProductionComponent implements OnInit {
   }
 
   async deleteSelling(id: number) {
-    if (!this.canDelete()) { alert('Only Super Admin can delete records.'); return; }
+    if (!this.canDelete()) { this.notify('Only super admin can delete records.', 'warn'); return; }
     if (!confirm('Are you sure you want to delete this sale?')) return;
 
     this.startLoading();
@@ -232,10 +264,10 @@ export class ProductionComponent implements OnInit {
       console.log('[ProductionComponent] deleteSelling res ->', res);
       if (res.error) {
         console.error('[ProductionComponent] deleteSelling error ->', res.error);
-        alert("❌ Delete Failed");
+        this.notify('Failed to delete sale record.', 'error');
         return;
       }
-      alert("✅ Sale Record Deleted");
+      this.notify('Sale record deleted.', 'success');
       await this.loadSelling();
     }
     finally {
@@ -244,7 +276,7 @@ export class ProductionComponent implements OnInit {
   }
 
   async deleteDamage(id: number) {
-    if (!this.canDelete()) { alert('Only Super Admin can delete records.'); return; }
+    if (!this.canDelete()) { this.notify('Only super admin can delete records.', 'warn'); return; }
     if (!confirm('Are you sure you want to delete this damage record?')) return;
 
     this.startLoading();
@@ -254,10 +286,10 @@ export class ProductionComponent implements OnInit {
       console.log('[ProductionComponent] deleteDamage res ->', res);
       if (res.error) {
         console.error('[ProductionComponent] deleteDamage error ->', res.error);
-        alert("❌ Delete Failed");
+        this.notify('Failed to delete damage record.', 'error');
         return;
       }
-      alert("✅ Damage Record Deleted");
+      this.notify('Damage record deleted.', 'success');
       await this.loadDamage();
     }
     finally {
@@ -265,10 +297,9 @@ export class ProductionComponent implements OnInit {
     }
   }
 
-  // WhatsApp
   generateMessage() {
-    let msg = `🏭 Production Report\nDate: ${this.date}\n\n`;
-    this.items.forEach(i => msg += `${i.labelEN}: ${this.production[i.key]}\n`);
+    let msg = `Production Report\nDate: ${this.date}\n\n`;
+    this.items.forEach(i => msg += `${i.label}: ${this.production[i.key]}\n`);
     return msg;
   }
 
@@ -276,10 +307,9 @@ export class ProductionComponent implements OnInit {
     window.open(`https://wa.me/?text=${encodeURIComponent(this.generateMessage())}`, '_blank');
   }
 
-  // 💰 SAVE SELLING
   async saveSelling() {
     if (!this.sellingClient || !this.sellingQuantity || !this.sellingPrice) {
-      alert("❌ Fill all fields");
+      this.notify('Please fill all sale fields.', 'warn');
       return;
     }
 
@@ -300,11 +330,11 @@ export class ProductionComponent implements OnInit {
 
       if (res.error) {
         console.error('[ProductionComponent] saveSelling error ->', res.error);
-        alert("❌ Save Failed");
+        this.notify('Failed to save sale record.', 'error');
         return;
       }
 
-      alert("✅ Sale Recorded");
+      this.notify('Sale recorded successfully.', 'success');
       this.sellingClient = '';
       this.sellingQuantity = null;
       this.sellingPrice = null;
@@ -315,7 +345,6 @@ export class ProductionComponent implements OnInit {
     }
   }
 
-  // 📊 LOAD SELLING
   async loadSelling() {
     this.startLoading();
 
@@ -332,10 +361,9 @@ export class ProductionComponent implements OnInit {
     }
   }
 
-  // ⚠️ SAVE DAMAGE
   async saveDamage() {
     if (!this.damageQuantity || !this.damageReason) {
-      alert("❌ Fill all fields");
+      this.notify('Please fill all damage fields.', 'warn');
       return;
     }
 
@@ -355,11 +383,11 @@ export class ProductionComponent implements OnInit {
 
       if (res.error) {
         console.error('[ProductionComponent] saveDamage error ->', res.error);
-        alert("❌ Save Failed");
+        this.notify('Failed to save damage record.', 'error');
         return;
       }
 
-      alert("⚠️ Damage Recorded");
+      this.notify('Damage record saved successfully.', 'success');
       this.damageQuantity = null;
       this.damageReason = '';
       await this.loadDamage();
@@ -369,7 +397,7 @@ export class ProductionComponent implements OnInit {
     }
   }
 
-  // 📊 LOAD DAMAGE
+  // Load damage records
   async loadDamage() {
     this.startLoading();
 
@@ -384,6 +412,18 @@ export class ProductionComponent implements OnInit {
     finally {
       this.stopLoading();
     }
+  }
+
+  getItemLabel(key: string): string {
+    return this.items.find(i => i.key === key)?.label || key;
+  }
+
+  private notify(message: string, type: 'success' | 'error' | 'warn' = 'success') {
+    const panelClass =
+      type === 'success' ? 'snack-success' :
+      type === 'error' ? 'snack-error' :
+      'snack-warn';
+    this.snackBar.open(message, 'Close', { duration: 2800, panelClass: [panelClass] });
   }
 }
 

@@ -11,7 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatChipsModule } from '@angular/material/chips';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
-import { ClientPaymentService, ClientPaymentRecord } from '../../services/client-payment.service';
+import { ClientOutstanding, ClientPaymentService, ClientPaymentRecord, SalesTransactionWithPayments } from '../../services/client-payment.service';
 import { ClientService } from '../../services/client.service';
 import { SalesService, SaleData } from '../../services/sales.service';
 import { PartnerService } from '../../services/partner.service';
@@ -27,6 +27,17 @@ interface PaymentHistoryItem {
   deposited_to_firm: boolean;
   notes?: string;
   partner_name?: string;
+}
+
+interface OutstandingHistoryRow {
+  client_id: string;
+  client_name: string;
+  phone: string;
+  sales_id: string;
+  sale_date: string;
+  total_amount: number;
+  total_paid: number;
+  outstanding: number;
 }
 
 @Component({
@@ -64,6 +75,9 @@ export class ClientPaymentComponent implements OnInit {
   date = new Date().toISOString().split('T')[0];
   formatDateToDDMMYYYY = formatDateToDDMMYYYY;
   selectedClientId: string | null = null;
+  clientSearchTerm = '';
+  filteredClientOptions: any[] = [];
+  showClientOptions = false;
   siteName = '';
   totalBill = 0;
   paidAmount = 0;
@@ -82,7 +96,9 @@ export class ClientPaymentComponent implements OnInit {
   
   // Payment history
   selectedClientForHistory: string | null = null;
+  selectedHistoryClientName = '';
   paymentHistory: PaymentHistoryItem[] = [];
+  outstandingHistoryRows: OutstandingHistoryRow[] = [];
   
   // Overdue clients
   overdueClients: any[] = [];
@@ -98,7 +114,8 @@ export class ClientPaymentComponent implements OnInit {
       this.loadClients(),
       this.loadPartners(),
       this.loadDueLedger(),
-      this.loadOverdueClients()
+      this.loadOverdueClients(),
+      this.loadOutstandingHistory()
     ]);
   }
 
@@ -114,10 +131,52 @@ export class ClientPaymentComponent implements OnInit {
 
   async loadClients() {
     this.clients = await this.clientService.getAllClients();
+    this.filteredClientOptions = [];
   }
   
   async loadPartners() {
     this.partners = await this.partnerService.getAllPartners();
+  }
+
+  async refreshAll() {
+    await Promise.all([
+      this.loadDueLedger(),
+      this.loadOverdueClients(),
+      this.loadOutstandingHistory()
+    ]);
+  }
+
+  filterClientOptions() {
+    const term = this.clientSearchTerm.trim().toLowerCase();
+    this.selectedClientId = null;
+
+    if (!term) {
+      this.filteredClientOptions = [];
+      this.showClientOptions = false;
+      return;
+    }
+
+    this.filteredClientOptions = this.clients
+      .filter(client =>
+        client.client_name?.toLowerCase().includes(term) ||
+        client.phone?.toLowerCase().includes(term)
+      )
+      .slice(0, 8);
+    this.showClientOptions = true;
+  }
+
+  selectClient(client: any) {
+    this.selectedClientId = client.id;
+    this.clientSearchTerm = client.client_name;
+    this.showClientOptions = false;
+    this.filteredClientOptions = [];
+  }
+
+  clearSelectedClient() {
+    this.selectedClientId = null;
+    this.clientSearchTerm = '';
+    this.showClientOptions = false;
+    this.filteredClientOptions = [];
   }
 
   async saveRevenue() {
@@ -189,7 +248,8 @@ export class ClientPaymentComponent implements OnInit {
       this.resetForm();
       await Promise.all([
         this.loadDueLedger(),
-        this.loadOverdueClients()
+        this.loadOverdueClients(),
+        this.loadOutstandingHistory()
       ]);
     } catch (error) {
       this.stopLoading();
@@ -199,6 +259,7 @@ export class ClientPaymentComponent implements OnInit {
   }
 
   resetForm() {
+    this.clientSearchTerm = '';
     this.siteName = '';
     this.totalBill = 0;
     this.paidAmount = 0;
@@ -233,12 +294,39 @@ export class ClientPaymentComponent implements OnInit {
       console.error('Error loading overdue clients:', error);
     }
   }
+
+  async loadOutstandingHistory() {
+    try {
+      const clientsWithOutstanding = await this.clientPaymentService.getClientsWithOutstanding();
+      this.outstandingHistoryRows = clientsWithOutstanding
+        .reduce((rows: OutstandingHistoryRow[], client: ClientOutstanding) => {
+          client.sales_transactions.forEach((transaction: SalesTransactionWithPayments) => {
+            rows.push({
+              client_id: client.client_id,
+              client_name: client.client_name,
+              phone: client.phone,
+              sales_id: transaction.sales_id,
+              sale_date: transaction.sale_date,
+              total_amount: transaction.total_amount,
+              total_paid: transaction.paid_initially + transaction.total_paid_later,
+              outstanding: transaction.current_outstanding
+            });
+          });
+          return rows;
+        }, [])
+        .sort((left: OutstandingHistoryRow, right: OutstandingHistoryRow) => right.sale_date.localeCompare(left.sale_date));
+    } catch (error) {
+      console.error('Error loading outstanding history:', error);
+      this.outstandingHistoryRows = [];
+    }
+  }
   
   /**
    * Load payment history for selected client
    */
-  async loadPaymentHistory(clientId: string) {
+  async loadPaymentHistory(clientId: string, clientName?: string) {
     this.selectedClientForHistory = clientId;
+    this.selectedHistoryClientName = clientName || this.clients.find(c => c.id === clientId)?.client_name || '';
     this.startLoading();
     
     try {
@@ -531,17 +619,22 @@ export class ClientPaymentComponent implements OnInit {
 
   // Helper methods for template
   getClientNameForHistory(): string {
-    if (!this.selectedClientForHistory) return '';
-    const client = this.clients.find(c => c.id === this.selectedClientForHistory);
-    return client?.client_name || '';
+    return this.selectedHistoryClientName;
   }
 
-  prepareReceiptForPayment(payment: any) {
+  prepareReceiptForPayment(payment: any, clientName?: string) {
     const client = this.clients.find(c => c.id === this.selectedClientForHistory);
     this.lastPayment = {
       ...payment,
-      client_name: client?.client_name
+      client_name: clientName || this.selectedHistoryClientName || client?.client_name
     };
     this.printReceipt();
+  }
+
+  getClientOutstanding(clientId: string | null): number {
+    if (!clientId) {
+      return 0;
+    }
+    return this.dueLedger[clientId] || 0;
   }
 }

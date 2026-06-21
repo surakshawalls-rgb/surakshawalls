@@ -1,12 +1,11 @@
 // src/app/services/production.service.ts
 import { Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { RecipeService } from './recipe.service';
 
 export interface WorkerWage {
   worker_id: string;
   worker_name: string;
-  attendance_type: 'Full Day' | 'Half Day' | 'Outdoor' | 'Custom';
+  attendance_type: 'Full Day' | 'Half Day' | 'Custom';
   wage_earned: number;
   paid_today: number;
   notes?: string;
@@ -49,15 +48,10 @@ export interface ProductionEntry {
 @Injectable({ providedIn: 'root' })
 export class ProductionService {
 
-  constructor(
-    private supabase: SupabaseService,
-    private recipeService: RecipeService
-  ) {}
+  constructor(private supabase: SupabaseService) {}
 
   /**
    * Save production entry with atomic transaction
-   * - Calculates materials based on recipe
-   * - Deducts materials from stock
    * - Increments finished goods inventory
    * - Records worker wages
    * - Updates worker cumulative balance
@@ -66,38 +60,11 @@ export class ProductionService {
     try {
       console.log('[ProductionService] saveProduction payload:', productionData);
 
-      // 1. Calculate materials needed
-      const calc = await this.recipeService.calculateMaterialsNeeded(
-        productionData.product_name,
-        productionData.product_variant,
-        productionData.success_quantity + productionData.rejected_quantity
-      );
-
-      if (!calc) {
-        throw new Error('Failed to calculate materials');
-      }
-
-      // 2. Check stock availability (warning only, don't block)
-      if (!calc.stock_check.all_available) {
-        const missing: string[] = [];
-        if (!calc.stock_check.cement_available) {
-          missing.push(`Cement (need ${calc.materials.cement}, have ${calc.current_stock.cement})`);
-        }
-        if (!calc.stock_check.aggregates_available) {
-          missing.push(`Aggregates (need ${calc.materials.aggregates}, have ${calc.current_stock.aggregates})`);
-        }
-        if (!calc.stock_check.sariya_available) {
-          missing.push(`Sariya (need ${calc.materials.sariya}, have ${calc.current_stock.sariya})`);
-        }
-        console.warn(`⚠️ Stock Warning: ${missing.join(', ')}`);
-        // Continue anyway - stock can go negative
-      }
-
-      // 3. Calculate labor cost
+      // 1. Calculate labor cost only
       const laborCost = productionData.workers.reduce((sum, w) => sum + w.wage_earned, 0);
-      const totalMaterialCost = calc.costs.total_cost;
+      const totalMaterialCost = 0;
 
-      // 4. Insert production entry
+      // 2. Insert production entry
       const { data: production, error: prodError } = await this.supabase.supabase
         .from('production_entries')
         .insert({
@@ -106,12 +73,12 @@ export class ProductionService {
           product_variant: productionData.product_variant,
           success_quantity: productionData.success_quantity,
           rejected_quantity: productionData.rejected_quantity,
-          cement_used: calc.materials.cement,
-          aggregates_used: calc.materials.aggregates,
-          sariya_used: calc.materials.sariya,
+          cement_used: 0,
+          aggregates_used: 0,
+          sariya_used: 0,
           total_material_cost: totalMaterialCost,
           labor_cost: laborCost,
-          cost_per_unit: (totalMaterialCost + laborCost) / productionData.success_quantity,
+          cost_per_unit: productionData.success_quantity > 0 ? (laborCost / productionData.success_quantity) : 0,
           is_job_work: productionData.is_job_work,
           job_work_client: productionData.job_work_client,
           notes: productionData.notes,
@@ -122,58 +89,22 @@ export class ProductionService {
 
       if (prodError) throw prodError;
 
-      // 5. Log material usage
-      const materialCosts = await this.recipeService.getMaterialCosts();
-      const usageLogs = [
-        { 
-          production_entry_id: production.id,
-          material_name: 'Cement', 
-          quantity_used: calc.materials.cement, 
-          unit_cost: materialCosts['Cement']?.unit_cost || 0
-        },
-        { 
-          production_entry_id: production.id,
-          material_name: 'Gitti (Aggregates)', 
-          quantity_used: calc.materials.aggregates, 
-          unit_cost: materialCosts['Gitti (Aggregates)']?.unit_cost || 0
-        },
-        { 
-          production_entry_id: production.id,
-          material_name: 'Sariya (Steel)', 
-          quantity_used: calc.materials.sariya, 
-          unit_cost: materialCosts['Sariya (Steel)']?.unit_cost || 0
-        }
-      ];
-
-      const { error: logError } = await this.supabase.supabase
-        .from('material_usage_log')
-        .insert(usageLogs);
-
-      if (logError) throw logError;
-
-      // 6. Deduct from raw materials (using database function)
-      await this.deductMaterials([
-        { name: 'Cement', quantity: calc.materials.cement },
-        { name: 'Gitti (Aggregates)', quantity: calc.materials.aggregates },
-        { name: 'Sariya (Steel)', quantity: calc.materials.sariya }
-      ]);
-
-      // 7. Add to finished goods (only success quantity, using database function)
+      // 3. Add to finished goods (only success quantity, using database function)
       await this.updateFinishedGoods(
         productionData.product_name,
         productionData.product_variant,
         productionData.success_quantity
       );
 
-      // 7b. Update unit_cost in finished_goods_inventory
-      const costPerUnit = (totalMaterialCost + laborCost) / productionData.success_quantity;
+      // 3b. Update unit_cost in finished_goods_inventory
+      const costPerUnit = productionData.success_quantity > 0 ? (laborCost / productionData.success_quantity) : 0;
       await this.supabase.supabase
         .from('finished_goods_inventory')
         .update({ unit_cost: costPerUnit })
         .eq('product_name', productionData.product_name)
         .eq('product_variant', productionData.product_variant || null);
 
-      // 8. Record worker wages
+      // 4. Record worker wages
       for (const worker of productionData.workers) {
         await this.recordWage({
           ...worker,
@@ -188,22 +119,6 @@ export class ProductionService {
     } catch (error: any) {
       console.error('[ProductionService] saveProduction error:', error);
       return { success: false, error: error.message || 'Production save failed' };
-    }
-  }
-
-  /**
-   * Deduct materials from stock using database function
-   */
-  private async deductMaterials(materials: Array<{name: string, quantity: number}>) {
-    for (const material of materials) {
-      const { error } = await this.supabase.supabase.rpc('deduct_material_stock', {
-        p_material_name: material.name,
-        p_quantity: material.quantity
-      });
-
-      if (error) {
-        throw new Error(`Failed to deduct ${material.name}: ${error.message}`);
-      }
     }
   }
 

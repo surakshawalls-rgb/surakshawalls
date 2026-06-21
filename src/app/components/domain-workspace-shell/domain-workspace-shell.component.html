@@ -1,0 +1,18 @@
+<div class="workspace-shell">
+  <div class="workspace-header">
+    <div class="workspace-title-block">
+      <div class="workspace-icon"><mat-icon>{{ icon }}</mat-icon></div>
+      <div>
+        <h1>{{ title }}</h1>
+        <p>{{ subtitle }}</p>
+      </div>
+    </div>
+    <div class="workspace-actions">
+      <ng-content select="[shell-actions]"></ng-content>
+    </div>
+  </div>
+
+  <div class="workspace-body">
+    <ng-content></ng-content>
+  </div>
+</div>

@@ -21,7 +21,7 @@ export interface WageEntry {
   date: string;
   worker_id: string;
   production_entry_id?: string;
-  attendance_type: 'Full Day' | 'Half Day' | 'Outdoor' | 'Custom';
+  attendance_type: 'Full Day' | 'Half Day' | 'Custom';
   wage_earned: number;
   paid_today: number;
   balance: number;
@@ -40,9 +40,8 @@ export interface WorkerStatement {
 }
 
 export const WAGE_RATES = {
-  'Full Day': 400,
-  'Half Day': 200,
-  'Outdoor': 450,
+  'Full Day': 500,
+  'Half Day': 500,
   'Custom': 0
 };
 
@@ -317,7 +316,7 @@ export class WorkerService {
   /**
    * Get wage rate based on attendance type
    */
-  getWageRate(attendanceType: 'Full Day' | 'Half Day' | 'Outdoor' | 'Custom'): number {
+  getWageRate(attendanceType: 'Full Day' | 'Half Day' | 'Custom'): number {
     return WAGE_RATES[attendanceType];
   }
 

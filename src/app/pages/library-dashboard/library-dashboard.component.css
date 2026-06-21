@@ -1056,8 +1056,17 @@ mat-card mat-card-content {
   transition: background 0.15s ease !important;
   border-bottom: 1px solid #f1f5f9 !important;
 }
+
+.mat-mdc-table .mat-mdc-row:nth-child(odd) {
+  background: #ffffff !important;
+}
+
+.mat-mdc-table .mat-mdc-row:nth-child(even) {
+  background: #f2f4f7 !important;
+}
+
 .mat-mdc-row:hover {
-  background: #f0fdf4 !important;
+  background: #eaf1f8 !important;
 }
 .mat-mdc-cell {
   color: var(--c-ink) !important;

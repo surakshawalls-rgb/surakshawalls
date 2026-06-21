@@ -110,7 +110,8 @@ export class ClientLedgerComponent implements OnInit {
       const { data, error } = await (this.clientPaymentService as any).supabase.client
         .from('partner_master')
         .select('partner_id, name')
-        .eq('status', 'active');
+        .eq('status', 'active')
+        .in('name', ['Pradeep', 'Praveen']);
       
       if (error) throw error;
       this.partners = data || [];

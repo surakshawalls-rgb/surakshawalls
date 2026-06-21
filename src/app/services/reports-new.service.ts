@@ -184,7 +184,8 @@ export class ReportsNewService {
     try {
       const { data: partners } = await this.supabase.supabase
         .from('partner_master')
-        .select('*');
+        .select('*')
+        .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%');
 
       if (!partners) return [];
 

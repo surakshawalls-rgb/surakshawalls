@@ -1,5 +1,5 @@
 // src/app/pages/stock-audit/stock-audit.component.ts
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StockAuditService } from '../../services/stock-audit.service';
@@ -15,6 +15,7 @@ import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.compo
   styleUrls: ['./stock-audit.component.css']
 })
 export class StockAuditComponent implements OnInit {
+  @Input() embedded = false;
   auditDate: string = new Date().toISOString().split('T')[0];
   materialName: string = '';
   physicalCount: number = 0;

@@ -3,7 +3,7 @@
 <div class="client-payment-container">
   <div class="header">
     <h1><mat-icon>payments</mat-icon> Client Payment Management</h1>
-    <button mat-raised-button color="primary" (click)="loadDueLedger(); loadOverdueClients()">
+    <button mat-raised-button color="primary" (click)="refreshAll()">
       <mat-icon>refresh</mat-icon> Refresh
     </button>
   </div>
@@ -30,14 +30,37 @@
               </div>
 
               <div class="form-field full-width">
-                <label>Select Client *</label>
-                <select [(ngModel)]="selectedClientId" class="form-control">
-                  <option [ngValue]="null">-- Select Client --</option>
-                  <option *ngFor="let c of clients" [value]="c.id">
-                    {{c.client_name}} 
-                    <span *ngIf="dueLedger[c.id] > 0" class="outstanding">(Outstanding: <mat-icon style="font-size:1em;vertical-align:middle;">currency_rupee</mat-icon>{{dueLedger[c.id] | number:'1.0-0'}})</span>
-                  </option>
-                </select>
+                <label>Client Name *</label>
+                <input
+                  type="text"
+                  [(ngModel)]="clientSearchTerm"
+                  (input)="filterClientOptions()"
+                  placeholder="Type client name or phone"
+                  class="form-control">
+
+                <div class="client-search-results" *ngIf="showClientOptions">
+                  <button type="button"
+                          class="client-option"
+                          *ngFor="let client of filteredClientOptions"
+                          (click)="selectClient(client)">
+                    <div>
+                      <strong>{{ client.client_name }}</strong>
+                      <small>{{ client.phone || 'No phone' }}</small>
+                    </div>
+                    <span class="outstanding" *ngIf="dueLedger[client.id] > 0">INR {{ dueLedger[client.id] | number:'1.0-0' }}</span>
+                  </button>
+                  <div class="client-option empty-option" *ngIf="filteredClientOptions.length === 0">
+                    No matching client found
+                  </div>
+                </div>
+
+                <div class="selected-client-banner" *ngIf="selectedClientId">
+                  <span>Selected client outstanding: <strong>INR {{ getClientOutstanding(selectedClientId) | number:'1.0-0' }}</strong></span>
+                  <button type="button" mat-button (click)="clearSelectedClient()">
+                    <mat-icon>close</mat-icon>
+                    Clear
+                  </button>
+                </div>
               </div>
 
               <div class="form-field">
@@ -89,11 +112,11 @@
                 <div style="display: flex; align-items: center; gap: 16px; padding: 8px 0;">
                   <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="radio" name="depositedToFirm" [value]="true" [(ngModel)]="depositedToFirm" style="width: 18px; height: 18px; cursor: pointer;">
-                    <span style="font-weight: 600;">✅ Yes, Deposited</span>
+                    <span style="font-weight: 600; display: flex; align-items: center; gap: 6px;"><mat-icon>check_circle</mat-icon>Yes, Deposited</span>
                   </label>
                   <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                     <input type="radio" name="depositedToFirm" [value]="false" [(ngModel)]="depositedToFirm" style="width: 18px; height: 18px; cursor: pointer;">
-                    <span style="font-weight: 600;">⏳ Not Yet</span>
+                    <span style="font-weight: 600; display: flex; align-items: center; gap: 6px;"><mat-icon>schedule</mat-icon>Not Yet</span>
                   </label>
                 </div>
                 <small style="color: #6b7280; font-size: 0.85rem;">Track if partner has deposited the collected amount to firm account</small>
@@ -108,7 +131,7 @@
           
           <mat-card-actions>
             <button mat-raised-button color="primary" (click)="saveRevenue()" [disabled]="loading">
-              <mat-icon>save</mat-icon> Save Payment
+              <mat-icon>save</mat-icon> Submit Payment
             </button>
             <button mat-button (click)="resetForm()" [disabled]="loading">
               <mat-icon>clear</mat-icon> Clear
@@ -227,19 +250,45 @@
         <mat-card>
           <mat-card-header>
             <mat-card-title>
-              <mat-icon>receipt_long</mat-icon> Payment History
+              <mat-icon>receipt_long</mat-icon> Outstanding Payment History
             </mat-card-title>
           </mat-card-header>
           
           <mat-card-content>
-            <div class="form-field">
-              <label>Select Client</label>
-              <select [(ngModel)]="selectedClientForHistory" 
-                      (change)="selectedClientForHistory && loadPaymentHistory(selectedClientForHistory)"
-                      class="form-control">
-                <option [ngValue]="null">-- Select Client --</option>
-                <option *ngFor="let c of clients" [value]="c.id">{{c.client_name}}</option>
-              </select>
+            <div *ngIf="outstandingHistoryRows.length > 0" class="history-section">
+              <h3>Outstanding Transactions</h3>
+
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Phone</th>
+                    <th>Sale Date</th>
+                    <th>Total Bill</th>
+                    <th>Total Paid</th>
+                    <th>Outstanding</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of outstandingHistoryRows" class="history-row">
+                    <td data-label="Client"><strong>{{ row.client_name }}</strong></td>
+                    <td data-label="Phone">{{ row.phone || 'N/A' }}</td>
+                    <td data-label="Sale Date">{{ formatDateToDDMMYYYY(row.sale_date) }}</td>
+                    <td data-label="Total Bill" class="amount-col">INR {{ row.total_amount | number:'1.0-0' }}</td>
+                    <td data-label="Total Paid" class="amount-col">INR {{ row.total_paid | number:'1.0-0' }}</td>
+                    <td data-label="Outstanding" class="amount-col outstanding-amount"><strong>INR {{ row.outstanding | number:'1.0-0' }}</strong></td>
+                    <td>
+                      <button mat-icon-button color="accent" (click)="loadPaymentHistory(row.client_id, row.client_name)" matTooltip="View Payment History">
+                        <mat-icon>history</mat-icon>
+                      </button>
+                      <button mat-icon-button color="primary" (click)="sendPaymentReminder(row.client_id)" matTooltip="Send Reminder">
+                        <mat-icon>send</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             <div *ngIf="paymentHistory.length > 0" class="history-section">
@@ -273,7 +322,7 @@
                     </td>
                     <td data-label="Notes">{{payment.notes || '-'}}</td>
                     <td>
-                      <button mat-icon-button color="primary" (click)="prepareReceiptForPayment(payment)"
+                      <button mat-icon-button color="primary" (click)="prepareReceiptForPayment(payment, getClientNameForHistory())"
                               matTooltip="Print Receipt">
                         <mat-icon>print</mat-icon>
                       </button>
@@ -288,9 +337,9 @@
               <p>No payment history found for this client</p>
             </div>
 
-            <div *ngIf="!selectedClientForHistory" class="no-data">
+            <div *ngIf="!selectedClientForHistory && outstandingHistoryRows.length === 0" class="no-data">
               <mat-icon>info</mat-icon>
-              <p>Please select a client to view payment history</p>
+              <p>No outstanding payment records found</p>
             </div>
           </mat-card-content>
         </mat-card>

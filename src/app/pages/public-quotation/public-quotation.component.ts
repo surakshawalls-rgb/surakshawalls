@@ -24,6 +24,13 @@ interface FieldEntry {
   measurementType: 'area' | 'perimeter';
 }
 
+interface ExtraExpense {
+  id: number;
+  name: string;
+  description?: string;
+  cost: number;
+}
+
 interface QuotationResult {
   productType: string;
   fields: FieldEntry[];
@@ -46,6 +53,8 @@ interface QuotationResult {
   labourDays?: number;
   labourRate?: number;
   labourCost?: number;
+  otherExpenses?: ExtraExpense[];
+  extraExpensesCost?: number;
   // Total
   materialCost: number;
   totalCost: number;
@@ -80,8 +89,15 @@ export class PublicQuotationComponent {
   manualBoundaryRate: number = 0;
   manualPolesCount: number = 0;
   manualPoleRate: number = 0;
+  manualWireWeight: number = 0;
   manualWireCost: number = 0;
   manualLabourCost: number = 0;
+  showExpenseForm: boolean = false;
+  otherExpenses: ExtraExpense[] = [];
+  newExpenseName: string = '';
+  newExpenseDescription: string = '';
+  newExpenseCost: number | null = null;
+  nextExpenseId = 1;
   
   // Multiple fields support
   fields: FieldEntry[] = [];
@@ -142,6 +158,9 @@ export class PublicQuotationComponent {
   }
 
   addField() {
+    if (this.productType === 'manual') {
+      this.quotation = null;
+    }
     if (this.measurementType === 'area') {
       const selectedSize = this.landSizes.find(size => size.label === this.presetLandSize);
       if (selectedSize) {
@@ -173,6 +192,40 @@ export class PublicQuotationComponent {
   removeField(id: number) {
     this.fields = this.fields.filter(f => f.id !== id);
     this.quotation = null;
+  }
+
+  addExpense() {
+    if (!this.newExpenseName.trim() || !this.newExpenseCost || this.newExpenseCost <= 0) {
+      alert('Please enter valid expense name and cost');
+      return;
+    }
+
+    this.otherExpenses.push({
+      id: this.nextExpenseId++,
+      name: this.newExpenseName.trim(),
+      description: this.newExpenseDescription.trim() || undefined,
+      cost: this.newExpenseCost
+    });
+
+    this.newExpenseName = '';
+    this.newExpenseDescription = '';
+    this.newExpenseCost = null;
+    this.showExpenseForm = false;
+
+    if (this.quotation) {
+      this.calculateQuotation();
+    }
+  }
+
+  removeExpense(id: number) {
+    this.otherExpenses = this.otherExpenses.filter(expense => expense.id !== id);
+    if (this.quotation) {
+      this.calculateQuotation();
+    }
+  }
+
+  getOtherExpensesCost(): number {
+    return this.otherExpenses.reduce((sum, expense) => sum + expense.cost, 0);
   }
 
   getTotalBiswa(): number {
@@ -281,7 +334,9 @@ export class PublicQuotationComponent {
         const wallAreaSqFt = totalPerimeterFeet * this.wallHeight;
         const wallCost = Math.round(wallAreaSqFt * (Number(this.manualBoundaryRate) || 0));
         const labourCost = Number(this.manualLabourCost) || 0;
-        const totalCost = wallCost + labourCost;
+        const extraCost = this.getOtherExpensesCost();
+        const materialCost = wallCost + extraCost;
+        const totalCost = materialCost + labourCost;
 
         this.quotation = {
           productType: 'Precast Boundary Wall',
@@ -297,7 +352,9 @@ export class PublicQuotationComponent {
           labourDays: 0,
           labourRate: 0,
           labourCost: labourCost,
-          materialCost: wallCost,
+          otherExpenses: this.otherExpenses.length ? [...this.otherExpenses] : undefined,
+          extraExpensesCost: this.otherExpenses.length ? extraCost : undefined,
+          materialCost: materialCost,
           totalCost: totalCost
         };
 
@@ -307,9 +364,11 @@ export class PublicQuotationComponent {
         const numberOfPoles = Number(this.manualPolesCount) || 0;
         const poleRate = Number(this.manualPoleRate) || 0;
         const poleCost = numberOfPoles * poleRate;
+        const wireWeight = Number(this.manualWireWeight) || 0;
         const wireCost = Number(this.manualWireCost) || 0;
         const labourCost = Number(this.manualLabourCost) || 0;
-        const materialCost = poleCost + wireCost;
+        const extraCost = this.getOtherExpensesCost();
+        const materialCost = poleCost + wireCost + extraCost;
         const totalCost = materialCost + labourCost;
 
         this.quotation = {
@@ -322,12 +381,14 @@ export class PublicQuotationComponent {
           poles: numberOfPoles,
           poleRate: poleRate,
           poleCost: poleCost,
-          wireWeight: 0,
-          wireRate: 0,
+          wireWeight: wireWeight,
+          wireRate: wireWeight > 0 ? wireCost / wireWeight : 0,
           wireCost: wireCost,
           labourDays: 0,
           labourRate: 0,
           labourCost: labourCost,
+          otherExpenses: this.otherExpenses.length ? [...this.otherExpenses] : undefined,
+          extraExpensesCost: this.otherExpenses.length ? extraCost : undefined,
           materialCost: materialCost,
           totalCost: totalCost
         };
@@ -358,6 +419,17 @@ export class PublicQuotationComponent {
       `<div style="margin: 4px 0;"><strong>Field ${idx + 1}:</strong> ${field.displayText}</div>`
     ).join('');
 
+    const expenseStartIndex = this.quotation.productType === 'Barbed Wire Fencing' ? 5 : 3;
+    const expenseRows = (this.quotation.otherExpenses || []).map((expense, idx) => `
+        <tr>
+          <td style="padding: 12px; border: 1px solid #ddd;">${idx + expenseStartIndex}</td>
+          <td style="padding: 12px; border: 1px solid #ddd;">${expense.name}${expense.description ? ' - ' + expense.description : ''}</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">-</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">-</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">₹${expense.cost.toLocaleString('en-IN')}</td>
+        </tr>
+      `).join('');
+
     let itemsRows = '';
     
     if (this.quotation?.productType === 'Precast Boundary Wall') {
@@ -376,6 +448,7 @@ export class PublicQuotationComponent {
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">-</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.labourCost?.toLocaleString('en-IN')}</td>
         </tr>
+        ${expenseRows}
         <tr>
           <td colspan="4" style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">Total Estimated Cost</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right; font-weight: bold;">₹${this.quotation.totalCost.toLocaleString('en-IN')}</td>
@@ -404,10 +477,11 @@ export class PublicQuotationComponent {
         <tr>
           <td style="padding: 12px; border: 1px solid #ddd;">3</td>
           <td style="padding: 12px; border: 1px solid #ddd;">Labour Charges</td>
-          <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${this.quotation.labourDays} days</td>
-          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">₹${this.quotation.labourRate}</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: center;">${this.quotation.labourDays || '-'} ${this.quotation.labourDays ? 'days' : ''}</td>
+          <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">${this.quotation.labourRate ? '₹' + this.quotation.labourRate : '-'}</td>
           <td style="padding: 12px; border: 1px solid #ddd; text-align: right;">₹${this.quotation.labourCost?.toLocaleString('en-IN')}</td>
         </tr>
+        ${expenseRows}
       `;
     }
 
@@ -646,6 +720,12 @@ export class PublicQuotationComponent {
             <div class="total-row">
               <span>Labour Charges:</span>
               <span><strong>₹${this.quotation.labourCost?.toLocaleString('en-IN')}</strong></span>
+            </div>
+            ` : ''}
+            ${this.quotation?.extraExpensesCost ? `
+            <div class="total-row">
+              <span>Additional Expenses:</span>
+              <span><strong>₹${this.quotation.extraExpensesCost.toLocaleString('en-IN')}</strong></span>
             </div>
             ` : ''}
             <div class="total-row grand-total">

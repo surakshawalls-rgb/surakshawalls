@@ -53,13 +53,13 @@ export class LibraryExpensesComponent implements OnInit {
   };
 
   categories = [
-    { value: 'electricity', label: '⚡ Electricity' },
-    { value: 'wifi', label: '📶 WiFi/Internet' },
-    { value: 'water', label: '💧 Water' },
-    { value: 'cleaning', label: '🧹 Cleaning' },
-    { value: 'maintenance', label: '🔧 Maintenance' },
-    { value: 'stationery', label: '📝 Stationery' },
-    { value: 'other', label: '📦 Other' }
+    { value: 'electricity', label: 'Electricity' },
+    { value: 'wifi', label: 'WiFi/Internet' },
+    { value: 'water', label: 'Water' },
+    { value: 'cleaning', label: 'Cleaning' },
+    { value: 'maintenance', label: 'Maintenance' },
+    { value: 'stationery', label: 'Stationery' },
+    { value: 'other', label: 'Other' }
   ];
 
   monthlyTotal = 0;
@@ -200,7 +200,7 @@ export class LibraryExpensesComponent implements OnInit {
   }
 
   formatCurrency(amount: number): string {
-    return '₹' + amount.toLocaleString('en-IN');
+    return 'INR ' + amount.toLocaleString('en-IN');
   }
 
   formatDate(date: string): string {

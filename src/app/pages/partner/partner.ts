@@ -62,9 +62,8 @@ export class PartnerComponent implements OnInit {
   loading = false;
 
   // Profit Share %
-  sharePradeep = 40;
-  sharePraveen = 40;
-  sharePappu = 20;
+  sharePradeep = 50;
+  sharePraveen = 50;
 
   async ngOnInit() {
     // Load partners first
@@ -83,7 +82,8 @@ export class PartnerComponent implements OnInit {
     try {
       const { data, error } = await this.db['supabase'].supabase
         .from('partner_master')
-        .select('id, partner_name');
+        .select('id, partner_name')
+        .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%');
       
       if (!error && data) {
         this.partners = data;
@@ -169,5 +169,4 @@ export class PartnerComponent implements OnInit {
 
   get profitPradeep() { return this.totalExpense * this.sharePradeep / 100; }
   get profitPraveen() { return this.totalExpense * this.sharePraveen / 100; }
-  get profitPappu() { return this.totalExpense * this.sharePappu / 100; }
 }
