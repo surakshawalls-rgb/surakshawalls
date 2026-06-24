@@ -86,30 +86,39 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let labour of getFilteredLabours()" [class.overdue]="labour.due_amount > 0">
-            <td data-label="Name">{{ labour.name }}</td>
+          <tr *ngFor="let labour of getFilteredLabours()" [class.overdue]="labour.due_amount > 0" [class.inactive-row]="!labour.active">
+            <td data-label="Name">
+              <strong>{{ labour.name }}</strong>
+              <span *ngIf="!labour.active" class="inactive-tag">(Inactive)</span>
+            </td>
             <td data-label="Phone">{{ labour.phone || '-' }}</td>
             <td data-label="Total Earned" class="amount">INR {{ labour.total_earned | number:'1.0-2' }}</td>
             <td data-label="Total Paid" class="amount paid">INR {{ labour.total_paid | number:'1.0-2' }}</td>
             <td data-label="Due Amount" class="amount" [class.due]="labour.due_amount > 0">INR {{ labour.due_amount | number:'1.0-2' }}</td>
             <td data-label="Status">
-              <span [class.status-active]="labour.status === 'active'" 
-                    [class.status-inactive]="labour.status === 'inactive'"
+              <span [class.status-pending]="labour.status === 'pending'" 
+                    [class.status-cleared]="labour.status === 'cleared'"
                     class="status-badge">
-                {{ labour.status }}
+                {{ labour.status | titlecase }}
               </span>
             </td>
             <td>
               <div class="action-btns">
-                <button *ngIf="canManageLabour()"
+                <button *ngIf="canManageLabour() && labour.active"
                         (click)="openEditDialog(labour)"
                         class="btn-edit">
                   Edit
                 </button>
-                <button *ngIf="canDeleteLabour()"
+                <button *ngIf="canDeleteLabour() && labour.active"
                         (click)="openDeleteDialog(labour)"
                         class="btn-delete">
                   Remove
+                </button>
+                <button *ngIf="canManageLabour() && !labour.active"
+                        (click)="toggleLabourActive(labour)"
+                        class="btn-success btn-xs"
+                        style="padding: 2px 7px; font-size: 12px; background: #10b981; color: #fff;">
+                  Make Active
                 </button>
               </div>
             </td>

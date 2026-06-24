@@ -15,6 +15,7 @@ interface Labour {
   total_paid: number;
   due_amount: number;
   status: string;
+  active: boolean;
 }
 
 interface Partner {
@@ -128,7 +129,6 @@ export class LabourLedgerComponent implements OnInit {
       const { data, error } = await this.db.supabase
         .from('workers_master')
         .select('id, name, phone, total_earned, total_paid, cumulative_balance, active')
-        .eq('active', true)
         .order('name');
         
       if (error) throw error;
@@ -140,7 +140,8 @@ export class LabourLedgerComponent implements OnInit {
         total_earned: worker.total_earned || 0,
         total_paid: worker.total_paid || 0,
         due_amount: worker.cumulative_balance || 0,
-        status: worker.cumulative_balance > 0 ? 'pending' : 'cleared'
+        status: worker.cumulative_balance > 0 ? 'pending' : 'cleared',
+        active: worker.active
       }));
       
       this.cd.detectChanges();
@@ -183,6 +184,12 @@ export class LabourLedgerComponent implements OnInit {
   getFilteredLabours(): Labour[] {
     if (this.statusFilter === 'all') {
       return this.labourList;
+    }
+    if (this.statusFilter === 'active') {
+      return this.labourList.filter(l => l.active);
+    }
+    if (this.statusFilter === 'inactive') {
+      return this.labourList.filter(l => !l.active);
     }
     return this.labourList.filter(l => l.status === this.statusFilter);
   }
@@ -478,6 +485,28 @@ export class LabourLedgerComponent implements OnInit {
       setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 3000);
     } finally {
       this.deleteSaving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  async toggleLabourActive(labour: Labour) {
+    try {
+      this.loading = true;
+      const { error } = await this.db.supabase
+        .from('workers_master')
+        .update({ active: !labour.active })
+        .eq('id', labour.labour_id);
+
+      if (error) throw error;
+
+      this.successMessage = `Labour "${labour.name}" marked as ${!labour.active ? 'Active' : 'Inactive'}.`;
+      await this.loadLabours();
+      setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 3000);
+    } catch (err) {
+      console.error('Error toggling labour status:', err);
+      this.errorMessage = 'Failed to update status.';
+    } finally {
+      this.loading = false;
       this.cd.detectChanges();
     }
   }
