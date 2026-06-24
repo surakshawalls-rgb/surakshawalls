@@ -10,6 +10,7 @@ import { InventoryService } from '../../services/inventory.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
+import { MatIconModule } from '@angular/material/icon';
 
 interface PaymentDialog {
   show: boolean;
@@ -39,7 +40,7 @@ interface PassbookDialog {
 @Component({
   selector: 'app-reports-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent],
+  imports: [CommonModule, FormsModule, BreadcrumbComponent, MfgFooterComponent, MatIconModule],
   templateUrl: './reports-dashboard.component.html',
   styleUrls: ['./reports-dashboard.component.css']
 })
@@ -52,6 +53,7 @@ export class ReportsDashboardComponent implements OnInit {
   activeTab: 'workers' | 'clients' | 'partners' | 'company' = 'workers';
   
   // Workers data
+  workerFilter: 'outstanding' | 'all' = 'outstanding';
   workersWithOutstanding: WorkerOutstanding[] = [];
   allWorkers: Worker[] = [];
   
@@ -140,7 +142,7 @@ export class ReportsDashboardComponent implements OnInit {
   async loadWorkersData() {
     try {
       this.loading = true;
-      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding();
+      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding(this.workerFilter === 'outstanding');
       this.allWorkers = await this.workerService.getAllWorkers();
     } catch (error: any) {
       this.errorMessage = 'Failed to load workers data: ' + error.message;
@@ -148,6 +150,11 @@ export class ReportsDashboardComponent implements OnInit {
       this.loading = false;
       this.cd.detectChanges();
     }
+  }
+
+  async setWorkerFilter(filter: 'outstanding' | 'all') {
+    this.workerFilter = filter;
+    await this.loadWorkersData();
   }
   
   async loadClientsData() {

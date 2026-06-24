@@ -19,7 +19,7 @@
   <!-- Tab Navigation -->
   <div class="tab-nav">
     <button class="tab-btn" [class.active]="activeTab === 'workers'" (click)="switchTab('workers')">
-      Workers / Labor
+      Outstanding & Passbook
     </button>
     <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'clients'" (click)="switchTab('clients')">
       Clients
@@ -41,14 +41,20 @@
   <!-- ========== WORKERS TAB ========== -->
   <div class="tab-content" *ngIf="activeTab === 'workers' && !loading">
     <div class="content-header">
-      <h2>Workers Outstanding Payment</h2>
+      <div class="header-main">
+        <h2>Workers Ledger & Passbook</h2>
+        <div class="filter-toggle">
+          <button [class.active]="workerFilter === 'outstanding'" (click)="setWorkerFilter('outstanding')">Outstanding Only</button>
+          <button [class.active]="workerFilter === 'all'" (click)="setWorkerFilter('all')">Show All Workers</button>
+        </div>
+      </div>
       <div class="stats">
         <div class="stat-card">
           <small>Total Outstanding</small>
           <strong>{{ formatCurrency(totalWorkersOutstanding) }}</strong>
         </div>
         <div class="stat-card">
-          <small>Total Workers</small>
+          <small>{{ workerFilter === 'outstanding' ? 'Due Workers' : 'Total Workers' }}</small>
           <strong>{{ workersWithOutstanding.length }}</strong>
         </div>
       </div>
@@ -77,10 +83,10 @@
             <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(worker.outstanding) }}</td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-success" (click)="openPayWorkerDialog(worker, 'full')" title="Pay Full">
+                <button *ngIf="worker.outstanding > 0" class="btn btn-sm btn-success" (click)="openPayWorkerDialog(worker, 'full')" title="Pay Full">
                   Pay Full
                 </button>
-                <button class="btn btn-sm btn-primary" (click)="openPayWorkerDialog(worker, 'partial')" title="Pay Partial">
+                <button *ngIf="worker.outstanding > 0" class="btn btn-sm btn-primary" (click)="openPayWorkerDialog(worker, 'partial')" title="Pay Partial">
                   Partial
                 </button>
                 <button class="btn btn-sm btn-info" (click)="openPassbookDialog(worker)" title="View Passbook">
@@ -102,9 +108,11 @@
 
     <ng-template #noWorkersOutstanding>
       <div class="empty-state">
-        <span class="empty-icon"></span>
-        <h3>No Outstanding Payments</h3>
-        <p>All workers have been paid in full!</p>
+        <div class="empty-icon-box">
+          <mat-icon>group_off</mat-icon>
+        </div>
+        <h3>{{ workerFilter === 'outstanding' ? 'No Outstanding Payments' : 'No Workers Found' }}</h3>
+        <p>{{ workerFilter === 'outstanding' ? 'All workers have been paid in full!' : 'There are no active workers in the system.' }}</p>
       </div>
     </ng-template>
   </div>

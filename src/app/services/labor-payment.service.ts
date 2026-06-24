@@ -45,15 +45,21 @@ export class LaborPaymentService {
 
   /**
    * Get all workers with outstanding wages (using wage_payments table)
+   * @param onlyWithOutstanding If true, only returns workers with balance > 0
    */
-  async getWorkersWithOutstanding(): Promise<WorkerOutstanding[]> {
+  async getWorkersWithOutstanding(onlyWithOutstanding: boolean = true): Promise<WorkerOutstanding[]> {
     try {
       // Get workers from workers_master with cumulative balance
-      const { data: workers, error: workersError } = await this.supabase.supabase
+      let query = this.supabase.supabase
         .from('workers_master')
         .select('id, name, phone, cumulative_balance')
-        .eq('active', true)
-        .gt('cumulative_balance', 0)
+        .eq('active', true);
+
+      if (onlyWithOutstanding) {
+        query = query.gt('cumulative_balance', 0);
+      }
+
+      const { data: workers, error: workersError } = await query
         .order('cumulative_balance', { ascending: false });
 
       if (workersError) throw workersError;
