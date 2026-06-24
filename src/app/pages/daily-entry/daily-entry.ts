@@ -149,6 +149,18 @@ export class UnifiedDailyEntryComponent implements OnInit {
     this.onWorkerCheckboxChange(worker, event);
   }
 
+  getWorkerEntry(workerId: string): WorkerEntry | undefined {
+    return this.workerEntries.find(we => we.worker.id === workerId);
+  }
+
+  onWorkerWageChange(workerId: string, event: any): void {
+    const amount = parseFloat(event.target.value) || 0;
+    const entry = this.getWorkerEntry(workerId);
+    if (entry) {
+      entry.wage_earned = amount;
+    }
+  }
+
   getWorkerInitials(name: string): string {
     if (!name) return '??';
     const parts = name.split(' ');

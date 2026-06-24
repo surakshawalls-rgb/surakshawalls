@@ -1395,7 +1395,7 @@ textarea.form-control {
 
 .attendance-grid-header {
   display: grid;
-  grid-template-columns: 80px 1fr 140px 150px;
+  grid-template-columns: 80px 1fr 150px 140px 150px;
   background: #f8fafc;
   padding: 12px 16px;
   border-bottom: 2px solid var(--border-color);
@@ -1408,12 +1408,59 @@ textarea.form-control {
 
 .attendance-row {
   display: grid;
-  grid-template-columns: 80px 1fr 140px 150px;
+  grid-template-columns: 80px 1fr 150px 140px 150px;
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border-color);
   transition: all 0.2s;
   cursor: pointer;
+}
+
+/* Wage Column */
+.col-wage {
+  display: flex;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.wage-input-group {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 4px 8px;
+  transition: all 0.2s;
+}
+
+.wage-input-group:focus-within {
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(248, 68, 100, 0.1);
+}
+
+.wage-input-group .currency {
+  color: var(--text-light);
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.wage-input {
+  border: none;
+  background: transparent;
+  width: 70px;
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.wage-input:focus {
+  outline: none;
+}
+
+.wage-input::-webkit-inner-spin-button {
+  display: none;
 }
 
 .attendance-row:last-child {
@@ -1572,10 +1619,20 @@ textarea.form-control {
 @media (max-width: 768px) {
   .attendance-grid { border-radius: 0; border-left: none; border-right: none; margin-left: -20px; margin-right: -20px; }
   .attendance-grid-header { display: none; }
-  .attendance-row { grid-template-columns: 50px 1fr; grid-template-rows: auto auto auto; gap: 4px; padding: 16px; }
-  .col-select { grid-row: span 3; padding-top: 6px; }
+  .attendance-row { grid-template-columns: 50px 1fr; grid-template-rows: auto auto auto auto; gap: 4px; padding: 16px; }
+  .col-select { grid-row: span 4; padding-top: 6px; }
   .col-worker { grid-column: 2; }
+  .col-wage { grid-column: 2; justify-content: flex-start; padding: 0; margin-top: 4px; }
   .col-balance { grid-column: 2; text-align: left !important; padding: 0; margin: 4px 0; }
   .col-status { grid-column: 2; justify-content: flex-start; margin-top: 4px; }
   .balance-pill { flex-direction: row; gap: 8px; align-items: center; background: transparent; border: none; padding: 0; min-width: auto; }
+  
+  .wage-input-group {
+    padding: 2px 6px;
+  }
+  
+  .wage-input {
+    width: 60px;
+    font-size: 0.85rem;
+  }
 }

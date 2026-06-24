@@ -253,6 +253,7 @@
           <div class="attendance-grid-header">
             <div class="col-select">Mark</div>
             <div class="col-worker">Worker Info</div>
+            <div class="col-wage">Today's Wage</div>
             <div class="col-balance">Balance</div>
             <div class="col-status">Status</div>
           </div>
@@ -279,6 +280,19 @@
                   <mat-icon>phone</mat-icon>
                   {{ worker.phone || 'No phone' }}
                 </span>
+              </div>
+            </div>
+
+            <!-- Wage (New Editable Column) -->
+            <div class="col-wage">
+              <div class="wage-input-group">
+                <span class="currency">₹</span>
+                <input type="number" 
+                       [value]="getWorkerEntry(worker.id)?.wage_earned || 500" 
+                       (click)="$event.stopPropagation()"
+                       (input)="onWorkerWageChange(worker.id, $event)"
+                       class="wage-input"
+                       placeholder="Wage">
               </div>
             </div>
 
