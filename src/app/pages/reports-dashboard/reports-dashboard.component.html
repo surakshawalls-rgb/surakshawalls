@@ -45,7 +45,8 @@
         <h2>Workers Ledger & Passbook</h2>
         <div class="filter-toggle">
           <button [class.active]="workerFilter === 'outstanding'" (click)="setWorkerFilter('outstanding')">Outstanding Only</button>
-          <button [class.active]="workerFilter === 'all'" (click)="setWorkerFilter('all')">Show All Workers</button>
+          <button [class.active]="workerFilter === 'active'" (click)="setWorkerFilter('active')">Active Only</button>
+          <button [class.active]="workerFilter === 'inactive'" (click)="setWorkerFilter('inactive')">Inactive Only</button>
         </div>
       </div>
       <div class="stats">
@@ -54,7 +55,7 @@
           <strong>{{ formatCurrency(totalWorkersOutstanding) }}</strong>
         </div>
         <div class="stat-card">
-          <small>{{ workerFilter === 'outstanding' ? 'Due Workers' : 'Total Workers' }}</small>
+          <small>{{ workerFilter === 'outstanding' ? 'Due Workers' : workerFilter === 'active' ? 'Active Workers' : 'Inactive Workers' }}</small>
           <strong>{{ workersWithOutstanding.length }}</strong>
         </div>
       </div>
@@ -111,8 +112,8 @@
         <div class="empty-icon-box">
           <mat-icon>group_off</mat-icon>
         </div>
-        <h3>{{ workerFilter === 'outstanding' ? 'No Outstanding Payments' : 'No Workers Found' }}</h3>
-        <p>{{ workerFilter === 'outstanding' ? 'All workers have been paid in full!' : 'There are no active workers in the system.' }}</p>
+        <h3>{{ workerFilter === 'outstanding' ? 'No Outstanding Payments' : workerFilter === 'active' ? 'No Active Workers' : 'No Inactive Workers' }}</h3>
+        <p>{{ workerFilter === 'outstanding' ? 'All workers have been paid in full!' : workerFilter === 'active' ? 'There are no active workers in the system.' : 'There are no inactive workers found.' }}</p>
       </div>
     </ng-template>
   </div>

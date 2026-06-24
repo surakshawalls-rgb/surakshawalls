@@ -53,7 +53,7 @@ export class ReportsDashboardComponent implements OnInit {
   activeTab: 'workers' | 'clients' | 'partners' | 'company' = 'workers';
   
   // Workers data
-  workerFilter: 'outstanding' | 'all' = 'outstanding';
+  workerFilter: 'outstanding' | 'active' | 'inactive' = 'outstanding';
   workersWithOutstanding: WorkerOutstanding[] = [];
   allWorkers: Worker[] = [];
   
@@ -142,7 +142,10 @@ export class ReportsDashboardComponent implements OnInit {
   async loadWorkersData() {
     try {
       this.loading = true;
-      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding(this.workerFilter === 'outstanding');
+      const onlyOutstanding = this.workerFilter === 'outstanding';
+      const activeOnly = this.workerFilter !== 'inactive';
+      
+      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding(onlyOutstanding, activeOnly);
       this.allWorkers = await this.workerService.getAllWorkers();
     } catch (error: any) {
       this.errorMessage = 'Failed to load workers data: ' + error.message;
@@ -152,7 +155,7 @@ export class ReportsDashboardComponent implements OnInit {
     }
   }
 
-  async setWorkerFilter(filter: 'outstanding' | 'all') {
+  async setWorkerFilter(filter: 'outstanding' | 'active' | 'inactive') {
     this.workerFilter = filter;
     await this.loadWorkersData();
   }
