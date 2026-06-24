@@ -158,6 +158,18 @@ export class UnifiedDailyEntryComponent implements OnInit {
     const entry = this.getWorkerEntry(workerId);
     if (entry) {
       entry.wage_earned = amount;
+    } else {
+      // Auto-select worker if wage is adjusted
+      const worker = this.availableWorkers.find(w => w.id === workerId);
+      if (worker) {
+        this.workerEntries.push({
+          worker,
+          attendance_type: 'Full Day',
+          wage_earned: amount,
+          paid_today: 0,
+          is_paid: false
+        });
+      }
     }
   }
 
@@ -251,8 +263,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
   ) {}
   
   async ngOnInit() {
-    this.entryDate = new Date().toISOString().split('T')[0];
-    this.activeSection = 'production';
+    // Correctly initialize with local date instead of UTC date
+    const now = new Date();
+    this.entryDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    this.activeSection = 'labor';
     this.loading = true;
     try {
       await Promise.all([
@@ -1469,7 +1483,8 @@ Then try again.`;
   }
   
   resetForm() {
-    this.entryDate = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    this.entryDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     this.notes = '';
     this.hasProduction = false;
     this.productionItems = [];
