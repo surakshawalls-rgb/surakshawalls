@@ -32,26 +32,26 @@
   <mat-tab-group class="daily-entry-tabs" animationDuration="200ms" (selectedIndexChange)="onSectionTabChange($event)">
     <mat-tab>
       <ng-template mat-tab-label>
-        <mat-icon>precision_manufacturing</mat-icon>
-        Production
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template mat-tab-label>
         <mat-icon>groups</mat-icon>
         Attendance and Entry
       </ng-template>
     </mat-tab>
     <mat-tab *ngIf="!isLabourStaff()">
       <ng-template mat-tab-label>
-        <mat-icon>point_of_sale</mat-icon>
-        Sales
+        <mat-icon>receipt_long</mat-icon>
+        Expenses
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>precision_manufacturing</mat-icon>
+        Production
       </ng-template>
     </mat-tab>
     <mat-tab *ngIf="!isLabourStaff()">
       <ng-template mat-tab-label>
-        <mat-icon>receipt_long</mat-icon>
-        Expenses
+        <mat-icon>point_of_sale</mat-icon>
+        Sales
       </ng-template>
     </mat-tab>
     <mat-tab *ngIf="!isLabourStaff()">
@@ -152,7 +152,7 @@
                 </td>
                 <td class="amount-cell">
                   <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <span style="font-weight: 700; color: #2e7d32;">{{ formatCurrency((item.material_calc?.costs?.total_cost) || 0) }}</span>
+                    <span style="font-weight: 700; color: #2e7d32;">{{ formatCurrency(item.material_calc?.costs?.total_cost || 0) }}</span>
                     <span style="font-size: 0.75rem; color: #757575;">Material Cost</span>
                   </div>
                 </td>
@@ -193,122 +193,137 @@
       <div class="section-header labor-header">
         <div class="section-title">
           <mat-icon class="section-icon">groups</mat-icon>
-          <h2>Labor</h2>
+          <h2>Attendance</h2>
         </div>
-        <span class="section-badge">{{ workerEntries.length }} workers</span>
+        <span class="section-badge">{{ workerEntries.length }} selected</span>
       </div>
 
       <div class="section-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Worker</label>
-            <div class="input-with-button">
-              <select [(ngModel)]="selectedWorkerId" class="form-control">
-                <option value="">Select Worker</option>
-                <option *ngFor="let worker of availableWorkers" [value]="worker.id">
-                  {{ worker.name }} (Balance: {{ formatCurrency(worker.cumulative_balance) }})
-                </option>
-              </select>
-              <button (click)="showQuickAddWorker = true" class="btn btn-sm btn-secondary" title="Quick Add Worker">
-                <span>+ New</span>
+        <div class="section-intro">
+          <p>Mark workforce attendance quickly by checking each worker. If a worker is missing, add them using Quick Add Worker.</p>
+          <button (click)="toggleQuickAddWorker()" class="btn btn-secondary btn-sm">
+            {{ showQuickAddWorker ? 'Close' : '+ Quick Add Worker' }}
+          </button>
+        </div>
+
+        <div class="quick-add-panel" *ngIf="showQuickAddWorker">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Worker Name</label>
+              <input type="text" [(ngModel)]="newWorkerName" placeholder="Enter name" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Phone (Optional)</label>
+              <input type="text" [(ngModel)]="newWorkerPhone" placeholder="Enter phone" class="form-control">
+            </div>
+            <div class="form-group align-end">
+              <button (click)="quickAddWorker()"
+                      [disabled]="loading || !newWorkerName.trim()"
+                      class="btn btn-primary">
+                Save Worker
               </button>
             </div>
           </div>
+        </div>
 
-          <div class="form-group">
-            <label>Attendance Type</label>
-            <select [(ngModel)]="selectedAttendanceType" (change)="onAttendanceTypeChange()" class="form-control">
-              <option value="Full Day">Full Day (500)</option>
-              <option value="Half Day">Half Day (500)</option>
-              <option value="Custom">Custom Amount</option>
-            </select>
-          </div>
-
-          <div class="form-group" *ngIf="selectedAttendanceType === 'Custom'">
-            <label>Wage Amount (INR)</label>
-            <input type="number" [(ngModel)]="customWageAmount" min="1" placeholder="0" class="form-control">
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="isPaid">
-              <span>Mark as Paid</span>
-            </label>
-          </div>
-
-          <div class="form-group" *ngIf="isPaid">
-            <label>Paid By</label>
-            <select [(ngModel)]="paidByPartnerId" class="form-control">
-              <option value="">Select Partner</option>
-              <option *ngFor="let partner of partners" [value]="partner.partner_id">
-                {{ partner.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>&nbsp;</label>
-            <button (click)="addWorkerEntry()" 
-                    [disabled]="!selectedWorkerId"
-                    class="btn btn-primary">
-              + Add Worker
+        <!-- Worker Status Filter -->
+        <div class="worker-filter-bar">
+          <span class="filter-label">Show Workers:</span>
+          <div class="filter-buttons">
+            <button [class.active]="workerStatusFilter === 'active'" 
+                    (click)="setWorkerStatusFilter('active')" 
+                    class="btn btn-filter">
+              Active ({{ getActiveWorkersCount() }})
+            </button>
+            <button [class.active]="workerStatusFilter === 'inactive'" 
+                    (click)="setWorkerStatusFilter('inactive')" 
+                    class="btn btn-filter">
+              Inactive ({{ getInactiveWorkersCount() }})
+            </button>
+            <button [class.active]="workerStatusFilter === 'all'" 
+                    (click)="setWorkerStatusFilter('all')" 
+                    class="btn btn-filter">
+              All ({{ availableWorkers.length }})
             </button>
           </div>
         </div>
 
-        <!-- Worker Entries Table -->
-        <div class="data-table" *ngIf="workerEntries.length > 0">
-          <table>
-            <thead>
-              <tr>
-                <th>Worker Name</th>
-                <th>Attendance Type</th>
-                <th>Wage Earned</th>
-                <th>Paid Today</th>
-                <th>Paid By</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let entry of workerEntries; let i = index">
-                <td><strong>{{ entry.worker.name }}</strong></td>
-                <td>{{ entry.attendance_type }}</td>
-                <td class="amount-cell">{{ formatCurrency(entry.wage_earned) }}</td>
-                <td class="amount-cell">
-                  <span [class.text-success]="entry.paid_today > 0">
-                    {{ formatCurrency(entry.paid_today) }}
-                  </span>
-                </td>
-                <td>{{ entry.paid_by_partner_id ? getPartnerName(entry.paid_by_partner_id) : 'Unpaid' }}</td>
-                <td>
-                  <button (click)="removeWorkerEntry(i)" class="btn btn-sm btn-danger-outline">Remove</button>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="total-row">
-                <td colspan="2" class="text-right"><strong>Total:</strong></td>
-                <td class="amount-cell"><strong>{{ formatCurrency(getTotalLaborCost()) }}</strong></td>
-                <td class="amount-cell"><strong>{{ formatCurrency(getTotalPaidToday()) }}</strong></td>
-                <td colspan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
+        <!-- Attendance Grid (More professional than a standard table) -->
+        <div class="attendance-grid" *ngIf="getFilteredWorkers().length > 0; else noWorkersState">
+          <div class="attendance-grid-header">
+            <div class="col-select">Mark</div>
+            <div class="col-worker">Worker Info</div>
+            <div class="col-balance">Balance</div>
+            <div class="col-status">Status</div>
+          </div>
+          
+          <div class="attendance-row" *ngFor="let worker of getFilteredWorkers()" [class.selected]="isWorkerSelected(worker.id)">
+            <!-- Presence Selection -->
+            <div class="col-select">
+              <label class="custom-checkbox">
+                <input type="checkbox"
+                       [checked]="isWorkerSelected(worker.id)"
+                       (change)="onWorkerCheckboxChange(worker, $event)">
+                <span class="checkmark"></span>
+              </label>
+            </div>
+
+            <!-- Worker Identity -->
+            <div class="col-worker" (click)="onWorkerRowClick(worker)">
+              <div class="worker-avatar" [style.background-color]="getWorkerColor(worker.name)">
+                {{ getWorkerInitials(worker.name) }}
+              </div>
+              <div class="worker-details">
+                <span class="worker-name">{{ worker.name }}</span>
+                <span class="worker-phone">
+                  <mat-icon>phone</mat-icon>
+                  {{ worker.phone || 'No phone' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Financials -->
+            <div class="col-balance">
+              <div class="balance-pill" [class.positive]="worker.cumulative_balance >= 0" [class.negative]="worker.cumulative_balance < 0">
+                <span class="label">Balance</span>
+                <span class="amount">{{ formatCurrency(worker.cumulative_balance) }}</span>
+              </div>
+            </div>
+
+            <!-- Active/Inactive Toggle -->
+            <div class="col-status">
+              <button (click)="toggleWorkerStatus(worker); $event.stopPropagation()" 
+                      [disabled]="loading"
+                      [class.btn-active]="worker.active"
+                      [class.btn-inactive]="!worker.active"
+                      class="status-toggle">
+                <mat-icon>{{ worker.active ? 'check_circle' : 'pause_circle' }}</mat-icon>
+                <span>{{ worker.active ? 'Active' : 'Paused' }}</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="empty-state" *ngIf="workerEntries.length === 0">
-          <span class="empty-icon"></span>
-          <p>No workers added yet</p>
+        <ng-template #noWorkersState>
+          <div class="empty-state">
+            <span class="empty-icon"></span>
+            <p>{{ workerStatusFilter === 'active' ? 'No active workers found' : workerStatusFilter === 'inactive' ? 'No inactive workers found' : 'No workers found' }}. Use Quick Add Worker to create one.</p>
+          </div>
+        </ng-template>
+
+        <div class="attendance-summary" *ngIf="availableWorkers.length > 0">
+          <div><strong>{{ workerEntries.length }}</strong> worker(s) selected for attendance</div>
+          <div><strong>{{ formatCurrency(getTotalLaborCost()) }}</strong> estimated wage cost</div>
         </div>
 
         <div class="section-submit-bar">
           <button (click)="submitLaborSection()"
                   [disabled]="saving || loading || workerEntries.length === 0"
                   class="btn btn-submit btn-section-submit">
-            <span *ngIf="!saving">Submit Labor Entry</span>
+            <span *ngIf="!saving">Save Attendance</span>
             <span *ngIf="saving">Saving...</span>
           </button>
-          <p class="section-submit-hint">Saves only attendance and wage entries for this date.</p>
+          <p class="section-submit-hint">Checked workers will be marked present for {{ entryDate }}.</p>
         </div>
       </div>
     </div>
@@ -342,7 +357,7 @@
                       title="Clear Selection">
                 <span>Clear</span>
               </button>
-              <button (click)="showQuickAddClient = true" class="btn btn-sm btn-secondary" title="Quick Add Client">
+              <button (click)="toggleQuickAddClient()" class="btn btn-sm btn-secondary" title="Quick Add Client">
                 <span>+ New</span>
               </button>
             </div>
@@ -356,7 +371,7 @@
             <div *ngIf="showClientResults" class="client-results-container">
               <div class="client-results-header">
                 <strong>Search Results ({{ filteredClients.length }})</strong>
-                <button (click)="showClientResults = false" class="btn-close">Close</button>
+                <button (click)="closeClientResults()" class="btn-close">Close</button>
               </div>
               <div class="client-results-table">
                 <table class="table">
@@ -745,11 +760,11 @@
 </div>
 
 <!-- ========== QUICK ADD WORKER MODAL ========== -->
-<div class="modal-overlay" *ngIf="showQuickAddWorker" (click)="showQuickAddWorker = false">
+<div class="modal-overlay" *ngIf="showQuickAddWorker" (click)="closeQuickAddWorker()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Quick Add Worker</h3>
-      <button (click)="showQuickAddWorker = false" class="btn-close"></button>
+      <button (click)="closeQuickAddWorker()" class="btn-close"></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -762,7 +777,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button (click)="showQuickAddWorker = false" class="btn btn-secondary">Cancel</button>
+      <button (click)="closeQuickAddWorker()" class="btn btn-secondary">Cancel</button>
       <button (click)="quickAddWorker()" [disabled]="!newWorkerName.trim() || loading" class="btn btn-primary">
         {{ loading ? 'Adding...' : 'Add Worker' }}
       </button>
@@ -771,11 +786,11 @@
 </div>
 
 <!-- ========== QUICK ADD CLIENT MODAL ========== -->
-<div class="modal-overlay" *ngIf="showQuickAddClient" (click)="showQuickAddClient = false">
+<div class="modal-overlay" *ngIf="showQuickAddClient" (click)="closeQuickAddClient()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Quick Add Client</h3>
-      <button (click)="showQuickAddClient = false" class="btn-close"></button>
+      <button (click)="closeQuickAddClient()" class="btn-close"></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -792,7 +807,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button (click)="showQuickAddClient = false" class="btn btn-secondary">Cancel</button>
+      <button (click)="closeQuickAddClient()" class="btn btn-secondary">Cancel</button>
       <button (click)="quickAddClient()" [disabled]="!newClientName.trim() || loading" class="btn btn-primary">
         {{ loading ? 'Adding...' : 'Add Client' }}
       </button>

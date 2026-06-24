@@ -85,7 +85,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   // ========== GENERAL ==========
   entryDate: string = '';
   notes: string = '';
-  activeSection: 'production' | 'labor' | 'sales' | 'expenses' | 'damage' = 'production';
+  activeSection: 'production' | 'labor' | 'sales' | 'expenses' | 'damage' = 'labor';
   
   // ========== SECTION 1: PRODUCTION ==========
   hasProduction: boolean = false;
@@ -108,6 +108,66 @@ export class UnifiedDailyEntryComponent implements OnInit {
   showQuickAddWorker: boolean = false;
   newWorkerName: string = '';
   newWorkerPhone: string = '';
+  workerStatusFilter: 'all' | 'active' | 'inactive' = 'active';
+
+  getActiveWorkersCount(): number {
+    return this.availableWorkers.filter(w => w.active).length;
+  }
+
+  getInactiveWorkersCount(): number {
+    return this.availableWorkers.filter(w => !w.active).length;
+  }
+
+  setWorkerStatusFilter(filter: 'all' | 'active' | 'inactive'): void {
+    this.workerStatusFilter = filter;
+  }
+
+  toggleQuickAddWorker(): void {
+    this.showQuickAddWorker = !this.showQuickAddWorker;
+  }
+
+  closeQuickAddWorker(): void {
+    this.showQuickAddWorker = false;
+  }
+
+  toggleQuickAddClient(): void {
+    this.showQuickAddClient = !this.showQuickAddClient;
+  }
+
+  closeQuickAddClient(): void {
+    this.showQuickAddClient = false;
+  }
+
+  closeClientResults(): void {
+    this.showClientResults = false;
+  }
+
+  onWorkerRowClick(worker: any): void {
+    // Toggle checkbox when clicking the row (but not the status button)
+    const isSelected = this.isWorkerSelected(worker.id);
+    const event = { target: { checked: !isSelected } } as any;
+    this.onWorkerCheckboxChange(worker, event);
+  }
+
+  getWorkerInitials(name: string): string {
+    if (!name) return '??';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  getWorkerColor(name: string): string {
+    const colors = [
+      '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5', 
+      '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50', 
+      '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#FF5722'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) { hash = name.charCodeAt(i) + ((hash << 5) - hash); }
+    return colors[Math.abs(hash) % colors.length];
+  }
   
   // ========== SECTION 3: SALES ==========
   hasSalesToday: boolean = false;
@@ -207,9 +267,9 @@ export class UnifiedDailyEntryComponent implements OnInit {
 
   onSectionTabChange(index: number) {
     const sections = this.isLabourStaff()
-      ? ['production', 'labor']
-      : ['production', 'labor', 'sales', 'expenses', 'damage'];
-    this.activeSection = (sections[index] as 'production' | 'labor' | 'sales' | 'expenses' | 'damage') || 'production';
+      ? ['labor', 'production']
+      : ['labor', 'expenses', 'production', 'sales', 'damage'];
+    this.activeSection = (sections[index] as 'production' | 'labor' | 'sales' | 'expenses' | 'damage') || 'labor';
   }
   
   async loadProducts() {
@@ -434,7 +494,65 @@ export class UnifiedDailyEntryComponent implements OnInit {
       this.customWageAmount = WAGE_RATES[this.selectedAttendanceType];
     }
   }
-  
+
+  isWorkerSelected(workerId: string): boolean {
+    return this.workerEntries.some(we => we.worker.id === workerId);
+  }
+
+  onWorkerCheckboxChange(worker: Worker, event: any): void {
+    const checked = (event.target as HTMLInputElement)?.checked || false;
+    this.toggleWorkerAttendance(worker, checked);
+  }
+
+  toggleWorkerAttendance(worker: Worker, checked: boolean) {
+    const existingIndex = this.workerEntries.findIndex(we => we.worker.id === worker.id);
+    if (checked) {
+      if (existingIndex === -1) {
+        this.workerEntries.push({
+          worker,
+          attendance_type: 'Full Day',
+          wage_earned: WAGE_RATES['Full Day'],
+          paid_today: 0,
+          is_paid: false
+        });
+      }
+    } else {
+      if (existingIndex > -1) {
+        this.workerEntries.splice(existingIndex, 1);
+      }
+    }
+    this.cd.detectChanges();
+  }
+
+  getFilteredWorkers(): Worker[] {
+    if (this.workerStatusFilter === 'active') {
+      return this.availableWorkers.filter(w => w.active);
+    } else if (this.workerStatusFilter === 'inactive') {
+      return this.availableWorkers.filter(w => !w.active);
+    }
+    return this.availableWorkers;
+  }
+
+  async toggleWorkerStatus(worker: Worker): Promise<void> {
+    try {
+      this.loading = true;
+      const newStatus = !worker.active;
+      const result = await this.workerService.updateWorker(worker.id, { active: newStatus });
+      if (result.success) {
+        worker.active = newStatus;
+        this.cd.detectChanges();
+        this.showSuccess(`Worker marked as ${newStatus ? 'active' : 'inactive'}`);
+      } else {
+        this.showError(result.error || 'Failed to update worker status');
+      }
+    } catch (error) {
+      console.error('Error updating worker status:', error);
+      this.showError('Error updating worker status');
+    } finally {
+      this.loading = false;
+    }
+  }
+
   async addWorkerEntry() {
     if (!this.selectedWorkerId) {
       this.showError('Select a worker');
@@ -511,7 +629,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
       
       if (result.success && result.worker) {
         await this.loadWorkers();
-        this.selectedWorkerId = result.worker.id;
+        const addedWorker = this.availableWorkers.find(w => w.id === result.worker!.id);
+        if (addedWorker) {
+          this.toggleWorkerAttendance(addedWorker, true);
+        }
         this.showSuccess(`Worker ${this.newWorkerName} added successfully`);
         this.newWorkerName = '';
         this.newWorkerPhone = '';
