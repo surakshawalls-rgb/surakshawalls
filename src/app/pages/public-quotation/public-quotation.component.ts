@@ -121,35 +121,18 @@ export class PublicQuotationComponent {
   readonly WIRE_RATE = 105; // per kg (updated rate)
   readonly LABOUR_RATE = 500; // per day
   
-  // Preset land sizes (1 to 20 biswa + bigha options)
-  landSizes: LandSize[] = [
-    { label: '1-biswa', biswa: 1, displayText: '1 Biswa (~1,350 sq ft)' },
-    { label: '2-biswa', biswa: 2, displayText: '2 Biswa (~2,700 sq ft)' },
-    { label: '3-biswa', biswa: 3, displayText: '3 Biswa (~4,050 sq ft)' },
-    { label: '4-biswa', biswa: 4, displayText: '4 Biswa (~5,400 sq ft)' },
-    { label: '5-biswa', biswa: 5, displayText: '5 Biswa (~6,750 sq ft)' },
-    { label: '6-biswa', biswa: 6, displayText: '6 Biswa (~8,100 sq ft)' },
-    { label: '7-biswa', biswa: 7, displayText: '7 Biswa (~9,450 sq ft)' },
-    { label: '8-biswa', biswa: 8, displayText: '8 Biswa (~10,800 sq ft)' },
-    { label: '9-biswa', biswa: 9, displayText: '9 Biswa (~12,150 sq ft)' },
-    { label: '10-biswa', biswa: 10, displayText: '10 Biswa (~13,500 sq ft)' },
-    { label: '11-biswa', biswa: 11, displayText: '11 Biswa (~14,850 sq ft)' },
-    { label: '12-biswa', biswa: 12, displayText: '12 Biswa (~16,200 sq ft)' },
-    { label: '13-biswa', biswa: 13, displayText: '13 Biswa (~17,550 sq ft)' },
-    { label: '14-biswa', biswa: 14, displayText: '14 Biswa (~18,900 sq ft)' },
-    { label: '15-biswa', biswa: 15, displayText: '15 Biswa (~20,250 sq ft)' },
-    { label: '16-biswa', biswa: 16, displayText: '16 Biswa (~21,600 sq ft)' },
-    { label: '17-biswa', biswa: 17, displayText: '17 Biswa (~22,950 sq ft)' },
-    { label: '18-biswa', biswa: 18, displayText: '18 Biswa (~24,300 sq ft)' },
-    { label: '19-biswa', biswa: 19, displayText: '19 Biswa (~25,650 sq ft)' },
-    { label: '20-biswa', biswa: 20, displayText: '20 Biswa (1 Bigha)' },
-    { label: '1.5-bigha', biswa: 30, displayText: '1.5 Bigha (30 Biswa)' },
-    { label: '2-bigha', biswa: 40, displayText: '2 Bigha (40 Biswa)' },
-    { label: '2.5-bigha', biswa: 50, displayText: '2.5 Bigha (50 Biswa)' },
-    { label: '3-bigha', biswa: 60, displayText: '3 Bigha (60 Biswa)' },
-    { label: '3.5-bigha', biswa: 70, displayText: '3.5 Bigha (70 Biswa)' },
-    { label: '4-bigha', biswa: 80, displayText: '4 Bigha (80 Biswa)' }
-  ];
+  // Preset land sizes (generated 1 to 500 biswa)
+  landSizes: LandSize[] = Array.from({ length: 500 }, (_, i) => {
+    const b = i + 1;
+    let text = `${b} Biswa`;
+    if (b % 20 === 0) {
+      text = `${b} Biswa (${b / 20} Bigha)`;
+    } else if (b < 20) {
+      // Keep approx sqft for smaller plots as it's helpful
+      text = `${b} Biswa (~${(b * 1350).toLocaleString()} sq ft)`;
+    }
+    return { label: `${b}-biswa`, biswa: b, displayText: text };
+  });
 
   constructor(private router: Router) {
     // initialize manual rates after constants are defined

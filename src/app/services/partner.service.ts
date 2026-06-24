@@ -10,6 +10,7 @@ export class PartnerService {
     const { data, error } = await this.supabase.supabase
       .from('partner_master')
       .select('*')
+      .neq('partner_name', 'Pappu Maurya')
       .or('partner_name.ilike.%pradeep%,partner_name.ilike.%praveen%')
       .order('partner_name');
 

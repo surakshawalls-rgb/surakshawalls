@@ -380,14 +380,29 @@ export class UnifiedDailyEntryComponent implements OnInit {
 
       if (error) throw error;
 
-      this.otherExpenses = (data || []).map((row: any) => ({
-        id: row.id,
-        category: 'Other',
-        description: String(row.description || '').replace(/^DailyEntry Expense:\s*/i, ''),
-        amount: row.amount,
-        paid_by_partner_id: row.partner_id || '',
-        persisted: true
-      }));
+      this.otherExpenses = (data || []).map((row: any) => {
+        const fullDesc = String(row.description || '');
+        const cleanDesc = fullDesc.replace(/^DailyEntry Expense:\s*/i, '');
+        
+        // Try to infer category if it matches our dropdown options
+        let category: any = 'Other';
+        const cats = ['Snacks', 'Diesel', 'Maintenance', 'Medical', 'Transport'];
+        for (const c of cats) {
+          if (cleanDesc === c || cleanDesc.startsWith(c + ' ')) {
+            category = c;
+            break;
+          }
+        }
+
+        return {
+          id: row.id,
+          category: category,
+          description: cleanDesc,
+          amount: row.amount,
+          paid_by_partner_id: row.partner_id || '',
+          persisted: true
+        };
+      });
     } catch (error) {
       console.error('Error loading saved daily expenses:', error);
     }
@@ -856,10 +871,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
       category: this.selectedExpenseCategory,
       description: this.expenseDescription.trim(),
       amount: this.expenseAmount,
-      paid_by_partner_id: this.expensePaidBy
+      paid_by_partner_id: this.expensePaidBy,
+      persisted: false
     });
     
-    this.showSuccess('Expense added to draft. Click Submit Expenses to save.');
     this.expenseDescription = '';
     this.expenseAmount = 0;
     this.cd.detectChanges();
@@ -876,6 +891,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
   
   getTotalOtherExpenses(): number {
     return this.otherExpenses.reduce((sum, oe) => sum + oe.amount, 0);
+  }
+
+  hasDraftExpenses(): boolean {
+    return this.otherExpenses.some(oe => !oe.persisted);
   }
   
   // ========== SECTION 5: YARD LOSS ==========
@@ -1050,9 +1069,7 @@ export class UnifiedDailyEntryComponent implements OnInit {
   private async persistOtherExpensesEntries() {
     const draftExpenses = this.otherExpenses.filter(expense => !expense.persisted);
 
-    if (draftExpenses.length === 0) {
-      throw new Error('Add at least one expense');
-    }
+    if (draftExpenses.length === 0) return;
 
     for (const expense of draftExpenses) {
       const result = await this.retryOnLockError(async () => {
@@ -1360,12 +1377,14 @@ Then try again.`;
       }
 
       // 3. Save other expenses
-      if (this.otherExpenses.length > 0) {
+      const draftExpenses = this.otherExpenses.filter(e => !e.persisted);
+      if (draftExpenses.length > 0) {
         await this.persistOtherExpensesEntries();
       }
 
       // 4. Save production/transport damage (yard loss)
-      if (this.hasYardLoss && this.yardLossItems.length > 0) {
+      const draftYardLoss = this.yardLossItems.filter(e => !e.persisted);
+      if (draftYardLoss.length > 0) {
         await this.persistDamageEntries();
       }
 

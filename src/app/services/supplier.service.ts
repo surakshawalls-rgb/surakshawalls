@@ -559,6 +559,18 @@ export class SupplierService {
 
       if (error) throw error;
 
+      // Also record in firm_cash_ledger for consolidated passbook
+      await this.supabase.supabase
+        .from('firm_cash_ledger')
+        .insert([{
+          date: paymentData.payment_date,
+          type: 'payment',
+          amount: paymentData.amount_paid,
+          category: 'purchase',
+          partner_id: paymentData.paid_by_partner_id || null,
+          description: `Supplier Payment: ${(paymentData as any).supplier_name || 'Supplier'} ${paymentData.notes ? '- ' + paymentData.notes : ''}`
+        }]);
+
       return { success: true, payment: data };
 
     } catch (error: any) {

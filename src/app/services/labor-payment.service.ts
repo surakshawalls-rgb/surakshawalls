@@ -177,6 +177,7 @@ export class LaborPaymentService {
           type: 'payment',
           amount: payment.amount_paid,
           category: 'wage',
+          partner_id: payment.paid_by_partner_id || null,
           description: `Wage payment${payment.notes ? ' - ' + payment.notes : ''}`
         }]);
 

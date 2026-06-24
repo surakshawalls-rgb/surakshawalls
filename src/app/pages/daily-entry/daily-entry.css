@@ -1383,6 +1383,155 @@ textarea.form-control {
   }
 }
 
+/* ========== EXPENSE TAB SIMPLIFICATION ========== */
+.expense-entry-grid {
+  padding: 16px;
+  background: #fdfdfd;
+}
+
+.expense-form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.flex-1 { flex: 1; min-width: 140px; }
+.flex-2 { flex: 2; min-width: 250px; }
+
+.amount-input {
+  font-weight: 700;
+  color: #c62828;
+  font-size: 1.1rem;
+}
+
+.btn-add-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  font-weight: 700;
+  height: 42px;
+}
+
+.expense-list-container {
+  margin-top: 24px;
+  border-top: 2px dashed #e2e8f0;
+  padding-top: 16px;
+}
+
+.expense-item-row {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.expense-item-row:hover {
+  transform: translateX(4px);
+  border-color: #cbd5e0;
+}
+
+.expense-item-row.persisted {
+  background-color: #f8fafc;
+  border-left: 4px solid #10b981;
+}
+
+.category-pill {
+  background: #edf2f7;
+  color: #4a5568;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-right: 12px;
+}
+
+.expense-col-main {
+  flex: 3;
+  display: flex;
+  align-items: center;
+}
+
+.expense-desc {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.expense-col-paid {
+  flex: 1.5;
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.expense-col-amount {
+  flex: 1.2;
+  text-align: right;
+  font-weight: 700;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.expense-col-action {
+  flex: 0.5;
+  text-align: right;
+  margin-left: 10px;
+}
+
+.btn-icon-danger {
+  background: transparent;
+  border: none;
+  color: #e53e3e;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.btn-icon-danger:hover:not(:disabled) {
+  background: #fff5f5;
+}
+
+.btn-icon-danger:disabled {
+  color: #10b981;
+  cursor: default;
+}
+
+.expense-summary-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px;
+  font-weight: 700;
+  color: #1a202c;
+  font-size: 1.1rem;
+}
+
+.btn-save-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #2d3748 !important;
+  color: white !important;
+}
+
+.empty-state-compact {
+  text-align: center;
+  padding: 40px 20px;
+  color: #a0aec0;
+}
+
+.empty-state-compact mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+}
+
 /* ========== ATTENDANCE GRID (Modern Alternative to Table) ========== */
 .attendance-grid {
   background: var(--white);

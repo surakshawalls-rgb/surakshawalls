@@ -1,3 +1,86 @@
+.badge-category {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.filter-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.range-sep {
+  color: #a0aec0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.partner-summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.p-summary-card {
+  background: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  border-bottom: 3px solid #6366f1;
+}
+
+.p-name {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.p-amount {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 4px;
+}
+
+.partner-select {
+  border: none;
+  border-left: 1px solid #e2e8f0;
+  padding: 4px 12px;
+  outline: none;
+  font-size: 0.85rem;
+  background: white;
+  color: #4a5568;
+  font-weight: 500;
+  max-width: 180px;
+}
+
+.search-input {
+  border: none;
+  border-left: 1px solid #e2e8f0;
+  padding: 4px 12px;
+  outline: none;
+  font-size: 0.9rem;
+  width: 200px;
+}
+
 /* === LABOUR LEDGER TABLE CUSTOM === */
 .labour-ledger-table {
   width: 100%;
@@ -929,3 +1012,12 @@ textarea.form-control {
     padding: 12px;
   }
 }
+
+.consolidated-passbook strong { font-weight: 600; color: var(--text-primary); }
+.badge-category { background: var(--bg-tertiary); color: var(--text-secondary); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; border: 1px solid var(--border-color); white-space: nowrap; }
+@media (max-width: 768px) { .sub-tab-nav { flex-direction: column; padding: 0 var(--spacing-md); } }
+
+.btn-search { display: flex; align-items: center; gap: 4px; padding: 6px 12px; height: 32px; font-weight: 500; }
+.filter-box { flex-wrap: wrap; gap: 8px !important; }
+.partner-select { min-width: 140px; }
+.search-input { min-width: 120px; }

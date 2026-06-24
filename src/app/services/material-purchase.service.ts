@@ -64,21 +64,19 @@ export class MaterialPurchaseService {
         })
         .eq('material_name', purchaseData.material_name);
 
-      // 4. Record in firm cash if paid from office
-      if (purchaseData.paid_from === 'office_cash') {
-        await this.supabase.supabase
-          .from('firm_cash_ledger')
-          .insert({
-            date: purchaseData.date,
-            type: 'payment',
-            amount: purchaseData.quantity * purchaseData.unit_cost,
-            category: 'purchase',
-            partner_id: purchaseData.partner_id,
-            deposited_to_firm: false,
-            description: `Purchase ${purchaseData.material_name} - ${purchaseData.quantity} units from ${purchaseData.vendor_name || 'vendor'}`,
-            reference_id: purchase.id
-          });
-      }
+      // 4. Record in firm cash ledger for consolidated passbook
+      await this.supabase.supabase
+        .from('firm_cash_ledger')
+        .insert({
+          date: purchaseData.date,
+          type: 'payment',
+          amount: purchaseData.quantity * purchaseData.unit_cost,
+          category: 'purchase',
+          partner_id: purchaseData.paid_from === 'partner_pocket' ? purchaseData.partner_id : null,
+          deposited_to_firm: false,
+          description: `Purchase ${purchaseData.material_name} - ${purchaseData.quantity} units from ${purchaseData.vendor_name || 'vendor'} (Paid from: ${purchaseData.paid_from === 'partner_pocket' ? 'Partner' : 'Office'})`,
+          reference_id: purchase.id
+        });
 
       return { success: true, purchase };
 

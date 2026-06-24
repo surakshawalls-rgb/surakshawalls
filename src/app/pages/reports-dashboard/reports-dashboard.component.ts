@@ -10,7 +10,17 @@ import { InventoryService } from '../../services/inventory.service';
 import { SupabaseService } from '../../services/supabase.service';
 import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
 import { MfgFooterComponent } from '../../components/mfg-footer/mfg-footer.component';
+import { PartnerService } from '../../services/partner.service';
 import { MatIconModule } from '@angular/material/icon';
+
+interface OtherExpense {
+  id: string;
+  date: string;
+  amount: number;
+  category: string;
+  description: string;
+  paid_by_partner_id?: string;
+}
 
 interface PaymentDialog {
   show: boolean;
@@ -51,11 +61,19 @@ export class ReportsDashboardComponent implements OnInit {
   
   // Active tab
   activeTab: 'workers' | 'clients' | 'partners' | 'company' = 'workers';
+  workerSubTab: 'workers' | 'expenses' = 'workers';
   
   // Workers data
   workerFilter: 'outstanding' | 'active' | 'inactive' = 'outstanding';
   workersWithOutstanding: WorkerOutstanding[] = [];
   allWorkers: Worker[] = [];
+
+  // Expenses data
+  otherExpenses: OtherExpense[] = [];
+  expenseSearch = '';
+  expenseStartDate = '';
+  expenseEndDate = '';
+  expensePartnerFilter = ''; // Empty means 'All'
   
   // Clients data
   clientsWithOutstanding: ClientOutstanding[] = [];
@@ -115,9 +133,22 @@ export class ReportsDashboardComponent implements OnInit {
   async ngOnInit() {
    await this.loadPartnersList();
    await this.loadWorkersData();
+   
+   // We'll leave dates empty by default to trigger the "First 50" load logic
+   this.expenseStartDate = '';
+   this.expenseEndDate = '';
+
    if (this.labourOnly) {
      this.activeTab = 'workers';
    }
+  }
+
+  clearExpenseFilters() {
+    this.expenseStartDate = '';
+    this.expenseEndDate = '';
+    this.expensePartnerFilter = '';
+    this.expenseSearch = '';
+    this.loadExpensesData();
   }
   
   // ========== TAB NAVIGATION ==========
@@ -126,18 +157,159 @@ export class ReportsDashboardComponent implements OnInit {
     this.activeTab = tab;
     this.errorMessage = '';
     
-    if (tab === 'workers' && this.workersWithOutstanding.length === 0) {
-      await this.loadWorkersData();
-    } else if (tab === 'clients' && this.clientsWithOutstanding.length === 0) {
+    if (tab === 'workers') {
+      if (this.workerSubTab === 'workers') {
+        await this.loadWorkersData();
+      } else {
+        await this.loadExpensesData();
+      }
+    } else if (tab === 'clients') {
       await this.loadClientsData();
-    } else if (tab === 'partners' && this.partnerInfo.length === 0) {
+    } else if (tab === 'partners') {
       await this.loadPartnersData();
     } else if (tab === 'company') {
       await this.loadCompanyOverview();
     }
   }
   
+  async switchWorkerSubTab(sub: 'workers' | 'expenses') {
+    this.workerSubTab = sub;
+    if (sub === 'workers') {
+      await this.loadWorkersData();
+    } else {
+      await this.loadExpensesData();
+    }
+  }
+
   // ========== DATA LOADING ==========
+
+  async loadExpensesData() {
+    try {
+      this.loading = true;
+      // We query for all payments (operational, wage, purchase, etc.) to show a consolidated passbook
+      let query = this.supabase.supabase
+        .from('firm_cash_ledger')
+        .select('*')
+        .eq('type', 'payment')
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (this.expenseStartDate) {
+        query = query.gte('date', this.expenseStartDate);
+      }
+      if (this.expenseEndDate) {
+        query = query.lte('date', this.expenseEndDate);
+      }
+
+      // Add partner filter to query
+      if (this.expensePartnerFilter) {
+        if (this.expensePartnerFilter === 'firm') {
+          query = query.is('partner_id', null);
+        } else {
+          query = query.eq('partner_id', this.expensePartnerFilter);
+        }
+      }
+
+      // If no dates/filters are set, take last 50, else limit to 300
+      if (!this.expenseStartDate && !this.expenseEndDate && !this.expensePartnerFilter) {
+        query = query.limit(50);
+      } else {
+        query = query.limit(300);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      this.otherExpenses = (data || []).map((row: any) => {
+        const fullDesc = String(row.description || '');
+        let cleanDesc = fullDesc.replace(/^DailyEntry Expense:\s*/i, '');
+        
+        // Map category for display
+        let displayCategory: string = row.category || 'Other';
+        
+        // Specific mapping for the Passbook feel
+        if (displayCategory === 'operational') {
+          const cats = ['Snacks', 'Diesel', 'Maintenance', 'Medical', 'Transport'];
+          for (const c of cats) {
+            if (cleanDesc.toLowerCase().includes(c.toLowerCase())) {
+              displayCategory = c;
+              break;
+            }
+          }
+        } else if (displayCategory === 'wage') {
+          displayCategory = 'WAGES';
+        } else if (displayCategory === 'purchase') {
+          displayCategory = 'PURCHASE';
+        }
+
+        return {
+          ...row,
+          category: displayCategory.toUpperCase(),
+          paid_by_partner_id: row.partner_id,
+          description: cleanDesc
+        };
+      });
+    } catch (error: any) {
+      this.errorMessage = 'Failed to load expenses: ' + error.message;
+    } finally {
+      this.loading = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  getFilteredExpenses() {
+    let filtered = this.otherExpenses;
+    
+    // Partner Filter
+    if (this.expensePartnerFilter) {
+      if (this.expensePartnerFilter === 'firm') {
+        filtered = filtered.filter(e => !e.paid_by_partner_id);
+      } else {
+        filtered = filtered.filter(e => e.paid_by_partner_id === this.expensePartnerFilter);
+      }
+    }
+
+    // Search Filter
+    if (this.expenseSearch) {
+      const s = this.expenseSearch.toLowerCase();
+      filtered = filtered.filter(e => 
+        e.description?.toLowerCase().includes(s) || 
+        e.category?.toLowerCase().includes(s)
+      );
+    }
+    
+    return filtered;
+  }
+
+  getPartnerName(id?: string) {
+    if (!id) return 'Company / Firm';
+    const p = this.partners.find(x => x.id === id);
+    return p ? p.partner_name : 'Partner';
+  }
+
+  getTotalExpensesAmount() {
+    return this.getFilteredExpenses().reduce((sum, e) => sum + (e.amount || 0), 0);
+  }
+
+  getPartnerExpenseSummary() {
+    const summary: {name: string, total: number}[] = [];
+    
+    // Firm total
+    const firmTotal = this.otherExpenses
+      .filter(e => !e.paid_by_partner_id)
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    if (firmTotal > 0) summary.push({ name: 'Firm / Company', total: firmTotal });
+
+    // Each partner total
+    this.partners.forEach(p => {
+      const total = this.otherExpenses
+        .filter(e => e.paid_by_partner_id === p.id)
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      if (total > 0) summary.push({ name: p.partner_name, total: total });
+    });
+
+    return summary;
+  }
   
   async loadWorkersData() {
     try {
@@ -182,6 +354,7 @@ export class ReportsDashboardComponent implements OnInit {
       const { data, error } = await this.supabase.supabase
         .from('partner_master')
         .select('id, partner_name')
+        .neq('partner_name', 'Pappu Maurya') // Remove Pappu Maurya as requested
         .order('partner_name');
       
       if (error) throw error;
@@ -197,6 +370,7 @@ export class ReportsDashboardComponent implements OnInit {
       const { data, error } = await this.supabase.supabase
         .from('partner_master')
         .select('*')
+        .neq('partner_name', 'Pappu Maurya')
         .order('partner_name');
       
       if (error) throw error;

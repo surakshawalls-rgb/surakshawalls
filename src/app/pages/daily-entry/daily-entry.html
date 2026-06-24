@@ -576,101 +576,95 @@
       <div class="section-header expenses-header">
         <div class="section-title">
           <mat-icon class="section-icon">receipt_long</mat-icon>
-          <h2>Other Expenses</h2>
+          <h2>Other Office Expenses</h2>
         </div>
-        <span class="section-badge">{{ otherExpenses.length }} items</span>
+        <div class="header-actions">
+          <span class="section-badge">{{ otherExpenses.length }} active</span>
+          <button (click)="submitExpensesSection()"
+                  [disabled]="saving || loading || !hasDraftExpenses()"
+                  class="btn btn-primary btn-sm btn-save-all">
+            <mat-icon>save</mat-icon>
+            {{ saving ? 'Saving...' : 'Save All' }}
+          </button>
+        </div>
       </div>
 
       <div class="section-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Category</label>
-            <select [(ngModel)]="selectedExpenseCategory" class="form-control">
-              <option value="Snacks">Snacks</option>
-              <option value="Diesel">Diesel</option>
-              <option value="Maintenance">Maintenance</option>
-              <option value="Medical">Medical</option>
-              <option value="Transport">Transport</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+        <div class="attendance-grid expense-entry-grid">
+          <!-- Form Header Style -->
+          <div class="expense-form-row">
+            <div class="form-group flex-1">
+              <label>Category</label>
+              <select [(ngModel)]="selectedExpenseCategory" class="form-control">
+                <option value="Snacks">Snacks / Refreshments</option>
+                <option value="Diesel">Diesel / Fuel</option>
+                <option value="Maintenance">Maintenance / Repair</option>
+                <option value="Medical">Medical / First Aid</option>
+                <option value="Transport">Transport / Fare</option>
+                <option value="Other">Miscellaneous / Other</option>
+              </select>
+            </div>
 
-          <div class="form-group">
-            <label>Description</label>
-            <input type="text" [(ngModel)]="expenseDescription" placeholder="Optional notes" class="form-control">
-          </div>
+            <div class="form-group flex-2">
+              <label>Description (What for?)</label>
+              <input type="text" [(ngModel)]="expenseDescription" placeholder="e.g. Chai morning, Bike repair..." class="form-control">
+            </div>
 
-          <div class="form-group">
-            <label>Amount (INR)</label>
-            <input type="number" [(ngModel)]="expenseAmount" min="1" placeholder="0" class="form-control">
-          </div>
+            <div class="form-group flex-1">
+              <label>Amount (₹)</label>
+              <input type="number" [(ngModel)]="expenseAmount" min="1" placeholder="0" class="form-control amount-input">
+            </div>
 
-          <div class="form-group">
-            <label>Paid By</label>
-            <select [(ngModel)]="expensePaidBy" class="form-control">
-              <option value="">Select Partner</option>
-              <option *ngFor="let partner of partners" [value]="partner.partner_id">
-                {{ partner.name }}
-              </option>
-            </select>
-          </div>
+            <div class="form-group flex-1">
+              <label>Paid By</label>
+              <select [(ngModel)]="expensePaidBy" class="form-control">
+                <option value="">Select Who Paid</option>
+                <option *ngFor="let partner of partners" [value]="partner.partner_id">
+                  {{ partner.name }}
+                </option>
+              </select>
+            </div>
 
-          <div class="form-group">
-            <label>&nbsp;</label>
-            <button (click)="addOtherExpense()" 
-                    [disabled]="!selectedExpenseCategory || expenseAmount <= 0 || !expensePaidBy"
-                    class="btn btn-primary">
-              + Add Expense
-            </button>
+            <div class="form-group action-group">
+              <label>&nbsp;</label>
+              <button (click)="addOtherExpense()" 
+                      [disabled]="!selectedExpenseCategory || expenseAmount <= 0 || !expensePaidBy"
+                      class="btn btn-success btn-add-inline" title="Add to list">
+                <mat-icon>add_circle</mat-icon>
+                Add
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Expenses Table -->
-        <div class="data-table" *ngIf="otherExpenses.length > 0">
-          <table>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Paid By</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let expense of otherExpenses; let i = index">
-                <td><strong>{{ expense.category }}</strong></td>
-                <td>{{ expense.description || '-' }}</td>
-                <td class="amount-cell">{{ formatCurrency(expense.amount) }}</td>
-                <td>{{ getPartnerName(expense.paid_by_partner_id) }}</td>
-                <td>
-                  <button (click)="removeOtherExpense(i)" class="btn btn-sm btn-danger-outline">Remove</button>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="total-row">
-                <td colspan="2" class="text-right"><strong>Total Other Expenses:</strong></td>
-                <td class="amount-cell"><strong>{{ formatCurrency(getTotalOtherExpenses()) }}</strong></td>
-                <td colspan="2"></td>
-              </tr>
-            </tfoot>
-          </table>
+        <!-- Expenses List Grid -->
+        <div class="expense-list-container" *ngIf="otherExpenses.length > 0">
+           <div class="expense-item-row" *ngFor="let expense of otherExpenses; let i = index" [class.persisted]="expense.persisted">
+              <div class="expense-col-main">
+                <span class="category-pill">{{ expense.category }}</span>
+                <span class="expense-desc">{{ expense.description || 'No description' }}</span>
+              </div>
+              <div class="expense-col-paid">
+                <small>By:</small> {{ getPartnerName(expense.paid_by_partner_id) }}
+              </div>
+              <div class="expense-col-amount">
+                {{ formatCurrency(expense.amount) }}
+              </div>
+              <div class="expense-col-action">
+                <button (click)="removeOtherExpense(i)" class="btn-icon-danger" [disabled]="expense.persisted" title="Remove draft">
+                  <mat-icon>{{ expense.persisted ? 'check_circle' : 'delete' }}</mat-icon>
+                </button>
+              </div>
+           </div>
+
+           <div class="expense-summary-row">
+             <span>Total Draft: {{ formatCurrency(getTotalOtherExpenses()) }}</span>
+           </div>
         </div>
 
-        <div class="empty-state" *ngIf="otherExpenses.length === 0">
-          <span class="empty-icon"></span>
-          <p>No expenses added yet</p>
-        </div>
-
-        <div class="section-submit-bar">
-          <button (click)="submitExpensesSection()"
-                  [disabled]="saving || loading || otherExpenses.length === 0"
-                  class="btn btn-submit btn-section-submit">
-            <span *ngIf="!saving">Submit Expenses</span>
-            <span *ngIf="saving">Saving...</span>
-          </button>
-          <p class="section-submit-hint">Saves only other expenses for this date.</p>
+        <div class="empty-state-compact" *ngIf="otherExpenses.length === 0">
+          <mat-icon>receipt</mat-icon>
+          <p>No expenses recorded for this date.</p>
         </div>
       </div>
     </div>

@@ -38,84 +38,175 @@
     <p>Loading data...</p>
   </div>
 
-  <!-- ========== WORKERS TAB ========== -->
+  <!-- ========== OUTSTANDING & PASSBOOK TAB ========== -->
   <div class="tab-content" *ngIf="activeTab === 'workers' && !loading">
-    <div class="content-header">
-      <div class="header-main">
-        <h2>Workers Ledger & Passbook</h2>
-        <div class="filter-toggle">
-          <button [class.active]="workerFilter === 'outstanding'" (click)="setWorkerFilter('outstanding')">Outstanding Only</button>
-          <button [class.active]="workerFilter === 'active'" (click)="setWorkerFilter('active')">Active Only</button>
-          <button [class.active]="workerFilter === 'inactive'" (click)="setWorkerFilter('inactive')">Inactive Only</button>
-        </div>
-      </div>
-      <div class="stats">
-        <div class="stat-card">
-          <small>Total Outstanding</small>
-          <strong>{{ formatCurrency(totalWorkersOutstanding) }}</strong>
-        </div>
-        <div class="stat-card">
-          <small>{{ workerFilter === 'outstanding' ? 'Due Workers' : workerFilter === 'active' ? 'Active Workers' : 'Inactive Workers' }}</small>
-          <strong>{{ workersWithOutstanding.length }}</strong>
-        </div>
-      </div>
+    
+    <!-- Sub-navigation for Workers tab -->
+    <div class="sub-tab-nav">
+      <button class="sub-tab-btn" [class.active]="workerSubTab === 'workers'" (click)="switchWorkerSubTab('workers')">
+        <mat-icon>people</mat-icon> Workers Ledger
+      </button>
+      <button class="sub-tab-btn" [class.active]="workerSubTab === 'expenses'" (click)="switchWorkerSubTab('expenses')">
+        <mat-icon>receipt_long</mat-icon> Partner Office Expenses
+      </button>
     </div>
 
-    <div class="data-grid" *ngIf="workersWithOutstanding.length > 0; else noWorkersOutstanding">
-      <table class="labour-ledger-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Worker Name</th>
-            <th>Phone</th>
-            <th>Total Earned</th>
-            <th>Total Paid</th>
-            <th class="text-right">Outstanding</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let worker of workersWithOutstanding; let i = index">
-            <td data-label="#">{{ i + 1 }}</td>
-            <td data-label="Worker Name"><strong>{{ worker.worker_name }}</strong></td>
-            <td data-label="Phone">{{ worker.phone || 'N/A' }}</td>
-            <td data-label="Total Earned">{{ formatCurrency(worker.total_earned) }}</td>
-            <td data-label="Total Paid">{{ formatCurrency(worker.total_paid) }}</td>
-            <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(worker.outstanding) }}</td>
-            <td>
-              <div class="action-buttons">
-                <button *ngIf="worker.outstanding > 0" class="btn btn-sm btn-success" (click)="openPayWorkerDialog(worker, 'full')" title="Pay Full">
-                  Pay Full
-                </button>
-                <button *ngIf="worker.outstanding > 0" class="btn btn-sm btn-primary" (click)="openPayWorkerDialog(worker, 'partial')" title="Pay Partial">
-                  Partial
-                </button>
-                <button class="btn btn-sm btn-info" (click)="openPassbookDialog(worker)" title="View Passbook">
-                  Passbook
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5" class="text-right"><strong>Total Outstanding:</strong></td>
-            <td class="text-right"><strong>{{ formatCurrency(totalWorkersOutstanding) }}</strong></td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <ng-template #noWorkersOutstanding>
-      <div class="empty-state">
-        <div class="empty-icon-box">
-          <mat-icon>group_off</mat-icon>
+    <!-- WORKER LEDGER VIEW -->
+    <ng-container *ngIf="workerSubTab === 'workers'">
+      <div class="content-header">
+        <div class="header-main">
+          <h2>Workers Ledger & Passbook</h2>
+          <div class="filter-toggle">
+            <button [class.active]="workerFilter === 'outstanding'" (click)="setWorkerFilter('outstanding')">Outstanding Only</button>
+            <button [class.active]="workerFilter === 'active'" (click)="setWorkerFilter('active')">Active Only</button>
+            <button [class.active]="workerFilter === 'inactive'" (click)="setWorkerFilter('inactive')">Inactive Only</button>
+          </div>
         </div>
-        <h3>{{ workerFilter === 'outstanding' ? 'No Outstanding Payments' : workerFilter === 'active' ? 'No Active Workers' : 'No Inactive Workers' }}</h3>
-        <p>{{ workerFilter === 'outstanding' ? 'All workers have been paid in full!' : workerFilter === 'active' ? 'There are no active workers in the system.' : 'There are no inactive workers found.' }}</p>
+        <div class="stats">
+          <div class="stat-card">
+            <small>Total Outstanding</small>
+            <strong>{{ formatCurrency(totalWorkersOutstanding) }}</strong>
+          </div>
+          <div class="stat-card">
+            <small>{{ workerFilter === 'outstanding' ? 'Due Workers' : workerFilter === 'active' ? 'Active Workers' : 'Inactive Workers' }}</small>
+            <strong>{{ workersWithOutstanding.length }}</strong>
+          </div>
+        </div>
       </div>
-    </ng-template>
+
+      <div class="data-grid" *ngIf="workersWithOutstanding.length > 0; else noWorkersOutstanding">
+        <table class="labour-ledger-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Worker Name</th>
+              <th>Phone</th>
+              <th>Total Earned</th>
+              <th>Total Paid</th>
+              <th class="text-right">Outstanding</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let worker of workersWithOutstanding; let i = index">
+              <td data-label="#">{{ i + 1 }}</td>
+              <td data-label="Worker Name"><strong>{{ worker.worker_name }}</strong></td>
+              <td data-label="Phone">{{ worker.phone || 'N/A' }}</td>
+              <td data-label="Total Earned">{{ formatCurrency(worker.total_earned) }}</td>
+              <td data-label="Total Paid">{{ formatCurrency(worker.total_paid) }}</td>
+              <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(worker.outstanding) }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button *ngIf="worker.outstanding > 0" class="btn btn-sm btn-success" (click)="openPayWorkerDialog(worker, 'full')" title="Pay Full">
+                    Pay Full
+                  </button>
+                  <button *ngIf="worker.outstanding > 0" class="btn btn-sm btn-primary" (click)="openPayWorkerDialog(worker, 'partial')" title="Pay Partial">
+                    Partial
+                  </button>
+                  <button class="btn btn-sm btn-info" (click)="openPassbookDialog(worker)" title="View Passbook">
+                    Passbook
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" class="text-right"><strong>Total Outstanding:</strong></td>
+              <td class="text-right"><strong>{{ formatCurrency(totalWorkersOutstanding) }}</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <ng-template #noWorkersOutstanding>
+        <div class="empty-state">
+          <div class="empty-icon-box">
+            <mat-icon>group_off</mat-icon>
+          </div>
+          <h3>{{ workerFilter === 'outstanding' ? 'No Outstanding Payments' : workerFilter === 'active' ? 'No Active Workers' : 'No Inactive Workers' }}</h3>
+          <p>{{ workerFilter === 'outstanding' ? 'All workers have been paid in full!' : workerFilter === 'active' ? 'There are no active workers in the system.' : 'There are no inactive workers found.' }}</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <!-- PARTNER EXPENSES VIEW (Consolidated Passbook) -->
+    <ng-container *ngIf="workerSubTab === 'expenses'">
+      <div class="content-header">
+        <div class="header-main">
+          <h2>Partner & Office Expenses Passbook</h2>
+          <div class="filter-box">
+            <input type="date" [(ngModel)]="expenseStartDate" class="form-control-sm" placeholder="Start">
+            <span class="range-sep">to</span>
+            <input type="date" [(ngModel)]="expenseEndDate" class="form-control-sm" placeholder="End">
+            
+            <select [(ngModel)]="expensePartnerFilter" class="form-control-sm partner-select">
+              <option value="">All Partners / Firm</option>
+              <option *ngFor="let p of partners" [value]="p.id">{{ p.partner_name }}</option>
+              <option value="firm">Firm / Company Only</option>
+            </select>
+
+            <input type="text" [(ngModel)]="expenseSearch" placeholder="Search..." class="search-input">
+            
+            <button class="btn btn-sm btn-primary btn-search" (click)="loadExpensesData()">
+              <mat-icon>search</mat-icon> Search
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="clearExpenseFilters()" title="Reset Filters">
+              <mat-icon>refresh</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat-card">
+            <small>Total Period Expense</small>
+            <strong class="text-danger">{{ formatCurrency(getTotalExpensesAmount()) }}</strong>
+          </div>
+          <div class="stat-card">
+            <small>Entries</small>
+            <strong>{{ getFilteredExpenses().length }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-grid" *ngIf="getFilteredExpenses().length > 0; else noExpenses">
+        <!-- Partner Summary Quick-View -->
+        <div class="partner-summary-grid" *ngIf="!expensePartnerFilter">
+          <div class="p-summary-card" *ngFor="let p of getPartnerExpenseSummary()">
+            <span class="p-name">{{ p.name }}</span>
+            <span class="p-amount">{{ formatCurrency(p.total) }}</span>
+          </div>
+        </div>
+
+        <table class="labour-ledger-table consolidated-passbook">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Paid By</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let expense of getFilteredExpenses()">
+              <td data-label="Date">{{ expense.date | date:'dd MMM yyyy' }}</td>
+              <td data-label="Paid By"><strong>{{ getPartnerName(expense.paid_by_partner_id) }}</strong></td>
+              <td data-label="Category"><span class="badge-category">{{ expense.category }}</span></td>
+              <td data-label="Description">{{ expense.description }}</td>
+              <td data-label="Amount" class="text-right"><strong>{{ formatCurrency(expense.amount) }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noExpenses>
+        <div class="empty-state">
+          <mat-icon>receipt</mat-icon>
+          <p>No expenses found for the selected period.</p>
+        </div>
+      </ng-template>
+    </ng-container>
   </div>
 
   <!-- ========== CLIENTS TAB ========== -->
