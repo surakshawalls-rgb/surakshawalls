@@ -46,17 +46,19 @@ export class LaborPaymentService {
   /**
    * Get all workers with outstanding wages (using wage_payments table)
    * @param onlyWithOutstanding If true, only returns workers with balance > 0
-   * @param activeOnly If true, only returns active workers
+   * @param statusFilter 'active', 'inactive', or 'all'
    */
-  async getWorkersWithOutstanding(onlyWithOutstanding: boolean = true, activeOnly: boolean = true): Promise<WorkerOutstanding[]> {
+  async getWorkersWithOutstanding(onlyWithOutstanding: boolean = true, statusFilter: 'active' | 'inactive' | 'all' = 'active'): Promise<WorkerOutstanding[]> {
     try {
       // Get workers from workers_master with cumulative balance
       let query = this.supabase.supabase
         .from('workers_master')
         .select('id, name, phone, cumulative_balance, active');
 
-      if (activeOnly) {
+      if (statusFilter === 'active') {
         query = query.eq('active', true);
+      } else if (statusFilter === 'inactive') {
+        query = query.eq('active', false);
       }
 
       if (onlyWithOutstanding) {

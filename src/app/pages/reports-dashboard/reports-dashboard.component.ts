@@ -143,9 +143,10 @@ export class ReportsDashboardComponent implements OnInit {
     try {
       this.loading = true;
       const onlyOutstanding = this.workerFilter === 'outstanding';
-      const activeOnly = this.workerFilter !== 'inactive';
+      const statusFilter: 'active' | 'inactive' | 'all' = 
+        this.workerFilter === 'inactive' ? 'inactive' : 'active';
       
-      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding(onlyOutstanding, activeOnly);
+      this.workersWithOutstanding = await this.laborPaymentService.getWorkersWithOutstanding(onlyOutstanding, statusFilter);
       this.allWorkers = await this.workerService.getAllWorkers();
     } catch (error: any) {
       this.errorMessage = 'Failed to load workers data: ' + error.message;
