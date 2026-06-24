@@ -33,7 +33,10 @@
                                activeSection === 'expenses' ? 1 :
                                activeSection === 'production' ? (isLabourStaff() ? 1 : 2) :
                                activeSection === 'sales' ? 3 : 4" 
-                class="daily-entry-tabs" animationDuration="200ms" (selectedIndexChange)="onSectionTabChange($event)">
+                class="daily-entry-tabs" 
+                animationDuration="0ms" 
+                mat-stretch-tabs="false"
+                (selectedIndexChange)="onSectionTabChange($event)">
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon>groups</mat-icon>

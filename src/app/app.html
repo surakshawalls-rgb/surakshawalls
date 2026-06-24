@@ -38,6 +38,10 @@
           <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
         </button>
         <mat-menu #addMenu="matMenu" class="nav-dropdown">
+          <button mat-menu-item routerLink="/daily-entry">
+            <mat-icon>fact_check</mat-icon>
+            <span>Daily Entry (Combined)</span>
+          </button>
           <button mat-menu-item routerLink="/labour-workspace">
             <mat-icon>groups</mat-icon>
             <span>Labour Workspace</span>
@@ -147,6 +151,10 @@
           <mat-icon>add_circle</mat-icon>
           <span>Operations</span>
         </button>
+        <button mat-menu-item routerLink="/daily-entry">
+          <mat-icon>fact_check</mat-icon>
+          <span>Daily Operations Entry</span>
+        </button>
         <button mat-menu-item routerLink="/labour-workspace">
           <mat-icon>groups</mat-icon>
           <span>Labour Workspace</span>
@@ -168,31 +176,33 @@
           <span>Partner Withdrawals</span>
         </button>
 
-        <mat-divider></mat-divider>
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>assessment</mat-icon>
-          <span>Reports</span>
-        </button>
-        <button mat-menu-item routerLink="/labour-workspace" *ngIf="!isLabourStaff()">
-          <mat-icon>menu_book</mat-icon>
-          <span>Labour Ledger</span>
-        </button>
-        <button mat-menu-item routerLink="/partner-dashboard" *ngIf="authService.isAdmin()">
-          <mat-icon>book</mat-icon>
-          <span>Partner Ledger</span>
-        </button>
-        <button mat-menu-item routerLink="/reports-dashboard" *ngIf="!isLabourStaff()">
-          <mat-icon>bar_chart</mat-icon>
-          <span>Revenue and Dues</span>
-        </button>
-        <button mat-menu-item routerLink="/production-workspace" *ngIf="!isLabourStaff()">
-          <mat-icon>factory</mat-icon>
-          <span>Production Overview</span>
-        </button>
-        <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
-          <mat-icon>account_balance</mat-icon>
-          <span>Stock and Balance</span>
-        </button>
+        <ng-container *ngIf="false"> <!-- Hidden Reports per user request -->
+          <mat-divider></mat-divider>
+          <button mat-menu-item disabled class="menu-section-header">
+            <mat-icon>assessment</mat-icon>
+            <span>Reports</span>
+          </button>
+          <button mat-menu-item routerLink="/labour-workspace" *ngIf="!isLabourStaff()">
+            <mat-icon>menu_book</mat-icon>
+            <span>Labour Ledger</span>
+          </button>
+          <button mat-menu-item routerLink="/partner-dashboard" *ngIf="authService.isAdmin()">
+            <mat-icon>book</mat-icon>
+            <span>Partner Ledger</span>
+          </button>
+          <button mat-menu-item routerLink="/reports-dashboard" *ngIf="!isLabourStaff()">
+            <mat-icon>bar_chart</mat-icon>
+            <span>Revenue and Dues</span>
+          </button>
+          <button mat-menu-item routerLink="/production-workspace" *ngIf="!isLabourStaff()">
+            <mat-icon>factory</mat-icon>
+            <span>Production Overview</span>
+          </button>
+          <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
+            <mat-icon>account_balance</mat-icon>
+            <span>Stock and Balance</span>
+          </button>
+        </ng-container>
       </ng-container>
 
       <ng-container *ngIf="hasLibraryAccess()">
