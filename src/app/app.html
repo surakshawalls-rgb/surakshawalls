@@ -27,70 +27,14 @@
           <mat-icon>dashboard</mat-icon>
           <span>Dashboard</span>
         </button>
-        <button mat-button routerLink="/labour-workspace" routerLinkActive="active" class="nav-button nav-primary-action" *ngIf="isLabourStaff()">
-          <mat-icon>dashboard</mat-icon>
-          <span>Dashboard</span>
+        <button mat-button routerLink="/passbook-hub" routerLinkActive="active" class="nav-button nav-primary-action">
+          <mat-icon>menu_book</mat-icon>
+          <span>Passbook Hub</span>
         </button>
-
-        <button mat-button [matMenuTriggerFor]="addMenu" class="nav-button nav-add-btn">
+        <button mat-button routerLink="/daily-entry" routerLinkActive="active" class="nav-button nav-add-btn">
           <mat-icon>add</mat-icon>
-          <span>Operations</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+          <span>Daily Entry</span>
         </button>
-        <mat-menu #addMenu="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/daily-entry">
-            <mat-icon>fact_check</mat-icon>
-            <span>Daily Entry (Combined)</span>
-          </button>
-          <button mat-menu-item routerLink="/labour-workspace">
-            <mat-icon>groups</mat-icon>
-            <span>Labour Workspace</span>
-          </button>
-          <button mat-menu-item routerLink="/client-payment" *ngIf="!isLabourStaff()">
-            <mat-icon>payments</mat-icon>
-            <span>Revenue Collection</span>
-          </button>
-          <button mat-menu-item routerLink="/production-workspace">
-            <mat-icon>precision_manufacturing</mat-icon>
-            <span>Production Workspace</span>
-          </button>
-          <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>inventory_2</mat-icon>
-            <span>Stock Workspace</span>
-          </button>
-          <button mat-menu-item routerLink="/company-cash" *ngIf="authService.isAdmin()">
-            <mat-icon>account_balance_wallet</mat-icon>
-            <span>Partner Withdrawals</span>
-          </button>
-        </mat-menu>
-
-        <button mat-button [matMenuTriggerFor]="reportsMenuSimple" class="nav-button">
-          <mat-icon>assessment</mat-icon>
-          <span>Reports</span>
-          <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
-        </button>
-        <mat-menu #reportsMenuSimple="matMenu" class="nav-dropdown">
-          <button mat-menu-item routerLink="/labour-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>menu_book</mat-icon>
-            <span>Labour Ledger</span>
-          </button>
-          <button mat-menu-item routerLink="/partner-dashboard" *ngIf="authService.isAdmin()">
-            <mat-icon>book</mat-icon>
-            <span>Partner Ledger</span>
-          </button>
-          <button mat-menu-item routerLink="/reports-dashboard" *ngIf="!isLabourStaff()">
-            <mat-icon>bar_chart</mat-icon>
-            <span>Revenue and Dues</span>
-          </button>
-          <button mat-menu-item routerLink="/production-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>factory</mat-icon>
-            <span>Production Overview</span>
-          </button>
-          <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>account_balance</mat-icon>
-            <span>Stock and Balance</span>
-          </button>
-        </mat-menu>
       </ng-container>
 
       <ng-container *ngIf="hasLibraryAccess()">
@@ -141,68 +85,14 @@
           <mat-icon>dashboard</mat-icon>
           <span>Dashboard</span>
         </button>
-        <button mat-menu-item routerLink="/labour-workspace" *ngIf="isLabourStaff()">
-          <mat-icon>dashboard</mat-icon>
-          <span>Dashboard</span>
-        </button>
-
-        <mat-divider></mat-divider>
-        <button mat-menu-item disabled class="menu-section-header">
-          <mat-icon>add_circle</mat-icon>
-          <span>Operations</span>
+        <button mat-menu-item routerLink="/passbook-hub">
+          <mat-icon>menu_book</mat-icon>
+          <span>Passbook Hub</span>
         </button>
         <button mat-menu-item routerLink="/daily-entry">
           <mat-icon>fact_check</mat-icon>
-          <span>Daily Operations Entry</span>
+          <span>Daily Entry</span>
         </button>
-        <button mat-menu-item routerLink="/labour-workspace">
-          <mat-icon>groups</mat-icon>
-          <span>Labour Workspace</span>
-        </button>
-        <button mat-menu-item routerLink="/client-payment" *ngIf="!isLabourStaff()">
-          <mat-icon>payments</mat-icon>
-          <span>Revenue Collection</span>
-        </button>
-        <button mat-menu-item routerLink="/production-workspace">
-          <mat-icon>precision_manufacturing</mat-icon>
-          <span>Production Workspace</span>
-        </button>
-        <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
-          <mat-icon>inventory_2</mat-icon>
-          <span>Stock Workspace</span>
-        </button>
-        <button mat-menu-item routerLink="/company-cash" *ngIf="authService.isAdmin()">
-          <mat-icon>account_balance_wallet</mat-icon>
-          <span>Partner Withdrawals</span>
-        </button>
-
-        <ng-container *ngIf="false"> <!-- Hidden Reports per user request -->
-          <mat-divider></mat-divider>
-          <button mat-menu-item disabled class="menu-section-header">
-            <mat-icon>assessment</mat-icon>
-            <span>Reports</span>
-          </button>
-          <button mat-menu-item routerLink="/labour-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>menu_book</mat-icon>
-            <span>Labour Ledger</span>
-          </button>
-          <button mat-menu-item routerLink="/partner-dashboard" *ngIf="authService.isAdmin()">
-            <mat-icon>book</mat-icon>
-            <span>Partner Ledger</span>
-          </button>
-          <button mat-menu-item routerLink="/reports-dashboard" *ngIf="!isLabourStaff()">
-            <mat-icon>bar_chart</mat-icon>
-            <span>Revenue and Dues</span>
-          </button>
-          <button mat-menu-item routerLink="/production-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>factory</mat-icon>
-            <span>Production Overview</span>
-          </button>
-          <button mat-menu-item routerLink="/stock-workspace" *ngIf="!isLabourStaff()">
-            <mat-icon>account_balance</mat-icon>
-            <span>Stock and Balance</span>
-          </button>
-        </ng-container>
       </ng-container>
 
       <ng-container *ngIf="hasLibraryAccess()">
@@ -232,7 +122,7 @@
   </mat-toolbar>
 
   <div class="main-content" [class.non-library-theme]="!isLibraryRoute()">
-    <div class="content-wrapper" [class.non-library-theme]="!isLibraryRoute()">
+    <div class="content-wrapper" [class.non-library-theme]="!isLibraryRoute()" [class.full-width-page]="isFullWidthPage()">
       <router-outlet></router-outlet>
     </div>
   </div>
@@ -242,5 +132,4 @@
 <div class="public-container" *ngIf="!authService.isLoggedIn">
   <router-outlet></router-outlet>
 </div>
-
 

@@ -1,0 +1,54 @@
+.pf-page{padding:16px;max-width:1280px;margin:0 auto;font-family:'Inter','Segoe UI',sans-serif}
+.pf-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.pf-hdr h1{margin:0;font-size:1.4rem;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px}
+.pf-hdr h1 mat-icon{color:#6366f1}
+.pf-hdr p{margin:2px 0 0;font-size:.82rem;color:#64748b}
+.hdr-acts{display:flex;align-items:center;gap:8px}
+.date-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dinp{border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.84rem;outline:none}
+.sep{color:#9ca3af;font-size:.8rem}
+.btn-search{background:#6366f1;color:#fff;border:none;border-radius:7px;padding:8px 10px;cursor:pointer;display:flex;align-items:center}
+.btn-search mat-icon{font-size:1rem}
+.btn-print{display:flex;align-items:center;gap:4px;background:#1e293b;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.84rem;font-weight:700;cursor:pointer}
+.loading{display:flex;align-items:center;gap:12px;padding:40px;justify-content:center;color:#64748b}
+.spin{width:22px;height:22px;border:3px solid #e2e8f0;border-top-color:#6366f1;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.sum-grid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.sum-c{flex:1;min-width:160px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.sum-c mat-icon{font-size:2rem;width:2rem;height:2rem}
+.sum-c small{display:block;font-size:.72rem;color:#64748b;font-weight:600;text-transform:uppercase}
+.sum-c strong{font-size:1.15rem;font-weight:800;color:#1e293b;display:block;margin-top:4px}
+.sum-c.green mat-icon{color:#10b981}.sum-c.red mat-icon{color:#ef4444}.sum-c.blue mat-icon{color:#3b82f6}
+.sum-c.orange mat-icon{color:#f59e0b}.sum-c.purple mat-icon{color:#8b5cf6}
+.sum-c.teal mat-icon{color:#14b8a6}.sum-c.indigo mat-icon{color:#6366f1}
+.sum-c.red2 strong{color:#dc2626}
+.view-tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:2px solid #f1f5f9;padding-bottom:8px}
+.view-tabs button{padding:8px 18px;border:none;background:none;font-size:.88rem;font-weight:600;color:#64748b;cursor:pointer;border-radius:6px}
+.view-tabs button.active{background:#6366f1;color:#fff}
+.tbl-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px}
+.tbl-wrap table{width:100%;border-collapse:collapse;background:#fff;font-size:.84rem}
+.tbl-wrap thead{background:#1e293b;color:#fff}
+.tbl-wrap th,.tbl-wrap td{padding:10px 12px;text-align:left}
+.tbl-wrap tbody tr{border-bottom:1px solid #f1f5f9}
+.tbl-wrap tbody tr:hover{background:#f8fafc}
+.cr{text-align:right}
+.c-date{width:120px}.c-md{width:100px}
+.chip{padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:700;text-transform:uppercase;background:#f1f5f9;color:#374151}
+.in-chip{background:#dcfce7;color:#15803d}
+.row-in{background:#f0fdf4!important}.row-out{background:#fff!important}
+.amt-in{color:#15803d;font-weight:700}.amt-out{color:#dc2626;font-weight:700}
+.sts{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase}
+.sts.act{background:#dcfce7;color:#15803d}
+.led-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.led-stats{display:flex;gap:16px}
+.led-stat{font-size:.88rem;font-weight:600;padding:6px 12px;border-radius:7px}
+.led-stat.green{background:#dcfce7;color:#15803d}
+.led-stat.red{background:#fee2e2;color:#dc2626}
+.stock-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.stock-section h3{margin:0 0 12px;font-size:.95rem;font-weight:700;color:#374151}
+.stock-section table{width:100%;border-collapse:collapse;font-size:.84rem;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+.stock-section thead{background:#374151;color:#fff}
+.stock-section th,.stock-section td{padding:9px 12px;text-align:left}
+.stock-section tbody tr{border-bottom:1px solid #f1f5f9}
+.stock-section tbody tr:hover{background:#f8fafc}
+@media(max-width:768px){.stock-grid{grid-template-columns:1fr}.sum-c{min-width:calc(50% - 6px)}.pf-hdr{flex-direction:column;align-items:flex-start}}

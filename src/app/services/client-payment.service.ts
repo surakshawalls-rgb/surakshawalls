@@ -196,12 +196,13 @@ export class ClientPaymentService {
       await this.supabase.supabase
         .from('firm_cash_ledger')
         .insert([{
-          transaction_date: payment.payment_date,
-          transaction_type: 'income',
+          date: payment.payment_date,
+          type: 'receipt',
           category: 'sales_payment',
           amount: payment.amount_paid,
           partner_id: payment.deposited_to_firm ? null : payment.collected_by_partner_id,
-          description: `Payment received from client (Collected by ${collectedByName}, Mode: ${payment.payment_mode})${payment.notes ? ' - ' + payment.notes : ''}`
+          deposited_to_firm: payment.deposited_to_firm,
+          description: `Client payment received (By: ${collectedByName}, Mode: ${payment.payment_mode})${payment.notes ? ' - ' + payment.notes : ''}`
         }]);
 
       return { success: true };

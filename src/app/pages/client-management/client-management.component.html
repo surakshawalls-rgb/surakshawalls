@@ -1,0 +1,98 @@
+<app-breadcrumb></app-breadcrumb>
+<div class="cm-page">
+  <div class="cm-header">
+    <div>
+      <h1><mat-icon>people</mat-icon> Client Management</h1>
+      <p>All client operations — billing, collections, passbook</p>
+    </div>
+    <button class="btn-add" (click)="openAdd()"><mat-icon>person_add</mat-icon> Add Client</button>
+  </div>
+
+  <div class="cm-msg success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="cm-msg error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <div class="cm-stats">
+    <div class="sc"><span class="sn">{{ stats.total }}</span><span class="sl">Total</span></div>
+    <div class="sc green"><span class="sn">{{ stats.active }}</span><span class="sl">Active</span></div>
+    <div class="sc orange"><span class="sn">{{ stats.withDue }}</span><span class="sl">With Dues</span></div>
+    <div class="sc red"><span class="sn">{{ fmt(stats.totalDue) }}</span><span class="sl">Total Outstanding</span></div>
+  </div>
+
+  <div class="cm-filter">
+    <div class="ftabs">
+      <button [class.active]="filterStatus==='active'" (click)="filterStatus='active'">Active</button>
+      <button [class.active]="filterStatus==='all'" (click)="filterStatus='all'">All</button>
+      <button [class.active]="filterStatus==='outstanding'" (click)="filterStatus='outstanding'">
+        With Dues <span class="bcnt" *ngIf="stats.withDue>0">{{ stats.withDue }}</span>
+      </button>
+      <button [class.active]="filterStatus==='inactive'" (click)="filterStatus='inactive'">Inactive</button>
+    </div>
+    <div class="srch">
+      <mat-icon>search</mat-icon>
+      <input [(ngModel)]="searchTerm" placeholder="Search by name or phone...">
+      <button *ngIf="searchTerm" (click)="searchTerm=''"><mat-icon>close</mat-icon></button>
+    </div>
+  </div>
+
+  <div class="cm-loading" *ngIf="loading"><div class="spin"></div> Loading...</div>
+
+  <div class="cm-tbl-wrap" *ngIf="!loading">
+    <table class="cm-tbl" *ngIf="filtered.length>0; else empty">
+      <thead>
+        <tr>
+          <th class="cn">#</th>
+          <th>Client</th>
+          <th class="cm">Phone</th>
+          <th class="ca">Total Billed</th>
+          <th class="ca">Total Paid</th>
+          <th class="ca">Outstanding</th>
+          <th class="cs">Status</th>
+          <th class="cact">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filtered; let i=index" [class.row-due]="getOutstanding(c.id)>0" [class.row-off]="!c.active">
+          <td class="cn">{{ i+1 }}</td>
+          <td>
+            <div class="cc">
+              <div class="av">{{ c.client_name[0].toUpperCase() }}</div>
+              <div><strong>{{ c.client_name }}</strong><small *ngIf="c.address">{{ c.address }}</small></div>
+            </div>
+          </td>
+          <td class="cm">{{ c.phone||'—' }}</td>
+          <td class="ca">{{ fmt(c.total_billed||0) }}</td>
+          <td class="ca">{{ fmt(c.total_paid||0) }}</td>
+          <td class="ca">
+            <span [class.due]="getOutstanding(c.id)>0" [class.ok]="getOutstanding(c.id)===0">
+              {{ fmt(getOutstanding(c.id)) }}
+            </span>
+          </td>
+          <td class="cs"><span class="sts" [class.act]="c.active" [class.ina]="!c.active">{{ c.active?'Active':'Inactive' }}</span></td>
+          <td class="cact">
+            <div class="ag">
+              <button class="ab blue" (click)="openPassbook(c)" title="Passbook"><mat-icon>menu_book</mat-icon></button>
+              <button class="ab green" (click)="openCollect(c)" title="Collect Payment"
+                      [class.dis]="getOutstanding(c.id)===0"><mat-icon>payments</mat-icon></button>
+              <button class="ab orange" (click)="openEdit(c)" title="Edit"><mat-icon>edit</mat-icon></button>
+              <button class="ab grey" (click)="openToggle(c)" [title]="c.active?'Deactivate':'Activate'">
+                <mat-icon>{{ c.active?'toggle_on':'toggle_off' }}</mat-icon>
+              </button>
+              <button class="ab red" (click)="openDelete(c)" title="Delete"><mat-icon>delete</mat-icon></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #empty>
+      <div class="cm-empty">
+        <mat-icon>people_outline</mat-icon>
+        <h3>No clients found</h3>
+        <p>{{ searchTerm ? 'No results for "'+searchTerm+'"' : 'Add your first client.' }}</p>
+        <button class="btn-add" (click)="openAdd()" *ngIf="!searchTerm"><mat-icon>person_add</mat-icon> Add Client</button>
+      </div>
+    </ng-template>
+  </div>
+  <div class="cm-count" *ngIf="!loading && filtered.length>0">Showing {{ filtered.length }} of {{ clients.length }}</div>
+</div>
+<app-mfg-footer></app-mfg-footer>

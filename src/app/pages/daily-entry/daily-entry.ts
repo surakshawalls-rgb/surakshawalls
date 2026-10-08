@@ -2,7 +2,6 @@ import { Component, OnInit, ChangeDetectorRef, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
 import { SupabaseService } from '../../services/supabase.service';
 import { AuthService } from '../../services/auth.service';
 import { ProductionService, WorkerWage, ProductionData } from '../../services/production.service';
@@ -74,7 +73,7 @@ interface Partner {
 @Component({
   selector: 'app-daily-entry',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatTabsModule, MatIconModule, BreadcrumbComponent, MfgFooterComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, BreadcrumbComponent, MfgFooterComponent],
   templateUrl: './daily-entry.html',
   styleUrls: ['./daily-entry.css']
 })
@@ -712,6 +711,15 @@ export class UnifiedDailyEntryComponent implements OnInit {
     this.clientSearchTerm = client.client_name;
     this.showClientResults = false;
   }
+
+  selectClientById(clientId: string) {
+    this.selectedClientId = clientId;
+    const selected = this.clients.find(c => c.id === clientId);
+    if (selected) {
+      this.clientSearchTerm = selected.client_name;
+      this.showClientResults = false;
+    }
+  }
   
   clearClientSearch() {
     this.clientSearchTerm = '';
@@ -895,6 +903,10 @@ export class UnifiedDailyEntryComponent implements OnInit {
 
   hasDraftExpenses(): boolean {
     return this.otherExpenses.some(oe => !oe.persisted);
+  }
+
+  hasDraftDamage(): boolean {
+    return this.yardLossItems.some(item => !item.persisted);
   }
   
   // ========== SECTION 5: YARD LOSS ==========

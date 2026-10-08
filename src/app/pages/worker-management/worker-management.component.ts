@@ -35,8 +35,8 @@ export class WorkerManagementComponent implements OnInit {
   };
 
   statementDates = {
-    start: new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0]
+    start: (() => { const d = new Date(Date.now() - 30*24*60*60*1000); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })(),
+    end: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; })()
   };
 
   loading: boolean = false;
@@ -96,10 +96,12 @@ export class WorkerManagementComponent implements OnInit {
 
     try {
       this.saving = true;
+      const _d = new Date();
+      const _payDate = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
       const result = await this.workerService.payWorker(
         this.selectedWorker.id,
         this.payment.amount,
-        new Date().toISOString().split('T')[0],
+        _payDate,
         this.payment.notes
       );
 

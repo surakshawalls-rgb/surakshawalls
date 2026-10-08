@@ -1,0 +1,9 @@
+@import url('../production-management/production-management.component.css');
+.pg-hdr h1 mat-icon { color: #ef4444; }
+.btn-add { background: #ef4444; }
+.btn-add:hover { background: #dc2626; }
+.btn-search { background: #ef4444; }
+.btn-search:hover { background: #dc2626; }
+.dinp:focus { border-color: #ef4444; }
+.sinp:focus { border-color: #ef4444; }
+.spin { border-top-color: #ef4444; }

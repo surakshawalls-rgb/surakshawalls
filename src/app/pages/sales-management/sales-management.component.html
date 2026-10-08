@@ -1,0 +1,70 @@
+<app-breadcrumb></app-breadcrumb>
+<div class="pg">
+  <div class="pg-hdr">
+    <div>
+      <h1><mat-icon>point_of_sale</mat-icon> Sales</h1>
+      <p>Sales transactions, collections, and outstanding</p>
+    </div>
+    <a routerLink="/daily-entry" class="btn-add"><mat-icon>add</mat-icon> New Sale</a>
+  </div>
+
+  <div class="pg-stats">
+    <div class="sc"><span class="sn">{{ stats.total }}</span><span class="sl">Transactions</span></div>
+    <div class="sc blue"><span class="sn">₹{{ stats.totalAmt|number:'1.0-0' }}</span><span class="sl">Total Billed</span></div>
+    <div class="sc green"><span class="sn">₹{{ stats.totalPaid|number:'1.0-0' }}</span><span class="sl">Collected</span></div>
+    <div class="sc red"><span class="sn">₹{{ stats.totalDue|number:'1.0-0' }}</span><span class="sl">Outstanding</span></div>
+  </div>
+
+  <div class="pg-filter">
+    <input type="date" [(ngModel)]="startDate" class="dinp">
+    <span class="sep">to</span>
+    <input type="date" [(ngModel)]="endDate" class="dinp">
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Search client/product..." class="sinp">
+    <button class="btn-search" (click)="load()"><mat-icon>search</mat-icon> Search</button>
+    <button class="btn-print" (click)="printTable()"><mat-icon>print</mat-icon> Print</button>
+  </div>
+
+  <div class="loading" *ngIf="loading"><div class="spin"></div> Loading...</div>
+
+  <div class="tbl-wrap" *ngIf="!loading">
+    <table *ngIf="filtered.length>0; else empty">
+      <thead><tr>
+        <th class="c-date">Date</th>
+        <th>Client</th>
+        <th>Product</th>
+        <th class="c-num">Qty</th>
+        <th class="c-amt">Total</th>
+        <th class="c-amt">Paid</th>
+        <th class="c-amt">Outstanding</th>
+        <th class="c-md">Type</th>
+        <th class="c-md">Action</th>
+      </tr></thead>
+      <tbody>
+        <tr *ngFor="let e of filtered" [class.due-row]="e.outstanding>0">
+          <td class="c-date">{{ e.date|date:'dd MMM yyyy' }}</td>
+          <td><strong>{{ e.client_name }}</strong></td>
+          <td>{{ e.product_name }}</td>
+          <td class="c-num">{{ e.quantity }}</td>
+          <td class="c-amt">₹{{ (e.total_amount||0)|number:'1.0-0' }}</td>
+          <td class="c-amt amt-in">₹{{ (e.paid_amount||0)|number:'1.0-0' }}</td>
+          <td class="c-amt" [class.amt-out]="e.outstanding>0">₹{{ (e.outstanding||0)|number:'1.0-0' }}</td>
+          <td class="c-md"><span class="chip {{e.payment_type}}">{{ e.payment_type }}</span></td>
+          <td class="c-md">
+            <button class="act-btn green" *ngIf="e.outstanding>0" (click)="openCollect(e)" title="Collect Payment">
+              <mat-icon>payments</mat-icon>
+            </button>
+            <span class="cleared" *ngIf="e.outstanding===0">✓ Cleared</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #empty>
+      <div class="empty"><mat-icon>point_of_sale</mat-icon><h3>No sales entries</h3>
+        <p>{{ searchTerm ? 'No results.' : 'No entries for selected period.' }}</p>
+        <a routerLink="/daily-entry" class="btn-add"><mat-icon>add</mat-icon> Add Sale</a>
+      </div>
+    </ng-template>
+  </div>
+  <div class="cnt" *ngIf="!loading&&filtered.length>0">{{ filtered.length }} transactions</div>
+</div>
+<app-mfg-footer></app-mfg-footer>

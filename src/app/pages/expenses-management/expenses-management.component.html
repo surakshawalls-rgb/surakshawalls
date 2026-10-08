@@ -1,0 +1,60 @@
+<app-breadcrumb></app-breadcrumb>
+<div class="pg">
+  <div class="pg-hdr">
+    <div>
+      <h1><mat-icon>receipt_long</mat-icon> Expenses</h1>
+      <p>All operational expenses and payments</p>
+    </div>
+    <a routerLink="/daily-entry" class="btn-add"><mat-icon>add</mat-icon> Add Expense</a>
+  </div>
+
+  <div class="pg-stats">
+    <div class="sc"><span class="sn">{{ stats.total }}</span><span class="sl">Entries</span></div>
+    <div class="sc red"><span class="sn">₹{{ stats.totalAmt|number:'1.0-0' }}</span><span class="sl">Total Spent</span></div>
+  </div>
+
+  <div class="pg-filter">
+    <input type="date" [(ngModel)]="startDate" class="dinp">
+    <span class="sep">to</span>
+    <input type="date" [(ngModel)]="endDate" class="dinp">
+    <select [(ngModel)]="partnerFilter" class="dinp">
+      <option value="">All (Firm + Partners)</option>
+      <option value="firm">Firm Only</option>
+      <option *ngFor="let p of partners" [value]="p.id">{{ p.partner_name }}</option>
+    </select>
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Search..." class="sinp">
+    <button class="btn-search" (click)="load()"><mat-icon>search</mat-icon> Search</button>
+    <button class="btn-print" (click)="printTable()"><mat-icon>print</mat-icon> Print</button>
+  </div>
+
+  <div class="loading" *ngIf="loading"><div class="spin"></div> Loading...</div>
+
+  <div class="tbl-wrap" *ngIf="!loading">
+    <table *ngIf="filtered.length>0; else empty">
+      <thead><tr>
+        <th class="c-date">Date</th>
+        <th class="c-md">Category</th>
+        <th>Description</th>
+        <th class="c-md">Paid By</th>
+        <th class="c-amt">Amount</th>
+      </tr></thead>
+      <tbody>
+        <tr *ngFor="let e of filtered">
+          <td class="c-date">{{ e.date|date:'dd MMM yyyy' }}</td>
+          <td class="c-md"><span class="chip">{{ (e.category||'other').toUpperCase() }}</span></td>
+          <td>{{ e.desc_clean||'—' }}</td>
+          <td class="c-md">{{ e.partner_name }}</td>
+          <td class="c-amt amt-out">₹{{ (e.amount||0)|number:'1.0-0' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #empty>
+      <div class="empty"><mat-icon>receipt</mat-icon><h3>No expenses</h3>
+        <p>No entries for selected period.</p>
+        <a routerLink="/daily-entry" class="btn-add"><mat-icon>add</mat-icon> Add Expense</a>
+      </div>
+    </ng-template>
+  </div>
+  <div class="cnt" *ngIf="!loading&&filtered.length>0">{{ filtered.length }} entries</div>
+</div>
+<app-mfg-footer></app-mfg-footer>

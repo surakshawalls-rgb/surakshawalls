@@ -40,6 +40,15 @@ interface PaymentDialog {
   depositedToFirm?: boolean;
 }
 
+interface ProductionPassbookEntry {
+  id: string;
+  date: string;
+  product_name: string;
+  product_variant?: string | null;
+  quantity: number;
+  notes?: string | null;
+}
+
 interface PassbookDialog {
   show: boolean;
   workerId?: string;
@@ -60,8 +69,13 @@ export class ReportsDashboardComponent implements OnInit {
   @Input() labourOnly = false;
   
   // Active tab
-  activeTab: 'workers' | 'clients' | 'partners' | 'company' = 'workers';
+  activeTab: 'workers' | 'clients' | 'production' | 'partners' | 'company' = 'workers';
   workerSubTab: 'workers' | 'expenses' = 'workers';
+
+  // Production passbook data
+  productionEntries: ProductionPassbookEntry[] = [];
+  productionStartDate = '';
+  productionEndDate = '';
   
   // Workers data
   workerFilter: 'outstanding' | 'active' | 'inactive' = 'outstanding';
@@ -79,6 +93,44 @@ export class ReportsDashboardComponent implements OnInit {
   clientsWithOutstanding: ClientOutstanding[] = [];
   allClients: Client[] = [];
   partners: any[] = [];
+
+  // Client sub-tab
+  clientSubTab: 'outstanding' | 'collect' | 'all_clients' = 'outstanding';
+  clientSearchFilter: string = '';
+
+  // Add client inline form
+  addClientForm: { show: boolean; name: string; phone: string; address: string } = {
+    show: false, name: '', phone: '', address: ''
+  };
+
+  // Collect payment inline form
+  collectClientForm: {
+    show: boolean;
+    clientId: string;
+    clientName: string;
+    outstandingAmount: number;
+    amount: number;
+    paymentMode: 'cash' | 'upi' | 'cheque' | 'bank_transfer';
+    collectedBy: string;
+    depositedToFirm: boolean;
+    notes: string;
+    date: string;
+    salesTransactionId?: string;
+  } = {
+    show: false, clientId: '', clientName: '', outstandingAmount: 0,
+    amount: 0, paymentMode: 'cash', collectedBy: 'firm',
+    depositedToFirm: true, notes: '', date: ''
+  };
+
+  // Client passbook dialog
+  clientPassbookDialog: {
+    show: boolean;
+    clientId?: string;
+    clientName?: string;
+    history: any[];
+    totalReceived: number;
+    totalOutstanding: number;
+  } = { show: false, history: [], totalReceived: 0, totalOutstanding: 0 };
   
   // Company overview data
   companyStats = {
@@ -94,6 +146,7 @@ export class ReportsDashboardComponent implements OnInit {
   materialStock: any[] = [];
   finishedStock: any[] = [];
   partnerInfo: any[] = [];
+  firmCashEntries: any[] = [];
   
   // Dialogs
   paymentDialog: PaymentDialog = {
@@ -153,7 +206,7 @@ export class ReportsDashboardComponent implements OnInit {
   
   // ========== TAB NAVIGATION ==========
   
-  async switchTab(tab: 'workers' | 'clients' | 'partners' | 'company') {
+  async switchTab(tab: 'workers' | 'clients' | 'production' | 'partners' | 'company') {
     this.activeTab = tab;
     this.errorMessage = '';
     
@@ -164,11 +217,51 @@ export class ReportsDashboardComponent implements OnInit {
         await this.loadExpensesData();
       }
     } else if (tab === 'clients') {
+      this.clientSubTab = 'outstanding';
+      this.clientSearchFilter = '';
       await this.loadClientsData();
+    } else if (tab === 'production') {
+      await this.loadProductionPassbook();
     } else if (tab === 'partners') {
       await this.loadPartnersData();
     } else if (tab === 'company') {
       await this.loadCompanyOverview();
+    }
+  }
+
+  async loadProductionPassbook() {
+    try {
+      this.loading = true;
+
+      let query = this.supabase.supabase
+        .from('production_entries')
+        .select('id, date, product_name, product_variant, success_quantity, rejected_quantity, notes, created_at')
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (this.productionStartDate) {
+        query = query.gte('date', this.productionStartDate);
+      }
+      if (this.productionEndDate) {
+        query = query.lte('date', this.productionEndDate);
+      }
+
+      const { data, error } = await query.limit(300);
+      if (error) throw error;
+
+      this.productionEntries = (data || []).map((row: any) => ({
+        id: row.id,
+        date: row.date,
+        product_name: row.product_name,
+        product_variant: row.product_variant,
+        quantity: row.success_quantity || 0,
+        notes: row.notes
+      }));
+    } catch (error: any) {
+      this.errorMessage = 'Failed to load production passbook: ' + error.message;
+    } finally {
+      this.loading = false;
+      this.cd.detectChanges();
     }
   }
   
@@ -349,6 +442,172 @@ export class ReportsDashboardComponent implements OnInit {
     }
   }
 
+  async switchClientSubTab(tab: 'outstanding' | 'collect' | 'all_clients') {
+    this.clientSubTab = tab;
+    this.clientSearchFilter = '';
+    if (tab === 'collect') {
+      const d = new Date();
+      const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      this.collectClientForm = {
+        show: false, clientId: '', clientName: '', outstandingAmount: 0,
+        amount: 0, paymentMode: 'cash', collectedBy: 'firm',
+        depositedToFirm: true, notes: '', date: localDate
+      };
+    }
+    await this.loadClientsData();
+  }
+
+  getFilteredOutstandingClients(): ClientOutstanding[] {
+    if (!this.clientSearchFilter.trim()) return this.clientsWithOutstanding;
+    const term = this.clientSearchFilter.toLowerCase().trim();
+    return this.clientsWithOutstanding.filter(c =>
+      c.client_name.toLowerCase().includes(term) ||
+      (c.phone && c.phone.includes(term))
+    );
+  }
+
+  getFilteredAllClients(): Client[] {
+    if (!this.clientSearchFilter.trim()) return this.allClients;
+    const term = this.clientSearchFilter.toLowerCase().trim();
+    return this.allClients.filter(c =>
+      c.client_name.toLowerCase().includes(term) ||
+      (c.phone && c.phone.includes(term))
+    );
+  }
+
+  openCollectPaymentForClient(client: any, salesTransactionId?: string) {
+    const d = new Date();
+    const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    this.collectClientForm = {
+      show: true,
+      clientId: client.client_id || client.id,
+      clientName: client.client_name,
+      outstandingAmount: client.outstanding || 0,
+      amount: 0,
+      paymentMode: 'cash',
+      collectedBy: 'firm',
+      depositedToFirm: true,
+      notes: '',
+      date: localDate,
+      salesTransactionId
+    };
+  }
+
+  closeCollectPaymentForm() {
+    this.collectClientForm.show = false;
+  }
+
+  async submitCollectPayment() {
+    if (!this.collectClientForm.clientId || this.collectClientForm.amount <= 0) {
+      this.errorMessage = 'Enter a valid amount';
+      return;
+    }
+    this.saving = true;
+    try {
+      const collectedByPartnerId = this.collectClientForm.collectedBy !== 'firm'
+        ? this.collectClientForm.collectedBy : undefined;
+
+      const result = await this.clientPaymentService.recordPayment({
+        client_id: this.collectClientForm.clientId,
+        sales_transaction_id: this.collectClientForm.salesTransactionId,
+        payment_date: this.collectClientForm.date,
+        amount_paid: this.collectClientForm.amount,
+        payment_mode: this.collectClientForm.paymentMode,
+        collected_by_partner_id: collectedByPartnerId,
+        deposited_to_firm: this.collectClientForm.depositedToFirm,
+        notes: this.collectClientForm.notes || undefined
+      });
+
+      if (!result.success) throw new Error(result.error || 'Failed to record payment');
+
+      this.successMessage = `INR ${this.collectClientForm.amount.toFixed(2)} collected from ${this.collectClientForm.clientName}. Added to firm income.`;
+      this.closeCollectPaymentForm();
+      await this.loadClientsData();
+      setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 4000);
+    } catch (error: any) {
+      this.errorMessage = error.message || 'Failed to record payment';
+      setTimeout(() => { this.errorMessage = ''; this.cd.detectChanges(); }, 5000);
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  async openClientPassbook(client: any) {
+    this.loading = true;
+    try {
+      const clientId = client.client_id || client.id;
+      const history = await this.clientPaymentService.getClientPaymentHistory(clientId);
+      const totalReceived = history.reduce((sum: number, p: any) => sum + (p.amount_paid || 0), 0);
+      const outstanding = this.clientsWithOutstanding.find(c => c.client_id === clientId)?.outstanding ||
+        (client.outstanding || 0);
+      this.clientPassbookDialog = {
+        show: true,
+        clientId,
+        clientName: client.client_name,
+        history,
+        totalReceived,
+        totalOutstanding: outstanding
+      };
+    } catch (error: any) {
+      this.errorMessage = 'Failed to load passbook: ' + error.message;
+    } finally {
+      this.loading = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  closeClientPassbook() {
+    this.clientPassbookDialog.show = false;
+    this.clientPassbookDialog.history = [];
+  }
+
+  async addNewClient() {
+    if (!this.addClientForm.name.trim()) {
+      this.errorMessage = 'Client name is required';
+      return;
+    }
+    this.saving = true;
+    try {
+      const result = await this.clientService.addClient({
+        client_name: this.addClientForm.name.trim(),
+        phone: this.addClientForm.phone.trim() || undefined,
+        address: this.addClientForm.address.trim() || undefined,
+        credit_limit: 50000
+      });
+      if (result.success) {
+        this.successMessage = `Client "${this.addClientForm.name}" added successfully`;
+        this.addClientForm = { show: false, name: '', phone: '', address: '' };
+        await this.loadClientsData();
+        setTimeout(() => { this.successMessage = ''; this.cd.detectChanges(); }, 3000);
+      } else {
+        this.errorMessage = result.error || 'Failed to add client';
+      }
+    } catch (error: any) {
+      this.errorMessage = error.message;
+    } finally {
+      this.saving = false;
+      this.cd.detectChanges();
+    }
+  }
+
+  getPartnerNameForClient(partnerId?: string): string {
+    if (!partnerId) return 'Firm';
+    const p = this.partners.find((x: any) => x.id === partnerId);
+    return p?.partner_name || 'Partner';
+  }
+
+  onCollectClientSelect() {
+    const found = this.clientsWithOutstanding.find(c => c.client_id === this.collectClientForm.clientId);
+    this.collectClientForm.outstandingAmount = found?.outstanding || 0;
+    this.collectClientForm.clientName = found?.client_name ||
+      this.allClients.find(c => c.id === this.collectClientForm.clientId)?.client_name || '';
+  }
+
+  getActiveClientsCount(): number {
+    return this.allClients.filter(c => c.active).length;
+  }
+
   async loadPartnersList() {
     try {
       const { data, error } = await this.supabase.supabase
@@ -414,9 +673,14 @@ export class ReportsDashboardComponent implements OnInit {
       // Get revenue and expenses from firm_cash_ledger (type: 'receipt' or 'payment')
       const { data: cashLedger } = await this.supabase.supabase
         .from('firm_cash_ledger')
-        .select('type, amount');
+        .select('date, type, category, description, amount, partner_id, created_at')
+        .order('date', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(300);
       
       if (cashLedger) {
+        this.firmCashEntries = cashLedger;
+
         // Revenue = receipts (sales, partner contributions)
         this.companyStats.totalRevenue = cashLedger
           .filter((t: any) => t.type === 'receipt')
@@ -665,6 +929,28 @@ export class ReportsDashboardComponent implements OnInit {
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  getPartnerLabelForLedger(partnerId?: string | null): string {
+    if (!partnerId) return 'Firm';
+    const partner = this.partners.find((p: any) => p.id === partnerId);
+    return partner?.partner_name || 'Partner';
+  }
+
+  getFirmLedgerTotalIn(): number {
+    return this.firmCashEntries
+      .filter((entry: any) => entry.type === 'receipt')
+      .reduce((sum: number, entry: any) => sum + (entry.amount || 0), 0);
+  }
+
+  getFirmLedgerTotalOut(): number {
+    return this.firmCashEntries
+      .filter((entry: any) => entry.type === 'payment')
+      .reduce((sum: number, entry: any) => sum + (entry.amount || 0), 0);
+  }
+
+  getTotalProductionQuantity(): number {
+    return this.productionEntries.reduce((sum, item) => sum + (item.quantity || 0), 0);
   }
   
   getTotalPayments(payments: WagePayment[]): number {

@@ -64,20 +64,74 @@ export const routes: Routes = [
     canActivate: [authGuard, manufacturingGuard] 
   },
 
-  { 
-    path: 'labour-workspace', 
+  // 👷 LABOUR MANAGEMENT - Dedicated labour page
+  {
+    path: 'labour',
+    loadComponent: () => import('./pages/labour-management/labour-management.component').then(m => m.LabourManagementComponent),
+    canActivate: [authGuard, manufacturingGuard]
+  },
+
+  // 👤 CLIENT MANAGEMENT
+  {
+    path: 'clients',
+    loadComponent: () => import('./pages/client-management/client-management.component').then(m => m.ClientManagementComponent),
+    canActivate: [authGuard, manufacturingGuard]
+  },
+
+  // 🏭 PRODUCTION MANAGEMENT
+  {
+    path: 'production',
+    loadComponent: () => import('./pages/production-management/production-management.component').then(m => m.ProductionManagementComponent),
+    canActivate: [authGuard, manufacturingGuard]
+  },
+
+  // 💰 SALES MANAGEMENT
+  {
+    path: 'sales',
+    loadComponent: () => import('./pages/sales-management/sales-management.component').then(m => m.SalesManagementComponent),
+    canActivate: [authGuard, manufacturingGuard]
+  },
+
+  // 🧾 EXPENSES MANAGEMENT
+  {
+    path: 'expenses',
+    loadComponent: () => import('./pages/expenses-management/expenses-management.component').then(m => m.ExpensesManagementComponent),
+    canActivate: [authGuard, manufacturingGuard]
+  },
+
+  // 💥 DAMAGE / YARD LOSS
+  {
+    path: 'damage',
+    loadComponent: () => import('./pages/damage-management/damage-management.component').then(m => m.DamageManagementComponent),
+    canActivate: [authGuard, manufacturingGuard]
+  },
+
+  // 🤝 PARTNERS & FIRM BALANCE SHEET
+  {
+    path: 'partners',
+    loadComponent: () => import('./pages/partners-firm/partners-firm.component').then(m => m.PartnersFirmComponent),
+    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard]
+  },
+
+  {
+    path: 'passbook-hub',
     loadComponent: () => import('./pages/workspaces/labour-workspace.component').then(m => m.LabourWorkspaceComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    canActivate: [authGuard, manufacturingGuard]
+  },
+  {
+    path: 'labour-workspace',
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'production-workspace', 
-    loadComponent: () => import('./pages/workspaces/production-workspace.component').then(m => m.ProductionWorkspaceComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'stock-workspace', 
-    loadComponent: () => import('./pages/workspaces/stock-workspace.component').then(m => m.StockWorkspaceComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
 
   // 📊 REPORTS & LEDGERS
@@ -88,8 +142,8 @@ export const routes: Routes = [
   },
   { 
     path: 'client-ledger', 
-    loadComponent: () => import('./pages/client-ledger/client-ledger.component').then(m => m.ClientLedgerComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'labour-ledger', 
@@ -98,8 +152,8 @@ export const routes: Routes = [
   },
   { 
     path: 'reports-dashboard', 
-    loadComponent: () => import('./pages/reports-dashboard/reports-dashboard.component').then(m => m.ReportsDashboardComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
 
   // 🏭 MANAGEMENT & OPERATIONS
@@ -110,17 +164,17 @@ export const routes: Routes = [
   },
   { 
     path: 'material-purchase', 
-    redirectTo: 'stock-workspace',
+    redirectTo: 'passbook-hub',
     pathMatch: 'full'
   },
   { 
     path: 'inventory', 
-    redirectTo: 'stock-workspace',
+    redirectTo: 'passbook-hub',
     pathMatch: 'full'
   },
   { 
     path: 'stock-audit', 
-    redirectTo: 'stock-workspace',
+    redirectTo: 'passbook-hub',
     pathMatch: 'full'
   },
 
@@ -198,75 +252,75 @@ export const routes: Routes = [
   },
   { 
     path: 'walls/home', 
-    loadComponent: () => import('./walls/walls-home.component').then(m => m.WallsHomeComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'walls/dashboard', 
-    loadComponent: () => import('./walls/dashboard/walls-dashboard.component').then(m => m.WallsDashboardComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   
   // Production Module Routes
   { 
     path: 'walls/production', 
-    loadComponent: () => import('./walls/production/production.component').then(m => m.ProductionComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'walls/production/entry', 
-    loadComponent: () => import('./walls/production/production-entry.component').then(m => m.ProductionEntryComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'daily-entry',
+    pathMatch: 'full'
   },
   
   // Sales Module Routes
   { 
     path: 'walls/sales', 
-    loadComponent: () => import('./walls/sales/sales.component').then(m => m.SalesComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'walls/sales/entry', 
-    loadComponent: () => import('./walls/sales/sales-entry.component').then(m => m.SalesEntryComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'daily-entry',
+    pathMatch: 'full'
   },
   
   // Stock Module Routes
   { 
     path: 'walls/stock', 
-    loadComponent: () => import('./walls/stock/stock.component').then(m => m.StockComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'walls/stock/raw-materials', 
-    loadComponent: () => import('./walls/stock/raw-materials.component').then(m => m.RawMaterialsComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   
   // Labour Module Routes
   { 
     path: 'walls/labour', 
-    loadComponent: () => import('./walls/labour/labour.component').then(m => m.LabourComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'walls/labour/wages', 
-    loadComponent: () => import('./walls/labour/wage-payment.component').then(m => m.WagePaymentComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   
   // Reports Module Routes
   { 
     path: 'walls/reports', 
-    loadComponent: () => import('./walls/reports/reports.component').then(m => m.ReportsComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   
   // Masters Module Routes
   { 
     path: 'walls/masters', 
-    loadComponent: () => import('./walls/masters/masters.component').then(m => m.MastersComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
 
 
@@ -274,8 +328,8 @@ export const routes: Routes = [
   // Payment & Supplier Management Routes
   { 
     path: 'client-payment', 
-    loadComponent: () => import('./pages/client-payment-component/client-payment-component').then(m => m.ClientPaymentComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'supplier-management', 
@@ -290,8 +344,8 @@ export const routes: Routes = [
   },
   { 
     path: 'company-cash', 
-    loadComponent: () => import('./pages/company-cash-component/company-cash-component').then(m => m.CompanyCashComponent),
-    canActivate: [authGuard, manufacturingGuard, dailyEntryOnlyGuard] 
+    redirectTo: 'passbook-hub',
+    pathMatch: 'full'
   },
   { 
     path: 'partner', 

@@ -1,0 +1,53 @@
+.pg{padding:16px;max-width:1280px;margin:0 auto;font-family:'Inter','Segoe UI',sans-serif}
+.pg-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.pg-hdr h1{margin:0;font-size:1.4rem;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px}
+.pg-hdr h1 mat-icon{color:#0ea5e9}
+.pg-hdr p{margin:2px 0 0;font-size:.82rem;color:#64748b}
+.btn-add{display:flex;align-items:center;gap:6px;background:#0ea5e9;color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:.9rem;font-weight:700;cursor:pointer;text-decoration:none}
+.btn-add:hover{background:#0284c7}
+.pg-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.sc{flex:1;min-width:120px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;border-bottom:3px solid #e2e8f0}
+.sc.blue{border-bottom-color:#0ea5e9}.sc.green{border-bottom-color:#10b981}.sc.orange{border-bottom-color:#f59e0b}.sc.red{border-bottom-color:#ef4444}.sc.purple{border-bottom-color:#8b5cf6}
+.sn{font-size:1.2rem;font-weight:800;color:#1e293b}
+.sl{font-size:.72rem;color:#64748b;font-weight:600;text-transform:uppercase}
+.pg-filter{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;background:#f8fafc;padding:10px 14px;border-radius:10px;border:1px solid #e2e8f0}
+.dinp{border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.84rem;outline:none}
+.dinp:focus{border-color:#0ea5e9}
+.sep{color:#9ca3af;font-size:.8rem}
+.sinp{border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.84rem;outline:none;min-width:180px}
+.sinp:focus{border-color:#0ea5e9}
+.btn-search{display:flex;align-items:center;gap:4px;background:#0ea5e9;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.84rem;font-weight:700;cursor:pointer}
+.btn-search:hover{background:#0284c7}
+.btn-print{display:flex;align-items:center;gap:4px;background:#1e293b;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:.84rem;font-weight:700;cursor:pointer}
+.btn-print:hover{background:#0f172a}
+.loading{display:flex;align-items:center;gap:12px;padding:40px;justify-content:center;color:#64748b}
+.spin{width:22px;height:22px;border:3px solid #e2e8f0;border-top-color:#0ea5e9;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tbl-wrap{overflow-x:auto;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.tbl-wrap table{width:100%;border-collapse:collapse;background:#fff;font-size:.84rem}
+.tbl-wrap thead{background:#1e293b;color:#fff}
+.tbl-wrap th,.tbl-wrap td{padding:10px 12px;text-align:left}
+.tbl-wrap tbody tr{border-bottom:1px solid #f1f5f9}
+.tbl-wrap tbody tr:hover{background:#f8fafc}
+.tbl-wrap tbody tr:last-child{border-bottom:none}
+.c-date{width:120px}.c-md{width:110px}.c-num{width:90px;text-align:right}.c-amt{width:120px;text-align:right}
+.rej{color:#ef4444;font-weight:700}
+.chip{padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:700;text-transform:uppercase;background:#f1f5f9;color:#374151}
+.chip.cash{background:#dcfce7;color:#15803d}
+.chip.upi{background:#dbeafe;color:#1d4ed8}
+.chip.cheque{background:#fef9c3;color:#92400e}
+.chip.bank_transfer{background:#ede9fe;color:#6d28d9}
+.amt-in{color:#15803d;font-weight:700}
+.amt-out{color:#dc2626;font-weight:700}
+.empty{display:flex;flex-direction:column;align-items:center;padding:60px 20px;background:#fff;text-align:center;border-radius:12px}
+.empty mat-icon{font-size:3rem;color:#cbd5e1;margin-bottom:12px}
+.empty h3{margin:0 0 6px;color:#475569}.empty p{margin:0 0 16px;color:#94a3b8}
+.cnt{padding:8px 4px;font-size:.78rem;color:#94a3b8;text-align:right}
+@media(max-width:768px){
+  .tbl-wrap thead{display:none}
+  .tbl-wrap tr{display:block;border:1px solid #e2e8f0;margin-bottom:10px;border-radius:10px;padding:10px}
+  .tbl-wrap td{display:flex;justify-content:space-between;align-items:center;border:none;padding:5px 4px;font-size:.82rem}
+  .tbl-wrap td::before{content:attr(data-label);font-weight:700;color:#64748b;font-size:.72rem;flex-shrink:0}
+  .pg-hdr{flex-direction:column;align-items:flex-start}
+  .btn-add{width:100%;justify-content:center}
+}

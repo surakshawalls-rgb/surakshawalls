@@ -100,19 +100,19 @@ export class PublicHomeComponent {
 
   spotlightCards: SpotlightCard[] = [
     {
-      title: 'Unified Ecosystem',
-      copy: 'From construction operations to education and software delivery, everything is connected with one smart public gateway.',
-      icon: 'apps'
+      title: 'Web & Mobile Products',
+      copy: 'Responsive applications shaped around your customers, workflows, and business goals.',
+      icon: 'devices'
     },
     {
-      title: 'Fast Navigation',
-      copy: 'No extra steps. Open your required platform directly and continue with focused workflows.',
-      icon: 'bolt'
+      title: 'Business Software',
+      copy: 'Purpose-built tools that simplify operations, connect teams, and make information useful.',
+      icon: 'dashboard_customize'
     },
     {
-      title: 'Mobile Friendly',
-      copy: 'Designed to work smoothly on phones, tablets, and desktops with responsive motion-rich cards.',
-      icon: 'smartphone'
+      title: 'Cloud & Integrations',
+      copy: 'Secure, dependable services that bring your platforms together and grow with your needs.',
+      icon: 'cloud_sync'
     }
   ];
 
@@ -120,8 +120,18 @@ export class PublicHomeComponent {
   loginPassword = '';
   loginLoading = false;
   loginError = '';
+  showPassword = false;
 
-  constructor(private router: Router, private authService: AuthService, private cdr: ChangeDetectorRef) {}
+  constructor(private router: Router, private authService: AuthService, private cdr: ChangeDetectorRef) {
+  }
+
+  get isLoggedIn(): boolean {
+    return this.authService.isLoggedIn;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   async onLogin() {
     const email = this.loginEmail.trim().toLowerCase();
@@ -129,6 +139,11 @@ export class PublicHomeComponent {
 
     if (!email || !password) {
       this.loginError = 'Please enter your email and password.';
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.loginError = 'Please enter a valid email address.';
       return;
     }
 
@@ -167,6 +182,10 @@ export class PublicHomeComponent {
     } else if (platform.internalRoute) {
       this.router.navigate([platform.internalRoute]);
     }
+  }
+
+  navigateToSoftware(): void {
+    this.router.navigate(['/software']);
   }
 
   scrollToSection(sectionId: string) {

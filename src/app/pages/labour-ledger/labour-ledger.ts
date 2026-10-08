@@ -94,7 +94,8 @@ export class LabourLedgerComponent implements OnInit {
   
   ngOnInit() {
     this.loading = true;
-    this.paymentDate = new Date().toISOString().split('T')[0];
+    const _today = new Date();
+    this.paymentDate = `${_today.getFullYear()}-${String(_today.getMonth() + 1).padStart(2, '0')}-${String(_today.getDate()).padStart(2, '0')}`;
     Promise.all([this.loadLabours(), this.loadWorkersWithOutstanding(), this.loadPartners()]).finally(() => {
       this.loading = false;
       this.cd.detectChanges();
@@ -306,7 +307,7 @@ export class LabourLedgerComponent implements OnInit {
         this.selectedWageEntryId = '';
         this.selectedLabourId = '';
         this.cd.detectChanges();
-        await this.loadWorkersWithOutstanding();
+        await Promise.all([this.loadWorkersWithOutstanding(), this.loadLabours()]);
         
         setTimeout(() => {
           this.successMessage = '';
@@ -339,9 +340,10 @@ export class LabourLedgerComponent implements OnInit {
     this.cd.detectChanges();
 
     try {
-      const currentDate = new Date().toISOString().split('T')[0];
+      const _d = new Date();
+      const currentDate = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
       const result = await this.laborPaymentService.clearOutstanding(
-        wageEntry.wage_entry_id,
+        workerOutstanding.worker_id,
         this.paidByPartnerId || this.partners[0]?.partner_id,
         currentDate
       );
@@ -349,7 +351,7 @@ export class LabourLedgerComponent implements OnInit {
       if (result.success) {
         this.successMessage = `Cleared outstanding INR ${wageEntry.current_outstanding.toFixed(2)} for ${workerOutstanding.worker_name}.`;
         this.cd.detectChanges();
-        await this.loadWorkersWithOutstanding();
+        await Promise.all([this.loadWorkersWithOutstanding(), this.loadLabours()]);
         
         setTimeout(() => {
           this.successMessage = '';

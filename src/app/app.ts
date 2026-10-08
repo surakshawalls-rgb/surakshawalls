@@ -112,6 +112,11 @@ export class AppComponent implements OnInit, OnDestroy {
     return currentUrl.startsWith('/library');
   }
 
+  public isFullWidthPage(): boolean {
+    const currentUrl = (this.router.url || '').split(/[?#]/)[0];
+    return currentUrl === '/' || currentUrl === '/home';
+  }
+
   public hasFullLibraryAccess(): boolean {
     return this.authService.isAdmin() || 
            this.authService.isEditor() || 

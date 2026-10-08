@@ -3,7 +3,7 @@
 <div class="reports-dashboard">
   
   <!-- Header -->
-  <div class="dashboard-header">
+  <div class="dashboard-header" *ngIf="!embedded">
     <div class="header-left">
       <h1>Reports and Due Management</h1>
       <p>Manage payments, collections, and view comprehensive reports</p>
@@ -19,16 +19,19 @@
   <!-- Tab Navigation -->
   <div class="tab-nav">
     <button class="tab-btn" [class.active]="activeTab === 'workers'" (click)="switchTab('workers')">
-      Outstanding & Passbook
+      Attendance & Wages Passbook
+    </button>
+    <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'production'" (click)="switchTab('production')">
+      Production Passbook
     </button>
     <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'clients'" (click)="switchTab('clients')">
-      Clients
+      Client Passbook
     </button>
     <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'partners'" (click)="switchTab('partners')">
-      Partners
+      Partner Master
     </button>
     <button class="tab-btn" *ngIf="!labourOnly" [class.active]="activeTab === 'company'" (click)="switchTab('company')">
-      Company Overview
+      Firm & Partner Passbook
     </button>
   </div>
 
@@ -36,6 +39,63 @@
   <div class="loading-overlay" *ngIf="loading">
     <div class="spinner"></div>
     <p>Loading data...</p>
+  </div>
+
+  <!-- ========== PRODUCTION PASSBOOK TAB ========== -->
+  <div class="tab-content" *ngIf="!labourOnly && activeTab === 'production' && !loading">
+    <div class="content-header">
+      <div class="header-main">
+        <h2>Production Passbook</h2>
+        <div class="filter-box">
+          <input type="date" [(ngModel)]="productionStartDate" class="form-control-sm" placeholder="Start">
+          <span class="range-sep">to</span>
+          <input type="date" [(ngModel)]="productionEndDate" class="form-control-sm" placeholder="End">
+          <button class="btn btn-sm btn-primary btn-search" (click)="loadProductionPassbook()">
+            <mat-icon>search</mat-icon> Search
+          </button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <small>Total Quantity</small>
+          <strong>{{ getTotalProductionQuantity() }}</strong>
+        </div>
+        <div class="stat-card">
+          <small>Entries</small>
+          <strong>{{ productionEntries.length }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-grid" *ngIf="productionEntries.length > 0; else noProductionPassbook">
+      <table class="labour-ledger-table consolidated-passbook">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Product</th>
+            <th>Variant</th>
+            <th class="text-right">Quantity</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of productionEntries">
+            <td data-label="Date">{{ item.date | date:'dd MMM yyyy' }}</td>
+            <td data-label="Product"><strong>{{ item.product_name }}</strong></td>
+            <td data-label="Variant">{{ item.product_variant || '-' }}</td>
+            <td data-label="Quantity" class="text-right"><strong>{{ item.quantity }}</strong></td>
+            <td data-label="Notes">{{ item.notes || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noProductionPassbook>
+      <div class="empty-state">
+        <mat-icon>inventory_2</mat-icon>
+        <p>No production entries found for the selected period.</p>
+      </div>
+    </ng-template>
   </div>
 
   <!-- ========== OUTSTANDING & PASSBOOK TAB ========== -->
@@ -211,70 +271,288 @@
 
   <!-- ========== CLIENTS TAB ========== -->
   <div class="tab-content" *ngIf="!labourOnly && activeTab === 'clients' && !loading">
-    <div class="content-header">
-      <h2>Client Outstanding Collections</h2>
-      <div class="stats">
-        <div class="stat-card">
-          <small>Total Outstanding</small>
-          <strong>{{ formatCurrency(totalClientsOutstanding) }}</strong>
-        </div>
-        <div class="stat-card">
-          <small>Total Clients</small>
-          <strong>{{ clientsWithOutstanding.length }}</strong>
-        </div>
-      </div>
+
+    <!-- Client Sub-Tab Navigation -->
+    <div class="sub-tab-nav">
+      <button class="sub-tab-btn" [class.active]="clientSubTab === 'outstanding'" (click)="switchClientSubTab('outstanding')">
+        <mat-icon>account_balance_wallet</mat-icon> Outstanding Dues
+      </button>
+      <button class="sub-tab-btn" [class.active]="clientSubTab === 'collect'" (click)="switchClientSubTab('collect')">
+        <mat-icon>payments</mat-icon> Collect Payment
+      </button>
+      <button class="sub-tab-btn" [class.active]="clientSubTab === 'all_clients'" (click)="switchClientSubTab('all_clients')">
+        <mat-icon>people</mat-icon> All Clients
+      </button>
     </div>
 
-    <div class="data-grid" *ngIf="clientsWithOutstanding.length > 0; else noClientsOutstanding">
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Client Name</th>
-            <th>Phone</th>
-            <th>Total Sales</th>
-            <th>Total Paid</th>
-            <th class="text-right">Outstanding</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let client of clientsWithOutstanding; let i = index">
-            <td data-label="#">{{ i + 1 }}</td>
-            <td data-label="Client Name"><strong>{{ client.client_name }}</strong></td>
-            <td data-label="Phone">{{ client.phone || 'N/A' }}</td>
-            <td data-label="Total Sales">{{ formatCurrency(client.total_sales) }}</td>
-            <td data-label="Total Paid">{{ formatCurrency(client.total_paid) }}</td>
-            <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(client.outstanding) }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn btn-sm btn-success" (click)="openCollectFromClientDialog(client, 'full')" title="Collect Full">
-                  Collect Full
-                </button>
-                <button class="btn btn-sm btn-primary" (click)="openCollectFromClientDialog(client, 'partial')" title="Collect Partial">
-                  Partial
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="5" class="text-right"><strong>Total Outstanding:</strong></td>
-            <td class="text-right"><strong>{{ formatCurrency(totalClientsOutstanding) }}</strong></td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <ng-template #noClientsOutstanding>
-      <div class="empty-state">
-        <span class="empty-icon"></span>
-        <h3>No Outstanding Collections</h3>
-        <p>All clients have paid in full!</p>
+    <!-- ===== OUTSTANDING DUES SUB-TAB ===== -->
+    <ng-container *ngIf="clientSubTab === 'outstanding'">
+      <div class="content-header">
+        <div class="header-main">
+          <h2>Client Outstanding Collections</h2>
+          <input type="text" [(ngModel)]="clientSearchFilter" placeholder="Search by name or phone..." class="search-input">
+        </div>
+        <div class="stats">
+          <div class="stat-card">
+            <small>Total Outstanding</small>
+            <strong class="text-danger">{{ formatCurrency(totalClientsOutstanding) }}</strong>
+          </div>
+          <div class="stat-card">
+            <small>Clients with Dues</small>
+            <strong>{{ getFilteredOutstandingClients().length }}</strong>
+          </div>
+        </div>
       </div>
-    </ng-template>
+
+      <div class="data-grid" *ngIf="getFilteredOutstandingClients().length > 0; else noClientsOutstanding">
+        <table class="labour-ledger-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Client Name</th>
+              <th>Phone</th>
+              <th>Total Sales</th>
+              <th>Total Paid</th>
+              <th class="text-right">Outstanding</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let client of getFilteredOutstandingClients(); let i = index">
+              <td data-label="#">{{ i + 1 }}</td>
+              <td data-label="Client Name"><strong>{{ client.client_name }}</strong></td>
+              <td data-label="Phone">{{ client.phone || 'N/A' }}</td>
+              <td data-label="Total Sales">{{ formatCurrency(client.total_sales) }}</td>
+              <td data-label="Total Paid">{{ formatCurrency(client.total_paid) }}</td>
+              <td data-label="Outstanding" class="text-right amount-highlight">{{ formatCurrency(client.outstanding) }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-success" (click)="openCollectPaymentForClient(client)" title="Collect Payment">
+                    Collect
+                  </button>
+                  <button class="btn btn-sm btn-info" (click)="openClientPassbook(client)" title="View Passbook">
+                    Passbook
+                  </button>
+                </div>
+                <!-- Per-sale breakdown -->
+                <div *ngIf="client.sales_transactions.length > 0" class="sale-breakdown">
+                  <div *ngFor="let sale of client.sales_transactions" class="sale-row">
+                    <span class="sale-date">{{ sale.sale_date | date:'dd MMM' }}</span>
+                    <span class="sale-due">Due: {{ formatCurrency(sale.current_outstanding) }}</span>
+                    <button class="btn btn-xs btn-outline-success" (click)="openCollectPaymentForClient(client, sale.sales_id)">Pay</button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5" class="text-right"><strong>Total Outstanding:</strong></td>
+              <td class="text-right"><strong>{{ formatCurrency(totalClientsOutstanding) }}</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <ng-template #noClientsOutstanding>
+        <div class="empty-state">
+          <mat-icon>check_circle</mat-icon>
+          <h3>No Outstanding Dues</h3>
+          <p>All clients have cleared their dues!</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <!-- ===== COLLECT PAYMENT SUB-TAB ===== -->
+    <ng-container *ngIf="clientSubTab === 'collect'">
+      <div class="content-header">
+        <h2>Collect Client Payment</h2>
+      </div>
+
+      <div class="collect-payment-panel">
+        <div class="form-grid">
+          <div class="form-group col-span-2">
+            <label>Select Client *</label>
+            <select [(ngModel)]="collectClientForm.clientId" (change)="onCollectClientSelect()" class="form-control">
+              <option value="">-- Select Client --</option>
+              <option *ngFor="let c of allClients" [value]="c.id">
+                {{ c.client_name }}{{ c.phone ? ' · ' + c.phone : '' }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="collectClientForm.clientId">
+            <label>Outstanding Amount</label>
+            <div class="info-value text-danger">
+              {{ formatCurrency(collectClientForm.outstandingAmount) }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Payment Date *</label>
+            <input type="date" [(ngModel)]="collectClientForm.date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Amount Collected (INR) *</label>
+            <input type="number" [(ngModel)]="collectClientForm.amount" min="1" placeholder="0" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Payment Mode *</label>
+            <select [(ngModel)]="collectClientForm.paymentMode" class="form-control">
+              <option value="cash">Cash</option>
+              <option value="upi">UPI / Online</option>
+              <option value="cheque">Cheque</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Collected By *</label>
+            <select [(ngModel)]="collectClientForm.collectedBy" class="form-control">
+              <option value="firm">Firm Cash</option>
+              <option *ngFor="let p of partners" [value]="p.id">{{ p.partner_name }}</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="collectClientForm.collectedBy !== 'firm'">
+            <label>Deposited to Firm?</label>
+            <div class="radio-group">
+              <label>
+                <input type="radio" name="dep" [value]="true" [(ngModel)]="collectClientForm.depositedToFirm">
+                <span>Yes, Deposited</span>
+              </label>
+              <label>
+                <input type="radio" name="dep" [value]="false" [(ngModel)]="collectClientForm.depositedToFirm">
+                <span>Not Yet</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group col-span-2">
+            <label>Notes (optional)</label>
+            <input type="text" [(ngModel)]="collectClientForm.notes" placeholder="e.g. Against invoice #123" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-note">
+          <mat-icon>info</mat-icon>
+          Payment will automatically be recorded as firm income in the cash ledger.
+        </div>
+
+        <div class="section-submit-bar">
+          <button class="btn btn-submit"
+                  [disabled]="saving || !collectClientForm.clientId || collectClientForm.amount <= 0"
+                  (click)="submitCollectPayment()">
+            {{ saving ? 'Saving...' : 'Record Collection' }}
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ===== ALL CLIENTS SUB-TAB ===== -->
+    <ng-container *ngIf="clientSubTab === 'all_clients'">
+      <div class="content-header">
+        <div class="header-main">
+          <h2>All Clients</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" [(ngModel)]="clientSearchFilter" placeholder="Search..." class="search-input">
+            <button class="btn btn-primary btn-sm" (click)="addClientForm.show = !addClientForm.show">
+              {{ addClientForm.show ? 'Cancel' : '+ Add Client' }}
+            </button>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat-card">
+            <small>Total Clients</small>
+            <strong>{{ allClients.length }}</strong>
+          </div>
+          <div class="stat-card">
+            <small>Active</small>
+            <strong>{{ getActiveClientsCount() }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Client Form -->
+      <div class="quick-add-panel" *ngIf="addClientForm.show">
+        <h3 style="margin-bottom:12px;font-size:0.95rem;font-weight:700;">Add New Client</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Client Name *</label>
+            <input type="text" [(ngModel)]="addClientForm.name" placeholder="Full name" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Phone (optional)</label>
+            <input type="text" [(ngModel)]="addClientForm.phone" placeholder="Mobile number" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Address (optional)</label>
+            <input type="text" [(ngModel)]="addClientForm.address" placeholder="Area / city" class="form-control">
+          </div>
+          <div class="form-group align-end">
+            <button class="btn btn-primary" [disabled]="saving || !addClientForm.name.trim()" (click)="addNewClient()">
+              {{ saving ? 'Saving...' : 'Save Client' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-grid" *ngIf="getFilteredAllClients().length > 0; else noClients">
+        <table class="labour-ledger-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Client Name</th>
+              <th>Phone</th>
+              <th>Total Billed</th>
+              <th>Total Paid</th>
+              <th class="text-right">Outstanding</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let client of getFilteredAllClients(); let i = index" [class.inactive-row]="!client.active">
+              <td data-label="#">{{ i + 1 }}</td>
+              <td data-label="Client Name"><strong>{{ client.client_name }}</strong></td>
+              <td data-label="Phone">{{ client.phone || '-' }}</td>
+              <td data-label="Total Billed">{{ formatCurrency(client.total_billed || 0) }}</td>
+              <td data-label="Total Paid">{{ formatCurrency(client.total_paid || 0) }}</td>
+              <td data-label="Outstanding" class="text-right" [class.amount-highlight]="(client.outstanding || 0) > 0">
+                {{ formatCurrency(client.outstanding || 0) }}
+              </td>
+              <td data-label="Status">
+                <span class="status-badge" [class.active]="client.active" [class.inactive]="!client.active">
+                  {{ client.active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-success" (click)="openCollectPaymentForClient(client)" title="Collect Payment">
+                    Collect
+                  </button>
+                  <button class="btn btn-sm btn-info" (click)="openClientPassbook(client)" title="Passbook">
+                    Passbook
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noClients>
+        <div class="empty-state">
+          <mat-icon>person_add</mat-icon>
+          <h3>No Clients Found</h3>
+          <p>Add your first client using the "+ Add Client" button above.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
   </div>
 
   <!-- ========== PARTNERS TAB ========== -->
@@ -319,9 +597,9 @@
     </ng-template>
   </div>
 
-  <!-- ========== COMPANY OVERVIEW TAB ========== -->
+  <!-- ========== FIRM & PARTNER PASSBOOK TAB ========== -->
   <div class="tab-content" *ngIf="!labourOnly && activeTab === 'company' && !loading">
-    <h2>Company Overview</h2>
+    <h2>Firm & Partner Passbook</h2>
 
     <!-- Summary Cards -->
     <div class="summary-grid">
@@ -375,6 +653,54 @@
         </div>
       </div>
     </div>
+
+    <div class="content-header">
+      <div class="header-main">
+        <h2>Firm Cash Passbook</h2>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <small>Total In</small>
+          <strong>{{ formatCurrency(getFirmLedgerTotalIn()) }}</strong>
+        </div>
+        <div class="stat-card">
+          <small>Total Out</small>
+          <strong>{{ formatCurrency(getFirmLedgerTotalOut()) }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-grid" *ngIf="firmCashEntries.length > 0; else noFirmCashPassbook">
+      <table class="labour-ledger-table consolidated-passbook">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Partner/Firm</th>
+            <th>Description</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of firmCashEntries">
+            <td data-label="Date">{{ entry.date | date:'dd MMM yyyy' }}</td>
+            <td data-label="Type"><span class="badge-category">{{ entry.type === 'receipt' ? 'IN' : 'OUT' }}</span></td>
+            <td data-label="Category">{{ entry.category || '-' }}</td>
+            <td data-label="Partner/Firm"><strong>{{ getPartnerLabelForLedger(entry.partner_id) }}</strong></td>
+            <td data-label="Description">{{ entry.description || '-' }}</td>
+            <td data-label="Amount" class="text-right"><strong>{{ formatCurrency(entry.amount || 0) }}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noFirmCashPassbook>
+      <div class="empty-state">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <p>No firm cash entries found.</p>
+      </div>
+    </ng-template>
 
     <!-- Detailed Sections -->
     <div class="detail-sections">
@@ -586,3 +912,154 @@
 </div>
 
 <app-mfg-footer *ngIf="!embedded"></app-mfg-footer>
+
+<!-- ========== CLIENT COLLECT PAYMENT DIALOG ========== -->
+<div class="modal-overlay" *ngIf="collectClientForm.show" (click)="closeCollectPaymentForm()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Collect Payment — {{ collectClientForm.clientName }}</h3>
+      <button class="btn-close" (click)="closeCollectPaymentForm()">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-row" *ngIf="collectClientForm.outstandingAmount > 0">
+        <strong>Outstanding:</strong>
+        <span class="amount-highlight">{{ formatCurrency(collectClientForm.outstandingAmount) }}</span>
+      </div>
+      <div class="info-row" *ngIf="collectClientForm.salesTransactionId">
+        <strong>Against Sale ID:</strong>
+        <span style="font-size:0.8rem;color:#64748b;">{{ collectClientForm.salesTransactionId }}</span>
+      </div>
+
+      <div class="form-group">
+        <label>Payment Date *</label>
+        <input type="date" [(ngModel)]="collectClientForm.date" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Amount (INR) *</label>
+        <input type="number" [(ngModel)]="collectClientForm.amount"
+               [max]="collectClientForm.outstandingAmount || 99999999"
+               min="1" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label>Payment Mode *</label>
+        <select [(ngModel)]="collectClientForm.paymentMode" class="form-control">
+          <option value="cash">Cash</option>
+          <option value="upi">UPI / Online</option>
+          <option value="cheque">Cheque</option>
+          <option value="bank_transfer">Bank Transfer</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Collected By *</label>
+        <select [(ngModel)]="collectClientForm.collectedBy" class="form-control">
+          <option value="firm">Firm Cash</option>
+          <option *ngFor="let p of partners" [value]="p.id">{{ p.partner_name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group" *ngIf="collectClientForm.collectedBy !== 'firm'">
+        <label>Deposited to Firm?</label>
+        <div class="radio-group">
+          <label><input type="radio" name="dep2" [value]="true" [(ngModel)]="collectClientForm.depositedToFirm"><span>Yes, Deposited</span></label>
+          <label><input type="radio" name="dep2" [value]="false" [(ngModel)]="collectClientForm.depositedToFirm"><span>Not Yet</span></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea [(ngModel)]="collectClientForm.notes" rows="2" class="form-control" placeholder="Optional..."></textarea>
+      </div>
+
+      <div class="form-note">
+        <mat-icon>info</mat-icon> Payment will be recorded as firm income automatically.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeCollectPaymentForm()" [disabled]="saving">Cancel</button>
+      <button class="btn btn-primary" (click)="submitCollectPayment()"
+              [disabled]="saving || collectClientForm.amount <= 0">
+        {{ saving ? 'Saving...' : 'Confirm Collection' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CLIENT PASSBOOK DIALOG ========== -->
+<div class="modal-overlay" *ngIf="clientPassbookDialog.show" (click)="closeClientPassbook()">
+  <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Client Passbook — {{ clientPassbookDialog.clientName }}</h3>
+      <button class="btn-close" (click)="closeClientPassbook()">X</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Summary Cards -->
+      <div class="passbook-summary-row">
+        <div class="passbook-sum-card">
+          <small>Total Received</small>
+          <strong class="text-success">{{ formatCurrency(clientPassbookDialog.totalReceived) }}</strong>
+        </div>
+        <div class="passbook-sum-card">
+          <small>Outstanding</small>
+          <strong class="text-danger">{{ formatCurrency(clientPassbookDialog.totalOutstanding) }}</strong>
+        </div>
+        <div class="passbook-sum-card">
+          <small>Payments</small>
+          <strong>{{ clientPassbookDialog.history.length }}</strong>
+        </div>
+      </div>
+
+      <div class="passbook-content" *ngIf="clientPassbookDialog.history.length > 0; else noClientHistory">
+        <table class="passbook-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Mode</th>
+              <th>Collected By</th>
+              <th>Deposited</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of clientPassbookDialog.history">
+              <td data-label="Date">{{ entry.payment_date | date:'dd MMM yyyy' }}</td>
+              <td data-label="Amount" class="amount-highlight">{{ formatCurrency(entry.amount_paid) }}</td>
+              <td data-label="Mode"><span class="badge-category">{{ entry.payment_mode }}</span></td>
+              <td data-label="Collected By">{{ getPartnerNameForClient(entry.collected_by_partner_id) }}</td>
+              <td data-label="Deposited">
+                <span [class.text-success]="entry.deposited_to_firm" [class.text-warning]="!entry.deposited_to_firm">
+                  {{ entry.deposited_to_firm ? 'Yes' : 'Pending' }}
+                </span>
+              </td>
+              <td data-label="Notes">{{ entry.notes || '-' }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td><strong>Total</strong></td>
+              <td class="amount-highlight"><strong>{{ formatCurrency(clientPassbookDialog.totalReceived) }}</strong></td>
+              <td colspan="4"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <ng-template #noClientHistory>
+        <div class="empty-state">
+          <mat-icon>receipt_long</mat-icon>
+          <p>No payment records found for this client.</p>
+        </div>
+      </ng-template>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeClientPassbook()">Close</button>
+      <button class="btn btn-success" (click)="openCollectPaymentForClient({client_id: clientPassbookDialog.clientId, client_name: clientPassbookDialog.clientName, outstanding: clientPassbookDialog.totalOutstanding}); closeClientPassbook()">
+        Collect Payment
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,119 @@
+<app-breadcrumb></app-breadcrumb>
+<div class="pf-page">
+  <div class="pf-hdr">
+    <div>
+      <h1><mat-icon>account_balance</mat-icon> Partners & Firm</h1>
+      <p>Balance sheet, passbook, and stock overview</p>
+    </div>
+    <div class="hdr-acts">
+      <div class="date-row">
+        <input type="date" [(ngModel)]="startDate" class="dinp">
+        <span class="sep">to</span>
+        <input type="date" [(ngModel)]="endDate" class="dinp">
+        <button class="btn-search" (click)="loadAll()"><mat-icon>refresh</mat-icon></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading"><div class="spin"></div> Loading...</div>
+
+  <ng-container *ngIf="!loading">
+    <!-- Summary Cards -->
+    <div class="sum-grid">
+      <div class="sum-c green"><mat-icon>trending_up</mat-icon><div><small>Total Revenue</small><strong>₹{{ summary.revenue|number:'1.0-0' }}</strong></div></div>
+      <div class="sum-c red"><mat-icon>trending_down</mat-icon><div><small>Total Expenses</small><strong>₹{{ summary.expenses|number:'1.0-0' }}</strong></div></div>
+      <div class="sum-c" [class.blue]="summary.net>=0" [class.red2]="summary.net<0">
+        <mat-icon>account_balance_wallet</mat-icon>
+        <div><small>Net Position</small><strong>₹{{ summary.net|number:'1.0-0' }}</strong></div>
+      </div>
+      <div class="sum-c orange"><mat-icon>groups</mat-icon><div><small>Worker Outstanding</small><strong>₹{{ summary.workerDue|number:'1.0-0' }}</strong></div></div>
+      <div class="sum-c purple"><mat-icon>people</mat-icon><div><small>Client Outstanding</small><strong>₹{{ summary.clientDue|number:'1.0-0' }}</strong></div></div>
+      <div class="sum-c teal"><mat-icon>inventory_2</mat-icon><div><small>Material Stock Value</small><strong>₹{{ summary.materialValue|number:'1.0-0' }}</strong></div></div>
+      <div class="sum-c indigo"><mat-icon>warehouse</mat-icon><div><small>Finished Goods Value</small><strong>₹{{ summary.finishedValue|number:'1.0-0' }}</strong></div></div>
+    </div>
+
+    <!-- Tab Nav -->
+    <div class="view-tabs">
+      <button [class.active]="activeView==='summary'" (click)="activeView='summary'">Partners</button>
+      <button [class.active]="activeView==='ledger'" (click)="activeView='ledger'">Firm Cash Ledger</button>
+      <button [class.active]="activeView==='stock'" (click)="activeView='stock'">Stock Overview</button>
+    </div>
+
+    <!-- PARTNERS VIEW -->
+    <div class="tbl-wrap" *ngIf="activeView==='summary'">
+      <table *ngIf="partners.length>0">
+        <thead><tr><th>#</th><th>Partner</th><th class="cr">Share %</th><th class="cr">Wallet Balance</th><th class="cr">Total Withdrawals</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let p of partners; let i=index">
+            <td>{{ i+1 }}</td>
+            <td><strong>{{ p.partner_name }}</strong></td>
+            <td class="cr">{{ p.share_percentage }}%</td>
+            <td class="cr">₹{{ (p.wallet_balance||0)|number:'1.0-0' }}</td>
+            <td class="cr">₹{{ (p.total_withdrawals||0)|number:'1.0-0' }}</td>
+            <td><span class="sts act">Active</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- LEDGER VIEW -->
+    <div *ngIf="activeView==='ledger'">
+      <div class="led-header">
+        <div class="led-stats">
+          <div class="led-stat green">↓ In: <strong>₹{{ summary.revenue|number:'1.0-0' }}</strong></div>
+          <div class="led-stat red">↑ Out: <strong>₹{{ summary.expenses|number:'1.0-0' }}</strong></div>
+        </div>
+        <button class="btn-print" (click)="printLedger()"><mat-icon>print</mat-icon> Print</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th class="c-date">Date</th><th class="c-md">Type</th><th class="c-md">Category</th><th>Partner/Firm</th><th>Description</th><th class="cr">Amount</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let e of ledger" [class.row-in]="e.type==='receipt'" [class.row-out]="e.type==='payment'">
+              <td class="c-date">{{ e.date|date:'dd MMM yyyy' }}</td>
+              <td class="c-md"><span class="chip" [class.in-chip]="e.type==='receipt'">{{ e.type==='receipt'?'IN':'OUT' }}</span></td>
+              <td class="c-md"><span class="chip">{{ (e.category||'—').toUpperCase() }}</span></td>
+              <td>{{ e.partner_name }}</td>
+              <td>{{ e.description||'—' }}</td>
+              <td class="cr" [class.amt-in]="e.type==='receipt'" [class.amt-out]="e.type==='payment'">₹{{ (e.amount||0)|number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STOCK VIEW -->
+    <div *ngIf="activeView==='stock'" class="stock-grid">
+      <div class="stock-section">
+        <h3>Raw Materials</h3>
+        <table class="tbl-wrap" *ngIf="materialStock.length>0">
+          <thead><tr><th>Material</th><th>Unit</th><th class="cr">Stock</th><th class="cr">Rate</th><th class="cr">Value</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let m of materialStock">
+              <td><strong>{{ m.material_name }}</strong></td>
+              <td>{{ m.unit }}</td>
+              <td class="cr">{{ m.current_stock }}</td>
+              <td class="cr">₹{{ (m.unit_cost||0)|number:'1.0-0' }}</td>
+              <td class="cr">₹{{ ((m.current_stock||0)*(m.unit_cost||0))|number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="stock-section">
+        <h3>Finished Goods</h3>
+        <table class="tbl-wrap" *ngIf="finishedStock.length>0">
+          <thead><tr><th>Product</th><th class="cr">Stock</th><th class="cr">Cost/Unit</th><th class="cr">Value</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let f of finishedStock">
+              <td><strong>{{ f.product_name }}</strong><small *ngIf="f.product_variant"> ({{ f.product_variant }})</small></td>
+              <td class="cr">{{ f.current_stock }}</td>
+              <td class="cr">₹{{ (f.unit_cost||0)|number:'1.0-0' }}</td>
+              <td class="cr">₹{{ ((f.current_stock||0)*(f.unit_cost||0))|number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>
+<app-mfg-footer></app-mfg-footer>

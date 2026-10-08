@@ -1,0 +1,60 @@
+<app-breadcrumb></app-breadcrumb>
+<div class="pg">
+  <div class="pg-hdr">
+    <div>
+      <h1><mat-icon>precision_manufacturing</mat-icon> Production</h1>
+      <p>Production history and records</p>
+    </div>
+    <a routerLink="/daily-entry" class="btn-add"><mat-icon>add</mat-icon> New Entry</a>
+  </div>
+
+  <div class="pg-stats">
+    <div class="sc"><span class="sn">{{ stats.total }}</span><span class="sl">Entries</span></div>
+    <div class="sc blue"><span class="sn">{{ stats.totalQty }}</span><span class="sl">Total Qty Produced</span></div>
+    <div class="sc green"><span class="sn">{{ stats.products }}</span><span class="sl">Products</span></div>
+  </div>
+
+  <div class="pg-filter">
+    <input type="date" [(ngModel)]="startDate" class="dinp">
+    <span class="sep">to</span>
+    <input type="date" [(ngModel)]="endDate" class="dinp">
+    <input type="text" [(ngModel)]="searchTerm" placeholder="Search product..." class="sinp">
+    <button class="btn-search" (click)="load()"><mat-icon>search</mat-icon> Search</button>
+    <button class="btn-print" (click)="printTable()"><mat-icon>print</mat-icon> Print</button>
+  </div>
+
+  <div class="loading" *ngIf="loading"><div class="spin"></div> Loading...</div>
+
+  <div class="tbl-wrap" *ngIf="!loading">
+    <table *ngIf="filtered.length>0; else empty">
+      <thead><tr>
+        <th class="c-date">Date</th>
+        <th>Product</th>
+        <th class="c-md">Variant</th>
+        <th class="c-num">Qty Made</th>
+        <th class="c-num">Rejected</th>
+        <th class="c-amt">Labor Cost</th>
+        <th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr *ngFor="let e of filtered">
+          <td class="c-date">{{ e.date|date:'dd MMM yyyy' }}</td>
+          <td><strong>{{ e.product_name }}</strong></td>
+          <td class="c-md">{{ e.product_variant||'Standard' }}</td>
+          <td class="c-num"><strong>{{ e.success_quantity }}</strong></td>
+          <td class="c-num" [class.rej]="e.rejected_quantity>0">{{ e.rejected_quantity||0 }}</td>
+          <td class="c-amt">₹{{ (e.labor_cost||0)|number:'1.0-0' }}</td>
+          <td>{{ e.notes||'—' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #empty>
+      <div class="empty"><mat-icon>precision_manufacturing</mat-icon><h3>No production entries</h3>
+        <p>{{ searchTerm ? 'No results for "'+searchTerm+'"' : 'No entries for selected period.' }}</p>
+        <a routerLink="/daily-entry" class="btn-add"><mat-icon>add</mat-icon> Add Production</a>
+      </div>
+    </ng-template>
+  </div>
+  <div class="cnt" *ngIf="!loading && filtered.length>0">{{ filtered.length }} entries</div>
+</div>
+<app-mfg-footer></app-mfg-footer>

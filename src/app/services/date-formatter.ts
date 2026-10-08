@@ -41,11 +41,12 @@ export function formatDateToYYYYMMDD(dateStr: string): string {
 }
 
 /**
- * Gets today's date in YYYY-MM-DD format
+ * Gets today's date in YYYY-MM-DD format (local timezone, not UTC)
  * @returns Today's date in YYYY-MM-DD format
  */
 export function getTodayYYYYMMDD(): string {
-  return new Date().toISOString().split('T')[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /**

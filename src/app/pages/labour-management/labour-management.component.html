@@ -1,0 +1,161 @@
+<app-breadcrumb></app-breadcrumb>
+
+<div class="lm-page">
+
+  <!-- PAGE HEADER -->
+  <div class="lm-header">
+    <div class="lm-header-left">
+      <h1><mat-icon>groups</mat-icon> Labour Management</h1>
+      <p>All worker operations in one place</p>
+    </div>
+    <div class="lm-header-right">
+      <button class="btn-attend" (click)="openAttendance()">
+        <mat-icon>event_available</mat-icon> Mark Attendance
+      </button>
+      <button class="btn-add-worker" (click)="openAddWorker()">
+        <mat-icon>person_add</mat-icon> Add Worker
+      </button>
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="lm-msg success" *ngIf="successMsg"><mat-icon>check_circle</mat-icon> {{ successMsg }}</div>
+  <div class="lm-msg error" *ngIf="errorMsg"><mat-icon>error</mat-icon> {{ errorMsg }}</div>
+
+  <!-- STATS CARDS -->
+  <div class="lm-stats">
+    <div class="stat-c">
+      <span class="stat-num">{{ stats.total }}</span>
+      <span class="stat-lbl">Total Workers</span>
+    </div>
+    <div class="stat-c green">
+      <span class="stat-num">{{ stats.active }}</span>
+      <span class="stat-lbl">Active</span>
+    </div>
+    <div class="stat-c orange">
+      <span class="stat-num">{{ stats.outstanding }}</span>
+      <span class="stat-lbl">With Dues</span>
+    </div>
+    <div class="stat-c red">
+      <span class="stat-num">{{ formatCurrency(stats.totalDue) }}</span>
+      <span class="stat-lbl">Total Outstanding</span>
+    </div>
+    <div class="stat-c blue">
+      <span class="stat-num">{{ formatCurrency(stats.totalEarned) }}</span>
+      <span class="stat-lbl">Total Earned (all time)</span>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="lm-filter-bar">
+    <div class="filter-tabs">
+      <button [class.active]="filterStatus === 'active'" (click)="filterStatus = 'active'">Active</button>
+      <button [class.active]="filterStatus === 'all'" (click)="filterStatus = 'all'">All</button>
+      <button [class.active]="filterStatus === 'outstanding'" (click)="filterStatus = 'outstanding'">
+        With Dues <span class="badge-count" *ngIf="stats.outstanding > 0">{{ stats.outstanding }}</span>
+      </button>
+      <button [class.active]="filterStatus === 'inactive'" (click)="filterStatus = 'inactive'">Inactive</button>
+    </div>
+    <div class="search-wrap">
+      <mat-icon class="search-icon">search</mat-icon>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name or phone..." class="search-input">
+      <button *ngIf="searchTerm" (click)="searchTerm = ''" class="clear-search"><mat-icon>close</mat-icon></button>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="lm-loading" *ngIf="loading">
+    <div class="spinner"></div> Loading workers...
+  </div>
+
+  <!-- WORKERS TABLE -->
+  <div class="lm-table-wrap" *ngIf="!loading">
+    <table class="lm-table" *ngIf="filteredWorkers.length > 0; else emptyState">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th>Worker</th>
+          <th class="col-mid">Phone</th>
+          <th class="col-mid">Status</th>
+          <th class="col-amt">Total Earned</th>
+          <th class="col-amt">Total Paid</th>
+          <th class="col-amt">Outstanding</th>
+          <th class="col-actions">Manage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let w of filteredWorkers; let i = index"
+            [class.row-inactive]="!w.active"
+            [class.row-outstanding]="(w.outstanding || 0) > 0">
+          <td class="col-num">{{ i + 1 }}</td>
+          <td>
+            <div class="worker-cell">
+              <div class="w-avatar" [style.background]="getColor(w.name)">{{ initials(w.name) }}</div>
+              <div class="w-info">
+                <strong>{{ w.name }}</strong>
+                <small *ngIf="w.notes">{{ w.notes }}</small>
+              </div>
+            </div>
+          </td>
+          <td class="col-mid">{{ w.phone || '—' }}</td>
+          <td class="col-mid">
+            <span class="status-chip" [class.active]="w.active" [class.inactive]="!w.active">
+              {{ w.active ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="col-amt">{{ formatCurrency(w.total_earned) }}</td>
+          <td class="col-amt">{{ formatCurrency(w.total_paid) }}</td>
+          <td class="col-amt">
+            <span [class.due-amount]="(w.outstanding || 0) > 0" [class.cleared]="(w.outstanding || 0) === 0">
+              {{ formatCurrency(w.outstanding || 0) }}
+            </span>
+          </td>
+          <td class="col-actions">
+            <div class="action-group">
+              <button class="act-btn blue" (click)="openPassbook(w)" title="Passbook">
+                <mat-icon>menu_book</mat-icon>
+              </button>
+              <button class="act-btn green" (click)="openPay(w)" title="Record Payment"
+                      [class.disabled-btn]="(w.outstanding || 0) === 0">
+                <mat-icon>payments</mat-icon>
+              </button>
+              <button class="act-btn orange" (click)="openEditWorker(w)" title="Edit Worker">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button class="act-btn grey" (click)="openToggleStatus(w)"
+                      [title]="w.active ? 'Deactivate' : 'Activate'">
+                <mat-icon>{{ w.active ? 'toggle_on' : 'toggle_off' }}</mat-icon>
+              </button>
+              <button class="act-btn red" (click)="openDelete(w)" title="Delete Worker">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- EMPTY STATE -->
+    <ng-template #emptyState>
+      <div class="lm-empty">
+        <mat-icon>group_off</mat-icon>
+        <h3>No workers found</h3>
+        <p *ngIf="filterStatus === 'outstanding'">All dues are cleared!</p>
+        <p *ngIf="filterStatus !== 'outstanding'">
+          {{ searchTerm ? 'No results for "' + searchTerm + '"' : 'Add your first worker using the button above.' }}
+        </p>
+        <button class="btn-add-worker" (click)="openAddWorker()" *ngIf="!searchTerm && filterStatus !== 'outstanding'">
+          <mat-icon>person_add</mat-icon> Add Worker
+        </button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- ROW COUNT -->
+  <div class="lm-row-count" *ngIf="!loading && filteredWorkers.length > 0">
+    Showing {{ filteredWorkers.length }} of {{ workers.length }} workers
+  </div>
+
+</div>
+
+<app-mfg-footer></app-mfg-footer>

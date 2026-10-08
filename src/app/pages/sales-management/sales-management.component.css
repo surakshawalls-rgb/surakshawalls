@@ -1,0 +1,16 @@
+@import url('../production-management/production-management.component.css');
+.pg-hdr h1 mat-icon { color: #10b981; }
+.btn-add { background: #10b981; }
+.btn-add:hover { background: #059669; }
+.btn-search { background: #10b981; }
+.btn-search:hover { background: #059669; }
+.dinp:focus { border-color: #10b981; }
+.sinp:focus { border-color: #10b981; }
+.spin { border-top-color: #10b981; }
+.due-row { background: #fffbeb !important; }
+.due-row:hover { background: #fef3c7 !important; }
+.cleared { font-size: .75rem; color: #15803d; font-weight: 700; }
+.act-btn { width:32px; height:32px; border-radius:7px; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.act-btn mat-icon { font-size: 1rem; }
+.act-btn.green { background:#dcfce7; color:#15803d; }
+.act-btn.green:hover { background:#15803d; color:#fff; }

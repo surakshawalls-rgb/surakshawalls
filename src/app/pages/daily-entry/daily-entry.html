@@ -1,833 +1,428 @@
-<app-breadcrumb *ngIf="!embedded"></app-breadcrumb>
-<div class="unified-daily-entry-container">
-  
-  <!-- HEADER -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="header-left">
-        <h1 class="page-title">
-          <mat-icon class="icon">fact_check</mat-icon>
-          Unified Daily Entry
-        </h1>
-        <p class="page-subtitle">Complete daily operations: Production • Labor • Sales • Expenses • Production or Transport Damage</p>
-      </div>
-      <div class="header-right">
-        <input type="date" [(ngModel)]="entryDate" class="date-picker">
-      </div>
+﻿<app-breadcrumb *ngIf="!embedded"></app-breadcrumb>
+
+<div class="de-page" *ngIf="!loading; else loadingTpl">
+
+  <!-- ── TOP BAR ── -->
+  <div class="de-topbar" *ngIf="!embedded">
+    <div class="de-topbar-left">
+      <h1>Daily Entry</h1>
+      <span class="de-date-label">{{ entryDate | date:'EEEE, dd MMM yyyy' }}</span>
     </div>
+    <input type="date" [(ngModel)]="entryDate" class="de-date-input">
   </div>
 
-  <!-- MESSAGES -->
-  <div class="messages-container" *ngIf="successMessage || errorMessage">
-    <div class="success-alert" *ngIf="successMessage">
-      <mat-icon class="alert-icon">check_circle</mat-icon>
-      {{ successMessage }}
-    </div>
-    <div class="error-alert" *ngIf="errorMessage" style="white-space: pre-line; text-align: left;">
-      <mat-icon class="alert-icon">error</mat-icon>
-      <div style="flex: 1;">{{ errorMessage }}</div>
-    </div>
-  </div>
+  <!-- ── ALERTS ── -->
+  <div class="de-alert de-alert-success" *ngIf="successMessage">&#10003; {{ successMessage }}</div>
+  <div class="de-alert de-alert-error" *ngIf="errorMessage" style="white-space:pre-line">&#10007; {{ errorMessage }}</div>
 
-  <mat-tab-group [selectedIndex]="activeSection === 'labor' ? 0 : 
-                               activeSection === 'expenses' ? 1 :
-                               activeSection === 'production' ? (isLabourStaff() ? 1 : 2) :
-                               activeSection === 'sales' ? 3 : 4" 
-                class="daily-entry-tabs" 
-                animationDuration="0ms" 
-                mat-stretch-tabs="false"
-                (selectedIndexChange)="onSectionTabChange($event)">
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <mat-icon>groups</mat-icon>
-        Attendance and Entry
-      </ng-template>
-    </mat-tab>
-    <mat-tab *ngIf="!isLabourStaff()">
-      <ng-template mat-tab-label>
-        <mat-icon>receipt_long</mat-icon>
-        Expenses
-      </ng-template>
-    </mat-tab>
-    <mat-tab>
-      <ng-template mat-tab-label>
-        <mat-icon>precision_manufacturing</mat-icon>
-        Production
-      </ng-template>
-    </mat-tab>
-    <mat-tab *ngIf="!isLabourStaff()">
-      <ng-template mat-tab-label>
-        <mat-icon>point_of_sale</mat-icon>
-        Sales
-      </ng-template>
-    </mat-tab>
-    <mat-tab *ngIf="!isLabourStaff()">
-      <ng-template mat-tab-label>
-        <mat-icon>report_problem</mat-icon>
-        Damage
-      </ng-template>
-    </mat-tab>
-  </mat-tab-group>
-
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
-
-    <!-- ========== SECTION 1: PRODUCTION ========== -->
-    <div class="section-card" *ngIf="activeSection === 'production'">
-      <div class="section-header production-header">
-        <div class="section-title">
-          <mat-icon class="section-icon">precision_manufacturing</mat-icon>
-          <h2>Production</h2>
-        </div>
+  <!-- ══════════════════════════════════════════
+       SECTION 1 — ATTENDANCE
+  ══════════════════════════════════════════ -->
+  <div class="de-card">
+    <div class="de-card-head">
+      <div class="de-card-head-left">
+        <span class="de-section-dot dot-blue"></span>
+        <h2>Attendance</h2>
+        <span class="de-badge" *ngIf="workerEntries.length > 0">{{ workerEntries.length }} selected</span>
       </div>
-
-      <div class="section-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Product</label>
-            <select [(ngModel)]="selectedProduct" (change)="onProductChange()" class="form-control">
-              <option value="">Select Product</option>
-              <option *ngFor="let prod of products" [value]="prod.product_name">
-                {{ prod.product_name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group" *ngIf="selectedProductVariants.length > 0">
-            <label>Variant</label>
-            <select [(ngModel)]="selectedProductVariant" class="form-control">
-              <option *ngFor="let variant of selectedProductVariants" [value]="variant">
-                {{ variant }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Quantity</label>
-            <input type="number" [(ngModel)]="productQuantity" min="1" placeholder="0" class="form-control">
-          </div>
-
-          <div class="form-group">
-            <label>&nbsp;</label>
-            <button (click)="addProductionItem()" 
-                    [disabled]="!selectedProduct || productQuantity <= 0 || isCalculatingMaterials"
-                    class="btn btn-primary">
-              {{ isCalculatingMaterials ? 'Calculating...' : '+ Add Product' }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Production Items Table -->
-        <div class="data-table" *ngIf="productionItems.length > 0">
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Variant</th>
-                <th>Quantity</th>
-                <th>Materials Needed</th>
-                <th>Total Cost</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of productionItems; let i = index">
-                <td><strong>{{ item.product_name }}</strong></td>
-                <td>{{ item.product_variant || 'Standard' }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>
-                  <div class="materials-breakdown" *ngIf="item.material_calc">
-                    <span [class.stock-sufficient]="item.material_calc.stock_check.cement_available" 
-                          [class.stock-insufficient]="!item.material_calc.stock_check.cement_available">
-                      <span class="stock-icon">{{ item.material_calc.stock_check.cement_available ? 'Available' : 'Shortage' }}</span>
-                      Cement: {{ item.material_calc.materials.cement | number:'1.2-2' }} bags
-                      <span class="stock-info">(Available: {{ item.material_calc.current_stock.cement | number:'1.2-2' }})</span>
-                    </span>
-                    <span [class.stock-sufficient]="item.material_calc.stock_check.aggregates_available" 
-                          [class.stock-insufficient]="!item.material_calc.stock_check.aggregates_available">
-                      <span class="stock-icon">{{ item.material_calc.stock_check.aggregates_available ? 'Available' : 'Shortage' }}</span>
-                      Aggregates: {{ item.material_calc.materials.aggregates | number:'1.2-2' }} cft
-                      <span class="stock-info">(Available: {{ item.material_calc.current_stock.aggregates | number:'1.2-2' }})</span>
-                    </span>
-                    <span [class.stock-sufficient]="item.material_calc.stock_check.sariya_available" 
-                          [class.stock-insufficient]="!item.material_calc.stock_check.sariya_available">
-                      <span class="stock-icon">{{ item.material_calc.stock_check.sariya_available ? 'Available' : 'Shortage' }}</span>
-                      Sariya: {{ item.material_calc.materials.sariya | number:'1.2-2' }} kg
-                      <span class="stock-info">(Available: {{ item.material_calc.current_stock.sariya | number:'1.2-2' }})</span>
-                    </span>
-                  </div>
-                </td>
-                <td class="amount-cell">
-                  <div style="display: flex; flex-direction: column; gap: 2px;">
-                    <span style="font-weight: 700; color: #2e7d32;">{{ formatCurrency(item.material_calc?.costs?.total_cost || 0) }}</span>
-                    <span style="font-size: 0.75rem; color: #757575;">Material Cost</span>
-                  </div>
-                </td>
-                <td>
-                  <button (click)="removeProductionItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
-                </td>
-              </tr>
-            </tbody>
-            <tfoot>
-              <tr class="total-row">
-                <td colspan="4" class="text-right"><strong>Total Material Cost:</strong></td>
-                <td class="amount-cell"><strong>{{ formatCurrency(getTotalProductionCost()) }}</strong></td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-
-        <div class="empty-state" *ngIf="productionItems.length === 0">
-          <span class="empty-icon"></span>
-          <p>No production items added yet</p>
-        </div>
-
-        <div class="section-submit-bar">
-          <button (click)="submitProductionSection()"
-                  [disabled]="saving || loading || productionItems.length === 0"
-                  class="btn btn-submit btn-section-submit">
-            <span *ngIf="!saving">Submit Production</span>
-            <span *ngIf="saving">Saving...</span>
-          </button>
-          <p class="section-submit-hint">Saves only production entries for this date.</p>
-        </div>
-      </div>
+      <button class="de-btn de-btn-outline" (click)="toggleQuickAddWorker()">+ Add Worker</button>
     </div>
 
-    <!-- ========== SECTION 2: LABOR ========== -->
-    <div class="section-card" *ngIf="activeSection === 'labor'">
-      <div class="section-header labor-header">
-        <div class="section-title">
-          <mat-icon class="section-icon">groups</mat-icon>
-          <h2>Attendance</h2>
-        </div>
-        <span class="section-badge">{{ workerEntries.length }} selected</span>
-      </div>
-
-      <div class="section-body">
-        <div class="section-intro">
-          <p>Mark workforce attendance quickly by checking each worker. If a worker is missing, add them using Quick Add Worker.</p>
-          <button (click)="toggleQuickAddWorker()" class="btn btn-secondary btn-sm">
-            {{ showQuickAddWorker ? 'Close' : '+ Quick Add Worker' }}
-          </button>
-        </div>
-
-        <div class="quick-add-panel" *ngIf="showQuickAddWorker">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Worker Name</label>
-              <input type="text" [(ngModel)]="newWorkerName" placeholder="Enter name" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Phone (Optional)</label>
-              <input type="text" [(ngModel)]="newWorkerPhone" placeholder="Enter phone" class="form-control">
-            </div>
-            <div class="form-group align-end">
-              <button (click)="quickAddWorker()"
-                      [disabled]="loading || !newWorkerName.trim()"
-                      class="btn btn-primary">
-                Save Worker
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Worker Status Filter -->
-        <div class="worker-filter-bar">
-          <span class="filter-label">Show Workers:</span>
-          <div class="filter-buttons">
-            <button [class.active]="workerStatusFilter === 'active'" 
-                    (click)="setWorkerStatusFilter('active')" 
-                    class="btn btn-filter">
-              Active ({{ getActiveWorkersCount() }})
-            </button>
-            <button [class.active]="workerStatusFilter === 'inactive'" 
-                    (click)="setWorkerStatusFilter('inactive')" 
-                    class="btn btn-filter">
-              Inactive ({{ getInactiveWorkersCount() }})
-            </button>
-            <button [class.active]="workerStatusFilter === 'all'" 
-                    (click)="setWorkerStatusFilter('all')" 
-                    class="btn btn-filter">
-              All ({{ availableWorkers.length }})
-            </button>
-          </div>
-        </div>
-
-        <!-- Attendance Grid (More professional than a standard table) -->
-        <div class="attendance-grid" *ngIf="getFilteredWorkers().length > 0; else noWorkersState">
-          <div class="attendance-grid-header">
-            <div class="col-select">Mark</div>
-            <div class="col-worker">Worker Info</div>
-            <div class="col-wage">Today's Wage</div>
-            <div class="col-balance">Balance</div>
-            <div class="col-status">Status</div>
-          </div>
-          
-          <div class="attendance-row" *ngFor="let worker of getFilteredWorkers()" [class.selected]="isWorkerSelected(worker.id)">
-            <!-- Presence Selection -->
-            <div class="col-select">
-              <label class="custom-checkbox">
-                <input type="checkbox"
-                       [checked]="isWorkerSelected(worker.id)"
-                       (change)="onWorkerCheckboxChange(worker, $event)">
-                <span class="checkmark"></span>
-              </label>
-            </div>
-
-            <!-- Worker Identity -->
-            <div class="col-worker" (click)="onWorkerRowClick(worker)">
-              <div class="worker-avatar" [style.background-color]="getWorkerColor(worker.name)">
-                {{ getWorkerInitials(worker.name) }}
-              </div>
-              <div class="worker-details">
-                <span class="worker-name">{{ worker.name }}</span>
-                <span class="worker-phone">
-                  <mat-icon>phone</mat-icon>
-                  {{ worker.phone || 'No phone' }}
-                </span>
-              </div>
-            </div>
-
-            <!-- Wage (New Editable Column) -->
-            <div class="col-wage">
-              <div class="wage-input-group">
-                <span class="currency">₹</span>
-                <input type="number" 
-                       [value]="getWorkerEntry(worker.id)?.wage_earned || 500" 
-                       (click)="$event.stopPropagation()"
-                       (input)="onWorkerWageChange(worker.id, $event)"
-                       class="wage-input"
-                       placeholder="Wage">
-              </div>
-            </div>
-
-            <!-- Financials -->
-            <div class="col-balance">
-              <div class="balance-pill" [class.positive]="worker.cumulative_balance >= 0" [class.negative]="worker.cumulative_balance < 0">
-                <span class="label">Balance</span>
-                <span class="amount">{{ formatCurrency(worker.cumulative_balance) }}</span>
-              </div>
-            </div>
-
-            <!-- Active/Inactive Toggle -->
-            <div class="col-status">
-              <button (click)="toggleWorkerStatus(worker); $event.stopPropagation()" 
-                      [disabled]="loading"
-                      [class.btn-active]="worker.active"
-                      [class.btn-inactive]="!worker.active"
-                      class="status-toggle">
-                <mat-icon>{{ worker.active ? 'check_circle' : 'pause_circle' }}</mat-icon>
-                <span>{{ worker.active ? 'Active' : 'Paused' }}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noWorkersState>
-          <div class="empty-state">
-            <span class="empty-icon"></span>
-            <p>{{ workerStatusFilter === 'active' ? 'No active workers found' : workerStatusFilter === 'inactive' ? 'No inactive workers found' : 'No workers found' }}. Use Quick Add Worker to create one.</p>
-          </div>
-        </ng-template>
-
-        <div class="attendance-summary" *ngIf="availableWorkers.length > 0">
-          <div><strong>{{ workerEntries.length }}</strong> worker(s) selected for attendance</div>
-          <div><strong>{{ formatCurrency(getTotalLaborCost()) }}</strong> estimated wage cost</div>
-        </div>
-
-        <div class="section-submit-bar">
-          <button (click)="submitLaborSection()"
-                  [disabled]="saving || loading || workerEntries.length === 0"
-                  class="btn btn-submit btn-section-submit">
-            <span *ngIf="!saving">Save Attendance</span>
-            <span *ngIf="saving">Saving...</span>
-          </button>
-          <p class="section-submit-hint">Checked workers will be marked present for {{ entryDate }}.</p>
-        </div>
-      </div>
+    <!-- Quick Add Worker (inline) -->
+    <div class="de-inline-form" *ngIf="showQuickAddWorker">
+      <input type="text" [(ngModel)]="newWorkerName" placeholder="Worker name *" class="de-input">
+      <input type="tel" [(ngModel)]="newWorkerPhone" placeholder="Phone (optional)" class="de-input">
+      <button class="de-btn de-btn-primary" (click)="quickAddWorker()" [disabled]="!newWorkerName.trim() || loading">
+        {{ loading ? 'Saving...' : 'Save' }}
+      </button>
+      <button class="de-btn de-btn-ghost" (click)="closeQuickAddWorker()">Cancel</button>
     </div>
 
-    <!-- ========== SECTION 3: SALES ========== -->
-    <div class="section-card" *ngIf="!isLabourStaff() && activeSection === 'sales'">
-      <div class="section-header sales-header">
-        <div class="section-title">
-          <mat-icon class="section-icon">point_of_sale</mat-icon>
-          <h2>Sales</h2>
-        </div>
-      </div>
-
-      <div class="section-body">
-        <!-- Client Selection -->
-        <div class="form-grid">
-          <div class="form-group col-span-2">
-            <label>Client Search</label>
-            <div class="input-with-button">
-              <input type="text" 
-                     [(ngModel)]="clientSearchTerm" 
-                     (keyup.enter)="searchClients()"
-                     placeholder="Enter name or phone (or leave empty for all)"
-                     class="form-control">
-              <button (click)="searchClients()" class="btn btn-sm btn-primary" title="Search Clients">
-                <span>Search</span>
-              </button>
-              <button (click)="clearClientSearch()" 
-                      *ngIf="selectedClientId"
-                      class="btn btn-sm btn-secondary" 
-                      title="Clear Selection">
-                <span>Clear</span>
-              </button>
-              <button (click)="toggleQuickAddClient()" class="btn btn-sm btn-secondary" title="Quick Add Client">
-                <span>+ New</span>
-              </button>
-            </div>
-            
-            <!-- Selected Client Display -->
-            <div *ngIf="selectedClientId && !showClientResults" class="selected-client">
-              <strong>Selected:</strong> {{ clientSearchTerm }}
-            </div>
-            
-            <!-- Search Results Table -->
-            <div *ngIf="showClientResults" class="client-results-container">
-              <div class="client-results-header">
-                <strong>Search Results ({{ filteredClients.length }})</strong>
-                <button (click)="closeClientResults()" class="btn-close">Close</button>
-              </div>
-              <div class="client-results-table">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Phone</th>
-                      <th>Address</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let client of filteredClients">
-                      <td><strong>{{ client.client_name }}</strong></td>
-                      <td>{{ client.phone || '-' }}</td>
-                      <td>{{ client.address || '-' }}</td>
-                      <td>
-                        <button (click)="selectClient(client)" class="btn btn-xs btn-primary">
-                          Select
-                        </button>
-                      </td>
-                    </tr>
-                    <tr *ngIf="filteredClients.length === 0">
-                      <td colspan="4" style="text-align: center; color: #999;">No clients found</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sales Items -->
-        <div class="subsection">
-          <h3 class="subsection-title">Sales Items</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Product</label>
-              <select [(ngModel)]="selectedSalesProduct" (change)="onSalesProductChange()" class="form-control">
-                <option value="">Select Product</option>
-                <option *ngFor="let prod of products" [value]="prod.product_name">
-                  {{ prod.product_name }} (Stock: {{ productStockMap.get(prod.product_name) || 0 }})
-                </option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Quantity</label>
-              <input type="number" [(ngModel)]="salesQuantity" min="1" placeholder="0" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>Rate (INR)</label>
-              <input type="number" [(ngModel)]="salesRate" min="1" placeholder="0" class="form-control">
-            </div>
-
-            <div class="form-group">
-              <label>&nbsp;</label>
-              <button (click)="addSalesItem()" 
-                      [disabled]="!selectedSalesProduct || salesQuantity <= 0 || salesRate <= 0"
-                      class="btn btn-primary">
-                + Add Item
-              </button>
-            </div>
-          </div>
-
-          <!-- Sales Items Table -->
-          <div class="data-table" *ngIf="salesItems.length > 0">
-            <table>
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Quantity</th>
-                  <th>Rate</th>
-                  <th>Total</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of salesItems; let i = index">
-                  <td><strong>{{ item.product_name }}</strong></td>
-                  <td>{{ item.quantity }}</td>
-                  <td class="amount-cell">{{ formatCurrency(item.rate) }}</td>
-                  <td class="amount-cell">{{ formatCurrency(item.total) }}</td>
-                  <td>
-                    <button (click)="removeSalesItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Payment Details -->
-        <div class="subsection">
-          <h3 class="subsection-title">Payment Details</h3>
-          <div class="payment-summary">
-            <div class="payment-row">
-              <span>Total Revenue:</span>
-              <strong class="amount-lg">{{ formatCurrency(totalRevenue) }}</strong>
-            </div>
-            <div class="payment-row">
-              <label>Amount Received:</label>
-              <input type="number" 
-                     [(ngModel)]="amountReceived" 
-                     (input)="calculateRevenue()"
-                     min="0" 
-                     [max]="totalRevenue"
-                     placeholder="0" 
-                     class="form-control payment-input">
-            </div>
-            <div class="payment-row pending-row">
-              <span>Pending Amount:</span>
-              <strong class="amount-lg text-warning">{{ formatCurrency(pendingAmount) }}</strong>
-            </div>
-          </div>
-        </div>
-
-        <!-- Delivery Expenses -->
-        <div class="subsection">
-          <h3 class="subsection-title">Delivery Expenses</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Transport (INR)</label>
-              <input type="number" [(ngModel)]="transportExpense" min="0" placeholder="0" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Paid By</label>
-              <select [(ngModel)]="transportPaidBy" class="form-control">
-                <option value="">Select Partner</option>
-                <option *ngFor="let partner of partners" [value]="partner.partner_id">
-                  {{ partner.name }}
-                </option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Snacks (INR)</label>
-              <input type="number" [(ngModel)]="snacksExpense" min="0" placeholder="0" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Paid By</label>
-              <select [(ngModel)]="snacksPaidBy" class="form-control">
-                <option value="">Select Partner</option>
-                <option *ngFor="let partner of partners" [value]="partner.partner_id">
-                  {{ partner.name }}
-                </option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Other (INR)</label>
-              <input type="number" [(ngModel)]="otherDeliveryExpense" min="0" placeholder="0" class="form-control">
-            </div>
-            <div class="form-group">
-              <label>Paid By</label>
-              <select [(ngModel)]="otherDeliveryPaidBy" class="form-control">
-                <option value="">Select Partner</option>
-                <option *ngFor="let partner of partners" [value]="partner.partner_id">
-                  {{ partner.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-          <div class="expense-total" *ngIf="getTotalDeliveryExpenses() > 0">
-            Total Delivery Expenses: <strong>{{ formatCurrency(getTotalDeliveryExpenses()) }}</strong>
-          </div>
-
-          <div class="section-submit-bar">
-            <button (click)="submitSalesSection()"
-                    [disabled]="saving || loading || !selectedClientId || salesItems.length === 0"
-                    class="btn btn-submit btn-section-submit">
-              <span *ngIf="!saving">Submit Sales</span>
-              <span *ngIf="saving">Saving...</span>
-            </button>
-            <p class="section-submit-hint">Saves sales, client payment details, and delivery expenses for this date.</p>
-          </div>
-        </div>
-      </div>
+    <!-- Filter Pills -->
+    <div class="de-filter-row">
+      <button class="de-pill" [class.active]="workerStatusFilter === 'active'" (click)="setWorkerStatusFilter('active')">
+        Active ({{ getActiveWorkersCount() }})
+      </button>
+      <button class="de-pill" [class.active]="workerStatusFilter === 'inactive'" (click)="setWorkerStatusFilter('inactive')">
+        Paused ({{ getInactiveWorkersCount() }})
+      </button>
+      <button class="de-pill" [class.active]="workerStatusFilter === 'all'" (click)="setWorkerStatusFilter('all')">
+        All ({{ availableWorkers.length }})
+      </button>
     </div>
 
-    <!-- ========== SECTION 4: OTHER EXPENSES ========== -->
-    <div class="section-card" *ngIf="!isLabourStaff() && activeSection === 'expenses'">
-      <div class="section-header expenses-header">
-        <div class="section-title">
-          <mat-icon class="section-icon">receipt_long</mat-icon>
-          <h2>Other Office Expenses</h2>
+    <!-- Worker List -->
+    <div class="de-worker-list" *ngIf="getFilteredWorkers().length > 0">
+      <div class="de-worker-row" *ngFor="let w of getFilteredWorkers()"
+           [class.de-worker-checked]="isWorkerSelected(w.id)"
+           (click)="onWorkerRowClick(w)">
+        <label class="de-checkbox" (click)="$event.stopPropagation()">
+          <input type="checkbox" [checked]="isWorkerSelected(w.id)" (change)="onWorkerCheckboxChange(w, $event)">
+          <span class="de-checkmark"></span>
+        </label>
+        <div class="de-worker-avatar" [style.background]="getWorkerColor(w.name)">{{ getWorkerInitials(w.name) }}</div>
+        <div class="de-worker-info">
+          <strong>{{ w.name }}</strong>
+          <small>{{ w.phone || 'No phone' }}</small>
         </div>
-        <div class="header-actions">
-          <span class="section-badge">{{ otherExpenses.length }} active</span>
-          <button (click)="submitExpensesSection()"
-                  [disabled]="saving || loading || !hasDraftExpenses()"
-                  class="btn btn-primary btn-sm btn-save-all">
-            <mat-icon>save</mat-icon>
-            {{ saving ? 'Saving...' : 'Save All' }}
-          </button>
+        <div class="de-worker-wage" *ngIf="isWorkerSelected(w.id)" (click)="$event.stopPropagation()">
+          <span class="de-currency">Rs</span>
+          <input type="number"
+                 [value]="getWorkerEntry(w.id)?.wage_earned || 500"
+                 (input)="onWorkerWageChange(w.id, $event)"
+                 class="de-wage-input"
+                 placeholder="Wage">
         </div>
-      </div>
-
-      <div class="section-body">
-        <div class="attendance-grid expense-entry-grid">
-          <!-- Form Header Style -->
-          <div class="expense-form-row">
-            <div class="form-group flex-1">
-              <label>Category</label>
-              <select [(ngModel)]="selectedExpenseCategory" class="form-control">
-                <option value="Snacks">Snacks / Refreshments</option>
-                <option value="Diesel">Diesel / Fuel</option>
-                <option value="Maintenance">Maintenance / Repair</option>
-                <option value="Medical">Medical / First Aid</option>
-                <option value="Transport">Transport / Fare</option>
-                <option value="Other">Miscellaneous / Other</option>
-              </select>
-            </div>
-
-            <div class="form-group flex-2">
-              <label>Description (What for?)</label>
-              <input type="text" [(ngModel)]="expenseDescription" placeholder="e.g. Chai morning, Bike repair..." class="form-control">
-            </div>
-
-            <div class="form-group flex-1">
-              <label>Amount (₹)</label>
-              <input type="number" [(ngModel)]="expenseAmount" min="1" placeholder="0" class="form-control amount-input">
-            </div>
-
-            <div class="form-group flex-1">
-              <label>Paid By</label>
-              <select [(ngModel)]="expensePaidBy" class="form-control">
-                <option value="">Select Who Paid</option>
-                <option *ngFor="let partner of partners" [value]="partner.partner_id">
-                  {{ partner.name }}
-                </option>
-              </select>
-            </div>
-
-            <div class="form-group action-group">
-              <label>&nbsp;</label>
-              <button (click)="addOtherExpense()" 
-                      [disabled]="!selectedExpenseCategory || expenseAmount <= 0 || !expensePaidBy"
-                      class="btn btn-success btn-add-inline" title="Add to list">
-                <mat-icon>add_circle</mat-icon>
-                Add
-              </button>
-            </div>
-          </div>
+        <div class="de-worker-balance" [class.positive]="w.cumulative_balance >= 0" [class.negative]="w.cumulative_balance < 0">
+          {{ formatCurrency(w.cumulative_balance) }}
         </div>
-
-        <!-- Expenses List Grid -->
-        <div class="expense-list-container" *ngIf="otherExpenses.length > 0">
-           <div class="expense-item-row" *ngFor="let expense of otherExpenses; let i = index" [class.persisted]="expense.persisted">
-              <div class="expense-col-main">
-                <span class="category-pill">{{ expense.category }}</span>
-                <span class="expense-desc">{{ expense.description || 'No description' }}</span>
-              </div>
-              <div class="expense-col-paid">
-                <small>By:</small> {{ getPartnerName(expense.paid_by_partner_id) }}
-              </div>
-              <div class="expense-col-amount">
-                {{ formatCurrency(expense.amount) }}
-              </div>
-              <div class="expense-col-action">
-                <button (click)="removeOtherExpense(i)" class="btn-icon-danger" [disabled]="expense.persisted" title="Remove draft">
-                  <mat-icon>{{ expense.persisted ? 'check_circle' : 'delete' }}</mat-icon>
-                </button>
-              </div>
-           </div>
-
-           <div class="expense-summary-row">
-             <span>Total Draft: {{ formatCurrency(getTotalOtherExpenses()) }}</span>
-           </div>
-        </div>
-
-        <div class="empty-state-compact" *ngIf="otherExpenses.length === 0">
-          <mat-icon>receipt</mat-icon>
-          <p>No expenses recorded for this date.</p>
-        </div>
+        <button class="de-status-btn" [class.active]="w.active" [class.paused]="!w.active"
+                (click)="toggleWorkerStatus(w); $event.stopPropagation()" [disabled]="loading">
+          {{ w.active ? 'Active' : 'Paused' }}
+        </button>
       </div>
     </div>
+    <p class="de-empty" *ngIf="getFilteredWorkers().length === 0">No workers found for this filter.</p>
 
-    <!-- ========== SECTION 5: PRODUCTION DAMAGE / TRANSPORT DAMAGE ========== -->
-    <div class="section-card" *ngIf="!isLabourStaff() && activeSection === 'damage'">
-      <div class="section-header loss-header">
-        <div class="section-title">
-          <mat-icon class="section-icon">report_problem</mat-icon>
-          <h2>Production Damage / Transport Damage</h2>
-        </div>
-      </div>
-
-      <div class="section-body">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Product Damaged</label>
-            <select [(ngModel)]="selectedYardLossProduct" class="form-control">
-              <option value="">Select Product</option>
-              <option *ngFor="let prod of products" [value]="prod.product_name">
-                {{ prod.product_name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Quantity Damaged</label>
-            <input type="number" [(ngModel)]="yardLossQuantity" min="1" placeholder="0" class="form-control">
-          </div>
-
-          <div class="form-group">
-            <label>Damage Stage <span class="required">*</span></label>
-            <select [(ngModel)]="yardLossStage" class="form-control">
-              <option value="stacking">Stacking (Production Area)</option>
-              <option value="loading">Loading (Yard to Vehicle)</option>
-              <option value="transport">Transport (In Transit)</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Reason / Description <span class="required">*</span></label>
-            <input type="text" 
-                   [(ngModel)]="yardLossReason" 
-                   placeholder="e.g., Broken during loading, Crack found, Transport damage to corner" 
-                   class="form-control"
-                   minlength="5"
-                   maxlength="200">
-            <small style="color: #666; font-size: 0.85em;">Enter detailed reason (minimum 5 characters)</small>
-          </div>
-
-          <div class="form-group">
-            <label>&nbsp;</label>
-            <button (click)="addYardLossItem()" 
-                    [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossStage || !yardLossReason"
-                    class="btn btn-primary">
-              Add Damaged Item
-            </button>
-          </div>
-        </div>
-
-        <!-- Damage Items Table -->
-        <div class="data-table" *ngIf="yardLossItems.length > 0">
-          <table>
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Stage</th>
-                <th>Reason</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of yardLossItems; let i = index">
-                <td><strong>{{ item.product_name }}</strong></td>
-                <td><span class="badge badge-danger">{{ item.quantity }}</span></td>
-                <td>
-                  <span *ngIf="item.stage === 'stacking'">Stacking</span>
-                  <span *ngIf="item.stage === 'loading'">Loading</span>
-                  <span *ngIf="item.stage === 'transport'">Transport</span>
-                </td>
-                <td>{{ item.reason }}</td>
-                <td>
-                  <button (click)="removeYardLossItem(i)" class="btn btn-sm btn-danger-outline">Remove</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section-submit-bar">
-          <button (click)="submitDamageSection()"
-                  [disabled]="saving || loading || yardLossItems.length === 0"
-                  class="btn btn-submit btn-section-submit">
-            <span *ngIf="!saving">Submit Damage</span>
-            <span *ngIf="saving">Saving...</span>
-          </button>
-          <p class="section-submit-hint">Saves only damage and finished-goods loss entries for this date.</p>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-</div>
-
-<!-- ========== QUICK ADD WORKER MODAL ========== -->
-<div class="modal-overlay" *ngIf="showQuickAddWorker" (click)="closeQuickAddWorker()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Quick Add Worker</h3>
-      <button (click)="closeQuickAddWorker()" class="btn-close"></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Worker Name *</label>
-        <input type="text" [(ngModel)]="newWorkerName" placeholder="Enter name" class="form-control" autofocus>
-      </div>
-      <div class="form-group">
-        <label>Phone Number</label>
-        <input type="tel" [(ngModel)]="newWorkerPhone" placeholder="Enter phone (optional)" class="form-control">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button (click)="closeQuickAddWorker()" class="btn btn-secondary">Cancel</button>
-      <button (click)="quickAddWorker()" [disabled]="!newWorkerName.trim() || loading" class="btn btn-primary">
-        {{ loading ? 'Adding...' : 'Add Worker' }}
+    <div class="de-card-footer">
+      <span class="de-summary-text">{{ workerEntries.length }} worker(s) selected &bull; Total wages: {{ formatCurrency(getTotalLaborCost()) }}</span>
+      <button class="de-btn de-btn-save" (click)="submitLaborSection()"
+              [disabled]="saving || workerEntries.length === 0">
+        {{ saving ? 'Saving...' : 'Save Attendance' }}
       </button>
     </div>
   </div>
-</div>
 
-<!-- ========== QUICK ADD CLIENT MODAL ========== -->
-<div class="modal-overlay" *ngIf="showQuickAddClient" (click)="closeQuickAddClient()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Quick Add Client</h3>
-      <button (click)="closeQuickAddClient()" class="btn-close"></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Client Name *</label>
-        <input type="text" [(ngModel)]="newClientName" placeholder="Enter name" class="form-control" autofocus>
-      </div>
-      <div class="form-group">
-        <label>Phone Number</label>
-        <input type="tel" [(ngModel)]="newClientPhone" placeholder="Enter phone" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Address</label>
-        <input type="text" [(ngModel)]="newClientAddress" placeholder="Enter address (optional)" class="form-control">
+  <!-- ══════════════════════════════════════════
+       SECTION 2 — PRODUCTION
+  ══════════════════════════════════════════ -->
+  <div class="de-card">
+    <div class="de-card-head">
+      <div class="de-card-head-left">
+        <span class="de-section-dot dot-orange"></span>
+        <h2>Production</h2>
+        <span class="de-badge" *ngIf="productionItems.length > 0">{{ productionItems.length }} items</span>
       </div>
     </div>
-    <div class="modal-footer">
-      <button (click)="closeQuickAddClient()" class="btn btn-secondary">Cancel</button>
-      <button (click)="quickAddClient()" [disabled]="!newClientName.trim() || loading" class="btn btn-primary">
-        {{ loading ? 'Adding...' : 'Add Client' }}
+
+    <div class="de-inline-form">
+      <select [(ngModel)]="selectedProduct" (change)="onProductChange()" class="de-input de-select">
+        <option value="">Select product</option>
+        <option *ngFor="let p of products" [value]="p.product_name">{{ p.product_name }}</option>
+      </select>
+      <select *ngIf="selectedProductVariants.length > 0" [(ngModel)]="selectedProductVariant" class="de-input de-select">
+        <option *ngFor="let v of selectedProductVariants" [value]="v">{{ v }}</option>
+      </select>
+      <input type="number" [(ngModel)]="productQuantity" min="1" placeholder="Qty" class="de-input de-input-sm">
+      <button class="de-btn de-btn-primary" (click)="addProductionItem()"
+              [disabled]="!selectedProduct || productQuantity <= 0 || isCalculatingMaterials">
+        {{ isCalculatingMaterials ? 'Calculating...' : '+ Add' }}
+      </button>
+    </div>
+
+    <div class="de-table-wrap" *ngIf="productionItems.length > 0">
+      <table class="de-table">
+        <thead>
+          <tr><th>Product</th><th>Variant</th><th>Qty</th><th>Material Cost</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of productionItems; let i = index">
+            <td><strong>{{ item.product_name }}</strong></td>
+            <td>{{ item.product_variant || 'Standard' }}</td>
+            <td>{{ item.quantity }}</td>
+            <td class="de-amount">{{ formatCurrency(item.material_calc?.costs?.total_cost || 0) }}</td>
+            <td><button class="de-btn-remove" (click)="removeProductionItem(i)">x</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="de-tf-label">Total Material Cost</td>
+            <td class="de-amount de-tf-amount">{{ formatCurrency(getTotalProductionCost()) }}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p class="de-empty" *ngIf="productionItems.length === 0">No production items added yet.</p>
+
+    <div class="de-card-footer">
+      <span></span>
+      <button class="de-btn de-btn-save" (click)="submitProductionSection()"
+              [disabled]="saving || productionItems.length === 0">
+        {{ saving ? 'Saving...' : 'Save Production' }}
       </button>
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3 — SALES (admin only)
+  ══════════════════════════════════════════ -->
+  <div class="de-card" *ngIf="!isLabourStaff()">
+    <div class="de-card-head">
+      <div class="de-card-head-left">
+        <span class="de-section-dot dot-green"></span>
+        <h2>Sales</h2>
+        <span class="de-badge" *ngIf="salesItems.length > 0">{{ salesItems.length }} items</span>
+      </div>
+      <button class="de-btn de-btn-outline" (click)="toggleQuickAddClient()">+ Add Client</button>
+    </div>
+
+    <!-- Quick Add Client -->
+    <div class="de-inline-form" *ngIf="showQuickAddClient">
+      <input type="text" [(ngModel)]="newClientName" placeholder="Client name *" class="de-input">
+      <input type="tel" [(ngModel)]="newClientPhone" placeholder="Phone" class="de-input">
+      <input type="text" [(ngModel)]="newClientAddress" placeholder="Address (optional)" class="de-input">
+      <button class="de-btn de-btn-primary" (click)="quickAddClient()" [disabled]="!newClientName.trim() || loading">
+        {{ loading ? 'Saving...' : 'Save' }}
+      </button>
+      <button class="de-btn de-btn-ghost" (click)="closeQuickAddClient()">Cancel</button>
+    </div>
+
+    <!-- Client selection -->
+    <div class="de-field-block">
+      <label class="de-label">Select Client</label>
+      <div class="de-client-row">
+        <select [ngModel]="selectedClientId" (ngModelChange)="selectClientById($event)" class="de-input de-select">
+          <option value="">-- Select client --</option>
+          <option *ngFor="let c of clients" [value]="c.id">{{ c.client_name }}{{ c.phone ? ' - ' + c.phone : '' }}</option>
+        </select>
+        <input type="text" [(ngModel)]="clientSearchTerm" placeholder="Or search by name / phone"
+               (keyup.enter)="searchClients()" class="de-input">
+        <button class="de-btn de-btn-outline" (click)="searchClients()">Search</button>
+        <button class="de-btn de-btn-ghost" *ngIf="selectedClientId" (click)="clearClientSearch()">Clear</button>
+      </div>
+      <!-- Search Results -->
+      <div class="de-search-results" *ngIf="showClientResults">
+        <div class="de-search-results-hdr">
+          {{ filteredClients.length }} result(s)
+          <button class="de-btn-close-xs" (click)="closeClientResults()">x</button>
+        </div>
+        <div class="de-result-row" *ngFor="let c of filteredClients" (click)="selectClient(c)">
+          <strong>{{ c.client_name }}</strong>
+          <span>{{ c.phone || '' }}</span>
+          <span>{{ c.address || '' }}</span>
+        </div>
+        <p class="de-empty" *ngIf="filteredClients.length === 0">No clients found.</p>
+      </div>
+      <p class="de-hint" *ngIf="selectedClientId && !showClientResults">Selected: <strong>{{ clientSearchTerm }}</strong></p>
+    </div>
+
+    <!-- Sales Item Entry -->
+    <div class="de-inline-form">
+      <select [(ngModel)]="selectedSalesProduct" (change)="onSalesProductChange()" class="de-input de-select">
+        <option value="">Select product</option>
+        <option *ngFor="let p of products" [value]="p.product_name">
+          {{ p.product_name }} (Stock: {{ productStockMap.get(p.product_name) || 0 }})
+        </option>
+      </select>
+      <input type="number" [(ngModel)]="salesQuantity" min="1" placeholder="Qty" class="de-input de-input-sm">
+      <input type="number" [(ngModel)]="salesRate" min="1" placeholder="Rate (Rs)" class="de-input de-input-sm">
+      <button class="de-btn de-btn-primary" (click)="addSalesItem()"
+              [disabled]="!selectedSalesProduct || salesQuantity <= 0 || salesRate <= 0">+ Add</button>
+    </div>
+
+    <div class="de-table-wrap" *ngIf="salesItems.length > 0">
+      <table class="de-table">
+        <thead>
+          <tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of salesItems; let i = index">
+            <td><strong>{{ item.product_name }}</strong></td>
+            <td>{{ item.quantity }}</td>
+            <td class="de-amount">{{ formatCurrency(item.rate) }}</td>
+            <td class="de-amount">{{ formatCurrency(item.total) }}</td>
+            <td><button class="de-btn-remove" (click)="removeSalesItem(i)">x</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="de-empty" *ngIf="salesItems.length === 0">No sales items added.</p>
+
+    <!-- Payment row -->
+    <div class="de-payment-row" *ngIf="salesItems.length > 0">
+      <div class="de-payment-chip">
+        <span>Revenue</span>
+        <strong>{{ formatCurrency(totalRevenue) }}</strong>
+      </div>
+      <div class="de-payment-chip">
+        <label>Received</label>
+        <input type="number" [(ngModel)]="amountReceived" (input)="calculateRevenue()"
+               min="0" [max]="totalRevenue" placeholder="0" class="de-input de-input-sm">
+      </div>
+      <div class="de-payment-chip" [class.de-chip-warn]="pendingAmount > 0">
+        <span>Pending</span>
+        <strong>{{ formatCurrency(pendingAmount) }}</strong>
+      </div>
+    </div>
+
+    <!-- Delivery Expenses -->
+    <div class="de-subsection" *ngIf="salesItems.length > 0">
+      <p class="de-subsection-lbl">Delivery Expenses (optional)</p>
+      <div class="de-delivery-grid">
+        <div class="de-delivery-item">
+          <span>Transport</span>
+          <input type="number" [(ngModel)]="transportExpense" min="0" placeholder="Rs 0" class="de-input de-input-sm">
+          <select [(ngModel)]="transportPaidBy" class="de-input de-select-sm">
+            <option value="">Paid by</option>
+            <option *ngFor="let p of partners" [value]="p.partner_id">{{ p.name }}</option>
+          </select>
+        </div>
+        <div class="de-delivery-item">
+          <span>Snacks</span>
+          <input type="number" [(ngModel)]="snacksExpense" min="0" placeholder="Rs 0" class="de-input de-input-sm">
+          <select [(ngModel)]="snacksPaidBy" class="de-input de-select-sm">
+            <option value="">Paid by</option>
+            <option *ngFor="let p of partners" [value]="p.partner_id">{{ p.name }}</option>
+          </select>
+        </div>
+        <div class="de-delivery-item">
+          <span>Other</span>
+          <input type="number" [(ngModel)]="otherDeliveryExpense" min="0" placeholder="Rs 0" class="de-input de-input-sm">
+          <select [(ngModel)]="otherDeliveryPaidBy" class="de-input de-select-sm">
+            <option value="">Paid by</option>
+            <option *ngFor="let p of partners" [value]="p.partner_id">{{ p.name }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="de-card-footer">
+      <span class="de-summary-text" *ngIf="salesItems.length > 0">
+        Revenue: {{ formatCurrency(totalRevenue) }} &nbsp;&bull;&nbsp; Delivery expenses: {{ formatCurrency(getTotalDeliveryExpenses()) }}
+      </span>
+      <span *ngIf="salesItems.length === 0"></span>
+      <button class="de-btn de-btn-save" (click)="submitSalesSection()"
+              [disabled]="saving || !selectedClientId || salesItems.length === 0">
+        {{ saving ? 'Saving...' : 'Save Sales' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 4 — OTHER EXPENSES (admin only)
+  ══════════════════════════════════════════ -->
+  <div class="de-card" *ngIf="!isLabourStaff()">
+    <div class="de-card-head">
+      <div class="de-card-head-left">
+        <span class="de-section-dot dot-purple"></span>
+        <h2>Other Expenses</h2>
+        <span class="de-badge" *ngIf="otherExpenses.length > 0">{{ otherExpenses.length }}</span>
+      </div>
+    </div>
+
+    <div class="de-inline-form">
+      <select [(ngModel)]="selectedExpenseCategory" class="de-input de-select">
+        <option value="Snacks">Snacks / Refreshments</option>
+        <option value="Diesel">Diesel / Fuel</option>
+        <option value="Maintenance">Maintenance / Repair</option>
+        <option value="Medical">Medical</option>
+        <option value="Transport">Transport / Fare</option>
+        <option value="Other">Other</option>
+      </select>
+      <input type="text" [(ngModel)]="expenseDescription" placeholder="Description (what for?)" class="de-input">
+      <input type="number" [(ngModel)]="expenseAmount" min="1" placeholder="Amount (Rs)" class="de-input de-input-sm">
+      <select [(ngModel)]="expensePaidBy" class="de-input de-select">
+        <option value="">Paid by</option>
+        <option *ngFor="let p of partners" [value]="p.partner_id">{{ p.name }}</option>
+      </select>
+      <button class="de-btn de-btn-primary" (click)="addOtherExpense()"
+              [disabled]="expenseAmount <= 0 || !expensePaidBy">+ Add</button>
+    </div>
+
+    <div class="de-expense-list" *ngIf="otherExpenses.length > 0">
+      <div class="de-expense-row" *ngFor="let e of otherExpenses; let i = index" [class.de-saved]="e.persisted">
+        <span class="de-category-tag">{{ e.category }}</span>
+        <span class="de-expense-desc">{{ e.description || 'No description' }}</span>
+        <span class="de-expense-by">{{ getPartnerName(e.paid_by_partner_id) }}</span>
+        <span class="de-amount">{{ formatCurrency(e.amount) }}</span>
+        <button class="de-btn-remove" (click)="removeOtherExpense(i)" [disabled]="e.persisted"
+                [title]="e.persisted ? 'Already saved to database' : 'Remove'">
+          {{ e.persisted ? 'Saved' : 'x' }}
+        </button>
+      </div>
+      <div class="de-expense-total">
+        Total: <strong>{{ formatCurrency(getTotalOtherExpenses()) }}</strong>
+      </div>
+    </div>
+    <p class="de-empty" *ngIf="otherExpenses.length === 0">No expenses recorded for today.</p>
+
+    <div class="de-card-footer">
+      <span></span>
+      <button class="de-btn de-btn-save" (click)="submitExpensesSection()"
+              [disabled]="saving || !hasDraftExpenses()">
+        {{ saving ? 'Saving...' : 'Save Expenses' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 5 — DAMAGE / LOSS (admin only)
+  ══════════════════════════════════════════ -->
+  <div class="de-card" *ngIf="!isLabourStaff()">
+    <div class="de-card-head">
+      <div class="de-card-head-left">
+        <span class="de-section-dot dot-red"></span>
+        <h2>Damage / Loss</h2>
+        <span class="de-badge" *ngIf="yardLossItems.length > 0">{{ yardLossItems.length }}</span>
+      </div>
+    </div>
+
+    <div class="de-inline-form">
+      <select [(ngModel)]="selectedYardLossProduct" class="de-input de-select">
+        <option value="">Select product</option>
+        <option *ngFor="let p of products" [value]="p.product_name">{{ p.product_name }}</option>
+      </select>
+      <input type="number" [(ngModel)]="yardLossQuantity" min="1" placeholder="Qty damaged" class="de-input de-input-sm">
+      <select [(ngModel)]="yardLossStage" class="de-input de-select">
+        <option value="stacking">Stacking</option>
+        <option value="loading">Loading</option>
+        <option value="transport">Transport</option>
+      </select>
+      <input type="text" [(ngModel)]="yardLossReason" placeholder="Reason (min 5 chars)" class="de-input" maxlength="200">
+      <button class="de-btn de-btn-primary" (click)="addYardLossItem()"
+              [disabled]="!selectedYardLossProduct || yardLossQuantity <= 0 || !yardLossReason">+ Add</button>
+    </div>
+
+    <div class="de-table-wrap" *ngIf="yardLossItems.length > 0">
+      <table class="de-table">
+        <thead>
+          <tr><th>Product</th><th>Qty</th><th>Stage</th><th>Reason</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of yardLossItems; let i = index">
+            <td><strong>{{ item.product_name }}</strong></td>
+            <td><span class="de-qty-badge">{{ item.quantity }}</span></td>
+            <td>{{ item.stage }}</td>
+            <td>{{ item.reason }}</td>
+            <td>
+              <button class="de-btn-remove" (click)="removeYardLossItem(i)" [disabled]="item.persisted">
+                {{ item.persisted ? 'Saved' : 'x' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="de-empty" *ngIf="yardLossItems.length === 0">No damage entries added.</p>
+
+    <div class="de-card-footer">
+      <span></span>
+      <button class="de-btn de-btn-save" (click)="submitDamageSection()"
+              [disabled]="saving || !hasDraftDamage()">
+        {{ saving ? 'Saving...' : 'Save Damage Entry' }}
+      </button>
+    </div>
+  </div>
+
 </div>
+
+<!-- Loading Template -->
+<ng-template #loadingTpl>
+  <div class="de-loading">
+    <div class="de-spinner"></div>
+    <p>Loading...</p>
+  </div>
+</ng-template>
 
 <app-mfg-footer *ngIf="!embedded"></app-mfg-footer>

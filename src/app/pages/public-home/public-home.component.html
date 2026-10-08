@@ -9,28 +9,31 @@
       <div class="hero-brand-row">
         <span class="brand-badge">
           <span class="brand-dot"></span>
-          SURAKSHA GROUP
+          SURAKSHA SOFTWARE
         </span>
-        <span class="brand-year">Est. 2016</span>
+        <span class="brand-year">ENGINEERING DIGITAL GROWTH</span>
       </div>
 
       <div class="hero-body">
         <div class="hero-left">
           <h1 class="hero-h1">
-            SURAKSHA GROUP<br>
-            <span class="hero-accent">GATEWAY</span>
+            SOFTWARE THAT<br>
+            <span class="hero-accent">MOVES YOU FORWARD.</span>
           </h1>
-          <p class="hero-tagline">One home page. All Suraksha platforms in motion.</p>
+          <p class="hero-tagline">Thoughtful engineering. Practical digital products.</p>
           <p class="hero-sub">
-            Quick access to Suraksha Walls, Suraksha Library, Suraksha Software, and other
-            active ventures — from one unified enterprise control hub.
+            We design and build dependable web and mobile experiences, business software,
+            and digital platforms that help ambitious teams do their best work.
           </p>
           <div class="hero-cta-row">
-            <button class="btn-primary" (click)="scrollToSection('platforms')">
-              <mat-icon>apps</mat-icon>Open Platforms
+            <button class="btn-primary" (click)="navigateToSoftware()">
+              <mat-icon>arrow_outward</mat-icon>Explore Our Work
             </button>
-            <button class="btn-ghost" (click)="scrollToSection('login')">
+            <button class="btn-ghost" (click)="scrollToSection('login')" *ngIf="!isLoggedIn">
               <mat-icon>login</mat-icon>Sign In
+            </button>
+            <button class="btn-ghost" (click)="scrollToSection('platforms')" *ngIf="isLoggedIn">
+              <mat-icon>apps</mat-icon>Explore Platforms
             </button>
           </div>
         </div>
@@ -60,19 +63,95 @@
     </div>
   </header>
 
+  <!-- ══ SIGN IN ══════════════════════════════════════════ -->
+  <section class="hp-login-band" id="login" *ngIf="!isLoggedIn">
+    <div class="hp-login-band-bg"></div>
+    <div class="login-gate">
+      <div class="login-gate-left">
+        <div class="section-label light">
+          <span class="label-line"></span>
+          <span>SECURE PLATFORM ACCESS</span>
+        </div>
+        <h2 class="section-h2 light">Your workspaces,<br>one secure sign in.</h2>
+        <p class="section-sub light">Access the Suraksha tools and workspaces assigned to your account. Your access is protected and tailored to your role.</p>
+        <div class="role-chips">
+          <div class="role-chip">
+            <mat-icon>admin_panel_settings</mat-icon>
+            <span>Administrators</span>
+          </div>
+          <div class="role-chip">
+            <mat-icon>badge</mat-icon>
+            <span>Team members</span>
+          </div>
+          <div class="role-chip">
+            <mat-icon>school</mat-icon>
+            <span>Students</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-gate-right">
+        <div class="login-card">
+          <h3>Welcome back</h3>
+          <p class="login-card-subtitle">Sign in to your Suraksha account</p>
+          <form (ngSubmit)="onLogin()" class="hp-login-form">
+            <div class="hp-form-field">
+              <label>Email Address</label>
+              <div class="hp-input-wrap">
+                <mat-icon>email</mat-icon>
+                <input
+                  type="email"
+                  [(ngModel)]="loginEmail"
+                  name="loginEmail"
+                  placeholder="your@email.com"
+                  [disabled]="loginLoading"
+                  autocomplete="email"
+                  required>
+              </div>
+            </div>
+            <div class="hp-form-field">
+              <label>Password</label>
+              <div class="hp-input-wrap password-wrap">
+                <mat-icon>lock</mat-icon>
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  [(ngModel)]="loginPassword"
+                  name="loginPassword"
+                  placeholder="Your password"
+                  [disabled]="loginLoading"
+                  autocomplete="current-password"
+                  required>
+                <button type="button" class="password-visibility" aria-label="Toggle password visibility" (click)="togglePasswordVisibility()">
+                  <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+            <div *ngIf="loginError" class="hp-error-box" role="alert">
+              <mat-icon>error_outline</mat-icon>
+              <span>{{ loginError }}</span>
+            </div>
+            <button type="submit" class="btn-gate-signin" [disabled]="loginLoading">
+              <mat-icon>{{ loginLoading ? 'hourglass_empty' : 'login' }}</mat-icon>
+              {{ loginLoading ? 'Signing in...' : 'Sign In' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ══ WHY THIS GATEWAY ═══════════════════════════════ -->
   <section class="hp-section hp-alt" id="spotlight">
     <div class="split-editorial">
       <div class="split-left">
         <div class="section-label light">
           <span class="label-line"></span>
-          <span>THE SURAKSHA ECOSYSTEM</span>
+          <span>BUILT AROUND REAL WORK</span>
         </div>
-        <h2 class="section-h2 light">Four platforms.<br>One connected group.</h2>
+        <h2 class="section-h2 light">Digital tools that<br>make work simpler.</h2>
         <p class="section-sub light">
-          From precast boundary walls to curated library spaces, digital software delivery,
-          and premium interior products — the Suraksha Group operates across industries
-          from one unified digital presence.
+          From custom software and mobile apps to connected business platforms, we combine
+          clear thinking with reliable engineering to solve practical challenges.
         </p>
         <div class="eco-pills">
           <span class="eco-pill" *ngFor="let card of spotlightCards">
@@ -99,11 +178,12 @@
     <div class="section-inner">
       <div class="section-label">
         <span class="label-line"></span>
-        <span>OUR PLATFORMS</span>
+        <span>WHAT WE BUILD</span>
       </div>
-      <h2 class="section-h2">Choose your platform</h2>
+      <h2 class="section-h2">Explore the Suraksha ecosystem</h2>
       <p class="section-sub">
-        Animated tiles. Direct access. Instant movement to your destination.
+        Software is at the heart of how we work. Explore our products, services, and
+        connected ventures.
       </p>
     </div>
 
@@ -132,81 +212,8 @@
     </div>
   </section>
 
-  <!-- ══ SIGN IN ══════════════════════════════════════════ -->
-  <section class="hp-login-band" id="login">
-    <div class="hp-login-band-bg"></div>
-    <div class="login-gate">
-      <div class="login-gate-left">
-        <div class="section-label light">
-          <span class="label-line"></span>
-          <span>PLATFORM ACCESS</span>
-        </div>
-        <h2 class="section-h2 light">Sign in to your<br>Suraksha account</h2>
-        <p class="section-sub light">One account for all Suraksha platforms. Staff, Admin, and Students all login here — your role determines what you can access.</p>
-        <div class="role-chips">
-          <div class="role-chip">
-            <mat-icon>admin_panel_settings</mat-icon>
-            <span>Admin</span>
-          </div>
-          <div class="role-chip">
-            <mat-icon>badge</mat-icon>
-            <span>Staff / Employee</span>
-          </div>
-          <div class="role-chip">
-            <mat-icon>school</mat-icon>
-            <span>Student</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="login-gate-right">
-        <div class="login-card">
-          <h3>Sign In</h3>
-          <form (ngSubmit)="onLogin()" class="hp-login-form">
-            <div class="hp-form-field">
-              <label>Email Address</label>
-              <div class="hp-input-wrap">
-                <mat-icon>email</mat-icon>
-                <input
-                  type="email"
-                  [(ngModel)]="loginEmail"
-                  name="loginEmail"
-                  placeholder="your@email.com"
-                  [disabled]="loginLoading"
-                  autocomplete="email"
-                  required>
-              </div>
-            </div>
-            <div class="hp-form-field">
-              <label>Password</label>
-              <div class="hp-input-wrap">
-                <mat-icon>lock</mat-icon>
-                <input
-                  type="password"
-                  [(ngModel)]="loginPassword"
-                  name="loginPassword"
-                  placeholder="Your password"
-                  [disabled]="loginLoading"
-                  autocomplete="current-password"
-                  required>
-              </div>
-            </div>
-            <div *ngIf="loginError" class="hp-error-box" role="alert">
-              <mat-icon>error_outline</mat-icon>
-              <span>{{ loginError }}</span>
-            </div>
-            <button type="submit" class="btn-gate-signin" [disabled]="loginLoading">
-              <mat-icon>{{ loginLoading ? 'hourglass_empty' : 'login' }}</mat-icon>
-              {{ loginLoading ? 'Signing in...' : 'Sign In' }}
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ══ FOOTER ═════════════════════════════════════════ -->
-  <footer class="hp-footer">
+  <footer class="hp-footer" id="contact">
     <div class="footer-inner">
       <div class="footer-left">
         <p class="footer-brand">Suraksha Group</p>
@@ -218,8 +225,11 @@
         <a routerLink="/software">Software</a>
         <a routerLink="/login">Login</a>
       </div>
+      <p class="footer-credit">
+        Designed &amp; developed by
+        <a href="https://www.surakshawalls.space/software" target="_blank" rel="noopener noreferrer">Suraksha Software</a>
+      </p>
     </div>
   </footer>
 
 </div>
-
